@@ -1,0 +1,14 @@
+# 006-results-validation — Tareas
+
+- [ ] Summary.
+- [ ] target result table.
+- [ ] failure detail.
+- [ ] partial/fatal states.
+
+## Calidad
+
+- [ ] Agregar/actualizar pruebas.
+- [ ] Verificar manejo de errores.
+- [ ] Verificar observabilidad mínima.
+- [ ] Ejecutar lint/test/build.
+- [ ] Registrar evidencia de revisión en `harness/reports/`.
