@@ -1,8 +1,8 @@
 # testing — Tareas
 
-- [ ] test setup.
-- [ ] feature tests.
-- [ ] polling/error tests.
+- [x] test setup.
+- [x] feature tests.
+- [x] polling/error tests.
 - [ ] optional E2E.
 
 ## Calidad

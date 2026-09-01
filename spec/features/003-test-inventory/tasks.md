@@ -1,14 +1,15 @@
 # 003-test-inventory — Tareas
 
-- [ ] Inventory view.
-- [ ] filters/status.
-- [ ] target selection.
-- [ ] empty/unsupported state.
+- [x] Inventory view sobre view model desacoplado.
+- [x] filters/status.
+- [x] target selection.
+- [x] empty/unsupported state.
+- [x] Adapter HTTP de inventario por ProjectVersion.
 
 ## Calidad
 
-- [ ] Agregar/actualizar pruebas.
-- [ ] Verificar manejo de errores.
-- [ ] Verificar observabilidad mínima.
-- [ ] Ejecutar lint/test/build.
-- [ ] Registrar evidencia de revisión en `harness/reports/`.
+- [x] Agregar/actualizar pruebas.
+- [x] Verificar manejo de errores.
+- [x] Verificar observabilidad mínima.
+- [x] Ejecutar lint/test/build.
+- [x] Registrar evidencia de revisión en `harness/reports/`.

@@ -1,8 +1,8 @@
 # async-state — Tareas
 
-- [ ] polling abstraction.
-- [ ] cache keys.
-- [ ] cancellation.
+- [x] polling abstraction.
+- [x] cache keys.
+- [x] cancellation.
 - [ ] WS adapter/fallback.
 
 ## Calidad

@@ -1,14 +1,15 @@
 # 004-test-generation — Tareas
 
-- [ ] Mode selector.
-- [ ] target validation.
-- [ ] submit 202.
-- [ ] navigate to run.
+- [x] Mode selector.
+- [x] target validation.
+- [x] submit y navegación a run mediante adapter mock stateful.
+- [ ] submit 202 (ruta/DTO de RAG Core PENDING).
+- [ ] navigate to run (respuesta 202 de RAG Core PENDING).
 
 ## Calidad
 
-- [ ] Agregar/actualizar pruebas.
-- [ ] Verificar manejo de errores.
-- [ ] Verificar observabilidad mínima.
-- [ ] Ejecutar lint/test/build.
-- [ ] Registrar evidencia de revisión en `harness/reports/`.
+- [x] Agregar/actualizar pruebas.
+- [x] Verificar manejo de errores.
+- [x] Verificar observabilidad mínima.
+- [x] Ejecutar lint/test/build.
+- [x] Registrar evidencia de revisión en `harness/reports/`.

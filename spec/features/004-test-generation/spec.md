@@ -9,7 +9,7 @@ Solicitar los cinco modos de generación sin exponer detalles internos de retrie
 
 ## Reglas y comportamiento
 
-- METHOD exige método; CLASS_* exige clase; PROJECT_* usa proyecto/versión actual.
+- TARGET exige un target METHOD o FUNCTION; CLASS_* exige contexto de clase; PROJECT_* usa proyecto/versión actual.
 - Modo normal usa RAG; no ofrecer toggle RAG on/off fuera de Modo experimental.
 - Mostrar confirmación/resumen de alcance antes de generaciones masivas cuando sea útil.
 

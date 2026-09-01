@@ -1,15 +1,15 @@
 # 002-upload-analysis — Tareas
 
-- [ ] Upload UI.
-- [ ] 202 handler/polling.
-- [ ] Progress states.
-- [ ] Results summary.
-- [ ] New version flow.
+- [x] Upload UI.
+- [x] 202 handler/polling.
+- [x] Progress states.
+- [x] Results summary.
+- [x] New version flow.
 
 ## Calidad
 
-- [ ] Agregar/actualizar pruebas.
-- [ ] Verificar manejo de errores.
-- [ ] Verificar observabilidad mínima.
-- [ ] Ejecutar lint/test/build.
-- [ ] Registrar evidencia de revisión en `harness/reports/`.
+- [x] Agregar/actualizar pruebas.
+- [x] Verificar manejo de errores.
+- [x] Verificar observabilidad mínima.
+- [x] Ejecutar lint/test/build.
+- [x] Registrar evidencia de revisión en `harness/reports/`.

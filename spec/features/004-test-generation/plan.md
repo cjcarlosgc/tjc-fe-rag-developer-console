@@ -6,7 +6,7 @@
 
 ## Diseño técnico
 
-Generation form por contexto + API POST /tests/generate. Reutilizar target selection del inventory.
+Generation form por contexto + adapter API aislado. Reutilizar target selection del inventory. La ruta y los DTO HTTP están `PENDING` en RAG Core; `POST /tests/generate` no se considera confirmado hasta actualizar [`../../contracts/rag-core-api.md`](../../contracts/rag-core-api.md).
 
 ## Validación
 

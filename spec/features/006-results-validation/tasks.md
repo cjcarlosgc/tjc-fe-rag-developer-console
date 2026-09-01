@@ -1,14 +1,16 @@
 # 006-results-validation — Tareas
 
-- [ ] Summary.
-- [ ] target result table.
-- [ ] failure detail.
-- [ ] partial/fatal states.
+- [x] Summary.
+- [x] target result table.
+- [x] failure detail.
+- [x] partial/fatal states.
+- [x] Adapter mock de resultados terminales.
+- [ ] Adapter HTTP de resultados (ruta/DTO PENDING).
 
 ## Calidad
 
-- [ ] Agregar/actualizar pruebas.
-- [ ] Verificar manejo de errores.
-- [ ] Verificar observabilidad mínima.
-- [ ] Ejecutar lint/test/build.
-- [ ] Registrar evidencia de revisión en `harness/reports/`.
+- [x] Agregar/actualizar pruebas.
+- [x] Verificar manejo de errores.
+- [x] Verificar observabilidad mínima.
+- [x] Ejecutar lint/test/build.
+- [x] Registrar evidencia de revisión en `harness/reports/`.

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sddVersion": "1.0",
+  "sddVersion": "1.2",
   "allowedStatuses": [
     "SELECTED",
     "SPEC_VERIFIED",
@@ -10,6 +10,32 @@
     "BLOCKED",
     "DONE"
   ],
-  "activeWorkItem": null,
-  "lastUpdatedAt": "2026-08-30T00:00:00-05:00"
+  "activeWorkItem": {
+    "id": "sprint2-experimental-comparison",
+    "storyIds": [
+      "HU19"
+    ],
+    "sprint": "Sprint 2",
+    "status": "IN_REVIEW",
+    "specPaths": [
+      "spec/features/008-experimental-mode/spec.md",
+      "spec/features/008-experimental-mode/plan.md",
+      "spec/features/008-experimental-mode/tasks.md"
+    ],
+    "transversalPaths": [
+      "spec/contracts/rag-core-api.md",
+      "spec/transversal/demo-mode/spec.md",
+      "spec/transversal/design-system/spec.md",
+      "spec/transversal/api-client/spec.md",
+      "spec/transversal/errors-notifications/spec.md",
+      "spec/transversal/formatting/spec.md",
+      "spec/transversal/testing/spec.md",
+      "spec/transversal/accessibility/spec.md"
+    ],
+    "approved": true,
+    "createdAt": "2026-08-30T22:25:00-05:00",
+    "updatedAt": "2026-08-31T12:00:00-05:00",
+    "blockedReason": null
+  },
+  "lastUpdatedAt": "2026-08-31T12:00:00-05:00"
 }

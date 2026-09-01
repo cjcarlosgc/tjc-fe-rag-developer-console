@@ -12,6 +12,8 @@ Visualizar objetivos testables y presencia/ausencia de pruebas existentes.
 - Mostrar clases/métodos/funciones según datos del Core.
 - Diferenciar con test/sin test.
 - Permitir usar un target como punto de entrada a generación cuando aplique.
+- Consumir `GET /project-versions/:projectVersionId/test-inventory` según [`../../contracts/rag-core-api.md`](../../contracts/rag-core-api.md).
+- `targetType` es `CLASS|METHOD|FUNCTION`; `methodName` sólo aplica a `METHOD`.
 
 ## Fuera de alcance
 

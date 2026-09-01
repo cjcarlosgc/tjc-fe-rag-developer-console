@@ -1,14 +1,14 @@
 # 001-projects — Tareas
 
-- [ ] Project list/page.
-- [ ] Create project form.
-- [ ] Routing project detail.
-- [ ] Error/empty states.
+- [x] Project list/page.
+- [x] Create project form.
+- [x] Routing project detail.
+- [x] Error/empty states.
 
 ## Calidad
 
-- [ ] Agregar/actualizar pruebas.
-- [ ] Verificar manejo de errores.
-- [ ] Verificar observabilidad mínima.
-- [ ] Ejecutar lint/test/build.
-- [ ] Registrar evidencia de revisión en `harness/reports/`.
+- [x] Agregar/actualizar pruebas.
+- [x] Verificar manejo de errores.
+- [x] Verificar observabilidad mínima.
+- [x] Ejecutar lint/test/build.
+- [x] Registrar evidencia de revisión en `harness/reports/`.

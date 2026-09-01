@@ -1,15 +1,16 @@
 # 005-generation-progress — Tareas
 
-- [ ] Polling hook.
-- [ ] terminal-state logic.
-- [ ] progress UI.
+- [x] Polling del run mediante adapter mock stateful.
+- [ ] Polling hook (ruta/DTO de run PENDING).
+- [x] terminal-state logic.
+- [x] progress UI sobre view model desacoplado.
 - [ ] WebSocket adapter Sprint 3.
-- [ ] reconnect/fallback.
+- [ ] reconnect/fallback (transporte PENDING).
 
 ## Calidad
 
-- [ ] Agregar/actualizar pruebas.
-- [ ] Verificar manejo de errores.
-- [ ] Verificar observabilidad mínima.
-- [ ] Ejecutar lint/test/build.
-- [ ] Registrar evidencia de revisión en `harness/reports/`.
+- [x] Agregar/actualizar pruebas.
+- [x] Verificar manejo de errores.
+- [x] Verificar observabilidad mínima.
+- [x] Ejecutar lint/test/build.
+- [x] Registrar evidencia de revisión en `harness/reports/`.

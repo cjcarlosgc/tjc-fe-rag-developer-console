@@ -1,7 +1,7 @@
 # formatting — Tareas
 
-- [ ] formatters.
-- [ ] tests edge cases.
+- [x] formatters.
+- [x] tests edge cases.
 
 ## Calidad
 
