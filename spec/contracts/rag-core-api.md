@@ -218,6 +218,13 @@ interface ProjectVersionResultsResponse {
 - Antes de `COMPLETED`: `409 ANALYSIS_NOT_FINISHED`.
 - Id inexistente: `404 PROJECT_VERSION_NOT_FOUND`.
 
+### Listado de ProjectVersions por proyecto — PENDING
+
+RAG Core conserva múltiples versiones, pero todavía no publicó una ruta ni DTO
+para listarlas por proyecto. El frontend no debe asumir una ruta como
+`GET /projects/{projectId}/versions` ni una forma de paginación. La demo puede
+representar este historial detrás del adapter mock.
+
 ## Inventario de tests — IMPLEMENTADO
 
 ### `GET /project-versions/{projectVersionId}/test-inventory`
@@ -308,9 +315,9 @@ interface Artifact {
 
 RAG Core proveerá descarga individual, descarga total y diff, pero sus rutas, content types, filenames vía headers y DTO de diff permanecen **PENDING**. Solicitar diff de un artifact `CREATED` produce `409 DIFF_NOT_AVAILABLE`.
 
-## Experimento RAG vs baseline — contrato HTTP PENDING
+## Experimento RAG vs agente generalista — contrato HTTP PENDING
 
-Está aprobado un único experimento `RAG` vs `BASELINE`, con tres repeticiones por target y estrategia por defecto y sin autorepair. El resultado debe conservar:
+Está aprobado un único experimento entre RAG y un agente generalista, con tres repeticiones por target y estrategia por defecto y sin autorepair. El agente generalista explora el código y reúne sus propias referencias; no es un LLM aislado ni sin contexto. Mientras el DTO definitivo siga `PENDING`, el view model conserva `BASELINE` como identificador técnico interno y la UI lo presenta como `Agente generalista`. El resultado debe conservar:
 
 - `compiled`, `executed`, `passed`, `valid`, `failureType`;
 - `generationDurationMs`, `executionDurationMs`, `totalDurationMs`;

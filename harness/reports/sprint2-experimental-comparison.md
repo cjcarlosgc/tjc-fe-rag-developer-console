@@ -1,4 +1,4 @@
-# Evidencia de revisión — RAG vs Baseline
+# Evidencia de revisión — RAG vs Agente generalista
 
 **Historia:** HU19  
 **Fecha:** 2026-08-30  
@@ -7,7 +7,7 @@
 ## Alcance verificado
 
 - Sección etiquetada visiblemente como Modo experimental.
-- Única capacidad V1: Comparar RAG vs Baseline.
+- Única capacidad V1: Comparar RAG vs Agente generalista.
 - Indicación de tres repeticiones por estrategia y exclusión de autorepair.
 - Comparación de valid, compilación, ejecución y passed con delta en pp.
 - Comparación de tiempos, tokens y costo marcado como estimado.

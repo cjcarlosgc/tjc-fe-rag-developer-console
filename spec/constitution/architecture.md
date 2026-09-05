@@ -16,4 +16,4 @@ Separar estado remoto (projects/versions/runs/results) de estado puramente UI (f
 
 ## Experimental mode
 
-Una sección `Modo experimental` contiene inicialmente una sola capacidad: `Comparar RAG vs Baseline`. La UI solicita el experimento y visualiza métricas persistidas; no implementa la lógica comparativa localmente.
+Una sección `Modo experimental` contiene inicialmente una sola capacidad: `Comparar RAG vs Agente generalista`. La UI solicita el experimento y visualiza métricas persistidas; no implementa la lógica comparativa localmente.

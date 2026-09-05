@@ -2,7 +2,7 @@ import type { ArtifactViewModel } from '../artifacts/types'
 import type { ExperimentAccepted, ExperimentOperation, ExperimentResultViewModel } from '../experiments/types'
 import type { GenerationAccepted, GenerationConfiguration } from '../generation/types'
 import type { InventoryTargetViewModel, TestInventoryResponse } from '../inventory/types'
-import type { AnalysisOperation, AnalysisResult, CreateProjectInput, Project, UploadAccepted } from '../projects/types'
+import type { AnalysisHistoryItem, AnalysisOperation, AnalysisResult, CreateProjectInput, Project, UploadAccepted } from '../projects/types'
 import type { RunViewModel, TargetRunViewModel } from '../runs/types'
 import { ApiError } from './client'
 
@@ -38,21 +38,17 @@ function notFound(message: string, code: string): never {
   throw new ApiError(message, 404, 'demo-correlation-id', code)
 }
 
-function buildInventory(projectVersionId: string): TestInventoryResponse {
-  return {
-    projectVersionId,
-    detectedFramework: 'VITEST',
-    targetsTotal: 5,
-    targetsWithTest: 2,
-    targetsMissingTest: 3,
-    targets: [
-      { id: `${projectVersionId}-class-order`, filePath: 'src/domain/OrderService.ts', symbolName: 'OrderService', methodName: null, targetType: 'CLASS', hasTest: true, testFilePaths: ['src/domain/OrderService.spec.ts'] },
-      { id: `${projectVersionId}-method-create`, filePath: 'src/domain/OrderService.ts', symbolName: 'OrderService', methodName: 'createOrder', targetType: 'METHOD', hasTest: true, testFilePaths: ['src/domain/OrderService.spec.ts'] },
-      { id: `${projectVersionId}-method-total`, filePath: 'src/domain/OrderService.ts', symbolName: 'OrderService', methodName: 'calculateTotal', targetType: 'METHOD', hasTest: false, testFilePaths: [] },
-      { id: `${projectVersionId}-class-coupon`, filePath: 'src/domain/CouponPolicy.ts', symbolName: 'CouponPolicy', methodName: null, targetType: 'CLASS', hasTest: false, testFilePaths: [] },
-      { id: `${projectVersionId}-function-money`, filePath: 'src/shared/money.ts', symbolName: 'formatCurrency', methodName: null, targetType: 'FUNCTION', hasTest: false, testFilePaths: [] },
-    ],
-  }
+function buildInventory(projectVersionId: string, revision = 7): TestInventoryResponse {
+  const allTargets: TestInventoryResponse['targets'] = [
+    { id: `${projectVersionId}-class-order`, filePath: 'src/domain/OrderService.ts', symbolName: 'OrderService', methodName: null, targetType: 'CLASS', hasTest: true, testFilePaths: ['src/domain/OrderService.spec.ts'] },
+    { id: `${projectVersionId}-method-create`, filePath: 'src/domain/OrderService.ts', symbolName: 'OrderService', methodName: 'createOrder', targetType: 'METHOD', hasTest: true, testFilePaths: ['src/domain/OrderService.spec.ts'] },
+    { id: `${projectVersionId}-method-total`, filePath: 'src/domain/OrderService.ts', symbolName: 'OrderService', methodName: 'calculateTotal', targetType: 'METHOD', hasTest: false, testFilePaths: [] },
+    { id: `${projectVersionId}-class-coupon`, filePath: 'src/domain/CouponPolicy.ts', symbolName: 'CouponPolicy', methodName: null, targetType: 'CLASS', hasTest: false, testFilePaths: [] },
+    { id: `${projectVersionId}-function-money`, filePath: 'src/shared/money.ts', symbolName: 'formatCurrency', methodName: null, targetType: 'FUNCTION', hasTest: false, testFilePaths: [] },
+  ]
+  const targets = revision === 5 ? [allTargets[0], allTargets[2], allTargets[3]] : revision === 6 ? allTargets.slice(0, 4) : allTargets
+  const targetsWithTest = targets.filter((target) => target.hasTest).length
+  return { projectVersionId, detectedFramework: 'VITEST', targetsTotal: targets.length, targetsWithTest, targetsMissingTest: targets.length - targetsWithTest, targets }
 }
 
 function seed(): void {
@@ -66,6 +62,18 @@ function seed(): void {
     operation: { id: 'ver_checkout_7', projectId: project.id, status: 'COMPLETED', originalFileName: 'checkout-service-v7.zip', sizeBytes: 3_842_110, filesProcessed: 47, chunksCount: 186, failureReason: null, startedAt: '2026-08-31T14:17:12.000Z', completedAt, createdAt: '2026-08-31T14:17:10.000Z', updatedAt: completedAt },
     result: { id: 'ver_checkout_7', projectId: project.id, status: 'COMPLETED', filesProcessed: 47, chunksCount: 186, detectedFramework: 'VITEST', targetsTotal: 5, targetsWithTest: 2, targetsMissingTest: 3, completedAt },
     inventory: buildInventory('ver_checkout_7'),
+  })
+  versions.set('ver_checkout_6', {
+    polls: 0,
+    operation: { id: 'ver_checkout_6', projectId: project.id, status: 'COMPLETED', originalFileName: 'checkout-service-v6.zip', sizeBytes: 3_614_220, filesProcessed: 43, chunksCount: 164, failureReason: null, startedAt: '2026-08-28T10:05:04.000Z', completedAt: '2026-08-28T10:06:21.000Z', createdAt: '2026-08-28T10:05:00.000Z', updatedAt: '2026-08-28T10:06:21.000Z' },
+    result: { id: 'ver_checkout_6', projectId: project.id, status: 'COMPLETED', filesProcessed: 43, chunksCount: 164, detectedFramework: 'VITEST', targetsTotal: 4, targetsWithTest: 2, targetsMissingTest: 2, completedAt: '2026-08-28T10:06:21.000Z' },
+    inventory: buildInventory('ver_checkout_6', 6),
+  })
+  versions.set('ver_checkout_5', {
+    polls: 0,
+    operation: { id: 'ver_checkout_5', projectId: project.id, status: 'COMPLETED', originalFileName: 'checkout-service-v5.zip', sizeBytes: 3_198_440, filesProcessed: 38, chunksCount: 141, failureReason: null, startedAt: '2026-08-24T09:34:08.000Z', completedAt: '2026-08-24T09:35:30.000Z', createdAt: '2026-08-24T09:34:00.000Z', updatedAt: '2026-08-24T09:35:30.000Z' },
+    result: { id: 'ver_checkout_5', projectId: project.id, status: 'COMPLETED', filesProcessed: 38, chunksCount: 141, detectedFramework: 'VITEST', targetsTotal: 3, targetsWithTest: 1, targetsMissingTest: 2, completedAt: '2026-08-24T09:35:30.000Z' },
+    inventory: buildInventory('ver_checkout_5', 5),
   })
 }
 
@@ -91,6 +99,31 @@ export async function mockGetProject(projectId: string): Promise<Project> {
   const project = projects.get(projectId)
   if (!project) notFound(`No existe el proyecto demo "${projectId}".`, 'PROJECT_NOT_FOUND')
   return clone(project)
+}
+
+export async function mockListAnalysisHistory(projectId: string): Promise<AnalysisHistoryItem[]> {
+  await latency()
+  const project = projects.get(projectId)
+  if (!project) notFound(`No existe el proyecto demo "${projectId}".`, 'PROJECT_NOT_FOUND')
+  return Array.from(versions.values())
+    .filter((state) => state.operation.projectId === projectId)
+    .map((state): AnalysisHistoryItem => ({
+      id: state.operation.id,
+      projectId,
+      status: state.operation.status,
+      originalFileName: state.operation.originalFileName,
+      filesProcessed: state.operation.filesProcessed,
+      chunksCount: state.operation.chunksCount,
+      detectedFramework: state.result?.detectedFramework ?? null,
+      targetsTotal: state.result?.targetsTotal ?? null,
+      targetsWithTest: state.result?.targetsWithTest ?? null,
+      targetsMissingTest: state.result?.targetsMissingTest ?? null,
+      createdAt: state.operation.createdAt,
+      completedAt: state.operation.completedAt,
+      current: project.currentVersionId === state.operation.id,
+    }))
+    .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+    .map(clone)
 }
 
 export async function mockCreateProject(input: CreateProjectInput): Promise<Project> {

@@ -18,9 +18,15 @@ Todos los cambios notables de la línea base SDD se registran aquí. El contenid
 - Se aprueba un modo demo stateful seleccionado con `VITE_DATA_SOURCE=mock`,
   visible en la interfaz y desacoplado de los adapters HTTP `live`.
 - El modo demo cubre proyectos, indexación, inventario, generación, validación,
-  artifacts y comparación RAG vs baseline sin presentar sus datos como reales.
+  artifacts y comparación RAG vs agente generalista sin presentar sus datos como reales.
 - La descarga conjunta del demo produce un ZIP real y la comparación experimental
   explicita deltas absolutos/relativos para tiempo, tokens y costo.
+- La comparación experimental sustituye la variante aislada sin contexto por un agente
+  generalista que explora el código y obtiene sus propias referencias; `BASELINE`
+  se conserva sólo como identificador técnico mientras el contrato siga `PENDING`.
+- El proyecto semilla incorpora un historial demostrativo de ProjectVersions
+  indexadas y permite consultar el inventario histórico de cada versión sin
+  asumir un endpoint live todavía no publicado por RAG Core.
 
 ## [1.0.0] - 2026-08-30
 

@@ -46,3 +46,19 @@ export interface Project {
 export interface CreateProjectInput {
   name: string
 }
+
+export interface AnalysisHistoryItem {
+  id: string
+  projectId: string
+  status: AnalysisStatus
+  originalFileName: string | null
+  filesProcessed: number | null
+  chunksCount: number | null
+  detectedFramework: string | null
+  targetsTotal: number | null
+  targetsWithTest: number | null
+  targetsMissingTest: number | null
+  createdAt: string
+  completedAt: string | null
+  current: boolean
+}

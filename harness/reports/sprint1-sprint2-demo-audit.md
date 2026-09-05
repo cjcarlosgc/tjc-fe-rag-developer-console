@@ -9,11 +9,11 @@
 | Historias | Capacidad | Evidencia |
 |---|---|---|
 | HU01 | Crear y abrir proyecto | Formulario, listado semilla y detalle navegable |
-| HU02–HU07 | ZIP, validación, progreso, resultados, inventario y reindexación | Flujo stateful por ProjectVersion con estados intermedios y terminales |
+| HU02–HU07 | ZIP, validación, progreso, resultados, inventario y reindexación | Flujo stateful y timeline con tres ProjectVersions e inventario por versión |
 | HU08–HU12 | Cinco modos de generación | `TARGET`, `CLASS_ALL`, `CLASS_MISSING`, `PROJECT_MISSING`, `PROJECT_ALL` probados |
 | HU13–HU14 | Progreso y validación | Polling mock, estados terminales, resultados por target y fallos diferenciados |
 | HU15–HU18 | Artifacts | CREATED/MODIFIED, diff, archivo individual y lote ZIP real |
-| HU19 | RAG vs Baseline | Tres repeticiones, tasas, deltas, fallos, tokens, costo y retrieval |
+| HU19 | RAG vs Agente generalista | Tres repeticiones, tasas, deltas, fallos, tokens, costo y retrieval |
 
 ## Estado live
 
@@ -34,6 +34,6 @@ con `VITE_DATA_SOURCE=mock`.
 ## Verificación
 
 - `npm run lint`: OK.
-- `npm test`: OK, 15 archivos y 35 pruebas.
+- `npm test`: OK, 16 archivos y 38 pruebas.
 - `npm run build`: OK.
 - Prueba end-to-end de servicios mock: cero requests HTTP.

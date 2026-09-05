@@ -6,7 +6,10 @@
 
 ## Diseño técnico
 
-Upload component + index operation state. Página de version con progress/status y results summary. No leer/extraer ZIP en navegador salvo necesidad UX mínima.
+Upload component + index operation state. Página de versión con progress/status
+y results summary. Para la demo, timeline de ProjectVersions sobre un servicio de
+dominio mock y acceso read-only al inventario de cada versión. No leer/extraer ZIP
+en navegador salvo necesidad UX mínima y no inventar el endpoint live de listado.
 
 ## Validación
 

@@ -4,7 +4,7 @@
 - [x] Backend mock stateful y escenario semilla.
 - [x] Flujo proyectos/indexación/inventario.
 - [x] Flujo generación/run/validación/artifacts.
-- [x] Flujo experimental RAG vs baseline.
+- [x] Flujo experimental RAG vs agente generalista.
 - [x] Adapters live preservados para contratos disponibles.
 
 ## Calidad

@@ -2,7 +2,7 @@
 
 **Estado:** aprobado
 
-Proveer una consola web para que desarrolladores de software consuman la arquitectura RAG sin exponer complejidad interna innecesaria. La aplicación permite crear proyectos, cargar versiones ZIP, consultar análisis/cobertura existente, solicitar generación, seguir validación, revisar artifacts y ejecutar el modo experimental RAG vs baseline.
+Proveer una consola web para que desarrolladores de software consuman la arquitectura RAG sin exponer complejidad interna innecesaria. La aplicación permite crear proyectos, cargar versiones ZIP, consultar análisis/cobertura existente, solicitar generación, seguir validación, revisar artifacts y ejecutar el modo experimental RAG vs agente generalista.
 
 ## Usuario principal
 

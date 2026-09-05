@@ -7,6 +7,7 @@ import { GenerationPage } from './generation/GenerationPage'
 import { RunPage } from './runs/RunPage'
 import { ArtifactsPage } from './artifacts/ArtifactsPage'
 import { ExperimentPage } from './experiments/ExperimentPage'
+import { AnalysisHistoryPage } from './analysis/AnalysisHistoryPage'
 
 export const router = createBrowserRouter([
   {
@@ -15,7 +16,9 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <ProjectsPage /> },
       { path: 'projects/:projectId', element: <ProjectDetailPage /> },
+      { path: 'projects/:projectId/analyses', element: <AnalysisHistoryPage /> },
       { path: 'projects/:projectId/inventory', element: <InventoryPage /> },
+      { path: 'projects/:projectId/versions/:projectVersionId/inventory', element: <InventoryPage /> },
       { path: 'projects/:projectId/generate', element: <GenerationPage /> },
       { path: 'projects/:projectId/runs/:runId', element: <RunPage /> },
       { path: 'projects/:projectId/runs/:runId/artifacts', element: <ArtifactsPage /> },

@@ -12,7 +12,7 @@
 - PROJECT_* utiliza el proyecto y su versión actual sin requerir target.
 - Los alcances masivos requieren confirmación explícita.
 - El resumen muestra proyecto, estrategia RAG y contexto técnico.
-- No se ofrece toggle RAG/baseline en el flujo normal.
+- No se ofrece toggle RAG/agente generalista en el flujo normal.
 - La configuración confirmada no dispara requests especulativos.
 - La selección desde inventario se resuelve por `targetId` contra la ProjectVersion actual.
 

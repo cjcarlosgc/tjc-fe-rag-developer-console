@@ -13,7 +13,9 @@ Permitir una demostración navegable end-to-end aunque RAG Core todavía no haya
 - La interfaz muestra de forma persistente y visible cuando usa datos simulados.
 - Componentes y páginas consumen servicios/adapters; no contienen datasets mock ni bifurcaciones de transporte.
 - Los adapters `live` conservan los contratos de [`../../contracts/rag-core-api.md`](../../contracts/rag-core-api.md).
-- Los adapters `mock` simulan proyectos, indexación, inventario, generación, validación, artifacts y comparación RAG vs baseline de forma coherente entre pantallas.
+- Los adapters `mock` simulan proyectos, múltiples ProjectVersions, indexación,
+  inventario por versión, generación, validación, artifacts y comparación RAG vs
+  agente generalista de forma coherente entre pantallas.
 - Las operaciones asíncronas mock atraviesan estados intermedios antes de finalizar, respetan cancelación del consumidor y ofrecen estados terminales.
 - El modo mock no realiza requests HTTP y no convierte rutas backend `PENDING` en contratos reales.
 - Los identificadores, métricas, errores y artifacts simulados deben estar claramente presentados como demostrativos.

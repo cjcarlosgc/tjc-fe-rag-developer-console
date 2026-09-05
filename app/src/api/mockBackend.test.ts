@@ -1,5 +1,5 @@
 import { expect, test, vi } from 'vitest'
-import { uploadProjectVersion, getAnalysisOperation, getAnalysisResult } from '../analysis/api'
+import { uploadProjectVersion, getAnalysisOperation, getAnalysisResult, listAnalysisHistory } from '../analysis/api'
 import { getArtifacts } from '../artifacts/api'
 import { getExperiment, startExperiment } from '../experiments/api'
 import { startGeneration } from '../generation/api'
@@ -27,6 +27,9 @@ test('recorre el flujo demo completo sin requests HTTP', async () => {
   const result = await getAnalysisResult(acceptedVersion.projectVersionId)
   expect(result.targetsMissingTest).toBeGreaterThan(0)
   const inventory = await getTestInventory(acceptedVersion.projectVersionId)
+  const history = await listAnalysisHistory(project.id)
+  expect(history).toHaveLength(1)
+  expect(history[0]).toMatchObject({ id: acceptedVersion.projectVersionId, current: true, status: 'COMPLETED' })
   const target = toInventoryTargets(inventory).find((item) => item.kind === 'FUNCTION')
   expect(target).toBeDefined()
 
@@ -41,6 +44,21 @@ test('recorre el flujo demo completo sin requests HTTP', async () => {
   for (let index = 0; index < 3 && experiment.status !== 'COMPLETED'; index += 1) experiment = await getExperiment(acceptedExperiment.experimentId)
   expect(experiment.result?.rag.validRate).toBeGreaterThan(experiment.result?.baseline.validRate ?? 1)
   expect(fetchMock).not.toHaveBeenCalled()
+})
+
+test('el escenario checkout conserva tres ProjectVersions coherentes', async () => {
+  setDataSourceForTests('mock')
+  resetMockBackend()
+  const history = await listAnalysisHistory('prj_checkout_demo')
+
+  expect(history.map((version) => version.id)).toEqual(['ver_checkout_7', 'ver_checkout_6', 'ver_checkout_5'])
+  expect(history.filter((version) => version.current)).toHaveLength(1)
+  expect(history.every((version) => version.status === 'COMPLETED')).toBe(true)
+  for (const version of history) {
+    const inventory = await getTestInventory(version.id)
+    expect(inventory.targetsTotal).toBe(version.targetsTotal)
+    expect(inventory.targetsWithTest + inventory.targetsMissingTest).toBe(inventory.targetsTotal)
+  }
 })
 
 test('resuelve los cinco modos de generación del Sprint 2', async () => {

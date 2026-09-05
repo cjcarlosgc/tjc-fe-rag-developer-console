@@ -9,9 +9,10 @@
 - `VITE_DATA_SOURCE=mock|live` selecciona la fuente detrás de los servicios.
 - El modo mock está identificado permanentemente como `DEMO · DATOS SIMULADOS`.
 - Escenario semilla coherente: proyecto, ProjectVersion, inventario y brechas.
+- Historial cronológico con tres ProjectVersions e inventarios diferenciados.
 - Transiciones asíncronas simuladas para indexación, generación y experimento.
 - Recorrido completo de inventario a run, validación y artifacts descargables.
-- Comparación RAG vs Baseline con tres repeticiones y huella de retrieval.
+- Comparación RAG vs Agente generalista con tres repeticiones y huella de retrieval.
 - Las métricas experimentales se presentan como narrativas, no como evidencia.
 - Los contratos live confirmados permanecen conectados y los PENDING fallan de
   forma explícita, sin rutas HTTP especulativas.
@@ -19,7 +20,7 @@
 ## Verificación automática
 
 - `npm run lint`: OK.
-- `npm test`: OK, 15 archivos y 35 pruebas.
+- `npm test`: OK, 16 archivos y 38 pruebas.
 - `npm run build`: OK.
 - `node scripts/sdd-check.mjs`: OK.
 - `git diff --check`: OK.
@@ -32,5 +33,5 @@
 - Generación puntual de `calculateTotal`, progreso hasta `COMPLETED` y resultado
   válido.
 - Artifacts CREATED/MODIFIED visibles; descarga individual y lote ZIP verificadas.
-- Experimento RAG vs Baseline completado con métricas y huella de retrieval.
+- Experimento RAG vs Agente generalista completado con métricas y huella de retrieval.
 - Consola del navegador: cero errores y cero warnings.

@@ -8,6 +8,8 @@ const result: ExperimentResultViewModel = { baseline: { strategy: 'BASELINE', va
 
 test('calcula diferencia de tasas en puntos porcentuales', () => {
   render(<ExperimentComparison result={result} />)
+  expect(screen.getByText('Agente generalista')).toBeInTheDocument()
+  expect(screen.getByText('Explora sus propias referencias')).toBeInTheDocument()
   expect(screen.getAllByText('+25.0 pp').length).toBeGreaterThan(0)
 })
 

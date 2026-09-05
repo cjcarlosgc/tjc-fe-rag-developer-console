@@ -4,7 +4,7 @@ import type { ExperimentAccepted, ExperimentOperation } from './types'
 
 export function startExperiment(projectId: string, targetLabel: string): Promise<ExperimentAccepted> {
   if (getDataSource() === 'mock') return mockStartExperiment(projectId, targetLabel)
-  return Promise.reject(new PendingContractError('la comparación RAG vs baseline'))
+  return Promise.reject(new PendingContractError('la comparación RAG vs agente generalista'))
 }
 
 export function getExperiment(experimentId: string): Promise<ExperimentOperation> {

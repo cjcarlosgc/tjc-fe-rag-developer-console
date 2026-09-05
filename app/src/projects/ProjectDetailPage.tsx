@@ -27,7 +27,7 @@ export function ProjectDetailPage() {
           <div className="empty-inline"><strong>Sin versiones cargadas</strong><p>Carga un ZIP para crear e indexar la primera ProjectVersion.</p></div>
         )}
       </div>
-      <div className="detail-actions"><Link className="button secondary button-link" to={`/projects/${project.id}/experimental`}>Modo experimental</Link><Link className="button secondary button-link" to={`/projects/${project.id}/inventory`}>Explorar inventario <span aria-hidden="true">→</span></Link><Link className="button primary button-link" to={`/projects/${project.id}/generate`}>Configurar generación <span aria-hidden="true">→</span></Link></div>
+      <div className="detail-actions"><Link className="button secondary button-link" to={`/projects/${project.id}/experimental`}>Modo experimental</Link><Link className="button secondary button-link" to={`/projects/${project.id}/analyses`}>Historial de análisis <span aria-hidden="true">→</span></Link><Link className="button primary button-link" to={`/projects/${project.id}/generate`}>Configurar generación <span aria-hidden="true">→</span></Link></div>
       <div className="flow-connector" aria-hidden="true"><span>01</span><i /></div>
       <div className="panel upload-panel">
         <div className="section-heading"><div><p className="eyebrow">Nueva ProjectVersion</p><h2>Cargar código fuente</h2><p>Cada ZIP crea una versión nueva sin reemplazar el historial anterior.</p></div><span className="step-number">UPLOAD</span></div>

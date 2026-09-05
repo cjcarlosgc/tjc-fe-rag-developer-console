@@ -1,6 +1,7 @@
 import { screen } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 import { renderApp } from '../test/render'
+import { setDataSourceForTests } from '../api/dataSource'
 import { InventoryPage } from './InventoryPage'
 
 test('carga el inventario de la ProjectVersion actual y mapea su contrato', async () => {
@@ -37,4 +38,16 @@ test('no consulta inventario cuando el proyecto no tiene versión actual', async
 
   expect(await screen.findByText('Este proyecto todavía no tiene una versión lista')).toBeInTheDocument()
   expect(fetchMock).toHaveBeenCalledTimes(1)
+})
+
+test('abre el inventario de una versión histórica en modo lectura', async () => {
+  setDataSourceForTests('mock')
+  const fetchMock = vi.spyOn(globalThis, 'fetch')
+  renderApp(<InventoryPage />, { initialEntry: '/projects/prj_checkout_demo/versions/ver_checkout_5/inventory', routePath: '/projects/:projectId/versions/:projectVersionId/inventory' })
+
+  expect(await screen.findByText('SNAPSHOT HISTÓRICO')).toBeInTheDocument()
+  expect(screen.getByText('Inventario de sólo lectura')).toBeInTheDocument()
+  expect(screen.getByText('3', { selector: 'dd' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /Usar target/ })).not.toBeInTheDocument()
+  expect(fetchMock).not.toHaveBeenCalled()
 })

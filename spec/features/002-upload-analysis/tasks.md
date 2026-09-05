@@ -5,6 +5,9 @@
 - [x] Progress states.
 - [x] Results summary.
 - [x] New version flow.
+- [x] Historial demo con tres o más ProjectVersions indexadas.
+- [x] Inventario histórico por ProjectVersion.
+- [ ] Adapter live de listado de versiones (ruta/DTO de RAG Core PENDING).
 
 ## Calidad
 
