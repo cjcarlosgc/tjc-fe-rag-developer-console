@@ -3,8 +3,8 @@
 - [x] Mode selector.
 - [x] target validation.
 - [x] submit y navegación a run mediante adapter mock stateful.
-- [ ] submit 202 (ruta/DTO de RAG Core PENDING).
-- [ ] navigate to run (respuesta 202 de RAG Core PENDING).
+- [ ] Submit `POST /test-runs` y manejo de `TestRunAcceptedResponse` según `INTEROP-1.0`.
+- [ ] Navegar a `runId` desde la respuesta 202 aprobada.
 
 ## Calidad
 

@@ -5,7 +5,7 @@
 - [x] failure detail.
 - [x] partial/fatal states.
 - [x] Adapter mock de resultados terminales.
-- [ ] Adapter HTTP de resultados (ruta/DTO PENDING).
+- [ ] Adapter HTTP para `GET /test-runs/{runId}/results` según `INTEROP-1.0`.
 
 ## Calidad
 

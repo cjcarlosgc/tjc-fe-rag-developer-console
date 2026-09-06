@@ -2,8 +2,8 @@
 
 - [x] Experimental navigation.
 - [x] Formulario, progreso y resultados conectados al adapter mock stateful.
-- [ ] comparison form conectado (ruta/DTO PENDING).
-- [ ] progress (contrato de estados PENDING).
+- [ ] Formulario live conectado a `POST /experiments` después de resolver `DEC-EXP-002`.
+- [ ] Progreso live con `ExperimentStatusResponse` después de resolver `DEC-EXP-002`.
 - [x] comparison summary sobre view model.
 - [x] Deltas absolutos/relativos y tasas en puntos porcentuales.
 - [x] failure distribution.

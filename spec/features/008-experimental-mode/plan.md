@@ -3,6 +3,7 @@
 ## Dependencias
 
 - Constitución y transversales aplicables.
+- `spec/contracts/interoperability-contract.md` para transporte; `DEC-EXP-002` continúa bloqueando la integración live.
 
 ## Diseño técnico
 

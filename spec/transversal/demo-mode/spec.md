@@ -19,6 +19,7 @@ Permitir una demostración navegable end-to-end aunque RAG Core todavía no haya
 - Las operaciones asíncronas mock atraviesan estados intermedios antes de finalizar, respetan cancelación del consumidor y ofrecen estados terminales.
 - El modo mock no realiza requests HTTP y no convierte rutas backend `PENDING` en contratos reales.
 - Los identificadores, métricas, errores y artifacts simulados deben estar claramente presentados como demostrativos.
+- Los datos mock no pueden exportarse, mezclarse ni contabilizarse como evidencia experimental o de validación en empresa.
 - Cambiar a `live` no debe requerir reescribir componentes; sólo cambia la selección del adapter.
 
 ## Fuera de alcance

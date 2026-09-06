@@ -2,11 +2,11 @@
 
 **Estado:** aprobado
 
-Proveer una consola web para que desarrolladores de software consuman la arquitectura RAG sin exponer complejidad interna innecesaria. La aplicación permite crear proyectos, cargar versiones ZIP, consultar análisis/cobertura existente, solicitar generación, seguir validación, revisar artifacts y ejecutar el modo experimental RAG vs agente generalista.
+Proveer una consola web para que desarrolladores de software consuman la arquitectura RAG sin exponer complejidad interna innecesaria. La aplicación permite crear proyectos TypeScript, cargar versiones ZIP, consultar análisis/cobertura existente, solicitar generación, seguir validación, revisar artifacts y ejecutar el modo experimental RAG vs agente generalista.
 
 ## Usuario principal
 
-Desarrollador de software. QA/Tech Lead/arquitecto pueden beneficiarse, pero V1 no crea productos ni permisos separados para ellos.
+Desarrollador de software del área de desarrollo de la empresa participante. QA/Tech Lead/arquitecto pueden beneficiarse, pero V1 no crea productos ni permisos separados para ellos.
 
 ## Producto
 

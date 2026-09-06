@@ -3,6 +3,7 @@
 ## Dependencias
 
 - Constitución y transversales aplicables.
+- `spec/contracts/interoperability-contract.md` para `GET /test-runs/{runId}`.
 
 ## Diseño técnico
 

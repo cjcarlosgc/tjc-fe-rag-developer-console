@@ -1,16 +1,16 @@
 # Contrato de integración — RAG Core API
 
 **Estado:** aprobado para consumo frontend, con disponibilidad indicada por operación.  
-**Fuente:** SDD 1.2 y código de `tjc-be-rag-core-api`, contrastados el 2026-08-31.  
+**Fuente:** RAG Core SDD 1.5 / SYSTEM-1.1 / INTEROP-1.0 y código implementado, contrastados el 2026-09-05.
 **Servicio:** `tjc-be-rag-core-api`; el navegador nunca consume directamente el Sandbox.
 
-Este documento es la copia canónica local del contrato que necesita el frontend. Si RAG Core cambia una ruta, DTO, estado o error, este archivo y `CHANGELOG.md` deben actualizarse en el mismo cambio coordinado antes de adaptar la UI.
+Este documento registra disponibilidad y detalles implementados para el frontend. La autoridad de rutas, DTOs y semántica compartida es `interoperability-contract.md`; este archivo no puede redefinirla.
 
 ## Niveles de disponibilidad
 
 - **IMPLEMENTADO:** existe en el backend y está cubierto por código o pruebas del servicio.
 - **APROBADO:** forma parte de la spec canónica de RAG Core, pero puede estar aún en construcción.
-- **PENDING:** RAG Core todavía no fijó la ruta o el DTO exacto. El frontend no debe inventarlo ni tratar un adapter provisional como definitivo.
+- **PENDING:** contrato aprobado pero adapter/backend todavía no implementado, o feature bloqueada por una decisión explícita. El frontend no debe presentar un mock como implementación live.
 
 ## Convenciones comunes — IMPLEMENTADO
 
@@ -115,9 +115,9 @@ Errores confirmados:
 
 - `404 PROJECT_NOT_FOUND` cuando no existe el id.
 
-### Listado de proyectos — PENDING
+### Listado de proyectos — APROBADO, NO IMPLEMENTADO
 
-RAG Core no define ni implementa `GET /projects`. Hasta que el backend apruebe el contrato de listado, el frontend no puede asumir `ProjectResponse[]` ni `{ items: ProjectResponse[] }` como respuesta definitiva.
+`GET /projects?cursor&limit` devuelve `Page<ProjectResponse>` conforme a `INTEROP-1.0`. El adapter live permanece pendiente hasta que RAG Core implemente la ruta.
 
 ## Indexación de ProjectVersion — IMPLEMENTADO
 
@@ -218,12 +218,9 @@ interface ProjectVersionResultsResponse {
 - Antes de `COMPLETED`: `409 ANALYSIS_NOT_FINISHED`.
 - Id inexistente: `404 PROJECT_VERSION_NOT_FOUND`.
 
-### Listado de ProjectVersions por proyecto — PENDING
+### Listado de ProjectVersions por proyecto — APROBADO, NO IMPLEMENTADO
 
-RAG Core conserva múltiples versiones, pero todavía no publicó una ruta ni DTO
-para listarlas por proyecto. El frontend no debe asumir una ruta como
-`GET /projects/{projectId}/versions` ni una forma de paginación. La demo puede
-representar este historial detrás del adapter mock.
+`GET /projects/{projectId}/versions?cursor&limit` devuelve `Page<ProjectVersionSummaryResponse>` conforme a `INTEROP-1.0`. La demo puede conservar su adapter mock hasta que RAG Core implemente la ruta.
 
 ## Inventario de tests — IMPLEMENTADO
 
@@ -257,7 +254,7 @@ interface TestInventoryResponse {
 - Antes de `COMPLETED`: `409 ANALYSIS_NOT_FINISHED`.
 - Id inexistente: `404 PROJECT_VERSION_NOT_FOUND`.
 
-## Generación — contrato HTTP parcial
+## Generación — contrato INTEROP-1.0 aprobado, no implementado
 
 Semántica aprobada:
 
@@ -269,18 +266,16 @@ type GenerationMode =
   | 'PROJECT_MISSING'
   | 'PROJECT_ALL'
 
-interface TestTarget {
+interface CreateTestRunRequest {
   projectId: string
-  filePath: string
-  symbolName: string
-  methodName?: string
-  targetType: 'CLASS' | 'METHOD' | 'FUNCTION'
+  mode: GenerationMode
+  targetId?: string
 }
 ```
 
-`TARGET` resuelve un target exacto `METHOD` o `FUNCTION`; no admite `CLASS`. El backend captura `currentVersionId` al crear el run. Ruta, request DTO definitivo, respuesta `202`, contrato de status/results y estructura por target permanecen **PENDING**. En particular, `POST /tests/generate` no está confirmado por RAG Core.
+`POST /test-runs` crea el run y captura `currentVersionId`; status y resultados se consultan en `GET /test-runs/{runId}` y `/results`. Las combinaciones de `mode` y `targetId` se rigen por `INTEROP-1.0`. El frontend no usa `POST /tests/generate`.
 
-## Validación — DTO de transporte PENDING
+## Validación — contrato INTEROP-1.0 aprobado, no implementado
 
 Semántica aprobada:
 
@@ -296,9 +291,9 @@ type FailureType =
   | 'UNKNOWN'
 ```
 
-`validation.valid=false` es un resultado normal de negocio/técnico, no un HTTP 5xx. El DTO debe permitir representar `compiled`, `executed`, `passed`, `valid` y `failureType`; nombres, nulabilidad y estructura final permanecen **PENDING**.
+`validation.valid=false` es un resultado normal de negocio/técnico, no un HTTP 5xx. `ValidationResponse`, `TargetRunResultResponse` y `TestRunResultsResponse` quedan definidos en `INTEROP-1.0`.
 
-## Artifacts — contrato HTTP parcial
+## Artifacts — contrato INTEROP-1.0 aprobado, no implementado
 
 Entidad aprobada:
 
@@ -308,24 +303,30 @@ interface Artifact {
   runId: string
   relativePath: string
   artifactType: 'CREATED' | 'MODIFIED'
-  storageKey: string
   valid: boolean
 }
 ```
 
-RAG Core proveerá descarga individual, descarga total y diff, pero sus rutas, content types, filenames vía headers y DTO de diff permanecen **PENDING**. Solicitar diff de un artifact `CREATED` produce `409 DIFF_NOT_AVAILABLE`.
+`INTEROP-1.0` define listado por run, descarga individual, ZIP total y diff. `storageKey` nunca pertenece al DTO del navegador. Solicitar diff de un artifact `CREATED` produce `409 DIFF_NOT_AVAILABLE`.
 
-## Experimento RAG vs agente generalista — contrato HTTP PENDING
+## Experimento RAG vs agente generalista — transporte aprobado; ejecución bloqueada
 
-Está aprobado un único experimento entre RAG y un agente generalista, con tres repeticiones por target y estrategia por defecto y sin autorepair. El agente generalista explora el código y reúne sus propias referencias; no es un LLM aislado ni sin contexto. Mientras el DTO definitivo siga `PENDING`, el view model conserva `BASELINE` como identificador técnico interno y la UI lo presenta como `Agente generalista`. El resultado debe conservar:
+Está aprobado un único experimento entre `RAG` y `GENERALIST_AGENT`, con tres repeticiones por target y estrategia por defecto y sin autorepair. `INTEROP-1.0` define rutas y DTOs sin usar `BASELINE`. La implementación continúa bloqueada por `DEC-EXP-002`, que debe definir las herramientas y límites del agente generalista. El resultado conserva:
 
 - `compiled`, `executed`, `passed`, `valid`, `failureType`;
 - `generationDurationMs`, `executionDurationMs`, `totalDurationMs`;
 - `inputTokens`, `outputTokens`, `totalTokens`, `estimatedCost` cuando sea calculable;
 - para RAG: `retrievedChunks`, `selectedChunks`, `contextTokens`;
+- para el agente: `toolCalls`, `filesInspected` y contexto/tokens atribuibles a exploración cuando sean observables;
 - tasas, diferencia en puntos porcentuales, media/mediana y distribución de fallos.
 
-Rutas, DTOs y estados de ejecución permanecen **PENDING**.
+Rutas, DTOs y estados de transporte están aprobados; la lógica de ejecución permanece bloqueada por `DEC-EXP-002`.
+
+Mutation score/StrykerJS no forma parte de este DTO: `DEC-MET-001` permanece PENDING y solo bloqueará el work item futuro que intente incorporarlo.
+
+## Uso para validación empresarial
+
+Solo respuestas obtenidas por adapters `live` pueden contabilizarse como evidencia de la validación en empresa. El modo mock nunca se exporta ni mezcla con resultados experimentales reales. Antes de conectar repositorios empresariales debe resolverse `DEC-VAL-001` en el contrato de sistema.
 
 ## Historial, WebSockets, reparación y retry — PENDING
 
@@ -338,11 +339,11 @@ RAG Core aprobó el comportamiento general, pero no fijó endpoints, eventos Web
 | Health | Implementado completo | sí |
 | Crear proyecto | Implementado completo | sí |
 | Consultar proyecto por id | Implementado completo | sí |
-| Listar proyectos | PENDING | no |
+| Listar proyectos | INTEROP-1.0 aprobado; backend pendiente | sí, cuando exista la ruta |
 | Iniciar indexación | Implementado completo | sí |
 | Polling/resultados de ProjectVersion | Implementado completo | sí |
 | Inventario | Implementado completo | sí |
-| Generación/validación | Semántica parcial; HTTP/DTO PENDING | no |
-| Artifacts | Semántica parcial; HTTP/DTO PENDING | no |
-| Experimentos | Métricas aprobadas; HTTP/DTO PENDING | no |
+| Generación/validación | INTEROP-1.0 aprobado; backend pendiente | sí, cuando exista la ruta |
+| Artifacts | INTEROP-1.0 aprobado; backend pendiente | sí, cuando exista la ruta |
+| Experimentos | Transporte aprobado; `DEC-EXP-002` bloquea ejecución | no todavía |
 | Historial/WebSocket/retry | PENDING | no |

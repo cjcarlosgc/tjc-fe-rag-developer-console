@@ -7,7 +7,7 @@
 - [x] New version flow.
 - [x] Historial demo con tres o más ProjectVersions indexadas.
 - [x] Inventario histórico por ProjectVersion.
-- [ ] Adapter live de listado de versiones (ruta/DTO de RAG Core PENDING).
+- [ ] Adapter live de listado de versiones según `INTEROP-1.0` (backend aún no implementado).
 
 ## Calidad
 

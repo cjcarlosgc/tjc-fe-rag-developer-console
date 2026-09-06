@@ -3,10 +3,11 @@
 ## Dependencias
 
 - Constitución y transversales aplicables.
+- `spec/contracts/interoperability-contract.md`.
 
 ## Diseño técnico
 
-Generation form por contexto + adapter API aislado. Reutilizar target selection del inventory. La ruta y los DTO HTTP están `PENDING` en RAG Core; `POST /tests/generate` no se considera confirmado hasta actualizar [`../../contracts/rag-core-api.md`](../../contracts/rag-core-api.md).
+Generation form por contexto + adapter API aislado. Reutilizar target selection del inventory. Implementar `POST /test-runs` con `CreateTestRunRequest` y `TestRunAcceptedResponse`; no usar el nombre provisional `POST /tests/generate`.
 
 ## Validación
 

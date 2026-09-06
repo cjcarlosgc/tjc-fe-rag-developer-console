@@ -1,7 +1,7 @@
 # 005-generation-progress — Tareas
 
 - [x] Polling del run mediante adapter mock stateful.
-- [ ] Polling hook (ruta/DTO de run PENDING).
+- [ ] Polling hook para `GET /test-runs/{runId}` según `INTEROP-1.0`.
 - [x] terminal-state logic.
 - [x] progress UI sobre view model desacoplado.
 - [ ] WebSocket adapter Sprint 3.

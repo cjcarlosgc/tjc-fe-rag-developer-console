@@ -4,6 +4,9 @@ Todos los cambios notables de la línea base SDD se registran aquí. El contenid
 
 ## [Unreleased]
 
+- **SDD 1.6:** se consolida una línea base SDD homologada para los tres repositorios y se formaliza la política Git común: commits por cambio coherente con trazabilidad obligatoria `Refs: HU...`, revisión por work item y revisión consolidada documentada del sprint antes del push. `sddVersion` deja de tratarse como versión local independiente; `SYSTEM-*` e `INTEROP-*` conservan versionado propio. Un push anticipado exige la misma puerta y commit/push siguen requiriendo solicitud humana explícita.
+- **SDD 1.5 / SYSTEM-1.1 / INTEROP-1.0:** se incorpora el contrato universal de rutas, DTOs, errores y asincronía. Se fijan listado de proyectos/versiones, `POST /test-runs`, status/resultados, artefactos y transporte experimental. Los adapters y mocks todavía deben migrarse en work items de código; `DEC-EXP-002` permanece PENDING.
+- **SDD 1.4 / SYSTEM-1.0:** se incorpora la copia espejo del contrato de los tres componentes, el contexto TypeScript-only y de validación empresarial, y la puerta `decisionGate` acotada por `Blocks`. La comparación usa `GENERALIST_AGENT`; `BASELINE` deja de ser identificador técnico para contratos nuevos. Mutation score/StrykerJS permanece PENDING y el mock queda excluido de toda evidencia real.
 - Se aprueba el stack frontend: React, Vite, TypeScript, React Router,
   TanStack Query, Vitest, Testing Library y npm.
 - Se incorpora la copia canónica del contrato de RAG Core, distinguiendo operaciones
@@ -22,8 +25,7 @@ Todos los cambios notables de la línea base SDD se registran aquí. El contenid
 - La descarga conjunta del demo produce un ZIP real y la comparación experimental
   explicita deltas absolutos/relativos para tiempo, tokens y costo.
 - La comparación experimental sustituye la variante aislada sin contexto por un agente
-  generalista que explora el código y obtiene sus propias referencias; `BASELINE`
-  se conserva sólo como identificador técnico mientras el contrato siga `PENDING`.
+  generalista que explora el código y obtiene sus propias referencias.
 - El proyecto semilla incorpora un historial demostrativo de ProjectVersions
   indexadas y permite consultar el inventario histórico de cada versión sin
   asumir un endpoint live todavía no publicado por RAG Core.
