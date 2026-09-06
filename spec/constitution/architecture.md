@@ -1,8 +1,10 @@
 # Arquitectura
 
-**Contratos compartidos:** SYSTEM-1.1 / INTEROP-1.0
+**Contratos compartidos:** SYSTEM-1.3 / INTEROP-1.1
 
 `Browser -> tjc-be-rag-core-api -> tjc-be-test-execution-sandbox`. El frontend nunca llama directamente al Sandbox.
+
+El upload vigente permanece `POST /projects/index` con `multipart/form-data`: el navegador entrega el ZIP a RAG Core y Core lo almacena en Supabase Storage. Frontend no conoce bucket, key, signed URL del Sandbox ni credenciales de Supabase/DB.
 
 ## Asincronía V1
 
@@ -23,3 +25,5 @@ Una sección `Modo experimental` contiene inicialmente una sola capacidad: `Comp
 ## Entorno de validación
 
 La evidencia final de empresa requiere adapters `live` conectados a Core y Sandbox. El modo mock no sustituye esa integración ni constituye evidencia experimental.
+
+Para desarrollo y prevalidación, el Sandbox puede estar disponible desde la MacBook del desarrollador mientras permanezca encendida y Docker Desktop mantenga activa su VM Linux. El destino previsto es una VM Linux remota, pero `DEC-INF-001` mantiene PENDING el proveedor preferentemente gratuito. La forma de acceso al Sandbox es configuración del Core y no habilita al navegador a llamarlo directamente.

@@ -3,7 +3,7 @@
 - [x] Mode selector.
 - [x] target validation.
 - [x] submit y navegación a run mediante adapter mock stateful.
-- [ ] Submit `POST /test-runs` y manejo de `TestRunAcceptedResponse` según `INTEROP-1.0`.
+- [ ] Submit `POST /test-runs` y manejo de `TestRunAcceptedResponse` según `INTEROP-1.1`.
 - [ ] Navegar a `runId` desde la respuesta 202 aprobada.
 
 ## Calidad

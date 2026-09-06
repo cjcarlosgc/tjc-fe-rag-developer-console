@@ -1,10 +1,12 @@
 # Contrato de integración — RAG Core API
 
 **Estado:** aprobado para consumo frontend, con disponibilidad indicada por operación.  
-**Fuente:** RAG Core SDD 1.5 / SYSTEM-1.1 / INTEROP-1.0 y código implementado, contrastados el 2026-09-05.
+**Fuente:** RAG Core SDD 1.8 / SYSTEM-1.3 / INTEROP-1.1 y código implementado, contrastados el 2026-09-05.
 **Servicio:** `tjc-be-rag-core-api`; el navegador nunca consume directamente el Sandbox.
 
 Este documento registra disponibilidad y detalles implementados para el frontend. La autoridad de rutas, DTOs y semántica compartida es `interoperability-contract.md`; este archivo no puede redefinirla.
+
+El navegador entrega ZIPs a RAG Core mediante `POST /projects/index`. No accede a Supabase, no recibe `storageKey` ni URLs firmadas Core↔Sandbox y no persiste infraestructura del backend.
 
 ## Niveles de disponibilidad
 
@@ -117,7 +119,7 @@ Errores confirmados:
 
 ### Listado de proyectos — APROBADO, NO IMPLEMENTADO
 
-`GET /projects?cursor&limit` devuelve `Page<ProjectResponse>` conforme a `INTEROP-1.0`. El adapter live permanece pendiente hasta que RAG Core implemente la ruta.
+`GET /projects?cursor&limit` devuelve `Page<ProjectResponse>` conforme a `INTEROP-1.1`. El adapter live permanece pendiente hasta que RAG Core implemente la ruta.
 
 ## Indexación de ProjectVersion — IMPLEMENTADO
 
@@ -220,7 +222,7 @@ interface ProjectVersionResultsResponse {
 
 ### Listado de ProjectVersions por proyecto — APROBADO, NO IMPLEMENTADO
 
-`GET /projects/{projectId}/versions?cursor&limit` devuelve `Page<ProjectVersionSummaryResponse>` conforme a `INTEROP-1.0`. La demo puede conservar su adapter mock hasta que RAG Core implemente la ruta.
+`GET /projects/{projectId}/versions?cursor&limit` devuelve `Page<ProjectVersionSummaryResponse>` conforme a `INTEROP-1.1`. La demo puede conservar su adapter mock hasta que RAG Core implemente la ruta.
 
 ## Inventario de tests — IMPLEMENTADO
 
@@ -254,7 +256,7 @@ interface TestInventoryResponse {
 - Antes de `COMPLETED`: `409 ANALYSIS_NOT_FINISHED`.
 - Id inexistente: `404 PROJECT_VERSION_NOT_FOUND`.
 
-## Generación — contrato INTEROP-1.0 aprobado, no implementado
+## Generación — contrato INTEROP-1.1 aprobado, no implementado
 
 Semántica aprobada:
 
@@ -273,9 +275,9 @@ interface CreateTestRunRequest {
 }
 ```
 
-`POST /test-runs` crea el run y captura `currentVersionId`; status y resultados se consultan en `GET /test-runs/{runId}` y `/results`. Las combinaciones de `mode` y `targetId` se rigen por `INTEROP-1.0`. El frontend no usa `POST /tests/generate`.
+`POST /test-runs` crea el run y captura `currentVersionId`; status y resultados se consultan en `GET /test-runs/{runId}` y `/results`. Las combinaciones de `mode` y `targetId` se rigen por `INTEROP-1.1`. El frontend no usa `POST /tests/generate`.
 
-## Validación — contrato INTEROP-1.0 aprobado, no implementado
+## Validación — contrato INTEROP-1.1 aprobado, no implementado
 
 Semántica aprobada:
 
@@ -291,9 +293,9 @@ type FailureType =
   | 'UNKNOWN'
 ```
 
-`validation.valid=false` es un resultado normal de negocio/técnico, no un HTTP 5xx. `ValidationResponse`, `TargetRunResultResponse` y `TestRunResultsResponse` quedan definidos en `INTEROP-1.0`.
+`validation.valid=false` es un resultado normal de negocio/técnico, no un HTTP 5xx. `ValidationResponse`, `TargetRunResultResponse` y `TestRunResultsResponse` quedan definidos en `INTEROP-1.1`.
 
-## Artifacts — contrato INTEROP-1.0 aprobado, no implementado
+## Artifacts — contrato INTEROP-1.1 aprobado, no implementado
 
 Entidad aprobada:
 
@@ -307,11 +309,11 @@ interface Artifact {
 }
 ```
 
-`INTEROP-1.0` define listado por run, descarga individual, ZIP total y diff. `storageKey` nunca pertenece al DTO del navegador. Solicitar diff de un artifact `CREATED` produce `409 DIFF_NOT_AVAILABLE`.
+`INTEROP-1.1` define listado por run, descarga individual, ZIP total y diff. `storageKey` nunca pertenece al DTO del navegador. Solicitar diff de un artifact `CREATED` produce `409 DIFF_NOT_AVAILABLE`.
 
 ## Experimento RAG vs agente generalista — transporte aprobado; ejecución bloqueada
 
-Está aprobado un único experimento entre `RAG` y `GENERALIST_AGENT`, con tres repeticiones por target y estrategia por defecto y sin autorepair. `INTEROP-1.0` define rutas y DTOs sin usar `BASELINE`. La implementación continúa bloqueada por `DEC-EXP-002`, que debe definir las herramientas y límites del agente generalista. El resultado conserva:
+Está aprobado un único experimento entre `RAG` y `GENERALIST_AGENT`, con tres repeticiones por target y estrategia por defecto y sin autorepair. `INTEROP-1.1` define rutas y DTOs sin usar `BASELINE`. La implementación continúa bloqueada por `DEC-EXP-002`, que debe definir las herramientas y límites del agente generalista. El resultado conserva:
 
 - `compiled`, `executed`, `passed`, `valid`, `failureType`;
 - `generationDurationMs`, `executionDurationMs`, `totalDurationMs`;
@@ -339,11 +341,11 @@ RAG Core aprobó el comportamiento general, pero no fijó endpoints, eventos Web
 | Health | Implementado completo | sí |
 | Crear proyecto | Implementado completo | sí |
 | Consultar proyecto por id | Implementado completo | sí |
-| Listar proyectos | INTEROP-1.0 aprobado; backend pendiente | sí, cuando exista la ruta |
+| Listar proyectos | INTEROP-1.1 aprobado; backend pendiente | sí, cuando exista la ruta |
 | Iniciar indexación | Implementado completo | sí |
 | Polling/resultados de ProjectVersion | Implementado completo | sí |
 | Inventario | Implementado completo | sí |
-| Generación/validación | INTEROP-1.0 aprobado; backend pendiente | sí, cuando exista la ruta |
-| Artifacts | INTEROP-1.0 aprobado; backend pendiente | sí, cuando exista la ruta |
+| Generación/validación | INTEROP-1.1 aprobado; backend pendiente | sí, cuando exista la ruta |
+| Artifacts | INTEROP-1.1 aprobado; backend pendiente | sí, cuando exista la ruta |
 | Experimentos | Transporte aprobado; `DEC-EXP-002` bloquea ejecución | no todavía |
 | Historial/WebSocket/retry | PENDING | no |

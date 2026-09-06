@@ -13,4 +13,4 @@ No se requiere SSR para el alcance actual.
 
 TypeScript aparece en dos fronteras distintas: es el lenguaje de implementación de esta SPA y, por contrato del producto, el único lenguaje de proyectos objetivo en V1 (`.ts`/`.tsx`). No aceptar ni presentar JavaScript puro como compatible.
 
-El navegador no consume Supabase Storage, no incorpora `@supabase/supabase-js` para snapshots/artefactos y no recibe credenciales de Storage; esos accesos pertenecen a los backends detrás de `ObjectStorageService`.
+El navegador consume exclusivamente la API propia de RAG Core. No se conecta directamente a Supabase Storage, no incorpora `@supabase/supabase-js` por esta infraestructura y no recibe `SUPABASE_SECRET_KEY`, `DATABASE_URL`, `DATABASE_PASSWORD` ni `SUPABASE_PUBLISHABLE_KEY`. La publishable key solo podría incorporarse en una feature futura aprobada que lo requiera, por ejemplo Supabase Auth.

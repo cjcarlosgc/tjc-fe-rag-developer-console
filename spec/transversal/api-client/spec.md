@@ -11,6 +11,8 @@ Centralizar contratos HTTP con RAG Core y evitar fetch disperso.
 
 - El contrato canónico local de integración es [`../../contracts/rag-core-api.md`](../../contracts/rag-core-api.md).
 - El cliente usa `VITE_CORE_API_URL` y no llama directamente al Sandbox.
+- Upload, indexación, exploración, generación, ejecución y resultados se solicitan exclusivamente a RAG Core; el cliente no usa URLs, buckets ni SDK de Supabase.
+- No declarar variables `VITE_SUPABASE_*` mientras no exista una feature aprobada de acceso directo. Nunca exponer secretos ni `DATABASE_URL` en variables de Vite.
 - En errores normalizados consume `ErrorEnvelope` y expone `correlationId`; no renombra ni asume `requestId`.
 - Envía y conserva el header `x-correlation-id` cuando esté disponible.
 - No admite respuestas alternativas especulativas para una misma operación salvo que el contrato las documente.

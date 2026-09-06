@@ -6,15 +6,15 @@ Orden de lectura: `contracts/system-contract.md` -> `contracts/interoperability-
 
 ## Contratos entre servicios
 
-- [`contracts/system-contract.md`](contracts/system-contract.md): copia espejo `SYSTEM-1.1` del contrato común de los tres componentes; su propietario canónico es RAG Core.
-- [`contracts/interoperability-contract.md`](contracts/interoperability-contract.md): copia espejo `INTEROP-1.0` con rutas, DTOs, estados, errores y transporte universales.
+- [`contracts/system-contract.md`](contracts/system-contract.md): copia espejo `SYSTEM-1.3` del contrato común de los tres componentes; su propietario canónico es RAG Core.
+- [`contracts/interoperability-contract.md`](contracts/interoperability-contract.md): copia espejo `INTEROP-1.1` con rutas, DTOs, estados, errores y transporte universales.
 - [`contracts/rag-core-api.md`](contracts/rag-core-api.md): contrato HTTP y semántico que el frontend consume de RAG Core, con disponibilidad implementada/aprobada/PENDING.
 
 La demostración local usa por defecto la fuente `mock` definida en [`transversal/demo-mode/spec.md`](transversal/demo-mode/spec.md); esto no modifica el contrato real de RAG Core.
 
 ## Versionado
 
-La especificación vigente se consolida; no se acumulan enmiendas. Los cambios se registran en `CHANGELOG.md` y en Git.
+La especificación vigente se consolida; no se acumulan enmiendas. Los cambios se registran en `CHANGELOG.md` y en Git. `sddVersion` representa la línea base conjunta de los tres repositorios.
 
 ## Estados de decisión
 

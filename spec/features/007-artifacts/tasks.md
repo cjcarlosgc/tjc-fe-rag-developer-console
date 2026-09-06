@@ -3,7 +3,7 @@
 - [x] Artifact table.
 - [x] diff view.
 - [x] Descarga individual y ZIP de lote para contenido mock.
-- [ ] Descarga individual y ZIP por las rutas aprobadas en `INTEROP-1.0`.
+- [ ] Descarga individual y ZIP por las rutas aprobadas en `INTEROP-1.1`.
 - [x] Evitar solicitar diff para CREATED; adaptar `409 DIFF_NOT_AVAILABLE` en live cuando se implemente.
 
 ## Calidad
