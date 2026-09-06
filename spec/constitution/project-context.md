@@ -1,6 +1,6 @@
 # Contexto operativo del proyecto
 
-**Estado:** APROBADO  
+**Estado:** APROBADO
 **Alcance:** contexto mínimo para especificación, implementación y revisión; no agrega contratos funcionales.
 
 `tjc-fe-rag-developer-console` es el frontend/cliente web de referencia de una solución de tesis compuesta por dos backends y un frontend. Su usuario principal es el desarrollador del área de desarrollo de la empresa participante. Este repositorio implementa solo la consola y consume exclusivamente RAG Core.
