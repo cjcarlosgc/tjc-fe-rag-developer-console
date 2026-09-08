@@ -1,7 +1,7 @@
 # demo-mode — Especificación
 
 **Estado:** aprobado.  
-**Historias:** soporte transversal para demostración de HU01-HU19
+**Historias:** soporte transversal para demostración de HU01-HU20, HU24
 
 ## Objetivo
 
@@ -14,8 +14,12 @@ Permitir una demostración navegable end-to-end aunque RAG Core todavía no haya
 - Componentes y páginas consumen servicios/adapters; no contienen datasets mock ni bifurcaciones de transporte.
 - Los adapters `live` conservan los contratos de [`../../contracts/rag-core-api.md`](../../contracts/rag-core-api.md).
 - Los adapters `mock` simulan proyectos, múltiples ProjectVersions, indexación,
-  inventario por versión, generación, validación, artifacts y comparación RAG vs
-  agente generalista de forma coherente entre pantallas.
+  inventario por versión, generación, validación, artifacts, comparación RAG vs
+  agente generalista, historial de generaciones por ProjectVersion (HU20) y
+  reintento manual de un target inválido/fallido (HU24) de forma coherente entre pantallas.
+- HU21/HU22 (progreso en tiempo real por WebSocket) no forman parte del mock: el
+  modo mock no abre transporte de ningún tipo (HTTP ni WebSocket) y su polling ya
+  simula el avance sin necesitar el complemento en tiempo real.
 - Las operaciones asíncronas mock atraviesan estados intermedios antes de finalizar, respetan cancelación del consumidor y ofrecen estados terminales.
 - El modo mock no realiza requests HTTP y no convierte rutas backend `PENDING` en contratos reales.
 - Los identificadores, métricas, errores y artifacts simulados deben estar claramente presentados como demostrativos.

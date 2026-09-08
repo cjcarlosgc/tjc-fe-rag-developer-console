@@ -9,10 +9,11 @@ Mostrar avance asíncrono de indexación/generación, con polling V1 y WebSocket
 
 ## Reglas y comportamiento
 
-- V1 polling; stop terminal.
-- Sprint 3 push actualiza sin duplicar eventos.
+- Polling respeta `pollAfterMs` y se detiene en estado terminal.
+- Sprint 3 usa los eventos Socket.IO contractuales por id; push actualiza sin duplicar eventos y polling permanece como fallback.
 - Mostrar global status y progreso por target cuando backend lo provea.
 - PARTIAL/FAILED visibles.
+- Reconexión no vuelve a crear el run: recupera estado por el id existente.
 
 ## Fuera de alcance
 

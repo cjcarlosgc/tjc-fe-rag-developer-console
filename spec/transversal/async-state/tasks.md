@@ -3,7 +3,8 @@
 - [x] polling abstraction.
 - [x] cache keys.
 - [x] cancellation.
-- [ ] WS adapter/fallback.
+- [x] WS adapter/fallback (`api/socket.ts`, usado por HU21/HU22; el polling nunca se reemplaza).
+- [x] Lifecycle reutilizable de `Idempotency-Key` para submit/retry (`api/idempotency.ts`, usado por HU24). Pruebas de timeout/replay/conflict quedan pendientes hasta que exista un backend live real contra el que ejercitarlas.
 
 ## Calidad
 

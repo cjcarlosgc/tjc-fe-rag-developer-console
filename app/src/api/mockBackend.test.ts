@@ -16,7 +16,7 @@ test('recorre el flujo demo completo sin requests HTTP', async () => {
   resetMockBackend()
   const fetchMock = vi.spyOn(globalThis, 'fetch')
 
-  expect((await listProjects()).map((project) => project.name)).toContain('checkout-service')
+  expect((await listProjects()).items.map((project) => project.name)).toContain('checkout-service')
   const project = await createProject({ name: 'demo-on-stage' })
   const acceptedVersion = await uploadProjectVersion(project.id, new File(['source'], 'demo.zip', { type: 'application/zip' }))
 
@@ -33,15 +33,15 @@ test('recorre el flujo demo completo sin requests HTTP', async () => {
   const target = toInventoryTargets(inventory).find((item) => item.kind === 'FUNCTION')
   expect(target).toBeDefined()
 
-  const acceptedRun = await startGeneration({ projectId: project.id, mode: 'TARGET', target })
+  const acceptedRun = await startGeneration({ projectId: project.id, mode: 'TARGET', target }, crypto.randomUUID())
   let run = await getRun(acceptedRun.runId)
   for (let index = 0; index < 4 && !isTerminalRunStatus(run.status); index += 1) run = await getRun(acceptedRun.runId)
   expect(isTerminalRunStatus(run.status)).toBe(true)
   expect(await getArtifacts(run.id)).not.toHaveLength(0)
 
-  const acceptedExperiment = await startExperiment(project.id, target?.symbolName ?? 'formatCurrency')
-  let experiment = await getExperiment(acceptedExperiment.experimentId)
-  for (let index = 0; index < 3 && experiment.status !== 'COMPLETED'; index += 1) experiment = await getExperiment(acceptedExperiment.experimentId)
+  const acceptedExperiment = await startExperiment(project.id, target?.id ?? 'target-1', crypto.randomUUID())
+  let experiment = await getExperiment(acceptedExperiment.experimentId, target?.symbolName ?? 'formatCurrency')
+  for (let index = 0; index < 3 && experiment.status !== 'COMPLETED'; index += 1) experiment = await getExperiment(acceptedExperiment.experimentId, target?.symbolName ?? 'formatCurrency')
   expect(experiment.result?.rag.validRate).toBeGreaterThan(experiment.result?.baseline.validRate ?? 1)
   expect(fetchMock).not.toHaveBeenCalled()
 })
@@ -66,7 +66,7 @@ test('resuelve los cinco modos de generación del Sprint 2', async () => {
   resetMockBackend()
   const fetchMock = vi.spyOn(globalThis, 'fetch')
   const projects = await listProjects()
-  const project = projects.find((item) => item.id === 'prj_checkout_demo')!
+  const project = projects.items.find((item) => item.id === 'prj_checkout_demo')!
   const inventory = await getTestInventory(project.currentVersionId!)
   const targets = toInventoryTargets(inventory)
   const methodTarget = targets.find((target) => target.kind === 'METHOD' && !target.hasExistingTest)!
@@ -81,7 +81,7 @@ test('resuelve los cinco modos de generación del Sprint 2', async () => {
 
   for (const scenario of scenarios) {
     const configuration: GenerationConfiguration = { projectId: project.id, mode: scenario.mode, target: scenario.target }
-    const accepted = await startGeneration(configuration)
+    const accepted = await startGeneration(configuration, crypto.randomUUID())
     const run = await getRun(accepted.runId)
     expect(run.total, scenario.mode).toBe(scenario.expectedTargets)
   }

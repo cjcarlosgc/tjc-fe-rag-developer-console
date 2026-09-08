@@ -3,7 +3,7 @@
 ## Dependencias
 
 - Constitución y transversales aplicables.
-- `spec/contracts/interoperability-contract.md` para transporte; `DEC-EXP-002` continúa bloqueando la integración live.
+- `spec/contracts/interoperability-contract.md` para transporte; `DEC-EXP-002` está APROBADO y la integración live depende únicamente de que RAG Core implemente las rutas.
 
 ## Diseño técnico
 

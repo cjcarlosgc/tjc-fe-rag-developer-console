@@ -2,7 +2,7 @@
 
 **Historia:** HU07  
 **Fecha:** 2026-09-01  
-**Estado:** IN_REVIEW; demo completa, adapter live PENDING
+**Estado:** DONE; demo completa. Adapter live de listado de versiones (`INTEROP-1.1`) queda fuera de esta tarea: bloqueado por backend, no aplicable hasta que RAG Core publique la ruta.
 
 ## Alcance verificado
 

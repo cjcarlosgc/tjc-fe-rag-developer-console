@@ -1,6 +1,6 @@
 # 001-projects — Tareas
 
-- [x] Project list/page.
+- [x] Project list/page. Adapter live de `GET /projects?cursor&limit` conectado y verificado contra RAG Core local real (antes solo mock).
 - [x] Create project form.
 - [x] Routing project detail.
 - [x] Error/empty states.

@@ -1,7 +1,8 @@
 # accessibility — Especificación
 
 **Estado:** aprobado para SDD 1.0 salvo elementos marcados PENDING/PROPOSED.  
-**Historias:** capacidad técnica transversal
+**Historias:** capacidad técnica transversal  
+**Prioridad:** deliberadamente al final del backlog (checkpoint 2026-09-06, `spec/constitution/roadmap.md`); no se ejecuta antes que el resto de Sprint 3/4.
 
 ## Objetivo
 

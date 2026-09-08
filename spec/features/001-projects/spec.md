@@ -11,10 +11,10 @@ Crear y seleccionar proyectos de análisis.
 
 - Permitir crear un proyecto y navegar a su detalle.
 - El DTO de RAG Core expone `currentVersionId`; no entrega un objeto `currentVersion` embebido.
-- Mostrar estado/versión actual cuando exista requiere consultar el contrato de ProjectVersion una vez cerrado.
+- Mostrar estado/versión actual usa `currentVersionId` y el listado paginado de versiones ya cerrado en `INTEROP-1.5`.
 - No confundir Project con ProjectVersion.
-- Contratos vigentes: `POST /projects` y `GET /projects/:projectId` según [`../../contracts/rag-core-api.md`](../../contracts/rag-core-api.md).
-- El listado `GET /projects` está `PENDING`; no asumir array ni envelope de paginación.
+- Contratos vigentes: `POST /projects`, `GET /projects/:projectId` y `GET /projects?cursor&limit` según [`../../contracts/rag-core-api.md`](../../contracts/rag-core-api.md).
+- El listado devuelve `Page<ProjectResponse>` con cursor opaco; no asumir un array directo.
 
 ## Fuera de alcance
 

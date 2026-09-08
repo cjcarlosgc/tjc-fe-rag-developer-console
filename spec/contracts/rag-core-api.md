@@ -1,7 +1,7 @@
 # Contrato de integración — RAG Core API
 
 **Estado:** aprobado para consumo frontend, con disponibilidad indicada por operación.  
-**Fuente:** RAG Core SDD 1.8 / SYSTEM-1.3 / INTEROP-1.1 y código implementado, contrastados el 2026-09-05.
+**Fuente:** RAG Core SDD 1.14 / SYSTEM-1.4 / INTEROP-1.5 y código implementado, contrastados el 2026-09-06.
 **Servicio:** `tjc-be-rag-core-api`; el navegador nunca consume directamente el Sandbox.
 
 Este documento registra disponibilidad y detalles implementados para el frontend. La autoridad de rutas, DTOs y semántica compartida es `interoperability-contract.md`; este archivo no puede redefinirla.
@@ -22,6 +22,8 @@ El navegador entrega ZIPs a RAG Core mediante `POST /projects/index`. No accede 
 - Las respuestas exitosas no usan un envelope común.
 - Fechas confirmadas en responses implementadas: strings ISO 8601.
 - No hay contrato de autenticación aprobado en el alcance actual.
+- `Idempotency-Key` UUID es obligatorio en los POST de generación, experimento y retry manual. El frontend crea una key por acción lógica y la reutiliza en retries de transporte.
+- `Authorization: Bearer` y `SANDBOX_SERVICE_TOKEN` pertenecen exclusivamente a Core↔Sandbox; el navegador no los envía ni almacena.
 
 ### ErrorEnvelope
 
@@ -66,6 +68,11 @@ type ErrorCode =
   | 'SANDBOX_UNAVAILABLE'
   | 'STORAGE_UNAVAILABLE'
   | 'LLM_PROVIDER_UNAVAILABLE'
+  | 'IDEMPOTENCY_KEY_REQUIRED'
+  | 'INVALID_IDEMPOTENCY_KEY'
+  | 'IDEMPOTENCY_CONFLICT'
+  | 'TARGET_RETRY_NOT_ALLOWED'
+  | 'UNSUPPORTED_PACKAGE_MANAGER'
 ```
 
 ## Health — IMPLEMENTADO
@@ -117,9 +124,9 @@ Errores confirmados:
 
 - `404 PROJECT_NOT_FOUND` cuando no existe el id.
 
-### Listado de proyectos — APROBADO, NO IMPLEMENTADO
+### Listado de proyectos — IMPLEMENTADO
 
-`GET /projects?cursor&limit` devuelve `Page<ProjectResponse>` conforme a `INTEROP-1.1`. El adapter live permanece pendiente hasta que RAG Core implemente la ruta.
+`GET /projects?cursor&limit` devuelve `Page<ProjectResponse>` conforme a `INTEROP-1.5`. El adapter live del frontend permanece pendiente.
 
 ## Indexación de ProjectVersion — IMPLEMENTADO
 
@@ -220,9 +227,9 @@ interface ProjectVersionResultsResponse {
 - Antes de `COMPLETED`: `409 ANALYSIS_NOT_FINISHED`.
 - Id inexistente: `404 PROJECT_VERSION_NOT_FOUND`.
 
-### Listado de ProjectVersions por proyecto — APROBADO, NO IMPLEMENTADO
+### Listado de ProjectVersions por proyecto — IMPLEMENTADO
 
-`GET /projects/{projectId}/versions?cursor&limit` devuelve `Page<ProjectVersionSummaryResponse>` conforme a `INTEROP-1.1`. La demo puede conservar su adapter mock hasta que RAG Core implemente la ruta.
+`GET /projects/{projectId}/versions?cursor&limit` devuelve `Page<ProjectVersionSummaryResponse>` conforme a `INTEROP-1.5`. La demo puede conservar su adapter mock, pero no confundirlo con el adapter live pendiente.
 
 ## Inventario de tests — IMPLEMENTADO
 
@@ -256,7 +263,7 @@ interface TestInventoryResponse {
 - Antes de `COMPLETED`: `409 ANALYSIS_NOT_FINISHED`.
 - Id inexistente: `404 PROJECT_VERSION_NOT_FOUND`.
 
-## Generación — contrato INTEROP-1.1 aprobado, no implementado
+## Generación — IMPLEMENTADO EN CORE; ADAPTER FRONTEND PENDIENTE
 
 Semántica aprobada:
 
@@ -275,9 +282,11 @@ interface CreateTestRunRequest {
 }
 ```
 
-`POST /test-runs` crea el run y captura `currentVersionId`; status y resultados se consultan en `GET /test-runs/{runId}` y `/results`. Las combinaciones de `mode` y `targetId` se rigen por `INTEROP-1.1`. El frontend no usa `POST /tests/generate`.
+`POST /test-runs` crea el run y captura `currentVersionId`; status y resultados se consultan en `GET /test-runs/{runId}` y `/results`. Las combinaciones de `mode` y `targetId` se rigen por `INTEROP-1.5`. El frontend no usa `POST /tests/generate`.
 
-## Validación — contrato INTEROP-1.1 aprobado, no implementado
+El contrato exige `Idempotency-Key`. Core todavía debe materializar la persistencia/deduplicación de `DEC-IDEMP-001`; el adapter frontend debe enviar la key desde ahora y no depender de la tolerancia transitoria del controller.
+
+## Validación — IMPLEMENTADA EN CORE; INTEGRACIÓN REAL CON SANDBOX PENDIENTE
 
 Semántica aprobada:
 
@@ -293,9 +302,9 @@ type FailureType =
   | 'UNKNOWN'
 ```
 
-`validation.valid=false` es un resultado normal de negocio/técnico, no un HTTP 5xx. `ValidationResponse`, `TargetRunResultResponse` y `TestRunResultsResponse` quedan definidos en `INTEROP-1.1`.
+`validation.valid=false` es un resultado normal de negocio/técnico, no un HTTP 5xx. `ValidationResponse`, `TargetRunResultResponse` y `TestRunResultsResponse` quedan definidos en `INTEROP-1.5`. Core aún debe enviar el Bearer y las identities estables antes de considerar verificada la integración con el Sandbox real; esto no cambia el DTO del navegador.
 
-## Artifacts — contrato INTEROP-1.1 aprobado, no implementado
+## Artifacts — IMPLEMENTADOS EN CORE; ADAPTER FRONTEND PENDIENTE
 
 Entidad aprobada:
 
@@ -309,11 +318,11 @@ interface Artifact {
 }
 ```
 
-`INTEROP-1.1` define listado por run, descarga individual, ZIP total y diff. `storageKey` nunca pertenece al DTO del navegador. Solicitar diff de un artifact `CREATED` produce `409 DIFF_NOT_AVAILABLE`.
+`INTEROP-1.5` define listado por run, descarga individual, ZIP total y diff. `storageKey` nunca pertenece al DTO del navegador. Solicitar diff de un artifact `CREATED` produce `409 DIFF_NOT_AVAILABLE`.
 
-## Experimento RAG vs agente generalista — transporte aprobado; ejecución bloqueada
+## Experimento RAG vs agente generalista — IMPLEMENTADO EN CORE; ADAPTER FRONTEND PENDIENTE
 
-Está aprobado un único experimento entre `RAG` y `GENERALIST_AGENT`, con tres repeticiones por target y estrategia por defecto y sin autorepair. `INTEROP-1.1` define rutas y DTOs sin usar `BASELINE`. La implementación continúa bloqueada por `DEC-EXP-002`, que debe definir las herramientas y límites del agente generalista. El resultado conserva:
+Está aprobado un único experimento entre `RAG` y `GENERALIST_AGENT`, con tres repeticiones por target y estrategia por defecto y sin autorepair. `INTEROP-1.5` define rutas y DTOs sin usar `BASELINE`. `DEC-EXP-002` está APROBADO y el backend existe. El POST exige `Idempotency-Key`; Core todavía debe materializar su deduplicación durable. El resultado conserva:
 
 - `compiled`, `executed`, `passed`, `valid`, `failureType`;
 - `generationDurationMs`, `executionDurationMs`, `totalDurationMs`;
@@ -322,7 +331,7 @@ Está aprobado un único experimento entre `RAG` y `GENERALIST_AGENT`, con tres 
 - para el agente: `toolCalls`, `filesInspected` y contexto/tokens atribuibles a exploración cuando sean observables;
 - tasas, diferencia en puntos porcentuales, media/mediana y distribución de fallos.
 
-Rutas, DTOs y estados de transporte están aprobados; la lógica de ejecución permanece bloqueada por `DEC-EXP-002`.
+Rutas, DTOs, estados de transporte, contrato operativo del agente y backend están disponibles. El frontend puede implementar el adapter live sin inventar contrato.
 
 Mutation score/StrykerJS no forma parte de este DTO: `DEC-MET-001` permanece PENDING y solo bloqueará el work item futuro que intente incorporarlo.
 
@@ -330,9 +339,11 @@ Mutation score/StrykerJS no forma parte de este DTO: `DEC-MET-001` permanece PEN
 
 Solo respuestas obtenidas por adapters `live` pueden contabilizarse como evidencia de la validación en empresa. El modo mock nunca se exporta ni mezcla con resultados experimentales reales. Antes de conectar repositorios empresariales debe resolverse `DEC-VAL-001` en el contrato de sistema.
 
-## Historial, WebSockets, reparación y retry — PENDING
+## Historial, WebSockets y retry manual — IMPLEMENTADOS EN CORE
 
-RAG Core aprobó el comportamiento general, pero no fijó endpoints, eventos WebSocket ni DTOs. HTTP status/results seguirá existiendo como fallback cuando se incorpore WebSocket. El frontend no debe definir nombres de eventos ni comandos de retry antes del contrato backend.
+`INTEROP-1.5` fija e implementa historial paginado (`GET /project-versions/{projectVersionId}/test-runs`), suscripciones Socket.IO por id y eventos `project-version:update`/`test-run:update`, manteniendo HTTP como fallback. HU24 usa `POST /test-runs/{runId}/targets/{targetId}/retry` sobre un target `INVALID`/`FAILED` de un run terminal y exige `Idempotency-Key`.
+
+HU23 está descartada definitivamente: no existen reparación automática, attempts ni corrección vía LLM. El frontend debe eliminar cualquier supuesto anterior al respecto.
 
 ## Matriz de disponibilidad para el frontend
 
@@ -341,11 +352,11 @@ RAG Core aprobó el comportamiento general, pero no fijó endpoints, eventos Web
 | Health | Implementado completo | sí |
 | Crear proyecto | Implementado completo | sí |
 | Consultar proyecto por id | Implementado completo | sí |
-| Listar proyectos | INTEROP-1.1 aprobado; backend pendiente | sí, cuando exista la ruta |
+| Listar proyectos | Implementado en Core | sí |
 | Iniciar indexación | Implementado completo | sí |
 | Polling/resultados de ProjectVersion | Implementado completo | sí |
 | Inventario | Implementado completo | sí |
-| Generación/validación | INTEROP-1.1 aprobado; backend pendiente | sí, cuando exista la ruta |
-| Artifacts | INTEROP-1.1 aprobado; backend pendiente | sí, cuando exista la ruta |
-| Experimentos | Transporte aprobado; `DEC-EXP-002` bloquea ejecución | no todavía |
-| Historial/WebSocket/retry | PENDING | no |
+| Generación/validación | Implementado en Core; auth/idempotencia Sandbox por completar en Core | sí; no confundir con e2e ya verificado |
+| Artifacts | Implementado en Core | sí |
+| Experimentos | Implementado en Core; idempotencia durable por completar | sí |
+| Historial/WebSocket/retry | Implementado en Core; adapter frontend pendiente | sí |

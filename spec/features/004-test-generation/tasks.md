@@ -3,8 +3,9 @@
 - [x] Mode selector.
 - [x] target validation.
 - [x] submit y navegación a run mediante adapter mock stateful.
-- [ ] Submit `POST /test-runs` y manejo de `TestRunAcceptedResponse` según `INTEROP-1.1`.
-- [ ] Navegar a `runId` desde la respuesta 202 aprobada.
+- [x] Submit `POST /test-runs` y manejo de `TestRunAcceptedResponse` según `INTEROP-1.5`. Verificado contra RAG Core local real.
+- [x] Generar `Idempotency-Key` UUID al confirmar la acción (`api/idempotency.ts`, `createIdempotencyKey`); cada `mutate()` explícito crea una key nueva.
+- [x] Navegar a `runId` desde la respuesta 202 aprobada.
 
 ## Calidad
 

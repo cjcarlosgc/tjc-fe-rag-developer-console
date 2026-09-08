@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createProject, getProject, listProjects } from './api'
 
 export const projectKeys = {
@@ -14,7 +14,13 @@ export function useProject(projectId: string) {
 }
 
 export function useProjects(enabled = true) {
-  return useQuery({ queryKey: projectKeys.all, queryFn: listProjects, enabled })
+  return useInfiniteQuery({
+    queryKey: projectKeys.all,
+    queryFn: ({ pageParam }) => listProjects(pageParam),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    enabled,
+  })
 }
 
 export function useCreateProject() {

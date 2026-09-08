@@ -3,7 +3,7 @@ import type { ExperimentAccepted, ExperimentOperation, ExperimentResultViewModel
 import type { GenerationAccepted, GenerationConfiguration } from '../generation/types'
 import type { InventoryTargetViewModel, TestInventoryResponse } from '../inventory/types'
 import type { AnalysisHistoryItem, AnalysisOperation, AnalysisResult, CreateProjectInput, Project, UploadAccepted } from '../projects/types'
-import type { RunViewModel, TargetRunViewModel } from '../runs/types'
+import type { GenerationMode, RunViewModel, TargetRetryAccepted, TargetRunViewModel, TestRunHistoryPage, TestRunSummary } from '../runs/types'
 import { ApiError } from './client'
 
 interface MockVersionState {
@@ -15,7 +15,14 @@ interface MockVersionState {
 
 interface MockRunState {
   run: RunViewModel
+  projectVersionId: string
+  mode: GenerationMode
+  createdAt: string
+  completedAt: string | null
   polls: number
+  /** HU24: el target en curso de reintento y su propio contador de pasos, independiente de `polls`. */
+  retryingTargetId: string | null
+  retryPolls: number
 }
 
 interface MockExperimentState {
@@ -75,6 +82,21 @@ function seed(): void {
     result: { id: 'ver_checkout_5', projectId: project.id, status: 'COMPLETED', filesProcessed: 38, chunksCount: 141, detectedFramework: 'VITEST', targetsTotal: 3, targetsWithTest: 1, targetsMissingTest: 2, completedAt: '2026-08-24T09:35:30.000Z' },
     inventory: buildInventory('ver_checkout_5', 5),
   })
+  const seededTargets: TargetRunViewModel[] = [
+    { id: 'ver_checkout_7-method-total', label: 'calculateTotal', filePath: 'src/domain/OrderService.ts', status: 'VALID', compiled: true, executed: true, passed: true, valid: true, failureType: 'NONE' },
+    { id: 'ver_checkout_7-class-coupon', label: 'CouponPolicy', filePath: 'src/domain/CouponPolicy.ts', status: 'INVALID', compiled: true, executed: true, passed: false, valid: false, failureType: 'TEST_ASSERTION', errorSummary: 'Expected discount to be 20, received 15.', errorDetail: 'AssertionError: expected 15 to be 20\n  at CouponPolicy.spec.ts:10:42' },
+  ]
+  runs.set('run_checkout_seed', {
+    polls: 3,
+    run: { id: 'run_checkout_seed', status: 'PARTIAL', processed: 2, total: 2, targets: seededTargets },
+    projectVersionId: 'ver_checkout_7',
+    mode: 'PROJECT_MISSING',
+    createdAt: '2026-08-31T15:00:00.000Z',
+    completedAt: '2026-08-31T15:02:40.000Z',
+    retryingTargetId: null,
+    retryPolls: 0,
+  })
+  artifacts.set('run_checkout_seed', buildArtifacts('run_checkout_seed', inventoryViewTargets(buildInventory('ver_checkout_7'))))
 }
 
 export function resetMockBackend(): void {
@@ -242,16 +264,50 @@ export async function mockStartGeneration(configuration: GenerationConfiguration
   sequence += 1
   const runId = `run_demo_${sequence}`
   const targets: TargetRunViewModel[] = selected.map((target) => ({ id: target.id, label: target.methodName ?? target.symbolName, filePath: target.filePath, status: 'PENDING' }))
-  runs.set(runId, { polls: 0, run: { id: runId, status: 'PENDING', processed: 0, total: targets.length, targets } })
+  runs.set(runId, {
+    polls: 0,
+    run: { id: runId, status: 'PENDING', processed: 0, total: targets.length, targets },
+    projectVersionId: project.currentVersionId,
+    mode: configuration.mode,
+    createdAt: nowIso(),
+    completedAt: null,
+    retryingTargetId: null,
+    retryPolls: 0,
+  })
   artifacts.set(runId, buildArtifacts(runId, selected))
   return { runId, projectId: project.id, projectVersionId: project.currentVersionId, status: 'PENDING', pollAfterMs: 420 }
+}
+
+function runTargetTotals(targets: TargetRunViewModel[]) {
+  return {
+    validTargets: targets.filter((target) => target.status === 'VALID').length,
+    invalidTargets: targets.filter((target) => target.status === 'INVALID').length,
+    failedTargets: targets.filter((target) => target.status === 'FAILED').length,
+  }
 }
 
 export async function mockGetRun(runId: string): Promise<RunViewModel> {
   await latency()
   const state = runs.get(runId)
   if (!state) notFound(`No existe el run demo "${runId}".`, 'TEST_RUN_NOT_FOUND')
-  if (state.run.status !== 'COMPLETED' && state.run.status !== 'PARTIAL' && state.run.status !== 'FAILED') {
+  if (state.retryingTargetId) {
+    // HU24: un retry en curso avanza con su propio contador, sin reabrir el guion de generación inicial.
+    state.retryPolls += 1
+    const retryingId = state.retryingTargetId
+    if (state.retryPolls === 1) {
+      state.run = { ...state.run, status: 'GENERATING', targets: state.run.targets.map((target) => target.id === retryingId ? { ...target, status: 'GENERATING' } : target) }
+    } else if (state.retryPolls === 2) {
+      state.run = { ...state.run, status: 'VALIDATING', targets: state.run.targets.map((target) => target.id === retryingId ? { ...target, status: 'VALIDATING' } : target) }
+    } else {
+      const targets = state.run.targets.map((target) => target.id === retryingId
+        ? { ...target, status: 'VALID' as const, compiled: true, executed: true, passed: true, valid: true, failureType: 'NONE' as const, errorSummary: undefined, errorDetail: undefined }
+        : target)
+      state.run = { ...state.run, status: targets.some((target) => target.status === 'INVALID' || target.status === 'FAILED') ? 'PARTIAL' : 'COMPLETED', targets }
+      state.completedAt = nowIso()
+      state.retryingTargetId = null
+      state.retryPolls = 0
+    }
+  } else if (state.run.status !== 'COMPLETED' && state.run.status !== 'PARTIAL' && state.run.status !== 'FAILED') {
     state.polls += 1
     if (state.polls === 1) state.run = { ...state.run, status: 'GENERATING', processed: 0, targets: state.run.targets.map((target, index) => ({ ...target, status: index === 0 ? 'GENERATING' : 'PENDING' })) }
     else if (state.polls === 2) state.run = { ...state.run, status: 'VALIDATING', processed: Math.max(1, Math.floor(state.run.total / 2)), targets: state.run.targets.map((target) => ({ ...target, status: 'VALIDATING' })) }
@@ -260,9 +316,48 @@ export async function mockGetRun(runId: string): Promise<RunViewModel> {
         ? { ...target, status: 'INVALID', compiled: true, executed: true, passed: false, valid: false, failureType: 'TEST_ASSERTION', errorSummary: 'Expected discount to be 20, received 15.', errorDetail: 'AssertionError: expected 15 to be 20\n  at CouponPolicy.spec.ts:10:42' }
         : { ...target, status: 'VALID', compiled: true, executed: true, passed: true, valid: true, failureType: 'NONE' })
       state.run = { ...state.run, status: terminalTargets.some((target) => !target.valid) ? 'PARTIAL' : 'COMPLETED', processed: state.run.total, targets: terminalTargets }
+      state.completedAt = nowIso()
     }
   }
   return clone(state.run)
+}
+
+/** HU20: `GET /project-versions/{projectVersionId}/test-runs?cursor&limit` — orden `createdAt` descendente. */
+export async function mockListTestRunHistory(projectVersionId: string, cursor: string | null): Promise<TestRunHistoryPage> {
+  await latency()
+  if (!versions.has(projectVersionId)) notFound(`No existe la ProjectVersion demo "${projectVersionId}".`, 'PROJECT_VERSION_NOT_FOUND')
+  const items: TestRunSummary[] = Array.from(runs.entries())
+    .filter(([, state]) => state.projectVersionId === projectVersionId)
+    .map(([id, state]) => ({
+      id,
+      mode: state.mode,
+      status: state.run.status,
+      totalTargets: state.run.total,
+      ...runTargetTotals(state.run.targets),
+      createdAt: state.createdAt,
+      completedAt: state.completedAt,
+    }))
+    .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+  void cursor
+  return { items: items.map(clone), nextCursor: null }
+}
+
+/** HU24: `POST /test-runs/{runId}/targets/{targetId}/retry` sobre un target `INVALID`/`FAILED` de un run terminal. */
+export async function mockRetryTarget(runId: string, targetId: string): Promise<TargetRetryAccepted> {
+  await latency()
+  const state = runs.get(runId)
+  if (!state) notFound(`No existe el run demo "${runId}".`, 'TEST_RUN_NOT_FOUND')
+  if (state.run.status !== 'COMPLETED' && state.run.status !== 'PARTIAL' && state.run.status !== 'FAILED') {
+    throw new ApiError('El run demo todavía no llegó a un estado terminal.', 409, 'demo-correlation-id', 'TEST_RUN_NOT_FINISHED')
+  }
+  const target = state.run.targets.find((item) => item.id === targetId)
+  if (!target || (target.status !== 'INVALID' && target.status !== 'FAILED')) {
+    throw new ApiError('Este target no admite reintento en su estado actual.', 409, 'demo-correlation-id', 'TARGET_RETRY_NOT_ALLOWED')
+  }
+  state.retryingTargetId = targetId
+  state.retryPolls = 0
+  state.run = { ...state.run, status: 'GENERATING', targets: state.run.targets.map((item) => item.id === targetId ? { ...item, status: 'PENDING' } : item) }
+  return { testRunId: runId, targetId, status: 'PENDING', pollAfterMs: 420 }
 }
 
 export async function mockGetArtifacts(runId: string): Promise<ArtifactViewModel[]> {
@@ -274,12 +369,12 @@ export async function mockGetArtifacts(runId: string): Promise<ArtifactViewModel
 
 function experimentResult(target: string): ExperimentResultViewModel {
   return {
-    baseline: { strategy: 'BASELINE', validRate: .5, compilationRate: .67, executionRate: .5, passedRate: .5, totalDurationMs: 4_820, totalTokens: 2_940, estimatedCost: .018, failures: { COMPILATION: 1, TEST_ASSERTION: 1 } },
+    baseline: { strategy: 'GENERALIST_AGENT', validRate: .5, compilationRate: .67, executionRate: .5, passedRate: .5, totalDurationMs: 4_820, totalTokens: 2_940, estimatedCost: .018, failures: { COMPILATION: 1, TEST_ASSERTION: 1 }, toolCalls: 6, filesInspected: 4 },
     rag: { strategy: 'RAG', validRate: .83, compilationRate: 1, executionRate: .83, passedRate: .83, totalDurationMs: 5_460, totalTokens: 4_180, estimatedCost: .027, failures: { TEST_ASSERTION: 1 }, retrievedChunks: 24, selectedChunks: 7, contextTokens: 2_180 },
     repetitions: [
-      { target, repetition: 1, strategy: 'BASELINE', valid: false, failureType: 'COMPILATION', durationMs: 810, totalTokens: 480 },
-      { target, repetition: 2, strategy: 'BASELINE', valid: true, failureType: 'NONE', durationMs: 760, totalTokens: 470 },
-      { target, repetition: 3, strategy: 'BASELINE', valid: false, failureType: 'TEST_ASSERTION', durationMs: 840, totalTokens: 520 },
+      { target, repetition: 1, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'COMPILATION', durationMs: 810, totalTokens: 480 },
+      { target, repetition: 2, strategy: 'GENERALIST_AGENT', valid: true, failureType: 'NONE', durationMs: 760, totalTokens: 470 },
+      { target, repetition: 3, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'TEST_ASSERTION', durationMs: 840, totalTokens: 520 },
       { target, repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', durationMs: 910, totalTokens: 680 },
       { target, repetition: 2, strategy: 'RAG', valid: true, failureType: 'NONE', durationMs: 890, totalTokens: 700 },
       { target, repetition: 3, strategy: 'RAG', valid: false, failureType: 'TEST_ASSERTION', durationMs: 930, totalTokens: 710 },
@@ -287,12 +382,16 @@ function experimentResult(target: string): ExperimentResultViewModel {
   }
 }
 
-export async function mockStartExperiment(projectId: string, targetLabel: string): Promise<ExperimentAccepted> {
+export async function mockStartExperiment(projectId: string, targetId: string): Promise<ExperimentAccepted> {
   await latency()
-  if (!projects.has(projectId)) notFound(`No existe el proyecto demo "${projectId}".`, 'PROJECT_NOT_FOUND')
+  const project = projects.get(projectId)
+  if (!project) notFound(`No existe el proyecto demo "${projectId}".`, 'PROJECT_NOT_FOUND')
+  const inventory = project.currentVersionId ? versions.get(project.currentVersionId)?.inventory : undefined
+  const target = inventory?.targets.find((item) => item.id === targetId)
+  const label = target?.methodName ?? target?.symbolName ?? targetId
   sequence += 1
   const experimentId = `exp_demo_${sequence}`
-  experiments.set(experimentId, { polls: 0, operation: { id: experimentId, status: 'PENDING', progress: 0, result: experimentResult(targetLabel) } })
+  experiments.set(experimentId, { polls: 0, operation: { id: experimentId, status: 'PENDING', progress: 0, result: experimentResult(label) } })
   return { experimentId, status: 'PENDING', pollAfterMs: 460 }
 }
 

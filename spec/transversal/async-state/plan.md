@@ -6,7 +6,7 @@
 
 ## Diseño técnico
 
-Poll respecting pollAfterMs; cancellation; cache by project/version/run; WebSocket transport adapter Sprint 3.
+Polling según `pollAfterMs`, cancelación, cache por project/version/run/experiment, adapter WebSocket con fallback y lifecycle de keys idempotentes por mutation.
 
 ## Validación
 

@@ -47,6 +47,12 @@ export interface CreateProjectInput {
   name: string
 }
 
+/** `GET /projects?cursor&limit` -> `Page<ProjectResponse>`. */
+export interface ProjectListPage {
+  items: Project[]
+  nextCursor: string | null
+}
+
 export interface AnalysisHistoryItem {
   id: string
   projectId: string

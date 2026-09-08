@@ -22,8 +22,7 @@ Cargar ZIP, seguir indexación y presentar resultado de una ProjectVersion.
   cada una. La versión actual se identifica de forma explícita.
 - Consultar una versión histórica es una operación de lectura; la generación
   normal continúa usando la `currentVersionId` del proyecto.
-- El listado de ProjectVersions por proyecto no tiene ruta/DTO live confirmado;
-  el adapter live debe mantener esta capacidad como `PENDING`.
+- El listado de ProjectVersions está cerrado como `GET /projects/{projectId}/versions?cursor&limit` → `Page<ProjectVersionSummaryResponse>`; el adapter live todavía debe implementarse.
 - El DTO de status no repite `pollAfterMs` ni expone porcentaje; el resumen confirmado incluye archivos, chunks, framework e inventario agregado según [`../../contracts/rag-core-api.md`](../../contracts/rag-core-api.md).
 
 ## Fuera de alcance

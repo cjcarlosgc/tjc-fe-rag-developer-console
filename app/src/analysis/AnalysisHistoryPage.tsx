@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { isMockDataSource } from '../api/dataSource'
 import { formatDate } from '../formatting'
 import { useProject } from '../projects/queries'
+import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
 import { listAnalysisHistory } from './api'
 
@@ -19,7 +20,7 @@ export function AnalysisHistoryPage() {
 
   const versions = historyQuery.data
   return <section>
-    <Link className="back-link" to={`/projects/${projectId}`}>← Volver al proyecto</Link>
+    <Breadcrumbs items={[{ label: 'Proyectos', to: '/' }, { label: projectQuery.data.name, to: `/projects/${projectId}` }, { label: 'Historial de análisis' }]} />
     <div className="page-heading analysis-history-heading"><div><p className="eyebrow">ProjectVersion archive</p><h1>Historial de análisis</h1><p>{projectQuery.data.name} conserva cada snapshot indexado y sus resultados técnicos.</p></div><div className="history-heading-meta"><strong>{versions.length}</strong><span>versiones<br />indexadas</span>{isMockDataSource() && <span className="demo-stamp">DEMO TIMELINE</span>}</div></div>
     {versions.length === 0 ? <div className="empty-state"><div className="empty-icon">∅</div><h2>Sin análisis registrados</h2><p>Carga un ZIP para crear la primera ProjectVersion.</p><Link className="button primary button-link" to={`/projects/${projectId}`}>Cargar versión</Link></div> : <ol className="analysis-timeline">{versions.map((version, index) => <li className={version.current ? 'current-version' : ''} key={version.id}>
       <div className="timeline-rail"><span>{String(versions.length - index).padStart(2, '0')}</span><i /></div>
