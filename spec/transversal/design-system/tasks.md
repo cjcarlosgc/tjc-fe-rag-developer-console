@@ -1,14 +1,16 @@
 # design-system — Tareas
 
-- [x] tokens (paleta oscura índigo/violeta inspirada en Superhuman, tipografía; aplicados en `app/src/styles.css`).
-- [x] primitive components (botones, input, cards, nav bar recoloreados sobre los tokens).
-- [ ] domain patterns (tablas, code/diff blocks, dialogs siguen con estilos ad hoc previos a los tokens; no hubo un rediseño deliberado de estos patrones, solo recoloreo).
-- [x] status semantics (ámbar/rojo se mantienen independientes de la paleta de marca; ver `spec.md`).
+- [ ] Sustituir la dirección índigo parcial por tokens Black Glass.
+- [ ] Integrar Space Grotesk, Geist y JetBrains Mono con fallbacks y carga eficiente.
+- [ ] Implementar primitives de shell, controles, cards, tablas, code/diff, dialogs, drawer y tooltips.
+- [ ] Implementar variantes semánticas RAG/agente sin contaminar la paleta global.
+- [ ] Implementar transiciones y conceptos de partículas con reduced motion.
+- [ ] Migrar todas las pantallas y eliminar estilos ad hoc supersedidos.
 
 ## Calidad
 
-- [ ] Agregar/actualizar pruebas.
-- [ ] Verificar manejo de errores.
-- [ ] Verificar observabilidad mínima.
-- [ ] Ejecutar lint/test/build.
-- [ ] Registrar evidencia de revisión en `harness/reports/`.
+- [ ] Agregar/actualizar pruebas visuales y de interacción.
+- [ ] Auditar contraste, teclado, zoom y reduced motion.
+- [ ] Medir rendimiento de blur/partículas y layout shift.
+- [ ] Ejecutar lint/test/build/SDD check.
+- [ ] Registrar evidencia de revisión contra Stitch.

@@ -9,6 +9,10 @@ La implementación de la consola usa TypeScript. Distintamente, el lenguaje de l
 
 La validación final ocurre contra servicios `live` en una empresa real. El modo mock es únicamente una ayuda de desarrollo y demostración, no evidencia experimental. Código, rutas, logs, diffs y artefactos pueden ser confidenciales y deben representarse sin exposición innecesaria.
 
+El producto conserva el flujo ZIP independiente de GitHub. La identidad aprobada para ese flujo es correo/contraseña mediante Supabase Auth con autorización por propietario. El flujo GitHub real continúa pendiente, pero una maqueta interactiva claramente simulada forma parte de la demo de experiencia y no bloquea la versión funcional basada en ZIP.
+
+Las trazas visualizan evidencia observable: candidatos y decisiones RAG o contenido efectivamente entregado al agente. Nunca se presentan como razonamiento interno ni como prueba de qué información influyó causalmente en el modelo.
+
 No incorporar aquí papers, marco teórico, nombres académicos, estructura de capítulos ni roles organizativos que no cambien un contrato implementable.
 
 Las condiciones todavía pendientes para la validación empresarial se rigen por `DEC-VAL-001` en `spec/contracts/system-contract.md`.

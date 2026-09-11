@@ -1,7 +1,7 @@
 # Contrato de integración — RAG Core API
 
 **Estado:** aprobado para consumo frontend, con disponibilidad indicada por operación.  
-**Fuente:** RAG Core SDD 1.14 / SYSTEM-1.4 / INTEROP-1.5 y código implementado, contrastados el 2026-09-06.
+**Fuente:** RAG Core SDD 1.16 / SYSTEM-1.6 / INTEROP-1.6 y código implementado, contrastados el 2026-09-11.
 **Servicio:** `tjc-be-rag-core-api`; el navegador nunca consume directamente el Sandbox.
 
 Este documento registra disponibilidad y detalles implementados para el frontend. La autoridad de rutas, DTOs y semántica compartida es `interoperability-contract.md`; este archivo no puede redefinirla.
@@ -21,9 +21,9 @@ El navegador entrega ZIPs a RAG Core mediante `POST /projects/index`. No accede 
 - Correlación: header `x-correlation-id`. El cliente puede enviarlo; RAG Core lo devuelve y genera uno cuando falta.
 - Las respuestas exitosas no usan un envelope común.
 - Fechas confirmadas en responses implementadas: strings ISO 8601.
-- No hay contrato de autenticación aprobado en el alcance actual.
+- Salvo `GET /health`, el navegador envía el access token de Supabase Auth como `Authorization: Bearer`. Core valida identidad y propietario; no se envía el token de usuario al Sandbox.
 - `Idempotency-Key` UUID es obligatorio en los POST de generación, experimento y retry manual. El frontend crea una key por acción lógica y la reutiliza en retries de transporte.
-- `Authorization: Bearer` y `SANDBOX_SERVICE_TOKEN` pertenecen exclusivamente a Core↔Sandbox; el navegador no los envía ni almacena.
+- `SANDBOX_SERVICE_TOKEN` pertenece exclusivamente a Core↔Sandbox; el navegador no lo recibe ni almacena.
 
 ### ErrorEnvelope
 
@@ -73,6 +73,10 @@ type ErrorCode =
   | 'IDEMPOTENCY_CONFLICT'
   | 'TARGET_RETRY_NOT_ALLOWED'
   | 'UNSUPPORTED_PACKAGE_MANAGER'
+  | 'AUTH_REQUIRED'
+  | 'INVALID_ACCESS_TOKEN'
+  | 'CONTEXT_TRACE_NOT_FOUND'
+  | 'CONTEXT_TRACE_NOT_FINISHED'
 ```
 
 ## Health — IMPLEMENTADO
@@ -126,7 +130,7 @@ Errores confirmados:
 
 ### Listado de proyectos — IMPLEMENTADO
 
-`GET /projects?cursor&limit` devuelve `Page<ProjectResponse>` conforme a `INTEROP-1.5`. El adapter live del frontend permanece pendiente.
+`GET /projects?cursor&limit` devuelve `Page<ProjectResponse>` conforme a `INTEROP-1.6`.
 
 ## Indexación de ProjectVersion — IMPLEMENTADO
 
@@ -229,7 +233,7 @@ interface ProjectVersionResultsResponse {
 
 ### Listado de ProjectVersions por proyecto — IMPLEMENTADO
 
-`GET /projects/{projectId}/versions?cursor&limit` devuelve `Page<ProjectVersionSummaryResponse>` conforme a `INTEROP-1.5`. La demo puede conservar su adapter mock, pero no confundirlo con el adapter live pendiente.
+`GET /projects/{projectId}/versions?cursor&limit` devuelve `Page<ProjectVersionSummaryResponse>` conforme a `INTEROP-1.6`. La demo puede conservar su adapter mock, pero no confundirlo con live.
 
 ## Inventario de tests — IMPLEMENTADO
 
@@ -263,7 +267,7 @@ interface TestInventoryResponse {
 - Antes de `COMPLETED`: `409 ANALYSIS_NOT_FINISHED`.
 - Id inexistente: `404 PROJECT_VERSION_NOT_FOUND`.
 
-## Generación — IMPLEMENTADO EN CORE; ADAPTER FRONTEND PENDIENTE
+## Generación — IMPLEMENTADA E INTEGRADA
 
 Semántica aprobada:
 
@@ -282,11 +286,11 @@ interface CreateTestRunRequest {
 }
 ```
 
-`POST /test-runs` crea el run y captura `currentVersionId`; status y resultados se consultan en `GET /test-runs/{runId}` y `/results`. Las combinaciones de `mode` y `targetId` se rigen por `INTEROP-1.5`. El frontend no usa `POST /tests/generate`.
+`POST /test-runs` crea el run y captura `currentVersionId`; status y resultados se consultan en `GET /test-runs/{runId}` y `/results`. Las combinaciones de `mode` y `targetId` se rigen por `INTEROP-1.6`. El frontend no usa `POST /tests/generate`.
 
-El contrato exige `Idempotency-Key`. Core todavía debe materializar la persistencia/deduplicación de `DEC-IDEMP-001`; el adapter frontend debe enviar la key desde ahora y no depender de la tolerancia transitoria del controller.
+El contrato exige `Idempotency-Key`; Core implementa deduplicación durable. El adapter frontend crea una key por acción lógica y la reutiliza solo para retries de esa acción.
 
-## Validación — IMPLEMENTADA EN CORE; INTEGRACIÓN REAL CON SANDBOX PENDIENTE
+## Validación — IMPLEMENTADA E INTEGRADA
 
 Semántica aprobada:
 
@@ -302,27 +306,28 @@ type FailureType =
   | 'UNKNOWN'
 ```
 
-`validation.valid=false` es un resultado normal de negocio/técnico, no un HTTP 5xx. `ValidationResponse`, `TargetRunResultResponse` y `TestRunResultsResponse` quedan definidos en `INTEROP-1.5`. Core aún debe enviar el Bearer y las identities estables antes de considerar verificada la integración con el Sandbox real; esto no cambia el DTO del navegador.
+`validation.valid=false` es un resultado normal de negocio/técnico, no un HTTP 5xx. `ValidationResponse`, `TargetRunResultResponse` y `TestRunResultsResponse` quedan definidos en `INTEROP-1.6`. La autenticación Core↔Sandbox es independiente del token del usuario.
 
 ## Artifacts — IMPLEMENTADOS EN CORE; ADAPTER FRONTEND PENDIENTE
 
 Entidad aprobada:
 
 ```ts
-interface Artifact {
+interface ArtifactResponse {
   id: string
   runId: string
   relativePath: string
   artifactType: 'CREATED' | 'MODIFIED'
   valid: boolean
+  targetIds: string[]
 }
 ```
 
-`INTEROP-1.5` define listado por run, descarga individual, ZIP total y diff. `storageKey` nunca pertenece al DTO del navegador. Solicitar diff de un artifact `CREATED` produce `409 DIFF_NOT_AVAILABLE`.
+`INTEROP-1.6` define listado por run, descarga individual, ZIP total y diff. `storageKey` nunca pertenece al DTO del navegador. Solicitar diff de un artifact `CREATED` produce `409 DIFF_NOT_AVAILABLE`.
 
-## Experimento RAG vs agente generalista — IMPLEMENTADO EN CORE; ADAPTER FRONTEND PENDIENTE
+## Experimento RAG vs agente generalista — IMPLEMENTADO E INTEGRADO
 
-Está aprobado un único experimento entre `RAG` y `GENERALIST_AGENT`, con tres repeticiones por target y estrategia por defecto y sin autorepair. `INTEROP-1.5` define rutas y DTOs sin usar `BASELINE`. `DEC-EXP-002` está APROBADO y el backend existe. El POST exige `Idempotency-Key`; Core todavía debe materializar su deduplicación durable. El resultado conserva:
+Está aprobado un único experimento entre `RAG` y `GENERALIST_AGENT`, con tres repeticiones por target y estrategia por defecto y sin autorepair. `INTEROP-1.6` define rutas y DTOs sin usar `BASELINE`. `DEC-EXP-002` está APROBADO y el backend existe. El POST exige `Idempotency-Key` y Core implementa su deduplicación durable. El resultado conserva:
 
 - `compiled`, `executed`, `passed`, `valid`, `failureType`;
 - `generationDurationMs`, `executionDurationMs`, `totalDurationMs`;
@@ -339,9 +344,22 @@ Mutation score/StrykerJS no forma parte de este DTO: `DEC-MET-001` permanece PEN
 
 Solo respuestas obtenidas por adapters `live` pueden contabilizarse como evidencia de la validación en empresa. El modo mock nunca se exporta ni mezcla con resultados experimentales reales. Antes de conectar repositorios empresariales debe resolverse `DEC-VAL-001` en el contrato de sistema.
 
+## Explorador de contexto — APROBADO; IMPLEMENTACIÓN PENDIENTE
+
+`INTEROP-1.6` sección 6.7 define listados/detalle para runs y experimentos, paginación de archivos descubiertos y la unión discriminada `RAG|AGENT`. El frontend puede construir adapters live sin inventar DTOs, pero debe tratar estas rutas como no disponibles hasta que Core publique su implementación.
+
+- RAG entrega candidatos seleccionados y descartados, señales, scores, tokens y motivo de descarte.
+- AGENT entrega trayectoria cronológica observable, tool calls y excerpts; no entrega chain-of-thought ni afirma contexto utilizado.
+- Los listados muestran el último intento por defecto y aceptan `includeSuperseded=true`.
+- `ArtifactResponse.targetIds` permite abrir el explorador filtrado desde un artifact.
+
+## Autenticación web — APROBADA; IMPLEMENTACIÓN PENDIENTE
+
+Supabase Auth resuelve la sesión del navegador. Core exige Bearer para recursos privados, guarda propietario en `Project` y responde `404` tanto para recursos inexistentes como ajenos. `AUTH_REQUIRED` e `INVALID_ACCESS_TOKEN` son errores `401`. Un bypass solo se admite en configuración local/mock y debe impedir el arranque productivo.
+
 ## Historial, WebSockets y retry manual — IMPLEMENTADOS EN CORE
 
-`INTEROP-1.5` fija e implementa historial paginado (`GET /project-versions/{projectVersionId}/test-runs`), suscripciones Socket.IO por id y eventos `project-version:update`/`test-run:update`, manteniendo HTTP como fallback. HU24 usa `POST /test-runs/{runId}/targets/{targetId}/retry` sobre un target `INVALID`/`FAILED` de un run terminal y exige `Idempotency-Key`.
+`INTEROP-1.6` fija e implementa historial paginado (`GET /project-versions/{projectVersionId}/test-runs`), suscripciones Socket.IO por id y eventos `project-version:update`/`test-run:update`, manteniendo HTTP como fallback. HU24 usa `POST /test-runs/{runId}/targets/{targetId}/retry` sobre un target `INVALID`/`FAILED` de un run terminal y exige `Idempotency-Key`.
 
 HU23 está descartada definitivamente: no existen reparación automática, attempts ni corrección vía LLM. El frontend debe eliminar cualquier supuesto anterior al respecto.
 
@@ -356,7 +374,11 @@ HU23 está descartada definitivamente: no existen reparación automática, attem
 | Iniciar indexación | Implementado completo | sí |
 | Polling/resultados de ProjectVersion | Implementado completo | sí |
 | Inventario | Implementado completo | sí |
-| Generación/validación | Implementado en Core; auth/idempotencia Sandbox por completar en Core | sí; no confundir con e2e ya verificado |
+| Generación/validación | Implementado e integrado end-to-end | sí |
 | Artifacts | Implementado en Core | sí |
-| Experimentos | Implementado en Core; idempotencia durable por completar | sí |
-| Historial/WebSocket/retry | Implementado en Core; adapter frontend pendiente | sí |
+| Experimentos | Implementado e integrado; idempotencia durable | sí |
+| Historial/WebSocket/retry | Implementado en Core y Developer Console | sí |
+| Explorador de contexto RAG/agente | Aprobado en `INTEROP-1.6`; Core pendiente | sí, cuando Core publique las rutas |
+| Autenticación correo + propiedad | Aprobada en `INTEROP-1.6`; Core/FE pendientes | sí |
+| GitHub real | `DEC-GH-001` PENDING | no |
+| GitHub simulado | Contrato de demo frontend | sí, solo mock y rotulado |

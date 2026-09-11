@@ -2,7 +2,7 @@
 
 ## Dependencias
 
-- `INTEROP-1.5`, contrato local de RAG Core y transversales de async state, errores, testing y accesibilidad.
+- `INTEROP-1.6`, contrato local de RAG Core y transversales de async state, errores, testing y accesibilidad.
 
 ## Diseño técnico
 

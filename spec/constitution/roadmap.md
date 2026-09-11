@@ -16,8 +16,10 @@ Mutation score/StrykerJS (`DEC-MET-001`) es una mejora próxima deseada, pero pe
 Meta acumulada: FE 80%. HU20-HU22 y HU24: historial, WebSockets, estados más ricos y reintento manual desde cero. HU23 y la autorreparación automática están descartadas definitivamente.
 
 ## Sprint 4
-Meta: FE 100%. HU25-HU26: filtros/organización, experiencia visual consolidada, responsive/accessibility/performance y visualización opcional de coverage experimental si se aprueba.
+Meta: FE 100%. HU25-HU29: filtros/organización, experiencia visual Black Glass consolidada, responsive/accessibility/performance, explorador de contexto RAG, trayectoria observable del agente y autenticación por correo para el flujo ZIP.
+
+HU26 incluye una demo navegable del futuro recorrido GitHub —login, repositorios propios/colaborados, selección de rama base y creación simulada de PR— siempre rotulada como `DEMO · GITHUB SIMULADO`. Esta maqueta no espera la decisión `DEC-GH-001`, no llama a GitHub y no es evidencia de integración. OAuth, sincronización de repositorios y PR reales se planifican después, si el alcance se aprueba.
 
 **Checkpoint (2026-09-06):** dentro de HU25/HU26 y de la transversal `accessibility`, la auditoría de accesibilidad (teclado, labels/errores de formularios, tablas/dialogs, contraste) queda deliberadamente al final del backlog: se prioriza primero navegación/filtros, consolidación visual y conexión de adapters live. No se descarta; solo se pospone su ejecución al final de todo lo demás.
 
-La validación final en empresa utiliza el modo `live` y queda sujeta a `DEC-VAL-001`; el demo mock no aporta evidencia válida.
+La validación final en empresa utiliza el modo `live` y queda sujeta a las condiciones todavía abiertas de `DEC-VAL-001`; el demo mock no aporta evidencia válida.

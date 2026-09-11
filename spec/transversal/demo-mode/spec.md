@@ -1,7 +1,7 @@
 # demo-mode — Especificación
 
 **Estado:** aprobado.  
-**Historias:** soporte transversal para demostración de HU01-HU20, HU24
+**Historias:** soporte transversal para demostración de HU01-HU20, HU24, HU26-HU29
 
 ## Objetivo
 
@@ -17,10 +17,14 @@ Permitir una demostración navegable end-to-end aunque RAG Core todavía no haya
   inventario por versión, generación, validación, artifacts, comparación RAG vs
   agente generalista, historial de generaciones por ProjectVersion (HU20) y
   reintento manual de un target inválido/fallido (HU24) de forma coherente entre pantallas.
+- El escenario incluye trazas RAG y del agente conformes a `INTEROP-1.6`, incluidos candidatos descartados, intentos anteriores, snippets acotados y archivos descubiertos paginados.
+- `VITE_AUTH_MODE=mock` proporciona una identidad demostrativa estable solo cuando la fuente de datos también es mock/local. La UI de correo puede recorrerse sin contactar Supabase.
+- La trayectoria GitHub simulada usa identidades separadas de correo, repositorios semilla propios/colaborados, rama base `develop` seleccionable, rama propuesta `rag-test-studio/{run-slug}` y destino PR `develop` seleccionable.
+- Toda superficie GitHub mock mantiene visible `DEMO · GITHUB SIMULADO`. La creación de PR modifica únicamente estado efímero en memoria: no ejecuta OAuth, no almacena tokens, no hace requests y no produce efectos externos.
 - HU21/HU22 (progreso en tiempo real por WebSocket) no forman parte del mock: el
   modo mock no abre transporte de ningún tipo (HTTP ni WebSocket) y su polling ya
   simula el avance sin necesitar el complemento en tiempo real.
-- Las operaciones asíncronas mock atraviesan estados intermedios antes de finalizar, respetan cancelación del consumidor y ofrecen estados terminales.
+- Las operaciones asíncronas mock atraviesan estados intermedios antes de finalizar, respetan cancelación del consumidor y ofrecen estados terminales. Las transiciones respetan reduced motion.
 - El modo mock no realiza requests HTTP y no convierte rutas backend `PENDING` en contratos reales.
 - Los identificadores, métricas, errores y artifacts simulados deben estar claramente presentados como demostrativos.
 - Los datos mock no pueden exportarse, mezclarse ni contabilizarse como evidencia experimental o de validación en empresa.
@@ -31,3 +35,4 @@ Permitir una demostración navegable end-to-end aunque RAG Core todavía no haya
 - El mock no pretende reproducir performance, seguridad ni exactitud estadística del backend.
 - La persistencia del escenario entre recargas no es obligatoria.
 - Los contratos mock para capacidades backend `PENDING` no son autoridad para implementar RAG Core.
+- La integración GitHub real, vinculación de cuentas y permisos organizacionales permanecen fuera del mock y sujetas a `DEC-GH-001`.
