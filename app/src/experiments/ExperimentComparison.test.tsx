@@ -4,7 +4,7 @@ import { expect, test } from 'vitest'
 import { ExperimentComparison } from './ExperimentComparison'
 import type { ExperimentResultViewModel } from './types'
 
-const result: ExperimentResultViewModel = { baseline: { strategy: 'GENERALIST_AGENT', validRate: .5, compilationRate: .6, executionRate: .5, passedRate: .5, totalDurationMs: 1000, totalTokens: 100, estimatedCost: .01, failures: { COMPILATION: 2 } }, rag: { strategy: 'RAG', validRate: .75, compilationRate: .8, executionRate: .75, passedRate: .75, totalDurationMs: 1500, totalTokens: 160, estimatedCost: .02, failures: { COMPILATION: 1 }, retrievedChunks: 20, selectedChunks: 6, contextTokens: 1200 }, repetitions: [{ target: 'Cart.total', repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', durationMs: 500, totalTokens: 50 }] }
+const result: ExperimentResultViewModel = { baseline: { strategy: 'GENERALIST_AGENT', validRate: .5, compilationRate: .6, executionRate: .5, passedRate: .5, totalDurationMs: 1000, totalTokens: 100, estimatedCost: .01, failures: { COMPILATION: 2 } }, rag: { strategy: 'RAG', validRate: .75, compilationRate: .8, executionRate: .75, passedRate: .75, totalDurationMs: 1500, totalTokens: 160, estimatedCost: .02, failures: { COMPILATION: 1 }, retrievedChunks: 20, selectedChunks: 6, contextTokens: 1200 }, repetitions: [{ target: 'Cart.total', repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', durationMs: 500, totalTokens: 50, errorSummary: null }] }
 
 test('calcula diferencia de tasas en puntos porcentuales', () => {
   render(<ExperimentComparison result={result} />)
@@ -31,4 +31,12 @@ test('permite abrir la trazabilidad por repetición', async () => {
   render(<ExperimentComparison result={result} />)
   await user.click(screen.getByText('Ver detalle por target y repetición'))
   expect(screen.getByText('Cart.total')).toBeVisible()
+})
+
+test('muestra el mensaje de error de la repetición cuando falla por configuración del proyecto', async () => {
+  const user = userEvent.setup()
+  const failed: ExperimentResultViewModel = { ...result, repetitions: [{ target: 'Cart.total', repetition: 1, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'COMPILATION', durationMs: 500, totalTokens: 50, errorSummary: 'jest.config.js: Cannot find module ts-jest' }] }
+  render(<ExperimentComparison result={failed} />)
+  await user.click(screen.getByText('Ver detalle por target y repetición'))
+  expect(screen.getByText('jest.config.js: Cannot find module ts-jest')).toBeVisible()
 })

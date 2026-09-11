@@ -372,12 +372,12 @@ function experimentResult(target: string): ExperimentResultViewModel {
     baseline: { strategy: 'GENERALIST_AGENT', validRate: .5, compilationRate: .67, executionRate: .5, passedRate: .5, totalDurationMs: 4_820, totalTokens: 2_940, estimatedCost: .018, failures: { COMPILATION: 1, TEST_ASSERTION: 1 }, toolCalls: 6, filesInspected: 4 },
     rag: { strategy: 'RAG', validRate: .83, compilationRate: 1, executionRate: .83, passedRate: .83, totalDurationMs: 5_460, totalTokens: 4_180, estimatedCost: .027, failures: { TEST_ASSERTION: 1 }, retrievedChunks: 24, selectedChunks: 7, contextTokens: 2_180 },
     repetitions: [
-      { target, repetition: 1, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'COMPILATION', durationMs: 810, totalTokens: 480 },
-      { target, repetition: 2, strategy: 'GENERALIST_AGENT', valid: true, failureType: 'NONE', durationMs: 760, totalTokens: 470 },
-      { target, repetition: 3, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'TEST_ASSERTION', durationMs: 840, totalTokens: 520 },
-      { target, repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', durationMs: 910, totalTokens: 680 },
-      { target, repetition: 2, strategy: 'RAG', valid: true, failureType: 'NONE', durationMs: 890, totalTokens: 700 },
-      { target, repetition: 3, strategy: 'RAG', valid: false, failureType: 'TEST_ASSERTION', durationMs: 930, totalTokens: 710 },
+      { target, repetition: 1, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'COMPILATION', durationMs: 810, totalTokens: 480, errorSummary: 'jest.config.js: Cannot find module ts-jest' },
+      { target, repetition: 2, strategy: 'GENERALIST_AGENT', valid: true, failureType: 'NONE', durationMs: 760, totalTokens: 470, errorSummary: null },
+      { target, repetition: 3, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'TEST_ASSERTION', durationMs: 840, totalTokens: 520, errorSummary: 'Expected discount to be 20, received 15.' },
+      { target, repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', durationMs: 910, totalTokens: 680, errorSummary: null },
+      { target, repetition: 2, strategy: 'RAG', valid: true, failureType: 'NONE', durationMs: 890, totalTokens: 700, errorSummary: null },
+      { target, repetition: 3, strategy: 'RAG', valid: false, failureType: 'TEST_ASSERTION', durationMs: 930, totalTokens: 710, errorSummary: 'Expected discount to be 20, received 15.' },
     ],
   }
 }

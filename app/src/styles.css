@@ -281,6 +281,8 @@ code { color: #bfb7e5; background: #19152e; padding: 2px 5px; border-radius: 4px
 .retrieval-panel dd { margin: 6px 0 0; font: 750 15px ui-monospace, monospace; }
 .repetition-detail { border: 1px solid var(--border); margin-top: 18px; }
 .repetition-detail > summary { color: var(--accent); padding: 16px; cursor: pointer; font-weight: 700; }
+.repetition-error-summary { margin-top: 6px; padding: 8px 10px; max-width: 260px; }
+.repetition-error-summary p { margin: 0; font-size: 11px; }
 .analysis-history-heading { align-items: center; }
 .history-heading-meta { display: flex; align-items: center; gap: 12px; }
 .history-heading-meta > strong { color: var(--accent); font: 850 44px/1 ui-monospace, monospace; }

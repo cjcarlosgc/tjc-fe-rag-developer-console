@@ -33,8 +33,8 @@ test('separa las métricas de RAG y GENERALIST_AGENT en baseline/rag', () => {
       { strategy: 'GENERALIST_AGENT', validRate: .5, compilationRate: .67, executionRate: .5, passedRate: .5, generationDurationMs: 1200, executionDurationMs: 300, totalDurationMs: 1500, inputTokens: 800, outputTokens: 300, totalTokens: 1100, estimatedCost: .03, retrievedChunks: null, selectedChunks: null, contextTokens: null, toolCalls: 5, filesInspected: 3, failures: { COMPILATION: 1 } },
     ],
     repetitions: [
-      { repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', totalDurationMs: 350, totalTokens: 230 },
-      { repetition: 1, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'COMPILATION', totalDurationMs: 500, totalTokens: 360 },
+      { repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', totalDurationMs: 350, totalTokens: 230, errorSummary: null },
+      { repetition: 1, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'COMPILATION', totalDurationMs: 500, totalTokens: 360, errorSummary: 'jest.config.js: Cannot find module ts-jest' },
     ],
   }
 
@@ -44,5 +44,5 @@ test('separa las métricas de RAG y GENERALIST_AGENT en baseline/rag', () => {
   expect(operation.result?.rag).toMatchObject({ strategy: 'RAG', validRate: .83, totalTokens: 700 })
   expect(operation.result?.baseline).toMatchObject({ strategy: 'GENERALIST_AGENT', toolCalls: 5, filesInspected: 3 })
   expect(operation.result?.repetitions).toHaveLength(2)
-  expect(operation.result?.repetitions[0]).toMatchObject({ target: 'calculateTotal', strategy: 'RAG', durationMs: 350 })
+  expect(operation.result?.repetitions[0]).toMatchObject({ target: 'calculateTotal', strategy: 'RAG', durationMs: 350, errorSummary: null })
 })

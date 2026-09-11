@@ -50,6 +50,7 @@ interface ExperimentRepetitionResponse {
   failureType: FailureType
   totalDurationMs: number
   totalTokens: number | null
+  errorSummary: string | null
 }
 
 export interface ExperimentResultsResponse {
@@ -97,6 +98,7 @@ export function toExperimentResultViewModel(results: ExperimentResultsResponse, 
       failureType: repetition.failureType,
       durationMs: repetition.totalDurationMs,
       totalTokens: repetition.totalTokens,
+      errorSummary: repetition.errorSummary,
     })),
   }
 }
