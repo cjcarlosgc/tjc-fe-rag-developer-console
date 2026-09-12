@@ -344,8 +344,9 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .graph-legend { display: flex; flex-wrap: wrap; gap: 14px; margin: 0; padding: 0; list-style: none; color: var(--muted); font-size: 12px; }
 .graph-legend li { display: inline-flex; align-items: center; gap: 6px; }
 .legend-swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--muted); }
+/* Además del color, cada señal tiene una forma propia (círculo/cuadrado/anillo) para que no dependa solo de distinguir tonos — ver spec.md HU27. */
 .legend-swatch.legend-semantic { background: var(--signal-semantic); }
-.legend-swatch.legend-structural { background: var(--signal-structural); }
+.legend-swatch.legend-structural { background: var(--signal-structural); border-radius: 2px; }
 .legend-swatch.legend-dual { background: var(--signal-semantic); box-shadow: 0 0 0 2px var(--signal-structural); }
 .legend-swatch.legend-decision-selected { background: #8fe3a0; }
 .legend-swatch.legend-focus { background: var(--signal-focus); box-shadow: 0 0 0 2px rgba(255,255,255,.25); }
@@ -376,7 +377,7 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .signal-pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; border: 1px solid var(--border); background: #0d0a1c; color: var(--muted); font-size: 11px; padding: 6px 12px; cursor: pointer; }
 .signal-pill::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
 .signal-pill-semantic::before { background: var(--signal-semantic); }
-.signal-pill-structural::before { background: var(--signal-structural); }
+.signal-pill-structural::before { background: var(--signal-structural); border-radius: 2px; }
 .signal-pill-dual::before { background: var(--signal-semantic); box-shadow: 0 0 0 2px var(--signal-structural); }
 .signal-pill[aria-pressed="true"] { color: #eae7f7; border-color: var(--accent); background: rgba(201,180,250,.12); }
 .rag-node small { color: var(--muted); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -385,8 +386,9 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .rag-node.rag-node-target { border-color: var(--accent); background: var(--accent-dark); }
 .rag-node.discarded { border-style: dashed; background: color-mix(in srgb, var(--surface-2) 35%, var(--surface-1)); border-color: color-mix(in srgb, var(--border) 35%, var(--surface-1)); color: color-mix(in srgb, #eae7f7 45%, var(--surface-1)); }
 .rag-node.discarded small, .rag-node.discarded .node-badge, .rag-node.discarded .node-signal { color: color-mix(in srgb, var(--muted) 45%, var(--surface-1)); }
+/* El patrón de línea (sólida/doble/anillo+núcleo) distingue las 3 señales sin depender solo del color, para daltonismo. */
 .rag-node.selected-candidate.signal-semantic { border-left: 4px solid var(--signal-semantic); }
-.rag-node.selected-candidate.signal-structural { border-left: 4px solid var(--signal-structural); }
+.rag-node.selected-candidate.signal-structural { border-left: 6px double var(--signal-structural); }
 .rag-node.selected-candidate.signal-dual { border-left: 4px solid var(--signal-structural); box-shadow: inset 3px 0 0 var(--signal-semantic); }
 .rag-node.is-focused, .agent-node.is-focused { outline: 3px solid var(--signal-focus); outline-offset: 3px; box-shadow: 0 0 0 6px rgba(255,255,255,.14); }
 .side-panel { position: sticky; top: 20px; border: 1px solid var(--border); border-radius: 12px; background: var(--glass-bg); backdrop-filter: var(--glass-blur); padding: 22px; min-width: 0; }
