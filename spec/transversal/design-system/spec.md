@@ -40,6 +40,7 @@ Definir una identidad visual Black Glass coherente para toda la consola RAG Test
 - Ingesta puede usar una constelación discreta; generación, una forma orbital; espera genérica, una nube granular. Son conceptos adaptados, no reproducción literal de los GIF de referencia.
 - Las animaciones comunican progreso/relación y no bloquean interacción. No se fuerzan las tres en una misma pantalla.
 - Con `prefers-reduced-motion: reduce` se eliminan órbita, partículas y traslaciones; solo queda crossfade de máximo 120 ms.
+- Implementación (`app/src/ui/Loaders.tsx`): constelación → `GraphPulseIcon` (ingesta/análisis de una ProjectVersion, `AnalysisProgress`); forma orbital → `OrbitalIcon` (creación y progreso de un run de generación, `GenerationPage`/`RunProgress`); nube granular → `Spinner` (`LoadingState` y cualquier otra espera genérica, incl. el explorador de contexto). Ningún componente combina más de uno de estos tres en la misma pantalla.
 
 ## Referencias y autoridad
 

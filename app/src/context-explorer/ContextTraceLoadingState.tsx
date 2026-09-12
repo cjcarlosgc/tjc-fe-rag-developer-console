@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Spinner } from '../ui/Loaders'
 
 interface Props { label: string }
 
@@ -14,6 +15,7 @@ export function ContextTraceLoadingState({ label }: Props) {
 
   return <div className="analysis-progress" role="status" aria-live="polite">
     <div className="progress-header">
+      <Spinner />
       <div><span className="live-indicator" /><strong>{label}</strong></div>
       <span className="progress-value">T+{(elapsedMs / 1000).toFixed(1)}s</span>
     </div>

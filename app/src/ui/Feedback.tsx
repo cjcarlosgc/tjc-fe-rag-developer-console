@@ -1,3 +1,5 @@
+import { Spinner } from './Loaders'
+
 interface ErrorStateProps {
   message: string
   onRetry: () => void
@@ -14,5 +16,5 @@ export function ErrorState({ message, onRetry }: ErrorStateProps) {
 }
 
 export function LoadingState({ label }: { label: string }) {
-  return <div className="feedback" role="status"><span className="spinner" />{label}</div>
+  return <div className="feedback" role="status"><Spinner />{label}</div>
 }
