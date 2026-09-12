@@ -1,4 +1,8 @@
 import { createBrowserRouter } from 'react-router-dom'
+import { LoginPage } from './auth/LoginPage'
+import { RequestAccessPage } from './auth/RequestAccessPage'
+import { RequestPasswordResetPage } from './auth/RequestPasswordResetPage'
+import { RequireAuth } from './auth/RequireAuth'
 import { AppShell } from './ui/AppShell'
 import { ProjectDetailPage } from './projects/ProjectDetailPage'
 import { ProjectsPage } from './projects/ProjectsPage'
@@ -12,23 +16,31 @@ import { AnalysisHistoryPage } from './analysis/AnalysisHistoryPage'
 import { ContextExplorerPage } from './context-explorer/ContextExplorerPage'
 
 export const router = createBrowserRouter([
+  { path: '/login', element: <LoginPage /> },
+  { path: '/reset-password', element: <RequestPasswordResetPage /> },
+  { path: '/request-access', element: <RequestAccessPage /> },
   {
-    path: '/',
-    element: <AppShell />,
+    element: <RequireAuth />,
     children: [
-      { index: true, element: <ProjectsPage /> },
-      { path: 'projects/:projectId', element: <ProjectDetailPage /> },
-      { path: 'projects/:projectId/analyses', element: <AnalysisHistoryPage /> },
-      { path: 'projects/:projectId/inventory', element: <InventoryPage /> },
-      { path: 'projects/:projectId/versions/:projectVersionId/inventory', element: <InventoryPage /> },
-      { path: 'projects/:projectId/generate', element: <GenerationPage /> },
-      { path: 'projects/:projectId/runs', element: <RunHistoryPage /> },
-      { path: 'projects/:projectId/versions/:projectVersionId/runs', element: <RunHistoryPage /> },
-      { path: 'projects/:projectId/runs/:runId', element: <RunPage /> },
-      { path: 'projects/:projectId/runs/:runId/artifacts', element: <ArtifactsPage /> },
-      { path: 'projects/:projectId/runs/:runId/context', element: <ContextExplorerPage /> },
-      { path: 'projects/:projectId/experimental', element: <ExperimentPage /> },
-      { path: 'projects/:projectId/experimental/:experimentId/context', element: <ContextExplorerPage /> },
+      {
+        path: '/',
+        element: <AppShell />,
+        children: [
+          { index: true, element: <ProjectsPage /> },
+          { path: 'projects/:projectId', element: <ProjectDetailPage /> },
+          { path: 'projects/:projectId/analyses', element: <AnalysisHistoryPage /> },
+          { path: 'projects/:projectId/inventory', element: <InventoryPage /> },
+          { path: 'projects/:projectId/versions/:projectVersionId/inventory', element: <InventoryPage /> },
+          { path: 'projects/:projectId/generate', element: <GenerationPage /> },
+          { path: 'projects/:projectId/runs', element: <RunHistoryPage /> },
+          { path: 'projects/:projectId/versions/:projectVersionId/runs', element: <RunHistoryPage /> },
+          { path: 'projects/:projectId/runs/:runId', element: <RunPage /> },
+          { path: 'projects/:projectId/runs/:runId/artifacts', element: <ArtifactsPage /> },
+          { path: 'projects/:projectId/runs/:runId/context', element: <ContextExplorerPage /> },
+          { path: 'projects/:projectId/experimental', element: <ExperimentPage /> },
+          { path: 'projects/:projectId/experimental/:experimentId/context', element: <ContextExplorerPage /> },
+        ],
+      },
     ],
   },
 ])
