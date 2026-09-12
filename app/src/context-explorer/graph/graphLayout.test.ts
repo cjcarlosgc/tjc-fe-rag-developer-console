@@ -2,13 +2,25 @@ import { describe, expect, it } from 'vitest'
 import { computeGraphLayout, computeSequentialLayout } from './graphLayout'
 
 describe('computeGraphLayout', () => {
-  it('coloca la raíz en la columna 0 y cada candidato en su propia fila de la columna 1', () => {
+  it('coloca la raíz en la columna 0 y cada candidato en su propia fila de la columna 1 cuando entran todos en una columna', () => {
     const layout = computeGraphLayout('target-1', ['c1', 'c2', 'c3'])
     const root = layout.nodes.find((node) => node.id === 'target-1')!
     const candidates = layout.nodes.filter((node) => node.id !== 'target-1')
     expect(root.column).toBe(0)
     expect(candidates.every((node) => node.column === 1)).toBe(true)
     expect(candidates.map((node) => node.id)).toEqual(['c1', 'c2', 'c3'])
+  })
+
+  it('reparte los candidatos en varias columnas cuando superan el máximo de filas por columna (no se apilan en una sola)', () => {
+    const candidateIds = Array.from({ length: 14 }, (_, index) => `c${index + 1}`)
+    const layout = computeGraphLayout('target-1', candidateIds)
+    const candidates = layout.nodes.filter((node) => node.id !== 'target-1')
+    const columnsUsed = new Set(candidates.map((node) => node.column))
+    expect(columnsUsed.size).toBeGreaterThan(1)
+    for (const column of columnsUsed) {
+      const rowsInColumn = candidates.filter((node) => node.column === column).length
+      expect(rowsInColumn).toBeLessThanOrEqual(6)
+    }
   })
 
   it('es determinista: la misma entrada produce siempre el mismo layout', () => {
