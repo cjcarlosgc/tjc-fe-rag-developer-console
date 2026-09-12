@@ -29,9 +29,11 @@ h2 { font-size: 19px; }
 .button:disabled { opacity: .52; cursor: not-allowed; }
 .panel, .feedback, .empty-state { border: 1px solid var(--border-subtle); border-radius: 12px; background: var(--surface-1); padding: 28px; }
 .create-panel { margin-bottom: 28px; }
-.create-form { display: flex; align-items: flex-end; gap: 16px; }
+.create-form { display: flex; flex-direction: column; gap: 8px; }
 .field { display: flex; flex-direction: column; gap: 8px; flex: 1; }
 .field label { font-size: 14px; font-weight: 700; }
+.field-row { display: flex; align-items: center; gap: 16px; }
+.field-row input { flex: 1; }
 .field input { width: 100%; border: 1px solid var(--border-subtle); border-radius: 8px; background: var(--surface-1); color: #fff; padding: 12px; transition: border-color .15s; }
 .field input:focus-visible { border-color: var(--accent); }
 .field-hint { color: var(--muted); font-size: 12px; }
