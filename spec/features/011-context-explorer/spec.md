@@ -20,7 +20,7 @@ Mostrar en una pantalla amplia y navegable la evidencia de contexto recolectada 
 - Amarillo `#F2C94C` identifica señal semántica; turquesa `#34D6D3` señal estructural; coincidencia dual usa anillo turquesa y núcleo amarillo; blanco marca foco. Cada señal tiene además una forma propia (círculo/cuadrado/anillo+núcleo), no solo el color, para no depender de distinguir tonos (daltonismo).
 - El estado de un nodo tiene tres ejes independientes que pueden coexistir en el mismo nodo: **decisión** (Retenido/Descartado — dato de negocio, si RAG Core mantuvo el chunk en el contexto), **señal** (semántica/estructural/dual — tipo de coincidencia derivado), y **foco** (si ese nodo es el que muestra el panel lateral en este momento — puramente de interfaz). La leyenda y el detalle lateral deben poder expresarlos por separado; ninguno sustituye a los otros.
 - Candidatos descartados permanecen visibles a 30% de opacidad y/o borde discontinuo. Hover/focus explica `BELOW_MINIMUM_SCORE`, `TOP_K_LIMIT` o `TOKEN_BUDGET`. La atenuación no debe implementarse con `opacity` a nivel de elemento si el nodo tiene un tooltip hijo (heredaría la misma opacidad y quedaría ilegible); atenuar cada propiedad de color por separado.
-- El detalle lateral muestra path, símbolo, rango, score, tokens, señales, decisión, hash, truncamiento, snippet exacto y hasta tres líneas anteriores/posteriores desvanecidas progresivamente.
+- El detalle lateral muestra path, símbolo, rango, score, tokens, señales, decisión, hash, truncamiento, snippet exacto y hasta dos líneas anteriores/posteriores desvanecidas progresivamente. Cada línea de contexto se muestra en una sola fila, sin wrap; si no cabe se trunca con elipsis (no scroll ni ajuste de línea) — solo el snippet activo puede desplazarse horizontalmente.
 - El score nunca se rotula como probabilidad o confianza científica.
 
 ## Exploración del agente — HU28
@@ -30,7 +30,7 @@ Mostrar en una pantalla amplia y navegable la evidencia de contexto recolectada 
 - `list_files` muestra un nodo resumen (por ejemplo “146 archivos disponibles”); no dibuja todas las rutas inicialmente. “Mostrar descubiertos” abre el listado paginado.
 - `search_text` muestra coincidencias; `inspect_symbol`, declaración y referencias; `read_file`, contenido efectivamente entregado. Vacíos/errores se atenúan.
 - No usar categorías seleccionado/descartado. La etiqueta es “contexto observado por el agente” o “contenido entregado al agente”, nunca “contexto utilizado”.
-- El panel lateral muestra herramienta/paso, argumentos, archivo/símbolo, rango, snippet, tres líneas circundantes, truncamiento y hash.
+- El panel lateral muestra herramienta/paso, argumentos, archivo/símbolo, rango, snippet, dos líneas circundantes (mismo componente y misma regla de truncamiento que HU27), truncamiento y hash.
 
 ## Interacción común
 

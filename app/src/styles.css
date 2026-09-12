@@ -404,7 +404,7 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .excerpt-lines { min-width: 0; }
 .excerpt-line { display: flex; gap: 10px; min-width: 0; font: 12px ui-monospace, monospace; }
 .excerpt-line .line-number { flex: 0 0 auto; color: #6f6a8c; min-width: 24px; text-align: right; }
-.excerpt-line code { min-width: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.excerpt-line code { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .excerpt-lines.snippet pre { margin: 0; padding: 10px; background: #0b0917; border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; font: 12px ui-monospace, monospace; }
 .excerpt-truncated { color: #f1ca7c; font-size: 12px; margin: 4px 0; }
 .excerpt-hash { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 11px; margin-top: 6px; }
