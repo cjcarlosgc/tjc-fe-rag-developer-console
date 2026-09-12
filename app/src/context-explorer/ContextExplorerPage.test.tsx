@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
 import { mockStartExperiment, resetMockBackend } from '../api/mockBackend'
-import { renderApp } from '../test/render'
+import { clickGraphNode, renderApp } from '../test/render'
 import { ContextExplorerPage } from './ContextExplorerPage'
 
 const ROUTE = '/projects/:projectId/runs/:runId/context'
@@ -37,10 +37,9 @@ describe('ContextExplorerPage', () => {
   })
 
   it('seleccionar un candidato actualiza el panel lateral con su detalle', async () => {
-    const user = userEvent.setup()
     renderApp(<ContextExplorerPage />, { initialEntry: RUN_ENTRY, routePath: ROUTE })
     await screen.findByRole('button', { name: /calculateTotal/ })
-    await user.click(screen.getByRole('button', { name: /formatCurrency/ }))
+    clickGraphNode(screen.getByRole('button', { name: /formatCurrency/ }))
     const panel = screen.getByRole('complementary', { name: 'Detalle del candidato' })
     expect(within(panel).getByText('Hash del contenido')).toBeInTheDocument()
     expect(within(panel).getByText(/no representa una probabilidad/)).toBeInTheDocument()

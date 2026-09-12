@@ -42,8 +42,6 @@ export function RagGraph({ detail, candidates = detail.candidates, selectedId, o
       ariaLabel={`Grafo RAG del target ${detail.target.excerpt.symbolName ?? rootId}`}
       nodes={layout.nodes}
       edges={edges}
-      width={layout.width}
-      height={layout.height}
       selectedId={selectedId}
       onSelect={onSelect}
       renderNode={(node, state) => {

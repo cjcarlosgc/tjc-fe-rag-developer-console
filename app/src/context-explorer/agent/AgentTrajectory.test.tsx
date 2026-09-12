@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+import { clickGraphNode } from '../../test/render'
 import { AgentTrajectory } from './AgentTrajectory'
 import type { AgentContextTraceDetail } from '../types'
 
@@ -34,11 +34,10 @@ describe('AgentTrajectory', () => {
     expect(container.textContent).not.toMatch(/seleccionado|descartado|chain-of-thought|confianza/i)
   })
 
-  it('selecciona un paso al hacer click', async () => {
-    const user = userEvent.setup()
+  it('selecciona un paso al hacer click', () => {
     const onSelect = vi.fn()
     render(<AgentTrajectory detail={detail} selectedId={null} onSelect={onSelect} />)
-    await user.click(screen.getByRole('button', { name: /Buscar texto/ }))
+    clickGraphNode(screen.getByRole('button', { name: /Buscar texto/ }))
     expect(onSelect).toHaveBeenCalledWith('step-2')
   })
 })

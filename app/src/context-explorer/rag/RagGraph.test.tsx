@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+import { clickGraphNode } from '../../test/render'
 import { RagGraph } from './RagGraph'
 import type { RagContextTraceDetail, SourceExcerpt } from '../types'
 
@@ -52,11 +53,10 @@ describe('RagGraph', () => {
     expect(screen.getAllByText(/Señal dual/i).length).toBeGreaterThan(0)
   })
 
-  it('selecciona un nodo al hacer click', async () => {
-    const user = userEvent.setup()
+  it('selecciona un nodo al hacer click', () => {
     const onSelect = vi.fn()
     render(<RagGraph detail={detail} selectedId={null} onSelect={onSelect} />)
-    await user.click(screen.getByRole('button', { name: /CouponPolicy/ }))
+    clickGraphNode(screen.getByRole('button', { name: /CouponPolicy/ }))
     expect(onSelect).toHaveBeenCalledWith('c2')
   })
 

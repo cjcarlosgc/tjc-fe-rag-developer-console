@@ -353,15 +353,16 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .graph-canvas { position: relative; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-1); overflow: hidden; }
 .graph-toolbar { position: absolute; top: 12px; right: 12px; z-index: 2; display: flex; gap: 8px; }
 .graph-toolbar .button { min-height: 32px; padding: 0 12px; font-size: 12px; }
-.graph-viewport { height: 480px; overflow: hidden; cursor: grab; touch-action: none; }
-.graph-viewport:active { cursor: grabbing; }
-.graph-edge { fill: none; stroke: var(--border); stroke-width: 1.5; }
+.graph-viewport { height: 480px; overflow: hidden; }
+.graph-viewport .react-flow { --xy-background-color: transparent; }
+.graph-viewport .react-flow__node { background: transparent; border: none; box-shadow: none; padding: 0; display: block; }
+/* Con posición/tamaño ya calculados por graphLayout.ts no hace falta esperar a que React Flow "mida" el nodo antes de mostrarlo. */
+.graph-viewport .react-flow__node-graphNode { visibility: visible !important; pointer-events: auto !important; }
+.graph-viewport .react-flow__edge-path { stroke: var(--border); stroke-width: 1.5; }
 .graph-node { all: unset; display: block; width: 100%; height: 100%; box-sizing: border-box; cursor: pointer; border-radius: 10px; transition: transform var(--motion-hover) var(--ease-glass); }
 .graph-node:hover { transform: translateY(-2px); }
 .graph-node:focus-visible { outline: 3px solid rgba(201,180,250,.42); outline-offset: 2px; }
-.graph-minimap { position: absolute; right: 12px; bottom: 12px; width: 120px; height: 84px; border: 1px solid var(--border); border-radius: 8px; background: rgba(11,11,13,.85); pointer-events: none; }
-.minimap-node { fill: var(--muted); opacity: .6; }
-.minimap-node.selected { fill: var(--signal-focus); opacity: 1; }
+.graph-minimap.react-flow__minimap { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
 .rag-node, .agent-node { position: relative; display: flex; flex-direction: column; gap: 4px; width: 100%; height: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); color: #eae7f7; text-align: left; transition: background var(--motion-node) var(--ease-glass), border-color var(--motion-node) var(--ease-glass), color var(--motion-node) var(--ease-glass); }
 .rag-node .is-discarded-label { text-decoration: line-through; text-decoration-color: var(--muted); }
 .node-hover-preview { position: absolute; left: 0; bottom: calc(100% + 8px); z-index: 6; display: none; flex-direction: column; gap: 6px; width: 240px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--glass-bg); backdrop-filter: var(--glass-blur); box-shadow: 0 16px 35px rgba(0,0,0,.6); pointer-events: none; white-space: normal; }

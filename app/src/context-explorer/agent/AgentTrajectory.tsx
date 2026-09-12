@@ -29,8 +29,6 @@ export function AgentTrajectory({ detail, selectedId, onSelect }: Props) {
       ariaLabel={`Trayectoria del agente para ${detail.targetId}`}
       nodes={layout.nodes}
       edges={edges}
-      width={layout.width}
-      height={layout.height}
       selectedId={selectedId}
       onSelect={onSelect}
       renderNode={(node, state) => {

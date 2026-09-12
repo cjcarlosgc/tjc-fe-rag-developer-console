@@ -1,5 +1,8 @@
-import { useRef, useState } from 'react'
-import type { PointerEvent, ReactNode, WheelEvent } from 'react'
+import { useEffect, useMemo } from 'react'
+import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react'
+import { Handle, MiniMap, Position, ReactFlow, ReactFlowProvider, useReactFlow, useViewport } from '@xyflow/react'
+import type { Edge, Node, NodeProps, NodeTypes } from '@xyflow/react'
+import '@xyflow/react/dist/style.css'
 import type { GraphNodeLayout } from './graphLayout'
 import { useGraphKeyboardNav } from './useGraphKeyboardNav'
 
@@ -8,8 +11,6 @@ export interface GraphEdge { from: string; to: string }
 interface Props {
   nodes: GraphNodeLayout[]
   edges: GraphEdge[]
-  width: number
-  height: number
   selectedId: string | null
   onSelect: (id: string) => void
   ariaLabel: string
@@ -23,75 +24,105 @@ const MAX_SCALE = 2
 const DEFAULT_NODE_WIDTH = 240
 const DEFAULT_NODE_HEIGHT = 88
 
-/** Canvas SVG hand-rolled: pan/zoom, minimap discreto y roving-tabindex compartidos entre RAG (HU27) y agente (HU28). */
-export function GraphCanvas({ nodes, edges, width, height, selectedId, onSelect, ariaLabel, renderNode, nodeWidth = DEFAULT_NODE_WIDTH, nodeHeight = DEFAULT_NODE_HEIGHT }: Props) {
-  const [view, setView] = useState({ scale: 1, tx: 0, ty: 0 })
-  const dragRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null)
+interface FlowNodeData extends Record<string, unknown> {
+  content: ReactNode
+  isRovingTarget: boolean
+  isSelected: boolean
+  registerNode: (id: string, element: HTMLElement | null) => void
+  onFocusNode: (id: string) => void
+  onSelectNode: (id: string) => void
+  onKeyDownNode: (event: ReactKeyboardEvent<HTMLElement>, id: string) => void
+}
+
+type FlowNode = Node<FlowNodeData, 'graphNode'>
+
+/** Nodo custom de React Flow: reusa el <button> con roving-tabindex ya existente, solo cambia quién lo posiciona. */
+function GraphFlowNode({ id, data }: NodeProps<FlowNode>) {
+  return <>
+    <Handle type="target" position={Position.Left} style={{ visibility: 'hidden' }} />
+    <button
+      type="button"
+      ref={(element) => data.registerNode(id, element)}
+      className={`graph-node${data.isSelected ? ' selected' : ''}`}
+      tabIndex={data.isRovingTarget ? 0 : -1}
+      aria-pressed={data.isSelected}
+      onFocus={() => data.onFocusNode(id)}
+      onClick={() => data.onSelectNode(id)}
+      onKeyDown={(event) => data.onKeyDownNode(event, id)}
+    >
+      {data.content}
+    </button>
+    <Handle type="source" position={Position.Right} style={{ visibility: 'hidden' }} />
+  </>
+}
+
+const nodeTypes: NodeTypes = { graphNode: GraphFlowNode }
+
+function GraphCanvasInner({ nodes, edges, selectedId, onSelect, ariaLabel, renderNode, nodeWidth = DEFAULT_NODE_WIDTH, nodeHeight = DEFAULT_NODE_HEIGHT }: Props) {
   const { focusedId, registerNode, handleKeyDown, setFocusedId } = useGraphKeyboardNav(nodes, onSelect)
+  const { zoomIn, zoomOut, fitView, setCenter } = useReactFlow()
+  const { zoom } = useViewport()
 
-  const zoomBy = (factor: number) => setView((current) => ({ ...current, scale: Math.min(MAX_SCALE, Math.max(MIN_SCALE, current.scale * factor)) }))
-  const reset = () => setView({ scale: 1, tx: 0, ty: 0 })
+  // Mantiene visible el nodo con foco de teclado, incluso si el usuario paneó/hizo zoom lejos de él.
+  useEffect(() => {
+    if (!focusedId) return
+    const node = nodes.find((item) => item.id === focusedId)
+    if (!node) return
+    void setCenter(node.x + nodeWidth / 2, node.y + nodeHeight / 2, { zoom, duration: 200 })
+    // Solo debe reencuadrar cuando cambia el nodo con foco, no en cada cambio de zoom/paneo manual.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusedId])
 
-  const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
-    dragRef.current = { startX: event.clientX, startY: event.clientY, tx: view.tx, ty: view.ty }
-    event.currentTarget.setPointerCapture?.(event.pointerId)
-  }
-  const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
-    if (!dragRef.current) return
-    const drag = dragRef.current
-    setView((current) => ({ ...current, tx: drag.tx + (event.clientX - drag.startX), ty: drag.ty + (event.clientY - drag.startY) }))
-  }
-  const onPointerUp = () => { dragRef.current = null }
-  const onWheel = (event: WheelEvent<HTMLDivElement>) => {
-    event.preventDefault()
-    zoomBy(event.deltaY < 0 ? 1.1 : 0.9)
-  }
+  const flowNodes: FlowNode[] = useMemo(() => nodes.map((node) => {
+    const isSelected = node.id === selectedId
+    const isRovingTarget = focusedId ? node.id === focusedId : node === nodes[0]
+    const data: FlowNodeData = {
+      content: renderNode(node, { selected: isSelected }),
+      isRovingTarget,
+      isSelected,
+      registerNode,
+      onFocusNode: setFocusedId,
+      onSelectNode: onSelect,
+      onKeyDownNode: handleKeyDown,
+    }
+    return { id: node.id, type: 'graphNode', position: { x: node.x, y: node.y }, width: nodeWidth, height: nodeHeight, data }
+  }), [nodes, selectedId, focusedId, renderNode, registerNode, setFocusedId, onSelect, handleKeyDown, nodeWidth, nodeHeight])
+
+  const flowEdges: Edge[] = useMemo(() => edges.map((edge) => ({ id: `${edge.from}-${edge.to}`, source: edge.from, target: edge.to, focusable: false })), [edges])
 
   return <div className="graph-canvas">
     <div className="graph-toolbar" role="toolbar" aria-label="Controles del grafo">
-      <button type="button" className="button secondary" onClick={() => zoomBy(1.2)}>Acercar</button>
-      <button type="button" className="button secondary" onClick={() => zoomBy(0.8)}>Alejar</button>
-      <button type="button" className="button secondary" onClick={reset}>Reencuadrar</button>
+      <button type="button" className="button secondary" onClick={() => zoomIn({ duration: 150 })}>Acercar</button>
+      <button type="button" className="button secondary" onClick={() => zoomOut({ duration: 150 })}>Alejar</button>
+      <button type="button" className="button secondary" onClick={() => fitView({ duration: 200 })}>Reencuadrar</button>
     </div>
-    <div className="graph-viewport" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerLeave={onPointerUp} onWheel={onWheel}>
-      <svg role="group" aria-label={ariaLabel} width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} style={{ transform: `translate(${view.tx}px, ${view.ty}px) scale(${view.scale})`, transformOrigin: '0 0' }}>
-        <g className="graph-edges" aria-hidden="true">
-          {edges.map((edge) => {
-            const from = nodes.find((node) => node.id === edge.from)
-            const to = nodes.find((node) => node.id === edge.to)
-            if (!from || !to) return null
-            const x1 = from.x + nodeWidth
-            const y1 = from.y + nodeHeight / 2
-            const x2 = to.x
-            const y2 = to.y + nodeHeight / 2
-            const midX = (x1 + x2) / 2
-            return <path key={`${edge.from}-${edge.to}`} className="graph-edge" d={`M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`} />
-          })}
-        </g>
-        <g className="graph-nodes">
-          {nodes.map((node) => {
-            const selected = node.id === selectedId
-            const isRovingTarget = focusedId ? node.id === focusedId : node === nodes[0]
-            return <foreignObject key={node.id} x={node.x} y={node.y} width={nodeWidth} height={nodeHeight} style={{ overflow: 'visible' }}>
-              <button
-                type="button"
-                ref={(element) => registerNode(node.id, element)}
-                className={`graph-node${selected ? ' selected' : ''}`}
-                tabIndex={isRovingTarget ? 0 : -1}
-                aria-pressed={selected}
-                onFocus={() => setFocusedId(node.id)}
-                onClick={() => onSelect(node.id)}
-                onKeyDown={(event) => handleKeyDown(event, node.id)}
-              >
-                {renderNode(node, { selected })}
-              </button>
-            </foreignObject>
-          })}
-        </g>
-      </svg>
+    <div className="graph-viewport" role="group" aria-label={ariaLabel}>
+      <ReactFlow
+        colorMode="dark"
+        nodes={flowNodes}
+        edges={flowEdges}
+        nodeTypes={nodeTypes}
+        nodesDraggable={false}
+        nodesFocusable={false}
+        edgesFocusable={false}
+        elementsSelectable={false}
+        panOnDrag
+        panOnScroll
+        zoomOnScroll={false}
+        zoomOnDoubleClick={false}
+        zoomOnPinch
+        minZoom={MIN_SCALE}
+        maxZoom={MAX_SCALE}
+        proOptions={{ hideAttribution: true }}
+        fitView
+      >
+        <MiniMap className="graph-minimap" pannable zoomable nodeColor="var(--muted)" nodeStrokeWidth={0} maskColor="rgba(11,11,13,.85)" />
+      </ReactFlow>
     </div>
-    <svg className="graph-minimap" role="img" aria-label="Minimapa del grafo" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet">
-      {nodes.map((node) => <rect key={node.id} x={node.x} y={node.y} width={nodeWidth} height={nodeHeight} className={node.id === selectedId ? 'minimap-node selected' : 'minimap-node'} />)}
-    </svg>
   </div>
+}
+
+/** Canvas de grafo: pan/zoom vía React Flow (maneja pinch/scroll de trackpad correctamente), roving-tabindex propio compartido entre RAG (HU27) y agente (HU28). */
+export function GraphCanvas(props: Props) {
+  return <ReactFlowProvider><GraphCanvasInner {...props} /></ReactFlowProvider>
 }
