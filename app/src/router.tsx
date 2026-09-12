@@ -9,6 +9,7 @@ import { RunHistoryPage } from './runs/RunHistoryPage'
 import { ArtifactsPage } from './artifacts/ArtifactsPage'
 import { ExperimentPage } from './experiments/ExperimentPage'
 import { AnalysisHistoryPage } from './analysis/AnalysisHistoryPage'
+import { ContextExplorerPage } from './context-explorer/ContextExplorerPage'
 
 export const router = createBrowserRouter([
   {
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
       { path: 'projects/:projectId/versions/:projectVersionId/runs', element: <RunHistoryPage /> },
       { path: 'projects/:projectId/runs/:runId', element: <RunPage /> },
       { path: 'projects/:projectId/runs/:runId/artifacts', element: <ArtifactsPage /> },
+      { path: 'projects/:projectId/runs/:runId/context', element: <ContextExplorerPage /> },
       { path: 'projects/:projectId/experimental', element: <ExperimentPage /> },
     ],
   },

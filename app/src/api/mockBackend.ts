@@ -1,4 +1,5 @@
 import type { ArtifactViewModel } from '../artifacts/types'
+import type { ContextTraceDetail, ContextTracePage, ContextTraceSummary, DiscoveredFilePage, ExperimentContextTraceFilters, RagCandidateNode, RunContextTraceFilters, SourceExcerpt } from '../context-explorer/types'
 import type { ExperimentAccepted, ExperimentOperation, ExperimentResultViewModel } from '../experiments/types'
 import type { GenerationAccepted, GenerationConfiguration } from '../generation/types'
 import type { InventoryTargetViewModel, TestInventoryResponse } from '../inventory/types'
@@ -30,11 +31,19 @@ interface MockExperimentState {
   polls: number
 }
 
+interface MockContextTraceState {
+  detail: ContextTraceDetail
+  /** HU27: cuántas llamadas a `getContextTrace` deben responder `409 CONTEXT_TRACE_NOT_FINISHED` antes de servir el detalle. */
+  notFinishedUntilPolls: number
+  polls: number
+}
+
 const projects = new Map<string, Project>()
 const versions = new Map<string, MockVersionState>()
 const runs = new Map<string, MockRunState>()
 const artifacts = new Map<string, ArtifactViewModel[]>()
 const experiments = new Map<string, MockExperimentState>()
+const contextTraces = new Map<string, MockContextTraceState>()
 let sequence = 2000
 
 const clone = <T>(value: T): T => structuredClone(value)
@@ -56,6 +65,128 @@ function buildInventory(projectVersionId: string, revision = 7): TestInventoryRe
   const targets = revision === 5 ? [allTargets[0], allTargets[2], allTargets[3]] : revision === 6 ? allTargets.slice(0, 4) : allTargets
   const targetsWithTest = targets.filter((target) => target.hasTest).length
   return { projectVersionId, detectedFramework: 'VITEST', targetsTotal: targets.length, targetsWithTest, targetsMissingTest: targets.length - targetsWithTest, targets }
+}
+
+/** No es un hash real; solo produce un string con forma hexadecimal estable para la demo. */
+function fakeSha256(label: string): string {
+  let hash = 0
+  for (let index = 0; index < label.length; index += 1) hash = (hash * 31 + label.charCodeAt(index)) >>> 0
+  return hash.toString(16).padStart(8, '0').repeat(8).slice(0, 64)
+}
+
+interface ExcerptSeed {
+  filePath: string
+  symbolName: string | null
+  parentSymbolName?: string | null
+  startLine: number | null
+  endLine: number | null
+  snippet: string
+  before?: { lineNumber: number; content: string }[]
+  after?: { lineNumber: number; content: string }[]
+  truncated?: boolean
+}
+
+function buildExcerpt(seed: ExcerptSeed): SourceExcerpt {
+  return {
+    filePath: seed.filePath,
+    symbolName: seed.symbolName,
+    parentSymbolName: seed.parentSymbolName ?? null,
+    startLine: seed.startLine,
+    endLine: seed.endLine,
+    snippet: seed.snippet,
+    before: seed.before ?? [],
+    after: seed.after ?? [],
+    contentSha256: fakeSha256(`${seed.filePath}:${seed.symbolName ?? ''}:${seed.startLine ?? 0}`),
+    truncated: seed.truncated ?? false,
+  }
+}
+
+function toContextTraceSummary(detail: ContextTraceDetail): ContextTraceSummary {
+  const { id, kind, projectVersionId, targetId, testRunId, experimentId, strategy, repetition, attempt, current, artifactIds, createdAt } = detail
+  return { id, kind, projectVersionId, targetId, testRunId, experimentId, strategy, repetition, attempt, current, artifactIds, createdAt }
+}
+
+/** HU27: ~12 candidatos para `trace_rag_order_total` cubriendo SELECTED solo-semántico, SELECTED dual y las 3 razones de descarte. */
+function buildOrderTotalCandidates(): RagCandidateNode[] {
+  return [
+    { chunkId: 'chunk-001', rank: 1, tokenCount: 120, semanticScore: .91, structuralMatch: null, combinedScore: .91, matchedVia: ['SEMANTIC'], decision: 'SELECTED', discardReason: null, excerpt: buildExcerpt({ filePath: 'src/domain/OrderService.ts', symbolName: 'OrderService', startLine: 1, endLine: 18, snippet: 'export class OrderService {\n  constructor(private readonly coupons: CouponPolicy) {}\n}', before: [], after: [] }) },
+    { chunkId: 'chunk-002', rank: 2, tokenCount: 48, semanticScore: .77, structuralMatch: 'IMPORTS', combinedScore: .85, matchedVia: ['SEMANTIC', 'IMPORTS'], decision: 'SELECTED', discardReason: null, excerpt: buildExcerpt({ filePath: 'src/shared/money.ts', symbolName: 'formatCurrency', startLine: 1, endLine: 9, snippet: "export function formatCurrency(amount: number): string {\n  return `$${amount.toFixed(2)}`\n}", before: [{ lineNumber: 1, content: "import { CURRENCY_SYMBOL } from './constants'" }] }) },
+    { chunkId: 'chunk-003', rank: 3, tokenCount: 96, semanticScore: null, structuralMatch: 'IMPORTED_BY', combinedScore: .58, matchedVia: ['IMPORTED_BY'], decision: 'SELECTED', discardReason: null, excerpt: buildExcerpt({ filePath: 'src/domain/CouponPolicy.ts', symbolName: 'CouponPolicy', startLine: 1, endLine: 14, snippet: 'export class CouponPolicy {\n  apply(order: Order, code: string): number { /* ... */ }\n}' }) },
+    { chunkId: 'chunk-004', rank: 4, tokenCount: 40, semanticScore: .68, structuralMatch: null, combinedScore: .68, matchedVia: ['SEMANTIC'], decision: 'SELECTED', discardReason: null, excerpt: buildExcerpt({ filePath: 'src/domain/OrderItem.ts', symbolName: 'OrderItem', startLine: 1, endLine: 10, snippet: 'export interface OrderItem {\n  price: number\n  quantity: number\n}' }) },
+    { chunkId: 'chunk-005', rank: 5, tokenCount: 84, semanticScore: .81, structuralMatch: 'IMPORTS', combinedScore: .9, matchedVia: ['SEMANTIC', 'IMPORTS'], decision: 'SELECTED', discardReason: null, excerpt: buildExcerpt({ filePath: 'src/domain/DiscountEngine.ts', symbolName: 'applyDiscount', parentSymbolName: 'DiscountEngine', startLine: 12, endLine: 20, snippet: 'applyDiscount(total: number, coupon: Coupon): number {\n  return total - coupon.amount\n}' }) },
+    { chunkId: 'chunk-006', rank: 6, tokenCount: 70, semanticScore: .55, structuralMatch: null, combinedScore: .55, matchedVia: ['SEMANTIC'], decision: 'DISCARDED', discardReason: 'BELOW_MINIMUM_SCORE', excerpt: buildExcerpt({ filePath: 'src/domain/Inventory.ts', symbolName: 'reserveStock', startLine: 5, endLine: 15, snippet: 'reserveStock(sku: string, quantity: number): void { /* ... */ }' }) },
+    { chunkId: 'chunk-007', rank: 7, tokenCount: 60, semanticScore: .49, structuralMatch: null, combinedScore: .49, matchedVia: ['SEMANTIC'], decision: 'DISCARDED', discardReason: 'BELOW_MINIMUM_SCORE', excerpt: buildExcerpt({ filePath: 'src/domain/TaxCalculator.ts', symbolName: 'computeTax', startLine: 3, endLine: 9, snippet: 'computeTax(amount: number): number { /* ... */ }' }) },
+    { chunkId: 'chunk-008', rank: 8, tokenCount: 30, semanticScore: .62, structuralMatch: null, combinedScore: .62, matchedVia: ['SEMANTIC'], decision: 'DISCARDED', discardReason: 'TOP_K_LIMIT', excerpt: buildExcerpt({ filePath: 'src/shared/logger.ts', symbolName: 'createLogger', startLine: 1, endLine: 6, snippet: 'export function createLogger(scope: string) { /* ... */ }' }) },
+    { chunkId: 'chunk-009', rank: 9, tokenCount: 66, semanticScore: .6, structuralMatch: null, combinedScore: .6, matchedVia: ['SEMANTIC'], decision: 'DISCARDED', discardReason: 'TOP_K_LIMIT', excerpt: buildExcerpt({ filePath: 'src/domain/ShippingPolicy.ts', symbolName: 'estimateShipping', startLine: 8, endLine: 16, snippet: 'estimateShipping(order: Order): number { /* ... */ }' }) },
+    { chunkId: 'chunk-010', rank: 10, tokenCount: 210, semanticScore: .58, structuralMatch: null, combinedScore: .58, matchedVia: ['SEMANTIC'], decision: 'DISCARDED', discardReason: 'TOKEN_BUDGET', excerpt: buildExcerpt({ filePath: 'src/domain/RefundPolicy.ts', symbolName: 'RefundPolicy', startLine: 1, endLine: 22, snippet: 'export class RefundPolicy {\n  // contenido extenso truncado para la demo\n}', truncated: true, after: [{ lineNumber: 23, content: '}' }] }) },
+    { chunkId: 'chunk-011', rank: 11, tokenCount: 190, semanticScore: .52, structuralMatch: null, combinedScore: .52, matchedVia: ['SEMANTIC'], decision: 'DISCARDED', discardReason: 'TOKEN_BUDGET', excerpt: buildExcerpt({ filePath: 'src/domain/AuditTrail.ts', symbolName: 'record', startLine: 4, endLine: 9, snippet: 'record(event: AuditEvent): void { /* ... */ }' }) },
+    { chunkId: 'chunk-012', rank: 12, tokenCount: 44, semanticScore: .41, structuralMatch: null, combinedScore: .41, matchedVia: ['SEMANTIC'], decision: 'DISCARDED', discardReason: 'BELOW_MINIMUM_SCORE', excerpt: buildExcerpt({ filePath: 'src/domain/CurrencyConverter.ts', symbolName: 'convert', startLine: 2, endLine: 8, snippet: 'convert(amount: number, currency: Currency): number { /* ... */ }' }) },
+  ]
+}
+
+function seedContextTraces(): void {
+  const orderTotalTarget: SourceExcerpt = buildExcerpt({
+    filePath: 'src/domain/OrderService.ts',
+    symbolName: 'calculateTotal',
+    parentSymbolName: 'OrderService',
+    startLine: 24,
+    endLine: 26,
+    snippet: '  calculateTotal(items: OrderItem[]): number {\n    return items.reduce((total, item) => total + item.price * item.quantity, 0)\n  }',
+    before: [{ lineNumber: 21, content: 'class OrderService {' }, { lineNumber: 22, content: '  constructor(private readonly coupons: CouponPolicy) {}' }, { lineNumber: 23, content: '' }],
+    after: [{ lineNumber: 27, content: '' }, { lineNumber: 28, content: '  createOrder(items: OrderItem[]): Order {' }, { lineNumber: 29, content: '    const total = this.calculateTotal(items)' }],
+  })
+  const orderTotalCandidates = buildOrderTotalCandidates()
+  const selected = orderTotalCandidates.filter((candidate) => candidate.decision === 'SELECTED')
+
+  const currentTrace: ContextTraceDetail = {
+    id: 'trace_rag_order_total', kind: 'RAG', projectVersionId: 'ver_checkout_7', targetId: 'ver_checkout_7-method-total', testRunId: 'run_checkout_seed', experimentId: null,
+    strategy: 'RAG', repetition: null, attempt: 2, current: true, artifactIds: ['run_checkout_seed-artifact-1'], createdAt: '2026-08-31T15:01:10.000Z',
+    target: { chunkIds: ['chunk-target-order-total'], excerpt: orderTotalTarget, tokenCount: 38 },
+    candidates: orderTotalCandidates,
+    retrievedChunks: orderTotalCandidates.length,
+    selectedChunks: selected.length,
+    contextTokens: selected.reduce((total, candidate) => total + candidate.tokenCount, 0),
+    configuration: { minimumScore: .5, topK: 5, maxContextTokens: 4_000, semanticWeight: .7, structuralWeight: .3 },
+  }
+  contextTraces.set(currentTrace.id, { detail: currentTrace, notFinishedUntilPolls: 0, polls: 0 })
+
+  /** Intento previo conservado tras retry; se oculta salvo `includeSuperseded=true`. */
+  const supersededTrace: ContextTraceDetail = {
+    ...currentTrace,
+    id: 'trace_rag_order_total_attempt1',
+    attempt: 1,
+    current: false,
+    artifactIds: [],
+    createdAt: '2026-08-31T15:00:20.000Z',
+    candidates: orderTotalCandidates.slice(0, 4),
+    retrievedChunks: 4,
+    selectedChunks: orderTotalCandidates.slice(0, 4).filter((candidate) => candidate.decision === 'SELECTED').length,
+  }
+  contextTraces.set(supersededTrace.id, { detail: supersededTrace, notFinishedUntilPolls: 0, polls: 0 })
+
+  const couponTarget: SourceExcerpt = buildExcerpt({
+    filePath: 'src/domain/CouponPolicy.ts', symbolName: 'CouponPolicy', startLine: 1, endLine: 14,
+    snippet: 'export class CouponPolicy {\n  apply(order: Order, code: string): number { /* ... */ }\n}',
+  })
+  const couponCandidates: RagCandidateNode[] = [
+    { chunkId: 'chunk-coupon-001', rank: 1, tokenCount: 52, semanticScore: .88, structuralMatch: null, combinedScore: .88, matchedVia: ['SEMANTIC'], decision: 'SELECTED', discardReason: null, excerpt: buildExcerpt({ filePath: 'src/domain/DiscountEngine.ts', symbolName: 'applyDiscount', parentSymbolName: 'DiscountEngine', startLine: 12, endLine: 20, snippet: 'applyDiscount(total: number, coupon: Coupon): number { /* ... */ }' }) },
+    { chunkId: 'chunk-coupon-002', rank: 2, tokenCount: 60, semanticScore: .74, structuralMatch: 'IMPORTS', combinedScore: .82, matchedVia: ['SEMANTIC', 'IMPORTS'], decision: 'SELECTED', discardReason: null, excerpt: buildExcerpt({ filePath: 'src/domain/OrderService.ts', symbolName: 'createOrder', parentSymbolName: 'OrderService', startLine: 28, endLine: 34, snippet: 'createOrder(items: OrderItem[]): Order { /* ... */ }' }) },
+    { chunkId: 'chunk-coupon-003', rank: 3, tokenCount: 40, semanticScore: .58, structuralMatch: null, combinedScore: .58, matchedVia: ['SEMANTIC'], decision: 'DISCARDED', discardReason: 'TOP_K_LIMIT', excerpt: buildExcerpt({ filePath: 'src/domain/LoyaltyProgram.ts', symbolName: 'grantPoints', startLine: 6, endLine: 12, snippet: 'grantPoints(customerId: string, amount: number): void { /* ... */ }' }) },
+    { chunkId: 'chunk-coupon-004', rank: 4, tokenCount: 180, semanticScore: .5, structuralMatch: null, combinedScore: .5, matchedVia: ['SEMANTIC'], decision: 'DISCARDED', discardReason: 'TOKEN_BUDGET', excerpt: buildExcerpt({ filePath: 'src/domain/PromotionCatalog.ts', symbolName: 'PromotionCatalog', startLine: 1, endLine: 30, snippet: 'export class PromotionCatalog { /* ... */ }' }) },
+  ]
+  const couponSelected = couponCandidates.filter((candidate) => candidate.decision === 'SELECTED')
+  const couponTrace: ContextTraceDetail = {
+    id: 'trace_rag_coupon', kind: 'RAG', projectVersionId: 'ver_checkout_7', targetId: 'ver_checkout_7-class-coupon', testRunId: 'run_checkout_seed', experimentId: null,
+    strategy: 'RAG', repetition: null, attempt: 1, current: true, artifactIds: ['run_checkout_seed-artifact-2'], createdAt: '2026-08-31T15:01:30.000Z',
+    target: { chunkIds: ['chunk-target-coupon'], excerpt: couponTarget, tokenCount: 22 },
+    candidates: couponCandidates,
+    retrievedChunks: couponCandidates.length,
+    selectedChunks: couponSelected.length,
+    contextTokens: couponSelected.reduce((total, candidate) => total + candidate.tokenCount, 0),
+    configuration: { minimumScore: .5, topK: 5, maxContextTokens: 4_000, semanticWeight: .7, structuralWeight: .3 },
+  }
+  /** Simula un `409 CONTEXT_TRACE_NOT_FINISHED` transitorio: las primeras 2 consultas fallan, la 3ª sirve el detalle. */
+  contextTraces.set(couponTrace.id, { detail: couponTrace, notFinishedUntilPolls: 2, polls: 0 })
 }
 
 function seed(): void {
@@ -97,6 +228,7 @@ function seed(): void {
     retryPolls: 0,
   })
   artifacts.set('run_checkout_seed', buildArtifacts('run_checkout_seed', inventoryViewTargets(buildInventory('ver_checkout_7'))))
+  seedContextTraces()
 }
 
 export function resetMockBackend(): void {
@@ -105,6 +237,7 @@ export function resetMockBackend(): void {
   runs.clear()
   artifacts.clear()
   experiments.clear()
+  contextTraces.clear()
   sequence = 2000
   seed()
 }
@@ -404,4 +537,53 @@ export async function mockGetExperiment(experimentId: string): Promise<Experimen
   else if (state.polls === 2) state.operation = { ...state.operation, status: 'RUNNING', progress: 72 }
   else state.operation = { ...state.operation, status: 'COMPLETED', progress: 100 }
   return clone(state.operation)
+}
+
+/** HU27/HU28: `INTEROP-1.6 §6.7`. */
+export async function mockListRunContextTraces(runId: string, filters: RunContextTraceFilters): Promise<ContextTracePage> {
+  await latency()
+  const items = Array.from(contextTraces.values())
+    .map((state) => state.detail)
+    .filter((detail) => detail.testRunId === runId)
+    .filter((detail) => filters.artifactId ? detail.artifactIds.includes(filters.artifactId) : true)
+    .filter((detail) => filters.targetId ? detail.targetId === filters.targetId : true)
+    .filter((detail) => filters.includeSuperseded ? true : detail.current)
+    .sort((a, b) => a.targetId === b.targetId ? b.attempt - a.attempt : a.createdAt.localeCompare(b.createdAt))
+    .map(toContextTraceSummary)
+  void filters.cursor
+  return { items: items.map(clone), nextCursor: null }
+}
+
+export async function mockListExperimentContextTraces(experimentId: string, filters: ExperimentContextTraceFilters): Promise<ContextTracePage> {
+  await latency()
+  const items = Array.from(contextTraces.values())
+    .map((state) => state.detail)
+    .filter((detail) => detail.experimentId === experimentId)
+    .filter((detail) => filters.strategy ? detail.strategy === filters.strategy : true)
+    .filter((detail) => filters.repetition ? detail.repetition === filters.repetition : true)
+    .filter((detail) => filters.includeSuperseded ? true : detail.current)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    .map(toContextTraceSummary)
+  void filters.cursor
+  return { items: items.map(clone), nextCursor: null }
+}
+
+export async function mockGetContextTrace(traceId: string): Promise<ContextTraceDetail> {
+  await latency()
+  const state = contextTraces.get(traceId)
+  if (!state) notFound(`No existe la traza de contexto demo "${traceId}".`, 'CONTEXT_TRACE_NOT_FOUND')
+  if (state.polls < state.notFinishedUntilPolls) {
+    state.polls += 1
+    throw new ApiError('La traza de contexto demo todavía no está lista.', 409, 'demo-correlation-id', 'CONTEXT_TRACE_NOT_FINISHED')
+  }
+  return clone(state.detail)
+}
+
+export async function mockListDiscoveredFiles(traceId: string, step: number, cursor: string | null): Promise<DiscoveredFilePage> {
+  await latency()
+  const state = contextTraces.get(traceId)
+  if (!state || state.detail.kind !== 'AGENT') notFound(`No existen archivos descubiertos para la traza demo "${traceId}".`, 'CONTEXT_TRACE_NOT_FOUND')
+  void step
+  void cursor
+  return { items: [], nextCursor: null }
 }

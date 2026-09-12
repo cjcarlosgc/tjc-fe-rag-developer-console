@@ -12,7 +12,7 @@
 2. **SPEC_VERIFIED:** el analyst confirma que spec/plan/tasks son coherentes, que dependencias existen, que la puerta de decisiones fue evaluada y que no quedan decisiones pendientes que bloqueen el alcance.
 3. **AWAITING_APPROVAL:** esperar aprobación humana del alcance cuando el cambio altere comportamiento, contratos o arquitectura.
 4. **IN_PROGRESS:** implementer desarrolla únicamente el alcance aprobado dentro de `app/`.
-5. **IN_REVIEW:** reviewer verifica contrato, pruebas, errores, seguridad, observabilidad y no ampliación de alcance.
+5. **IN_REVIEW:** reviewer verifica contrato, pruebas, errores, seguridad, observabilidad y no ampliación de alcance. Cuando el work item tiene alcance de interfaz, el design-reviewer (`harness/roles/design-reviewer.md`) además compara la implementación contra el proyecto Stitch de referencia vía el servidor MCP `stitch`, por historia y antes de que esa historia pase a `DONE`.
 6. **DONE:** lint/test/build pasan, evidencia se registra en `harness/reports/`, tareas aplicables quedan cerradas y `activeWorkItem` vuelve a `null`.
 
 ## Puerta de decisiones
