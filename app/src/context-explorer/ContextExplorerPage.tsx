@@ -3,15 +3,18 @@ import { useParams, useSearchParams } from 'react-router-dom'
 import { useProject } from '../projects/queries'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
+import { AgentSidePanel } from './agent/AgentSidePanel'
+import { agentStatusLabel, agentStepNodeId, agentToolLabel } from './agent/agentLabels'
+import { AgentTrajectory } from './agent/AgentTrajectory'
 import { contextTraceErrorMessage } from './errors'
-import { useContextTraceDetail, useRunContextTraces } from './queries'
+import { useContextTraceDetail, useExperimentContextTraces, useRunContextTraces } from './queries'
 import { StructuredAlternativeView } from './graph/StructuredAlternativeView'
 import type { StructuredRow } from './graph/StructuredAlternativeView'
 import { RagGraph } from './rag/RagGraph'
 import { discardReasonLabel, filterRagCandidates, ragSignalLabel } from './rag/ragLabels'
 import type { RagSignalKind } from './rag/ragLabels'
 import { RagSidePanel } from './rag/RagSidePanel'
-import type { ContextTraceSummary, RagCandidateNode, RagContextTraceDetail } from './types'
+import type { AgentContextTraceDetail, ContextTraceStrategy, ContextTraceSummary, RagCandidateNode, RagContextTraceDetail } from './types'
 
 const ALL_SIGNAL_KINDS: Exclude<RagSignalKind, 'NONE'>[] = ['SEMANTIC', 'STRUCTURAL', 'DUAL']
 const signalPillLabel: Record<Exclude<RagSignalKind, 'NONE'>, string> = { SEMANTIC: 'Semántica', STRUCTURAL: 'Estructural', DUAL: 'Dual' }
@@ -24,10 +27,20 @@ function groupByTarget(traces: ContextTraceSummary[]): TargetGroup[] {
   return Array.from(map.entries()).map(([targetId, list]) => ({ targetId, traces: list.sort((a, b) => b.attempt - a.attempt) }))
 }
 
-function resolveSelectedTraceId(traceParam: string | null, allTraces: ContextTraceSummary[], targets: TargetGroup[]): string | null {
+function resolveSelectedTraceId(
+  traceParam: string | null,
+  allTraces: ContextTraceSummary[],
+  targets: TargetGroup[],
+  strategyParam: ContextTraceStrategy | null,
+  repetitionParam: number | null,
+): string | null {
   if (traceParam && allTraces.some((trace) => trace.id === traceParam)) return traceParam
+  if (strategyParam || repetitionParam) {
+    const match = allTraces.find((trace) => (!strategyParam || trace.strategy === strategyParam) && (!repetitionParam || trace.repetition === repetitionParam))
+    if (match) return match.id
+  }
   const first = targets[0]
-  if (!first) return null
+  if (!first) return allTraces[0]?.id ?? null
   return first.traces.find((trace) => trace.current)?.id ?? first.traces[0]?.id ?? null
 }
 
@@ -52,8 +65,18 @@ function buildRagRows(detail: RagContextTraceDetail, candidates: RagCandidateNod
   return rows
 }
 
+function buildAgentRows(detail: AgentContextTraceDetail): StructuredRow[] {
+  return [...detail.trajectory].sort((a, b) => a.step - b.step).map((step) => ({
+    id: agentStepNodeId(step.step),
+    primary: agentToolLabel[step.toolName],
+    secondary: step.observations[0]?.filePath ?? undefined,
+    status: agentStatusLabel[step.status],
+    meta: step.resultSummary,
+  }))
+}
+
 export function ContextExplorerPage() {
-  const { projectId = '', runId = '' } = useParams()
+  const { projectId = '', runId, experimentId } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const projectQuery = useProject(projectId)
 
@@ -62,32 +85,48 @@ export function ContextExplorerPage() {
   const view = searchParams.get('view') === 'list' ? 'list' : 'graph'
   const traceParam = searchParams.get('trace')
   const nodeParam = searchParams.get('node')
+  const strategyRaw = searchParams.get('strategy')
+  const strategyParam: ContextTraceStrategy | null = strategyRaw === 'RAG' || strategyRaw === 'GENERALIST_AGENT' ? strategyRaw : null
+  const repetitionRaw = Number(searchParams.get('repetition'))
+  const repetitionParam = repetitionRaw === 1 || repetitionRaw === 2 || repetitionRaw === 3 ? repetitionRaw : null
 
-  const updateParam = useCallback((key: string, value: string | null) => {
+  // Aplica varios cambios de query params en una sola actualización: dos llamadas seguidas a setSearchParams
+  // parten del mismo snapshot previo y la segunda pisaría a la primera.
+  const updateParams = useCallback((patch: Record<string, string | null>) => {
     setSearchParams((previous) => {
       const next = new URLSearchParams(previous)
-      if (value === null) next.delete(key)
-      else next.set(key, value)
+      for (const [key, value] of Object.entries(patch)) {
+        if (value === null) next.delete(key)
+        else next.set(key, value)
+      }
       return next
     }, { replace: true })
   }, [setSearchParams])
+  const updateParam = useCallback((key: string, value: string | null) => updateParams({ [key]: value }), [updateParams])
 
-  const tracesQuery = useRunContextTraces(runId, { artifactId, includeSuperseded })
+  // strategy/repetition de la URL solo eligen la traza inicial (resolveSelectedTraceId); el listado trae todas las repeticiones para poder alternar entre ellas.
+  const runTracesQuery = useRunContextTraces(runId ?? '', { artifactId, includeSuperseded }, Boolean(runId))
+  const experimentTracesQuery = useExperimentContextTraces(experimentId ?? '', { includeSuperseded }, Boolean(experimentId))
+  const tracesQuery = experimentId ? experimentTracesQuery : runTracesQuery
   const allTraces = useMemo(() => tracesQuery.data?.pages.flatMap((page) => page.items) ?? [], [tracesQuery.data])
   const targets = useMemo(() => groupByTarget(allTraces), [allTraces])
-  const selectedTraceId = useMemo(() => resolveSelectedTraceId(traceParam, allTraces, targets), [traceParam, allTraces, targets])
-
+  const selectedTraceId = useMemo(
+    () => resolveSelectedTraceId(traceParam, allTraces, targets, strategyParam, repetitionParam),
+    [traceParam, allTraces, targets, strategyParam, repetitionParam],
+  )
   useEffect(() => {
     if (selectedTraceId && selectedTraceId !== traceParam) updateParam('trace', selectedTraceId)
   }, [selectedTraceId, traceParam, updateParam])
 
   const detailQuery = useContextTraceDetail(selectedTraceId)
+  const ragDetail = detailQuery.data?.kind === 'RAG' ? detailQuery.data : null
+  const agentDetail = detailQuery.data?.kind === 'AGENT' ? detailQuery.data : null
 
+  const defaultNodeId = ragDetail ? ragDetail.targetId : agentDetail ? agentStepNodeId([...agentDetail.trajectory].sort((a, b) => a.step - b.step)[0]?.step ?? 1) : null
   useEffect(() => {
-    if (detailQuery.data && !nodeParam) updateParam('node', detailQuery.data.targetId)
-  }, [detailQuery.data, nodeParam, updateParam])
-
-  const selectedNodeId = nodeParam ?? detailQuery.data?.targetId ?? null
+    if (detailQuery.data && !nodeParam && defaultNodeId) updateParam('node', defaultNodeId)
+  }, [detailQuery.data, nodeParam, defaultNodeId, updateParam])
+  const selectedNodeId = nodeParam ?? defaultNodeId
   const currentTargetGroup = targets.find((group) => group.traces.some((trace) => trace.id === selectedTraceId))
 
   const [nodeSearch, setNodeSearch] = useState('')
@@ -110,7 +149,6 @@ export function ContextExplorerPage() {
     })
   }, [])
 
-  const ragDetail = detailQuery.data?.kind === 'RAG' ? detailQuery.data : null
   const discardedCount = ragDetail?.candidates.filter((candidate) => candidate.decision === 'DISCARDED').length ?? 0
   const filteredCandidates = useMemo(
     () => ragDetail ? filterRagCandidates(ragDetail.candidates, { search: nodeSearch, signalKinds, showDiscarded }) : [],
@@ -120,33 +158,45 @@ export function ContextExplorerPage() {
   if (tracesQuery.isPending) return <LoadingState label="Cargando trazas de contexto…" />
   if (tracesQuery.isError) return <ErrorState message={contextTraceErrorMessage(tracesQuery.error)} onRetry={() => void tracesQuery.refetch()} />
 
-  return <section>
-    <Breadcrumbs items={[
+  const breadcrumbItems = experimentId
+    ? [
+      { label: 'Proyectos', to: '/' },
+      { label: projectQuery.data?.name ?? projectId, to: `/projects/${projectId}` },
+      { label: 'Modo experimental', to: `/projects/${projectId}/experimental` },
+      { label: 'Explorar contexto' },
+    ]
+    : [
       { label: 'Proyectos', to: '/' },
       { label: projectQuery.data?.name ?? projectId, to: `/projects/${projectId}` },
       { label: `Run ${runId}`, to: `/projects/${projectId}/runs/${runId}` },
       { label: 'Explorar contexto' },
-    ]} />
-    <div className="page-heading"><div><p className="eyebrow">Contexto / Run {runId}</p><h1>Explorador de contexto</h1><p>Evidencia de recuperación RAG usada para generar este target.</p></div></div>
+    ]
 
-    {allTraces.length === 0 ? <div className="empty-state"><div className="empty-icon">{'{ }'}</div><h2>Sin trazas de contexto</h2><p>Este run todavía no registró evidencia de contexto para mostrar.</p></div> : <>
+  return <section>
+    <Breadcrumbs items={breadcrumbItems} />
+    <div className="page-heading"><div><p className="eyebrow">{experimentId ? `Contexto / Experimento ${experimentId}` : `Contexto / Run ${runId}`}</p><h1>Explorador de contexto</h1><p>Evidencia de contexto recolectada para esta generación.</p></div></div>
+
+    {allTraces.length === 0 ? <div className="empty-state"><div className="empty-icon">{'{ }'}</div><h2>Sin trazas de contexto</h2><p>{experimentId ? 'Este experimento todavía no registró evidencia de contexto para mostrar.' : 'Este run todavía no registró evidencia de contexto para mostrar.'}</p></div> : <>
       <div className="list-toolbar">
-        {targets.length > 1 && <nav className="target-switch" aria-label="Targets con contexto">
+        {!experimentId && targets.length > 1 && <nav className="target-switch" aria-label="Targets con contexto">
           {targets.map((group) => {
             const active = group.traces.some((trace) => trace.id === selectedTraceId)
             const defaultTraceId = group.traces.find((trace) => trace.current)?.id ?? group.traces[0].id
-            return <button type="button" key={group.targetId} aria-pressed={active} onClick={() => { updateParam('trace', defaultTraceId); updateParam('node', null) }}>{group.targetId}</button>
+            return <button type="button" key={group.targetId} aria-pressed={active} onClick={() => updateParams({ trace: defaultTraceId, node: null })}>{group.targetId}</button>
           })}
         </nav>}
-        <label className="checkbox-toggle"><input type="checkbox" checked={includeSuperseded} onChange={(event) => updateParam('includeSuperseded', event.target.checked ? 'true' : null)} /> Incluir intentos anteriores</label>
+        {experimentId && allTraces.length > 1 && <nav className="target-switch" aria-label="Repeticiones del experimento">
+          {allTraces.map((trace) => <button type="button" key={trace.id} aria-pressed={trace.id === selectedTraceId} onClick={() => updateParams({ trace: trace.id, node: null })}>{`${trace.strategy === 'RAG' ? 'RAG' : 'Agente'} · rep ${trace.repetition}`}</button>)}
+        </nav>}
+        {!experimentId && <label className="checkbox-toggle"><input type="checkbox" checked={includeSuperseded} onChange={(event) => updateParam('includeSuperseded', event.target.checked ? 'true' : null)} /> Incluir intentos anteriores</label>}
         <fieldset className="segmented"><legend>Vista</legend>
           <button type="button" aria-pressed={view === 'graph'} onClick={() => updateParam('view', 'graph')}>Vista de grafo</button>
           <button type="button" aria-pressed={view === 'list'} onClick={() => updateParam('view', 'list')}>Vista de lista</button>
         </fieldset>
       </div>
 
-      {includeSuperseded && currentTargetGroup && currentTargetGroup.traces.length > 1 && <fieldset className="segmented attempt-switch"><legend>Intento</legend>
-        {currentTargetGroup.traces.map((trace) => <button type="button" key={trace.id} aria-pressed={trace.id === selectedTraceId} onClick={() => { updateParam('trace', trace.id); updateParam('node', null) }}>{`Intento ${trace.attempt}${trace.current ? ' · vigente' : ''}`}</button>)}
+      {!experimentId && includeSuperseded && currentTargetGroup && currentTargetGroup.traces.length > 1 && <fieldset className="segmented attempt-switch"><legend>Intento</legend>
+        {currentTargetGroup.traces.map((trace) => <button type="button" key={trace.id} aria-pressed={trace.id === selectedTraceId} onClick={() => updateParams({ trace: trace.id, node: null })}>{`Intento ${trace.attempt}${trace.current ? ' · vigente' : ''}`}</button>)}
       </fieldset>}
 
       {detailQuery.isPending && <LoadingState label="Cargando detalle de la traza…" />}
@@ -166,7 +216,12 @@ export function ContextExplorerPage() {
               ? <RagGraph detail={ragDetail} candidates={filteredCandidates} selectedId={selectedNodeId} onSelect={(id) => updateParam('node', id)} />
               : <StructuredAlternativeView caption="Candidatos RAG (vista de lista)" rows={buildRagRows(ragDetail, filteredCandidates)} selectedId={selectedNodeId} onSelect={(id) => updateParam('node', id)} />}
           <RagSidePanel detail={ragDetail} selectedId={selectedNodeId} />
-        </> : <div className="empty-inline"><strong>Trayectoria del agente</strong><p>Este modo se habilita en HU28.</p></div>}
+        </> : agentDetail ? <>
+          {view === 'graph'
+            ? <AgentTrajectory detail={agentDetail} selectedId={selectedNodeId} onSelect={(id) => updateParam('node', id)} />
+            : <StructuredAlternativeView caption="Trayectoria del agente (vista de lista)" rows={buildAgentRows(agentDetail)} selectedId={selectedNodeId} onSelect={(id) => updateParam('node', id)} />}
+          <AgentSidePanel detail={agentDetail} selectedId={selectedNodeId} />
+        </> : null}
       </div>}
     </>}
   </section>

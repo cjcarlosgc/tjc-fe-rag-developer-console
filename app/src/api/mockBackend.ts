@@ -1,5 +1,5 @@
 import type { ArtifactViewModel } from '../artifacts/types'
-import type { ContextTraceDetail, ContextTracePage, ContextTraceSummary, DiscoveredFilePage, ExperimentContextTraceFilters, RagCandidateNode, RunContextTraceFilters, SourceExcerpt } from '../context-explorer/types'
+import type { AgentTrajectoryStep, ContextTraceDetail, ContextTracePage, ContextTraceSummary, DiscoveredFilePage, ExperimentContextTraceFilters, RagCandidateNode, RunContextTraceFilters, SourceExcerpt } from '../context-explorer/types'
 import type { ExperimentAccepted, ExperimentOperation, ExperimentResultViewModel } from '../experiments/types'
 import type { GenerationAccepted, GenerationConfiguration } from '../generation/types'
 import type { InventoryTargetViewModel, TestInventoryResponse } from '../inventory/types'
@@ -515,6 +515,54 @@ function experimentResult(target: string): ExperimentResultViewModel {
   }
 }
 
+const DISCOVERED_FILES_TOTAL = 146
+
+/** HU28: el agente generalista explora con las 4 herramientas del contrato; incluye un paso `EMPTY` y uno `FAILED` (spec.md). */
+function buildAgentTrajectory(targetFilePath: string): AgentTrajectoryStep[] {
+  const symbolExcerpt = buildExcerpt({ filePath: targetFilePath, symbolName: 'OrderService', startLine: 1, endLine: 18, snippet: 'export class OrderService {\n  constructor(private readonly coupons: CouponPolicy) {}\n}' })
+  const matchExcerpt = buildExcerpt({ filePath: targetFilePath, symbolName: null, startLine: 24, endLine: 26, snippet: '  calculateTotal(items: OrderItem[]): number {' })
+  const fileExcerpt = buildExcerpt({ filePath: targetFilePath, symbolName: null, startLine: 1, endLine: 34, snippet: '/* contenido completo entregado al agente */', truncated: true })
+  return [
+    { step: 1, toolName: 'list_files', arguments: { path: 'src/domain' }, status: 'SUCCEEDED', resultSummary: `${DISCOVERED_FILES_TOTAL} archivos disponibles en src/domain`, resultSha256: fakeSha256('list_files:src/domain'), truncated: false, observations: [{ kind: 'FILE_LIST_SUMMARY', filePath: null, symbolName: null, excerpt: null, discoveredFilesCount: DISCOVERED_FILES_TOTAL }] },
+    { step: 2, toolName: 'search_text', arguments: { query: 'calculateTotal' }, status: 'SUCCEEDED', resultSummary: '1 coincidencia encontrada', resultSha256: fakeSha256('search_text:calculateTotal'), truncated: false, observations: [{ kind: 'TEXT_MATCH', filePath: targetFilePath, symbolName: null, excerpt: matchExcerpt, discoveredFilesCount: null }] },
+    { step: 3, toolName: 'inspect_symbol', arguments: { symbolName: 'OrderService' }, status: 'SUCCEEDED', resultSummary: 'Declaración localizada con 1 referencia', resultSha256: fakeSha256('inspect_symbol:OrderService'), truncated: false, observations: [{ kind: 'SYMBOL', filePath: targetFilePath, symbolName: 'OrderService', excerpt: symbolExcerpt, discoveredFilesCount: null }] },
+    { step: 4, toolName: 'inspect_symbol', arguments: { symbolName: 'PricingStrategy' }, status: 'FAILED', resultSummary: 'El símbolo no se pudo resolver en esta versión', resultSha256: fakeSha256('inspect_symbol:PricingStrategy'), truncated: false, observations: [] },
+    { step: 5, toolName: 'search_text', arguments: { query: 'applyCoupon' }, status: 'EMPTY', resultSummary: 'Sin coincidencias en el proyecto', resultSha256: fakeSha256('search_text:applyCoupon'), truncated: false, observations: [] },
+    { step: 6, toolName: 'read_file', arguments: { filePath: targetFilePath }, status: 'SUCCEEDED', resultSummary: 'Contenido entregado al agente', resultSha256: fakeSha256(`read_file:${targetFilePath}`), truncated: true, observations: [{ kind: 'FILE_CONTENT', filePath: targetFilePath, symbolName: null, excerpt: fileExcerpt, discoveredFilesCount: null }] },
+  ]
+}
+
+/** HU27/HU28: las 6 repeticiones de un experimento (3 RAG + 3 agente) también tienen traza de contexto propia. */
+function seedExperimentContextTraces(experimentId: string, projectVersionId: string, targetId: string, targetFilePath: string, targetSymbol: string | null): void {
+  const targetExcerpt = buildExcerpt({ filePath: targetFilePath, symbolName: targetSymbol, startLine: 1, endLine: 3, snippet: '/* target del experimento */' })
+  const ragCandidates = buildOrderTotalCandidates().slice(0, 4)
+  const ragSelected = ragCandidates.filter((candidate) => candidate.decision === 'SELECTED')
+  for (const repetition of [1, 2, 3] as const) {
+    const ragId = `${experimentId}-rag-r${repetition}`
+    const ragDetail: ContextTraceDetail = {
+      id: ragId, kind: 'RAG', projectVersionId, targetId, testRunId: null, experimentId,
+      strategy: 'RAG', repetition, attempt: 1, current: true, artifactIds: [], createdAt: nowIso(),
+      target: { chunkIds: ['chunk-target-exp'], excerpt: targetExcerpt, tokenCount: 30 },
+      candidates: ragCandidates,
+      retrievedChunks: ragCandidates.length,
+      selectedChunks: ragSelected.length,
+      contextTokens: ragSelected.reduce((total, candidate) => total + candidate.tokenCount, 0),
+      configuration: { minimumScore: .5, topK: 5, maxContextTokens: 4_000, semanticWeight: .7, structuralWeight: .3 },
+    }
+    contextTraces.set(ragId, { detail: ragDetail, notFinishedUntilPolls: 0, polls: 0 })
+
+    const agentId = `${experimentId}-agent-r${repetition}`
+    const trajectory = buildAgentTrajectory(targetFilePath)
+    const filesInspected = new Set(trajectory.flatMap((step) => step.observations.map((observation) => observation.filePath).filter((path): path is string => path !== null))).size
+    const agentDetail: ContextTraceDetail = {
+      id: agentId, kind: 'AGENT', projectVersionId, targetId, testRunId: null, experimentId,
+      strategy: 'GENERALIST_AGENT', repetition, attempt: 1, current: true, artifactIds: [], createdAt: nowIso(),
+      trajectory, toolCalls: trajectory.length, filesInspected,
+    }
+    contextTraces.set(agentId, { detail: agentDetail, notFinishedUntilPolls: 0, polls: 0 })
+  }
+}
+
 export async function mockStartExperiment(projectId: string, targetId: string): Promise<ExperimentAccepted> {
   await latency()
   const project = projects.get(projectId)
@@ -525,6 +573,7 @@ export async function mockStartExperiment(projectId: string, targetId: string): 
   sequence += 1
   const experimentId = `exp_demo_${sequence}`
   experiments.set(experimentId, { polls: 0, operation: { id: experimentId, status: 'PENDING', progress: 0, result: experimentResult(label) } })
+  if (project.currentVersionId) seedExperimentContextTraces(experimentId, project.currentVersionId, targetId, target?.filePath ?? 'src/domain/OrderService.ts', target?.methodName ?? target?.symbolName ?? null)
   return { experimentId, status: 'PENDING', pollAfterMs: 460 }
 }
 
@@ -579,11 +628,16 @@ export async function mockGetContextTrace(traceId: string): Promise<ContextTrace
   return clone(state.detail)
 }
 
+const DISCOVERED_FILES_PAGE_SIZE = 50
+
 export async function mockListDiscoveredFiles(traceId: string, step: number, cursor: string | null): Promise<DiscoveredFilePage> {
   await latency()
   const state = contextTraces.get(traceId)
   if (!state || state.detail.kind !== 'AGENT') notFound(`No existen archivos descubiertos para la traza demo "${traceId}".`, 'CONTEXT_TRACE_NOT_FOUND')
-  void step
-  void cursor
-  return { items: [], nextCursor: null }
+  const targetStep = state.detail.trajectory.find((item) => item.step === step && item.toolName === 'list_files')
+  if (!targetStep) notFound(`El paso ${step} no corresponde a "list_files" en la traza demo "${traceId}".`, 'CONTEXT_TRACE_NOT_FOUND')
+  const start = cursor ? Number(cursor) : 0
+  const end = Math.min(start + DISCOVERED_FILES_PAGE_SIZE, DISCOVERED_FILES_TOTAL)
+  const items = Array.from({ length: Math.max(0, end - start) }, (_, index) => ({ filePath: `src/domain/discovered/file-${start + index + 1}.ts` }))
+  return { items, nextCursor: end < DISCOVERED_FILES_TOTAL ? String(end) : null }
 }

@@ -28,6 +28,7 @@ export const router = createBrowserRouter([
       { path: 'projects/:projectId/runs/:runId/artifacts', element: <ArtifactsPage /> },
       { path: 'projects/:projectId/runs/:runId/context', element: <ContextExplorerPage /> },
       { path: 'projects/:projectId/experimental', element: <ExperimentPage /> },
+      { path: 'projects/:projectId/experimental/:experimentId/context', element: <ContextExplorerPage /> },
     ],
   },
 ])

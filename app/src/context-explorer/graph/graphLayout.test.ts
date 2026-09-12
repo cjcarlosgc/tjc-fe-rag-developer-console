@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computeGraphLayout } from './graphLayout'
+import { computeGraphLayout, computeSequentialLayout } from './graphLayout'
 
 describe('computeGraphLayout', () => {
   it('coloca la raíz en la columna 0 y cada candidato en su propia fila de la columna 1', () => {
@@ -42,5 +42,20 @@ describe('computeGraphLayout', () => {
     const layout = computeGraphLayout('target-1', [])
     expect(layout.nodes).toHaveLength(1)
     expect(layout.nodes[0].id).toBe('target-1')
+  })
+})
+
+describe('computeSequentialLayout', () => {
+  it('coloca cada paso en su propia columna, en el orden recibido', () => {
+    const layout = computeSequentialLayout(['step-1', 'step-2', 'step-3'])
+    expect(layout.nodes.map((node) => node.id)).toEqual(['step-1', 'step-2', 'step-3'])
+    expect(layout.nodes.map((node) => node.column)).toEqual([0, 1, 2])
+    expect(layout.nodes.every((node) => node.row === 0)).toBe(true)
+  })
+
+  it('es determinista', () => {
+    const first = computeSequentialLayout(['a', 'b'])
+    const second = computeSequentialLayout(['a', 'b'])
+    expect(first).toEqual(second)
   })
 })

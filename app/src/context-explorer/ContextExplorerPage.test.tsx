@@ -2,12 +2,13 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
-import { resetMockBackend } from '../api/mockBackend'
+import { mockStartExperiment, resetMockBackend } from '../api/mockBackend'
 import { renderApp } from '../test/render'
 import { ContextExplorerPage } from './ContextExplorerPage'
 
 const ROUTE = '/projects/:projectId/runs/:runId/context'
 const RUN_ENTRY = '/projects/prj_checkout_demo/runs/run_checkout_seed/context'
+const EXPERIMENT_ROUTE = '/projects/:projectId/experimental/:experimentId/context'
 
 beforeEach(() => {
   setDataSourceForTests('mock')
@@ -86,5 +87,28 @@ describe('ContextExplorerPage', () => {
   it('muestra un estado vacío cuando el run no tiene trazas de contexto', async () => {
     renderApp(<ContextExplorerPage />, { initialEntry: '/projects/prj_checkout_demo/runs/run_sin_contexto/context', routePath: ROUTE })
     expect(await screen.findByText('Sin trazas de contexto')).toBeInTheDocument()
+  })
+
+  it('el deep link con strategy/repetition selecciona la traza AGENT correcta de un experimento (HU28)', async () => {
+    const accepted = await mockStartExperiment('prj_checkout_demo', 'ver_checkout_7-method-total')
+    renderApp(<ContextExplorerPage />, {
+      initialEntry: `/projects/prj_checkout_demo/experimental/${accepted.experimentId}/context?strategy=GENERALIST_AGENT&repetition=2`,
+      routePath: EXPERIMENT_ROUTE,
+    })
+    expect(await screen.findByRole('button', { name: /Listar archivos/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Agente · rep 2/ })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('cambia de renderer limpiamente al alternar entre un trace RAG y uno AGENT del mismo experimento (HU28)', async () => {
+    const accepted = await mockStartExperiment('prj_checkout_demo', 'ver_checkout_7-method-total')
+    const user = userEvent.setup()
+    renderApp(<ContextExplorerPage />, {
+      initialEntry: `/projects/prj_checkout_demo/experimental/${accepted.experimentId}/context?strategy=RAG&repetition=1`,
+      routePath: EXPERIMENT_ROUTE,
+    })
+    expect(await screen.findByRole('button', { name: /calculateTotal/ })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /Agente · rep 1/ }))
+    expect(await screen.findByRole('button', { name: /Listar archivos/ })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /calculateTotal/ })).not.toBeInTheDocument()
   })
 })

@@ -33,3 +33,11 @@ export function computeGraphLayout(rootId: string, candidateIds: string[]): Grap
   const height = PADDING * 2 + Math.max(0, rowCount - 1) * ROW_HEIGHT + 80
   return { nodes: [root, ...candidates], width, height }
 }
+
+/** HU28: trayectoria cronológica del agente — un paso por columna, en el orden recibido. */
+export function computeSequentialLayout(ids: string[]): GraphLayoutResult {
+  const nodes: GraphNodeLayout[] = ids.map((id, index) => ({ id, column: index, row: 0, x: PADDING + index * COLUMN_WIDTH, y: PADDING }))
+  const width = PADDING * 2 + Math.max(0, ids.length - 1) * COLUMN_WIDTH + 220
+  const height = PADDING * 2 + 90
+  return { nodes, width, height }
+}
