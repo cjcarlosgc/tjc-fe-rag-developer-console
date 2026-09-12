@@ -174,28 +174,28 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .acknowledge input { accent-color: var(--accent); margin-top: 2px; }
 .wide { width: 100%; }
 .rag-note { color: #8984a4; font-size: 11px; text-align: center; margin: 12px 0 0; }
-.run-progress { position: relative; display: grid; grid-template-columns: 1fr auto; min-height: 220px; overflow: hidden; border: 1px solid #3f3556; background: linear-gradient(120deg, #151020, #131022 70%); padding: 32px; }
+.run-progress { position: relative; display: grid; grid-template-columns: 1fr auto; min-height: 220px; overflow: hidden; border: 1px solid var(--border-subtle); background: var(--surface-1); padding: 32px; }
 .run-actions { display: flex; justify-content: flex-end; margin-top: 18px; }
-.run-progress::before { content: ""; position: absolute; inset: 0; opacity: .12; background-image: linear-gradient(#5f5870 1px, transparent 1px), linear-gradient(90deg, #5f5870 1px, transparent 1px); background-size: 28px 28px; mask-image: linear-gradient(90deg, #000, transparent 65%); }
+.run-progress::before { content: ""; position: absolute; inset: 0; opacity: .1; background-image: linear-gradient(rgba(201,180,250,.4) 1px, transparent 1px), linear-gradient(90deg, rgba(201,180,250,.4) 1px, transparent 1px); background-size: 28px 28px; mask-image: linear-gradient(90deg, #000, transparent 65%); }
 .run-progress-copy, .run-dial, .target-pulse { position: relative; }
 .run-progress-copy h2 { font-size: 30px; margin: 8px 0; }
 .run-progress-copy p:last-child { color: var(--muted); }
-.run-dial { display: grid; place-items: center; width: 132px; height: 132px; border-radius: 50%; background: conic-gradient(var(--accent) var(--run-progress), #2b2635 0); }
-.run-dial::before { content: ""; position: absolute; width: 104px; height: 104px; border-radius: 50%; background: #131022; }
-.run-dial span { position: relative; font: 800 30px ui-monospace, monospace; }
+.run-dial { display: grid; place-items: center; width: 132px; height: 132px; border-radius: 50%; background: conic-gradient(var(--accent) var(--run-progress), var(--border-subtle) 0); }
+.run-dial::before { content: ""; position: absolute; width: 104px; height: 104px; border-radius: 50%; background: var(--surface-1); }
+.run-dial span { position: relative; font: 800 30px 'JetBrains Mono', ui-monospace, monospace; }
 .run-dial small { color: var(--muted); font-size: 12px; }
 .target-pulse { grid-column: 1 / -1; align-self: end; display: flex; gap: 5px; }
-.target-pulse span { flex: 1; height: 5px; background: #3a3554; }
-.target-pulse .pulse-valid { background: var(--accent); }
-.target-pulse .pulse-invalid { background: #e5b968; }
-.target-pulse .pulse-failed { background: #e5717e; }
+.target-pulse span { flex: 1; height: 5px; background: var(--border-subtle); }
+.target-pulse .pulse-valid { background: var(--success); }
+.target-pulse .pulse-invalid { background: #f59e0b; }
+.target-pulse .pulse-failed { background: var(--danger); }
 .status-partial { border-color: #7c6334; }
 .status-failed { border-color: #783f49; }
 .validation-stack { display: grid; gap: 16px; }
-.validation-summary { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--border); background: #131024; }
-.validation-summary div { display: flex; align-items: baseline; gap: 10px; padding: 20px; border-right: 1px solid var(--border); }
+.validation-summary { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--border-subtle); background: var(--surface-1); }
+.validation-summary div { display: flex; align-items: baseline; gap: 10px; padding: 20px; border-right: 1px solid var(--border-subtle); }
 .validation-summary div:last-child { border: 0; }
-.validation-summary span { font: 800 28px ui-monospace, monospace; }
+.validation-summary span { font: 800 28px 'JetBrains Mono', ui-monospace, monospace; }
 .validation-summary small { color: var(--muted); }
 .table-frame details { margin-top: 7px; }
 .table-frame summary { color: var(--accent); cursor: pointer; font-size: 12px; }
@@ -214,8 +214,8 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .type-created { color: var(--accent); border: 1px solid #47376d; background: #171027; }
 .type-modified { color: #e5b968; border: 1px solid #725e33; background: #282110; }
 .valid-dot, .invalid-dot { width: 7px; height: 7px; border-radius: 50%; }
-.valid-dot { background: var(--accent); }
-.invalid-dot { background: #e5717e; }
+.valid-dot { background: var(--success); }
+.invalid-dot { background: var(--danger); }
 .artifact-detail { min-width: 0; }
 .artifact-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--muted); padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 12px; }
 .artifact-actions .button { min-height: 32px; font-size: 11px; }
