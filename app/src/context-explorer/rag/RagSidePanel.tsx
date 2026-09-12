@@ -38,7 +38,7 @@ export function RagSidePanel({ detail, selectedId }: Props) {
       {candidate.semanticScore != null && <div><dt>Score semántico</dt><dd>{candidate.semanticScore.toFixed(2)}</dd></div>}
       <div><dt>Tokens</dt><dd>{candidate.tokenCount}</dd></div>
       <div><dt>Señales</dt><dd>{ragSignalLabel(candidate)}</dd></div>
-      <div><dt>Decisión</dt><dd className={candidate.decision === 'SELECTED' ? 'decision-selected' : 'decision-discarded'}>{candidate.decision === 'SELECTED' ? 'Seleccionado' : 'Descartado'}</dd></div>
+      <div><dt>Decisión</dt><dd className={candidate.decision === 'SELECTED' ? 'decision-selected' : 'decision-discarded'}>{candidate.decision === 'SELECTED' ? 'Retenido' : 'Descartado'}</dd></div>
       {candidate.discardReason && <div><dt>Motivo de descarte</dt><dd>{discardReasonLabel[candidate.discardReason]}</dd></div>}
     </dl>
     <ExcerptView excerpt={candidate.excerpt} />

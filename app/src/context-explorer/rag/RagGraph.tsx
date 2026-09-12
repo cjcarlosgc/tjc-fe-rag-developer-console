@@ -34,7 +34,8 @@ export function RagGraph({ detail, candidates = detail.candidates, selectedId, o
       { swatchClassName: 'legend-semantic', label: 'Señal semántica' },
       { swatchClassName: 'legend-structural', label: 'Señal estructural' },
       { swatchClassName: 'legend-dual', label: 'Coincidencia dual' },
-      { swatchClassName: 'legend-selected', label: 'Seleccionado / foco' },
+      { swatchClassName: 'legend-decision-selected', label: 'Retenido (en el contexto)' },
+      { swatchClassName: 'legend-focus', label: 'Foco (nodo mostrado en el panel)' },
       { swatchClassName: 'legend-discarded', label: 'Descartado (opacidad reducida)' },
     ]} />
     <GraphCanvas
@@ -56,7 +57,7 @@ export function RagGraph({ detail, candidates = detail.candidates, selectedId, o
         return <span className={`rag-node ${discarded ? 'discarded' : 'selected-candidate'} ${signalClassName(kind)}${state.selected ? ' is-focused' : ''}`}>
           <strong className={discarded ? 'is-discarded-label' : undefined}>{candidate.excerpt.symbolName ?? candidate.excerpt.filePath.split('/').at(-1)}</strong>
           <small>{candidate.excerpt.filePath}</small>
-          <span className="node-badge">{discarded ? (discardReasonLabel[candidate.discardReason ?? ''] ?? 'Descartado') : 'Seleccionado'}</span>
+          <span className="node-badge">{discarded ? (discardReasonLabel[candidate.discardReason ?? ''] ?? 'Descartado') : 'Retenido'}</span>
           <span className="node-signal">{ragSignalLabel(candidate)}</span>
           {/* spec.md "Interacción común": hover ofrece resumen sin reemplazar el panel lateral */}
           <span className="node-hover-preview" aria-hidden="true">

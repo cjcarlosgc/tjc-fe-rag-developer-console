@@ -22,7 +22,7 @@ export function AgentTrajectory({ detail, selectedId, onSelect }: Props) {
   return <div className="rag-graph-shell">
     <Legend items={[
       { swatchClassName: 'legend-agent', label: 'Trayectoria del agente' },
-      { swatchClassName: 'legend-selected', label: 'Foco / paso activo' },
+      { swatchClassName: 'legend-focus', label: 'Foco (paso mostrado en el panel)' },
       { swatchClassName: 'legend-discarded', label: 'Vacío o con error (opacidad reducida)' },
     ]} />
     <GraphCanvas

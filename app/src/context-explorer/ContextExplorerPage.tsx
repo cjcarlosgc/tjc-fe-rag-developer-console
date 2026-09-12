@@ -58,7 +58,7 @@ function buildRagRows(detail: RagContextTraceDetail, candidates: RagCandidateNod
       id: candidate.chunkId,
       primary: candidate.excerpt.symbolName ?? candidate.excerpt.filePath.split('/').at(-1) ?? candidate.chunkId,
       secondary: candidate.excerpt.filePath,
-      status: discarded ? (discardReasonLabel[candidate.discardReason ?? ''] ?? 'Descartado') : 'Seleccionado',
+      status: discarded ? (discardReasonLabel[candidate.discardReason ?? ''] ?? 'Descartado') : 'Retenido',
       meta: ragSignalLabel(candidate),
     })
   }
