@@ -103,14 +103,14 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .progress-track span { display: block; height: 100%; background: linear-gradient(90deg, #4e2e98, var(--accent)); transition: width .35s ease; }
 .analysis-progress > code { font-size: 11px; color: #89819a; }
 .operation-stack { display: grid; gap: 16px; }
-.result-summary { border: 1px solid var(--border); background: var(--panel); padding: 28px; }
+.result-summary { border: 1px solid var(--border-subtle); background: var(--surface-1); padding: 28px; }
 .result-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
 .result-title h3 { margin: 0 0 22px; font-size: 23px; }
-.metric-grid { display: grid; grid-template-columns: repeat(6, 1fr); margin: 0; border: 1px solid var(--border); }
-.metric-grid div { padding: 16px; border-right: 1px solid var(--border); }
+.metric-grid { display: grid; grid-template-columns: repeat(6, 1fr); margin: 0; border: 1px solid var(--border-subtle); }
+.metric-grid div { padding: 16px; border-right: 1px solid var(--border-subtle); }
 .metric-grid div:last-child { border: 0; }
 .metric-grid dt { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
-.metric-grid dd { margin: 8px 0 0; font: 750 18px ui-monospace, monospace; }
+.metric-grid dd { margin: 8px 0 0; font: 750 18px 'JetBrains Mono', ui-monospace, monospace; }
 .completion-time { color: var(--muted); font-size: 12px; margin: 16px 0 0; }
 .stage-rail { list-style: none; display: grid; grid-template-columns: repeat(7, 1fr); gap: 0; padding: 0; margin: 28px 0 0; }
 .stage-rail li { position: relative; color: #767194; font: 650 9px ui-monospace, monospace; letter-spacing: .04em; padding-top: 20px; border-top: 1px solid #2e2947; }
@@ -129,21 +129,21 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .pending-note { margin-bottom: 18px; border-color: #695b35; background: #1d1a10; }
 .inventory-panel { padding: 0; overflow: hidden; }
 .inventory-stack { display: grid; gap: 0; }
-.list-toolbar { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px; padding: 22px; border-bottom: 1px solid var(--border); background: #110e22; }
+.list-toolbar { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px; padding: 22px; border-bottom: 1px solid var(--border-subtle); background: var(--surface-2); }
 .list-search { max-width: 440px; }
 .segmented { display: flex; margin: 0; padding: 0; border: 0; }
 .segmented legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
-.segmented button { color: var(--muted); background: #0d0a1c; border: 1px solid #3b3558; border-right: 0; padding: 10px 13px; cursor: pointer; }
-.segmented button:last-child { border-right: 1px solid #3b3558; }
+.segmented button { color: var(--muted); background: var(--surface-1); border: 1px solid var(--border-subtle); border-right: 0; padding: 10px 13px; cursor: pointer; }
+.segmented button:last-child { border-right: 1px solid var(--border-subtle); }
 .segmented button[aria-pressed="true"] { color: #110825; background: var(--accent); border-color: var(--accent); }
 .table-frame { overflow-x: auto; }
 .table-frame table { width: 100%; border-collapse: collapse; text-align: left; }
-.table-frame th { color: #8b85a8; font: 750 10px ui-monospace, monospace; text-transform: uppercase; letter-spacing: .1em; background: #0e0b1c; }
-.table-frame th, .table-frame td { padding: 15px 18px; border-bottom: 1px solid #25203e; }
+.table-frame th { color: var(--text-dim); font: 750 10px 'JetBrains Mono', ui-monospace, monospace; text-transform: uppercase; letter-spacing: .1em; background: var(--surface-2); }
+.table-frame th, .table-frame td { padding: 15px 18px; border-bottom: 1px solid var(--border-subtle); }
 .table-frame tbody tr:hover { background: rgba(201,180,250,.035); }
 .table-frame td strong { display: block; }
 .table-frame td small { color: var(--muted); }
-.path-cell { color: #a29cc0; font: 12px ui-monospace, monospace; }
+.path-cell { color: var(--muted); font: 12px 'JetBrains Mono', ui-monospace, monospace; }
 .coverage-mark { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; font-size: 12px; }
 .coverage-mark i { width: 7px; height: 7px; border-radius: 50%; }
 .coverage-mark.tested { color: var(--accent); }
