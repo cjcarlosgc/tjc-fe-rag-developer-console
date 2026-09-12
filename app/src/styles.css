@@ -394,11 +394,12 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .side-panel { position: sticky; top: 20px; border: 1px solid var(--border); border-radius: 12px; background: var(--glass-bg); backdrop-filter: var(--glass-blur); padding: 22px; min-width: 0; }
 .side-panel-meta { display: grid; gap: 10px; margin: 14px 0; }
 .side-panel-meta > div { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid #25203e; padding-bottom: 8px; font-size: 13px; }
-.side-panel-meta dt { color: var(--muted); }
-.side-panel-meta dd { margin: 0; text-align: right; }
+.side-panel-meta dt { color: var(--muted); flex: 0 0 auto; }
+.side-panel-meta dd { margin: 0; text-align: right; min-width: 0; overflow-wrap: anywhere; }
 .side-panel-meta dd.decision-selected { color: #8fe3a0; }
 .side-panel-meta dd.decision-discarded { color: #ffb4b4; }
 .excerpt-view { display: grid; gap: 6px; margin-top: 14px; }
+.excerpt-lines { min-width: 0; }
 .excerpt-line { display: flex; gap: 10px; min-width: 0; font: 12px ui-monospace, monospace; }
 .excerpt-line .line-number { flex: 0 0 auto; color: #6f6a8c; min-width: 24px; text-align: right; }
 .excerpt-line code { min-width: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
