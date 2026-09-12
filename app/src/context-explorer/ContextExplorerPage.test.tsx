@@ -111,4 +111,11 @@ describe('ContextExplorerPage', () => {
     expect(await screen.findByRole('button', { name: /Listar archivos/ })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /calculateTotal/ })).not.toBeInTheDocument()
   })
+
+  it('mientras la traza todavía se procesa (409) muestra el loader auditado, nunca un error (HU27)', async () => {
+    renderApp(<ContextExplorerPage />, { initialEntry: `${RUN_ENTRY}?trace=trace_rag_coupon`, routePath: ROUTE })
+    expect(await screen.findByText(/La traza todavía se está procesando/)).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: /CouponPolicy/ })).toBeInTheDocument()
+  })
 })

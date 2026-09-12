@@ -2,11 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { useProject } from '../projects/queries'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
-import { ErrorState, LoadingState } from '../ui/Feedback'
+import { ErrorState } from '../ui/Feedback'
 import { AgentSidePanel } from './agent/AgentSidePanel'
 import { agentStatusLabel, agentStepNodeId, agentToolLabel } from './agent/agentLabels'
 import { AgentTrajectory } from './agent/AgentTrajectory'
-import { contextTraceErrorMessage } from './errors'
+import { ContextTraceLoadingState } from './ContextTraceLoadingState'
+import { contextTraceErrorMessage, isContextTraceNotFinished } from './errors'
 import { useContextTraceDetail, useExperimentContextTraces, useRunContextTraces } from './queries'
 import { StructuredAlternativeView } from './graph/StructuredAlternativeView'
 import type { StructuredRow } from './graph/StructuredAlternativeView'
@@ -155,7 +156,7 @@ export function ContextExplorerPage() {
     [ragDetail, nodeSearch, signalKinds, showDiscarded],
   )
 
-  if (tracesQuery.isPending) return <LoadingState label="Cargando trazas de contexto…" />
+  if (tracesQuery.isPending) return <ContextTraceLoadingState label="Cargando trazas de contexto…" />
   if (tracesQuery.isError) return <ErrorState message={contextTraceErrorMessage(tracesQuery.error)} onRetry={() => void tracesQuery.refetch()} />
 
   const breadcrumbItems = experimentId
@@ -199,8 +200,10 @@ export function ContextExplorerPage() {
         {currentTargetGroup.traces.map((trace) => <button type="button" key={trace.id} aria-pressed={trace.id === selectedTraceId} onClick={() => updateParams({ trace: trace.id, node: null })}>{`Intento ${trace.attempt}${trace.current ? ' · vigente' : ''}`}</button>)}
       </fieldset>}
 
-      {detailQuery.isPending && <LoadingState label="Cargando detalle de la traza…" />}
-      {detailQuery.isError && <ErrorState message={contextTraceErrorMessage(detailQuery.error)} onRetry={() => void detailQuery.refetch()} />}
+      {detailQuery.isPending && <ContextTraceLoadingState label="Cargando detalle de la traza…" />}
+      {detailQuery.isError && (isContextTraceNotFinished(detailQuery.error)
+        ? <ContextTraceLoadingState label="La traza todavía se está procesando…" />
+        : <ErrorState message={contextTraceErrorMessage(detailQuery.error)} onRetry={() => void detailQuery.refetch()} />)}
       {ragDetail && <div className="list-toolbar rag-filter-bar">
         <div className="field list-search"><label htmlFor="rag-node-search">Buscar nodo, símbolo o hash</label><input id="rag-node-search" value={nodeSearch} onChange={(event) => setNodeSearch(event.target.value)} placeholder="símbolo, archivo o chunk…" /></div>
         <div className="signal-filter-pills" role="group" aria-label="Filtrar candidatos por señal">
