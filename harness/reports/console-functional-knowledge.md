@@ -57,13 +57,15 @@ pantalla 6). El usuario pidió explícitamente continuar con este corte.
   desde el cierre del corte anterior: `action-required/api.test.ts` ampliado,
   `FunctionalKnowledgePage.test.tsx`, `FunctionalKnowledgeDetailPage.test.tsx`,
   `ProjectDetailPage.test.tsx` ampliado) y `pnpm run build` — todo en verde.
-- **Recorrido manual en navegador no se pudo confirmar en esta sesión** — la
-  extensión Claude in Chrome se desconectó (3 intentos fallidos de
-  `tabs_context_mcp`). Mismo bloqueo ya documentado en un corte anterior de este
-  repo (`sprint3-history-realtime-retry`). No bloquea el cierre porque tsc/lint/
-  test/build cubren la lógica; queda pendiente una verificación visual manual.
+- Recorrido manual en navegador (Claude in Chrome, tras una reconexión inicial
+  fallida de la extensión): `/projects/prj_checkout_demo/functional-knowledge`
+  lista las 3 reglas (2 `ACTIVE`, 1 `SUPERSEDED`) con badges correctos; el filtro
+  `Active`/`Superseded`/`Todas` funciona; abrir la regla `SUPERSEDED`
+  (`fk_rounding_v1`) muestra pregunta/respuesta originales y el bloque "Reemplazada
+  por" con link a `fk_rounding_v2`. Sin errores de consola.
 
 ## Commits de este corte
 
-`537ad17` (apertura), `23d8213` (tipos/mocks/API), `3f3e7e7` (páginas + link), y
-este mismo commit de cierre. Ninguno pusheado.
+`537ad17` (apertura), `23d8213` (tipos/mocks/API), `3f3e7e7` (páginas + link),
+`4355413` (cierre) y este commit de evidencia final del recorrido manual. Ninguno
+pusheado.
