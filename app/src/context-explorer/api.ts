@@ -1,6 +1,6 @@
 import { getDataSource, PendingContractError } from '../api/dataSource'
-import { mockGetContextTrace, mockListDiscoveredFiles, mockListExperimentContextTraces, mockListRunContextTraces } from '../api/mockBackend'
-import type { ContextTraceDetail, ContextTracePage, DiscoveredFilePage, ExperimentContextTraceFilters, RunContextTraceFilters } from './types'
+import { mockGetAnalysisRunContextTrace, mockGetContextTrace, mockListDiscoveredFiles, mockListExperimentContextTraces, mockListRunContextTraces } from '../api/mockBackend'
+import type { ContextTraceDetail, ContextTracePage, DiscoveredFilePage, ExperimentContextTraceFilters, RagContextTraceDetail, RunContextTraceFilters } from './types'
 
 /** HU27/HU28: `INTEROP-1.6 §6.7`. RAG Core todavía no publica estos endpoints; la rama live queda pendiente. */
 export function listRunContextTraces(runId: string, filters: RunContextTraceFilters = {}): Promise<ContextTracePage> {
@@ -21,4 +21,10 @@ export function getContextTrace(traceId: string): Promise<ContextTraceDetail> {
 export function listDiscoveredFiles(traceId: string, step: number, cursor: string | null = null): Promise<DiscoveredFilePage> {
   if (getDataSource() === 'mock') return mockListDiscoveredFiles(traceId, step, cursor)
   return Promise.reject(new PendingContractError('los archivos descubiertos por el agente'))
+}
+
+/** Demo-only: no forma parte de INTEROP-2.0 (§6.7 sigue legacy, sin adaptar al modelo AnalysisRun). */
+export function getAnalysisRunContextTrace(analysisRunId: string): Promise<RagContextTraceDetail | null> {
+  if (getDataSource() === 'mock') return mockGetAnalysisRunContextTrace(analysisRunId)
+  return Promise.reject(new PendingContractError('el contexto recolectado de un Analysis Run'))
 }

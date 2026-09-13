@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import { getContextTrace, listDiscoveredFiles, listExperimentContextTraces, listRunContextTraces } from './api'
+import { getAnalysisRunContextTrace, getContextTrace, listDiscoveredFiles, listExperimentContextTraces, listRunContextTraces } from './api'
 import { isContextTraceNotFinished } from './errors'
 import type { ExperimentContextTraceFilters, RunContextTraceFilters } from './types'
 
@@ -8,6 +8,7 @@ export const contextTraceKeys = {
   experiment: (experimentId: string, filters: ExperimentContextTraceFilters) => ['experiments', experimentId, 'context-traces', filters] as const,
   detail: (traceId: string) => ['context-traces', traceId] as const,
   discoveredFiles: (traceId: string, step: number) => ['context-traces', traceId, 'discovered-files', step] as const,
+  analysisRun: (analysisRunId: string) => ['control-plane', 'analysis-run', analysisRunId, 'context-trace'] as const,
 }
 
 export function useRunContextTraces(runId: string, filters: RunContextTraceFilters, enabled = true) {
@@ -47,5 +48,14 @@ export function useDiscoveredFiles(traceId: string, step: number) {
     queryFn: ({ pageParam }) => listDiscoveredFiles(traceId, step, pageParam),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
+  })
+}
+
+/** Demo-only: contexto RAG "recolectado" para las pruebas de un AnalysisRun (sin forma de contrato, ver §6.7). */
+export function useAnalysisRunContextTrace(analysisRunId: string) {
+  return useQuery({
+    queryKey: contextTraceKeys.analysisRun(analysisRunId),
+    queryFn: () => getAnalysisRunContextTrace(analysisRunId),
+    enabled: Boolean(analysisRunId),
   })
 }

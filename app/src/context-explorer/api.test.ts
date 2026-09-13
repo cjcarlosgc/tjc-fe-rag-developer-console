@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
 import { resetMockBackend } from '../api/mockBackend'
-import { getContextTrace, listDiscoveredFiles, listExperimentContextTraces, listRunContextTraces } from './api'
+import { getAnalysisRunContextTrace, getContextTrace, listDiscoveredFiles, listExperimentContextTraces, listRunContextTraces } from './api'
 
 afterEach(() => setDataSourceForTests(null))
 
@@ -57,14 +57,30 @@ describe('context-explorer api (mock)', () => {
     resetMockBackend()
     await expect(getContextTrace('trace_does_not_exist')).rejects.toMatchObject({ status: 404, code: 'CONTEXT_TRACE_NOT_FOUND' })
   })
+
+  it('getAnalysisRunContextTrace devuelve la traza RAG mapeada para PR#45 (mismo target: calculateTotal)', async () => {
+    setDataSourceForTests('mock')
+    resetMockBackend()
+    const trace = await getAnalysisRunContextTrace('arun_checkout_pr45')
+    expect(trace?.kind).toBe('RAG')
+    expect(trace?.target.excerpt.symbolName).toBe('calculateTotal')
+  })
+
+  it('getAnalysisRunContextTrace devuelve null cuando el Run no tiene traza mockeada', async () => {
+    setDataSourceForTests('mock')
+    resetMockBackend()
+    const trace = await getAnalysisRunContextTrace('arun_billing_pr17')
+    expect(trace).toBeNull()
+  })
 })
 
 describe('context-explorer api (live, contrato pendiente en RAG Core)', () => {
-  it('rechaza con PendingContractError en las 4 funciones', async () => {
+  it('rechaza con PendingContractError en las 5 funciones', async () => {
     setDataSourceForTests('live')
     await expect(listRunContextTraces('run-1')).rejects.toThrow(/RAG Core/)
     await expect(listExperimentContextTraces('exp-1')).rejects.toThrow(/RAG Core/)
     await expect(getContextTrace('trace-1')).rejects.toThrow(/RAG Core/)
     await expect(listDiscoveredFiles('trace-1', 1)).rejects.toThrow(/RAG Core/)
+    await expect(getAnalysisRunContextTrace('arun-1')).rejects.toThrow(/RAG Core/)
   })
 })

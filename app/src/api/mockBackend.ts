@@ -1,6 +1,6 @@
 import type { ActionRequiredListPage, FunctionalAnswerAcceptedResponse, FunctionalKnowledgeListPage, FunctionalKnowledgeResponse, FunctionalKnowledgeStatus, FunctionalQuestionResponse, FunctionalQuestionSetResponse, SubmitFunctionalAnswerRequest } from '../action-required/types'
 import type { ArtifactViewModel } from '../artifacts/types'
-import type { AgentTrajectoryStep, ContextTraceDetail, ContextTracePage, ContextTraceSummary, DiscoveredFilePage, ExperimentContextTraceFilters, RagCandidateNode, RunContextTraceFilters, SourceExcerpt } from '../context-explorer/types'
+import type { AgentTrajectoryStep, ContextTraceDetail, ContextTracePage, ContextTraceSummary, DiscoveredFilePage, ExperimentContextTraceFilters, RagCandidateNode, RagContextTraceDetail, RunContextTraceFilters, SourceExcerpt } from '../context-explorer/types'
 import type { ExperimentAccepted, ExperimentOperation, ExperimentResultViewModel } from '../experiments/types'
 import type { GenerationAccepted, GenerationConfiguration } from '../generation/types'
 import type { InventoryTargetViewModel, TestInventoryResponse } from '../inventory/types'
@@ -67,6 +67,8 @@ const runs = new Map<string, MockRunState>()
 const artifacts = new Map<string, ArtifactViewModel[]>()
 const experiments = new Map<string, MockExperimentState>()
 const contextTraces = new Map<string, MockContextTraceState>()
+/** No es parte de INTEROP-2.0 (§6.7 sigue legacy) — mapeo demo-only de AnalysisRun a la traza RAG que "explica" sus pruebas generadas. */
+const analysisRunContextTraceId: Record<string, string> = { arun_checkout_pr45: 'trace_rag_order_total' }
 const actionRequiredRuns = new Map<string, MockActionRequiredRunState>()
 const repositoryBindings = new Map<string, ProjectRepositoryBindingResponse | null>()
 const analysisRuns = new Map<string, AnalysisRunDetailResponse>()
@@ -876,6 +878,15 @@ export async function mockGetContextTrace(traceId: string): Promise<ContextTrace
     state.polls += 1
     throw new ApiError('La traza de contexto demo todavía no está lista.', 409, 'demo-correlation-id', 'CONTEXT_TRACE_NOT_FINISHED')
   }
+  return clone(state.detail)
+}
+
+/** Demo-only: no hay forma de contrato para "contexto de un AnalysisRun" todavía (§6.7 sigue legacy). */
+export async function mockGetAnalysisRunContextTrace(analysisRunId: string): Promise<RagContextTraceDetail | null> {
+  await latency()
+  const traceId = analysisRunContextTraceId[analysisRunId]
+  const state = traceId ? contextTraces.get(traceId) : undefined
+  if (!state || state.detail.kind !== 'RAG') return null
   return clone(state.detail)
 }
 
