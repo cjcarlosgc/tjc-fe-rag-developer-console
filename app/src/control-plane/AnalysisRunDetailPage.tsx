@@ -42,7 +42,8 @@ function PublishSection({ analysisRunId, repositoryName, targetBranch }: { analy
       <div className="panel success-note contract-note">
         <div>
           <strong>Companion PR publicado</strong>
-          <p>Rama <code>{publicationQuery.data.branchName}</code> → <a href={publicationQuery.data.companionPullRequestUrl ?? '#'} target="_blank" rel="noreferrer">PR #{publicationQuery.data.companionPullRequestNumber}</a> hacia <code>{targetBranch}</code> en <RepoChip repositoryName={repositoryName} />. No hacia <code>develop</code> directamente — recién cuando el PR original se mergee, estos tests viajan con él. Requiere revisión y merge humano.</p>
+          <p className="branch-flow-line">Rama <code>{publicationQuery.data.branchName}</code><span aria-hidden="true">→</span><code>{targetBranch}</code></p>
+          <p><a href={publicationQuery.data.companionPullRequestUrl ?? '#'} target="_blank" rel="noreferrer">PR #{publicationQuery.data.companionPullRequestNumber}</a> en <RepoChip repositoryName={repositoryName} />. No hacia <code>develop</code> directamente — recién cuando el PR original se mergee, estos tests viajan con él. Requiere revisión y merge humano.</p>
         </div>
       </div>
     )}
