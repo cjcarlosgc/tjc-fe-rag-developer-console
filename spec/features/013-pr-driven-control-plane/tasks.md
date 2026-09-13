@@ -10,6 +10,9 @@
 ## Implementación posterior — requiere selección humana
 
 - [ ] HU30/HU32: bindings, Projects y Runs.
-- [ ] HU35-HU38: Action Required, Focus Mode e inbox.
+- [ ] HU35-HU36: persistencia de Functional Knowledge y continuación real del Run (Core).
+- [x] HU37-HU38: Focus Mode, bandeja Action Required y deep-link `returnTo` — mock-first,
+      dos escenarios (action required, corrección/HEAD nuevo). Ver
+      `harness/reports/HU37-HU38-focus-mode-action-required.md`.
 - [ ] HU39-HU40: Checks, review, freshness y publicación.
 - [ ] HU44-HU45: retiro legacy y colaboración.
