@@ -44,4 +44,4 @@ La política canónica está en `spec/constitution/delivery-workflow.md`.
 3. Completar la revisión de cada work item antes de `DONE`.
 4. Al cerrar el sprint, el reviewer revisa el rango acumulado que se pretende publicar y registra el resultado en `harness/reports/sprint-<N>-review.md`; una entrega extraordinaria usa `harness/reports/delivery-<scope>-review.md`.
 5. Solo un veredicto `APPROVED`, con lint/test/build aplicables en verde y sin cambios posteriores al commit revisado, habilita el push. Se admite después un único commit `docs(review)` que solo incorpore esos reportes, previa comprobación del reviewer; cualquier otra diferencia exige nueva revisión completa.
-6. Commit y push continúan requiriendo solicitud humana explícita. Un push extraordinario antes de cerrar el sprint requiere la misma revisión previa.
+6. El agente commitea por su cuenta al cerrar cada corte lógico y verificable durante `IN_PROGRESS`/`IN_REVIEW` (no una solicitud por commit); nunca hace `push` sin solicitud humana explícita en esa sesión. Un push extraordinario antes de cerrar el sprint requiere la misma revisión previa.
