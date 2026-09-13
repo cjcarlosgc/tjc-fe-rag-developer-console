@@ -6,6 +6,20 @@ import type { GenerationAccepted, GenerationConfiguration } from '../generation/
 import type { InventoryTargetViewModel, TestInventoryResponse } from '../inventory/types'
 import type { AnalysisHistoryItem, AnalysisOperation, AnalysisResult, CreateProjectInput, Project, UploadAccepted } from '../projects/types'
 import type { GenerationMode, RunViewModel, TargetRetryAccepted, TargetRunViewModel, TestRunHistoryPage, TestRunSummary } from '../runs/types'
+import type {
+  AnalysisRunDetailResponse,
+  AnalysisRunListPage,
+  AnalysisRunStatus,
+  AnalysisRunSummaryResponse,
+  CompleteGitHubInstallationRequest,
+  CreateTestPublicationRequest,
+  GeneratedTestProposalResponse,
+  GeneratedTestProposalSetResponse,
+  GitHubInstallationSessionResponse,
+  ProjectRepositoryBindingResponse,
+  TestPublicationAcceptedResponse,
+  TestPublicationResponse,
+} from '../control-plane/types'
 import { ApiError } from './client'
 
 interface MockVersionState {
@@ -54,6 +68,10 @@ const artifacts = new Map<string, ArtifactViewModel[]>()
 const experiments = new Map<string, MockExperimentState>()
 const contextTraces = new Map<string, MockContextTraceState>()
 const actionRequiredRuns = new Map<string, MockActionRequiredRunState>()
+const repositoryBindings = new Map<string, ProjectRepositoryBindingResponse | null>()
+const analysisRuns = new Map<string, AnalysisRunDetailResponse>()
+const testProposals = new Map<string, GeneratedTestProposalResponse[]>()
+const testPublications = new Map<string, TestPublicationResponse>()
 let sequence = 2000
 
 const clone = <T>(value: T): T => structuredClone(value)
@@ -240,6 +258,7 @@ function seed(): void {
   artifacts.set('run_checkout_seed', buildArtifacts('run_checkout_seed', inventoryViewTargets(buildInventory('ver_checkout_7'))))
   seedContextTraces()
   seedActionRequired()
+  seedControlPlane()
 }
 
 /** HU37/HU38: dos escenarios — `arun_checkout_pr42` (action required normal, dos preguntas adaptativas encadenadas) y `arun_billing_pr17` (corrección/HEAD nuevo: cualquier respuesta deja la pregunta `OBSOLETE` sin reanudar el Run). */
@@ -302,6 +321,124 @@ function seedActionRequired(): void {
   })
 }
 
+interface AnalysisRunSeed extends AnalysisRunDetailResponse {
+  __proposals?: GeneratedTestProposalResponse[]
+}
+
+/** HU30/HU32/HU39/HU40: repository bindings de los dos proyectos demo y los 9 escenarios mock-first de `spec.md` de la feature 013 (un `AnalysisRun` por escenario, más el par pr17/pr17-2 para "corrección/HEAD nuevo"). */
+function seedControlPlane(): void {
+  repositoryBindings.set('prj_checkout_demo', { projectId: 'prj_checkout_demo', installationId: 'inst_checkout_1', repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service', integrationBranch: 'develop', status: 'ENABLED', createdAt: '2026-08-20T10:00:00.000Z', updatedAt: '2026-08-20T10:00:00.000Z' })
+  repositoryBindings.set('prj_billing_demo', { projectId: 'prj_billing_demo', installationId: 'inst_billing_1', repositoryId: 'repo_billing', repositoryName: 'acme/billing-engine', integrationBranch: 'develop', status: 'ENABLED', createdAt: '2026-08-22T10:00:00.000Z', updatedAt: '2026-08-22T10:00:00.000Z' })
+
+  function pr(repositoryId: string, repositoryName: string, number: number, title: string, headRef: string, headSha: string, actorLogin: string) {
+    return { repositoryId, repositoryName, number, title, baseRef: 'develop', headRef, baseSha: 'c1c1c1c', headSha, draft: false, state: 'OPEN' as const, actorLogin }
+  }
+
+  const seeds: AnalysisRunSeed[] = [
+    {
+      id: 'arun_checkout_pr42', projectId: 'prj_checkout_demo',
+      pullRequest: pr('repo_checkout', 'acme/checkout-service', 42, 'Rechazar cupones vencidos en checkout', 'feature/coupon-expiry', 'a1b2c3d', 'devA'),
+      status: 'ACTION_REQUIRED', current: true, actionRequiredCount: 2, generatedTestsCount: 0,
+      createdAt: '2026-09-12T18:15:00.000Z', updatedAt: '2026-09-12T18:20:00.000Z', completedAt: null,
+      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: 'a1b2c3d', indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [
+        { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'CouponPolicy.apply', filePath: 'src/domain/CouponPolicy.ts', changeKind: 'DIRECTLY_CHANGED' },
+        { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'POTENTIALLY_IMPACTED' },
+      ],
+      functionalBehaviorValidated: false, resultSummary: null, detailsUrl: '/analysis-runs/arun_checkout_pr42',
+    },
+    {
+      id: 'arun_checkout_pr45', projectId: 'prj_checkout_demo',
+      pullRequest: pr('repo_checkout', 'acme/checkout-service', 45, 'Modo de redondeo configurable en OrderService', 'feature/rounding-mode', 'e5e5e5e', 'devB'),
+      status: 'SUCCESS', current: true, actionRequiredCount: 0, generatedTestsCount: 3,
+      createdAt: '2026-09-12T09:00:00.000Z', updatedAt: '2026-09-12T09:12:00.000Z', completedAt: '2026-09-12T09:12:00.000Z',
+      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: 'e5e5e5e', indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [{ language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' }],
+      functionalBehaviorValidated: true, resultSummary: '3 pruebas generadas y validadas contra el HEAD vigente.', detailsUrl: '/analysis-runs/arun_checkout_pr45',
+      __proposals: [
+        { id: 'prop_pr45_1', relativePath: 'src/domain/OrderService.rounding.spec.ts', target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr45_1'), status: 'AVAILABLE' },
+        { id: 'prop_pr45_2', relativePath: 'src/domain/OrderService.rounding.edgecases.spec.ts', target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr45_2'), status: 'AVAILABLE' },
+        { id: 'prop_pr45_3', relativePath: 'src/shared/money.spec.ts', target: { language: 'TYPESCRIPT', kind: 'FUNCTION', qualifiedName: 'formatCurrency', filePath: 'src/shared/money.ts', changeKind: 'POTENTIALLY_IMPACTED' }, contentSha256: fakeSha256('prop_pr45_3'), status: 'AVAILABLE' },
+      ],
+    },
+    {
+      id: 'arun_checkout_pr46', projectId: 'prj_checkout_demo',
+      pullRequest: pr('repo_checkout', 'acme/checkout-service', 46, 'Tope máximo de descuento acumulado', 'feature/discount-cap', 'f6f6f6f', 'devA'),
+      status: 'BEHAVIORAL_MISMATCH', current: true, actionRequiredCount: 0, generatedTestsCount: 1,
+      createdAt: '2026-09-11T15:00:00.000Z', updatedAt: '2026-09-11T15:20:00.000Z', completedAt: '2026-09-11T15:20:00.000Z',
+      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: 'f6f6f6f', indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [{ language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'CouponPolicy.apply', filePath: 'src/domain/CouponPolicy.ts', changeKind: 'DIRECTLY_CHANGED' }],
+      functionalBehaviorValidated: true, resultSummary: 'La prueba generada contradice el comportamiento observado: "apply" permite un descuento mayor al tope declarado.', detailsUrl: '/analysis-runs/arun_checkout_pr46',
+      __proposals: [
+        { id: 'prop_pr46_1', relativePath: 'src/domain/CouponPolicy.cap.spec.ts', target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'CouponPolicy.apply', filePath: 'src/domain/CouponPolicy.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr46_1'), status: 'HELD' },
+      ],
+    },
+    {
+      id: 'arun_checkout_pr47', projectId: 'prj_checkout_demo',
+      pullRequest: pr('repo_checkout', 'acme/checkout-service', 47, 'Limpieza de lint en utilidades de formato', 'chore/lint-fixes', '777aaa7', 'devC'),
+      status: 'NO_ADDITIONAL_TESTS_REQUIRED', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
+      createdAt: '2026-09-10T11:00:00.000Z', updatedAt: '2026-09-10T11:05:00.000Z', completedAt: '2026-09-10T11:05:00.000Z',
+      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: '777aaa7', indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [{ language: 'TYPESCRIPT', kind: 'FUNCTION', qualifiedName: 'formatCurrency', filePath: 'src/shared/money.ts', changeKind: 'DIRECTLY_CHANGED' }],
+      functionalBehaviorValidated: true, resultSummary: 'La cobertura existente ya ejercita el comportamiento observable de "formatCurrency"; el cambio es solo de estilo.', detailsUrl: '/analysis-runs/arun_checkout_pr47',
+    },
+    {
+      id: 'arun_billing_pr17', projectId: 'prj_billing_demo',
+      pullRequest: pr('repo_billing', 'acme/billing-engine', 17, 'Firma nueva de DiscountEngine.applyDiscount', 'feature/discount-engine-v2', 'f9e8d7c', 'devD'),
+      status: 'OBSOLETE', current: false, actionRequiredCount: 0, generatedTestsCount: 0,
+      createdAt: '2026-09-11T09:00:00.000Z', updatedAt: '2026-09-11T09:40:00.000Z', completedAt: null,
+      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: 'f9e8d7c', indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [{ language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'DiscountEngine', filePath: 'src/domain/DiscountEngine.ts', changeKind: 'DIRECTLY_CHANGED' }],
+      functionalBehaviorValidated: false, resultSummary: 'Un HEAD nuevo llegó a PR#17 mientras se resolvía el contexto funcional — este Run quedó obsoleto y no se reanuda.', detailsUrl: '/analysis-runs/arun_billing_pr17',
+    },
+    {
+      id: 'arun_billing_pr17_2', projectId: 'prj_billing_demo',
+      pullRequest: pr('repo_billing', 'acme/billing-engine', 17, 'Firma nueva de DiscountEngine.applyDiscount', 'feature/discount-engine-v2', '17b17b1', 'devD'),
+      status: 'SUCCESS', current: true, actionRequiredCount: 0, generatedTestsCount: 2,
+      createdAt: '2026-09-11T09:45:00.000Z', updatedAt: '2026-09-11T10:00:00.000Z', completedAt: '2026-09-11T10:00:00.000Z',
+      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: '17b17b1', indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [{ language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'DiscountEngine', filePath: 'src/domain/DiscountEngine.ts', changeKind: 'DIRECTLY_CHANGED' }],
+      functionalBehaviorValidated: true, resultSummary: 'El HEAD nuevo de PR#17 ya no deja el total en negativo; 2 pruebas generadas y validadas.', detailsUrl: '/analysis-runs/arun_billing_pr17_2',
+      __proposals: [
+        { id: 'prop_pr17_2_1', relativePath: 'src/domain/DiscountEngine.applyDiscount.spec.ts', target: { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'DiscountEngine', filePath: 'src/domain/DiscountEngine.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr17_2_1'), status: 'AVAILABLE' },
+        { id: 'prop_pr17_2_2', relativePath: 'src/domain/DiscountEngine.negative.spec.ts', target: { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'DiscountEngine', filePath: 'src/domain/DiscountEngine.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr17_2_2'), status: 'AVAILABLE' },
+      ],
+    },
+    {
+      id: 'arun_billing_pr20', projectId: 'prj_billing_demo',
+      pullRequest: pr('repo_billing', 'acme/billing-engine', 20, 'Ajuste de moneda base en InvoiceService', 'feature/invoice-currency', '202020a', 'devE'),
+      status: 'BASELINE_FAILED', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
+      createdAt: '2026-09-10T08:00:00.000Z', updatedAt: '2026-09-10T08:10:00.000Z', completedAt: '2026-09-10T08:10:00.000Z',
+      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: '202020a', indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [{ language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'InvoiceService', filePath: 'src/domain/InvoiceService.ts', changeKind: 'DIRECTLY_CHANGED' }],
+      functionalBehaviorValidated: false, resultSummary: 'La suite existente ya falla contra el HEAD del PR antes de generar pruebas nuevas — revisar el baseline.', detailsUrl: '/analysis-runs/arun_billing_pr20',
+    },
+    {
+      id: 'arun_billing_pr21', projectId: 'prj_billing_demo',
+      pullRequest: pr('repo_billing', 'acme/billing-engine', 21, 'Política de reembolsos parciales', 'feature/partial-refunds', '212121b', 'devE'),
+      status: 'TECHNICAL_GENERATION_FAILURE', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
+      createdAt: '2026-09-09T13:00:00.000Z', updatedAt: '2026-09-09T13:08:00.000Z', completedAt: '2026-09-09T13:08:00.000Z',
+      attemptCount: 2, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: '212121b', indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [{ language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'RefundPolicy', filePath: 'src/domain/RefundPolicy.ts', changeKind: 'DIRECTLY_CHANGED' }],
+      functionalBehaviorValidated: false, resultSummary: 'El generador no produjo una prueba compilable para "RefundPolicy" tras 2 intentos — falla técnica, no de comportamiento.', detailsUrl: '/analysis-runs/arun_billing_pr21',
+    },
+    {
+      id: 'arun_billing_pr22', projectId: 'prj_billing_demo',
+      pullRequest: pr('repo_billing', 'acme/billing-engine', 22, 'Actualiza README y comentarios de PaymentGateway', 'docs/payment-gateway-notes', '222222c', 'devF'),
+      status: 'NO_TEST_RELEVANT_CHANGES', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
+      createdAt: '2026-09-08T16:00:00.000Z', updatedAt: '2026-09-08T16:02:00.000Z', completedAt: '2026-09-08T16:02:00.000Z',
+      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: '222222c', indexDeltaBaseSha: null,
+      symbols: [],
+      functionalBehaviorValidated: true, resultSummary: 'El PR solo cambia documentación; no hay símbolos testables afectados.', detailsUrl: '/analysis-runs/arun_billing_pr22',
+    },
+  ]
+
+  for (const { __proposals, ...run } of seeds) {
+    analysisRuns.set(run.id, run)
+    if (__proposals) testProposals.set(run.id, __proposals)
+  }
+}
+
 export function resetMockBackend(): void {
   projects.clear()
   versions.clear()
@@ -310,6 +447,10 @@ export function resetMockBackend(): void {
   experiments.clear()
   contextTraces.clear()
   actionRequiredRuns.clear()
+  repositoryBindings.clear()
+  analysisRuns.clear()
+  testProposals.clear()
+  testPublications.clear()
   sequence = 2000
   seed()
 }
@@ -757,4 +898,134 @@ export async function mockSubmitFunctionalAnswer(analysisRunId: string, question
   sequence += 1
   const knowledgeId = input.choice === 'UNKNOWN' ? null : `fk_demo_${sequence}`
   return { status: 'PENDING', pollAfterMs: 300, analysisRunId, questionId, continuationAttemptId: `attempt_demo_${sequence}`, knowledgeId }
+}
+
+function requireProject(projectId: string): Project {
+  const project = projects.get(projectId)
+  if (!project) notFound(`No existe el proyecto demo "${projectId}".`, 'PROJECT_NOT_FOUND')
+  return project
+}
+
+/** HU30: `GET /projects/{projectId}/integrations/github`. `null` cuando el proyecto nunca se vinculó o fue desconectado. */
+export async function mockGetRepositoryBinding(projectId: string): Promise<ProjectRepositoryBindingResponse | null> {
+  await latency()
+  requireProject(projectId)
+  return clone(repositoryBindings.get(projectId) ?? null)
+}
+
+const DEFAULT_REPOSITORY_BY_PROJECT: Record<string, { repositoryId: string; repositoryName: string }> = {
+  prj_checkout_demo: { repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service' },
+  prj_billing_demo: { repositoryId: 'repo_billing', repositoryName: 'acme/billing-engine' },
+}
+
+/** HU30: `POST /projects/{projectId}/integrations/github/installations`. */
+export async function mockStartGitHubInstallation(projectId: string): Promise<GitHubInstallationSessionResponse> {
+  await latency()
+  requireProject(projectId)
+  sequence += 1
+  return {
+    projectId,
+    installationUrl: `https://github.com/apps/rag-test-studio-demo/installations/new?state=demo_state_${sequence}`,
+    stateExpiresAt: new Date(Date.now() + 10 * 60_000).toISOString(),
+  }
+}
+
+/** HU30: `POST /projects/{projectId}/integrations/github/callback`. Demo: siempre vincula el repositorio por defecto del proyecto (no hay selector real de repos). */
+export async function mockCompleteGitHubInstallation(projectId: string, input: CompleteGitHubInstallationRequest): Promise<ProjectRepositoryBindingResponse> {
+  await latency()
+  requireProject(projectId)
+  const fallback = DEFAULT_REPOSITORY_BY_PROJECT[projectId] ?? { repositoryId: input.repositoryId, repositoryName: input.repositoryId }
+  const createdAt = nowIso()
+  sequence += 1
+  const binding: ProjectRepositoryBindingResponse = {
+    projectId,
+    installationId: input.installationId || `inst_demo_${sequence}`,
+    repositoryId: fallback.repositoryId,
+    repositoryName: fallback.repositoryName,
+    integrationBranch: input.integrationBranch?.trim() || 'develop',
+    status: 'ENABLED',
+    createdAt,
+    updatedAt: createdAt,
+  }
+  repositoryBindings.set(projectId, binding)
+  return clone(binding)
+}
+
+/** HU30: `DELETE /projects/{projectId}/integrations/github`. Simplificación de demo: limpia el binding en vez de marcarlo `DISABLED` — deja de aceptar eventos nuevos y no borra los Runs/fixtures ya creados. */
+export async function mockDisconnectRepository(projectId: string): Promise<void> {
+  await latency()
+  requireProject(projectId)
+  repositoryBindings.set(projectId, null)
+}
+
+function toAnalysisRunSummary(run: AnalysisRunDetailResponse): AnalysisRunSummaryResponse {
+  const { id, projectId, pullRequest, status, current, actionRequiredCount, generatedTestsCount, createdAt, updatedAt, completedAt } = run
+  return { id, projectId, pullRequest, status, current, actionRequiredCount, generatedTestsCount, createdAt, updatedAt, completedAt }
+}
+
+/** HU32: `GET /projects/{projectId}/analysis-runs?status&cursor&limit` (aquí `projectId` es opcional para ofrecer también un listado global). */
+export async function mockListAnalysisRuns(projectId: string | undefined, status: AnalysisRunStatus | undefined): Promise<AnalysisRunListPage> {
+  await latency()
+  const items = Array.from(analysisRuns.values())
+    .filter((run) => !projectId || run.projectId === projectId)
+    .filter((run) => !status || run.status === status)
+    .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+    .map(toAnalysisRunSummary)
+  return { items: clone(items), nextCursor: null }
+}
+
+/** HU32: `GET /analysis-runs/{analysisRunId}`. */
+export async function mockGetAnalysisRun(analysisRunId: string): Promise<AnalysisRunDetailResponse> {
+  await latency()
+  const run = analysisRuns.get(analysisRunId)
+  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  return clone(run)
+}
+
+/** HU40: `GET /analysis-runs/{analysisRunId}/test-proposals`. */
+export async function mockListTestProposals(analysisRunId: string): Promise<GeneratedTestProposalSetResponse> {
+  await latency()
+  const run = analysisRuns.get(analysisRunId)
+  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  const items = testProposals.get(analysisRunId) ?? []
+  return clone({ analysisRunId, headSha: run.pullRequest.headSha, items })
+}
+
+/** HU40: `POST /analysis-runs/{analysisRunId}/test-publications`. Simplificación de demo: publica de inmediato (`PUBLISHED`) en vez de simular un job asíncrono adicional — el companion PR mock ya está listo en la primera consulta de `mockGetTestPublication`. */
+export async function mockCreateTestPublication(analysisRunId: string, input: CreateTestPublicationRequest): Promise<TestPublicationAcceptedResponse> {
+  await latency()
+  const run = analysisRuns.get(analysisRunId)
+  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (run.status !== 'SUCCESS') throw new ApiError('Solo un Run SUCCESS admite publicación.', 409, 'demo-correlation-id', 'RUN_NOT_PUBLISHABLE')
+  const proposals = testProposals.get(analysisRunId) ?? []
+  const selected = proposals.filter((proposal) => input.proposalIds.includes(proposal.id))
+  if (selected.length === 0 || selected.some((proposal) => proposal.status !== 'AVAILABLE')) {
+    throw new ApiError('Las propuestas seleccionadas ya no están disponibles para publicar.', 409, 'demo-correlation-id', 'PROPOSAL_NOT_AVAILABLE')
+  }
+  selected.forEach((proposal) => { proposal.status = 'PUBLISHED' })
+  sequence += 1
+  const publicationId = `pub_demo_${sequence}`
+  const createdAt = nowIso()
+  const publication: TestPublicationResponse = {
+    id: publicationId,
+    analysisRunId,
+    sourceHeadSha: run.pullRequest.headSha,
+    status: 'PUBLISHED',
+    branchName: `rag-tests/pr-${run.pullRequest.number}-${run.pullRequest.headSha.slice(0, 7)}`,
+    companionPullRequestNumber: run.pullRequest.number + 100,
+    companionPullRequestUrl: `https://github.com/${run.pullRequest.repositoryName}/pull/${run.pullRequest.number + 100}`,
+    failureMessage: null,
+    createdAt,
+    updatedAt: createdAt,
+  }
+  testPublications.set(publicationId, publication)
+  return { status: 'PENDING', pollAfterMs: 300, publicationId, analysisRunId }
+}
+
+/** HU40: `GET /test-publications/{publicationId}`. */
+export async function mockGetTestPublication(publicationId: string): Promise<TestPublicationResponse> {
+  await latency()
+  const publication = testPublications.get(publicationId)
+  if (!publication) notFound(`No existe la publicación demo "${publicationId}".`, 'PUBLICATION_NOT_FOUND')
+  return clone(publication)
 }
