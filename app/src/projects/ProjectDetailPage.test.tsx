@@ -23,13 +23,13 @@ test('HU30: un proyecto vinculado muestra el binding y enlaces a Runs/Integratio
   expect(screen.getByRole('link', { name: /Gestionar integración/ })).toHaveAttribute('href', '/projects/prj_checkout_demo/integrations/github')
 })
 
-test('el flujo ZIP no aparece en la página principal: solo un link discreto a herramientas legacy', async () => {
+test('el flujo ZIP no aparece en la página principal ni su link a herramientas legacy (oculto a pedido del usuario; la ruta sigue existiendo)', async () => {
   renderDetail('prj_checkout_demo')
 
   await screen.findByText('acme/checkout-service')
   expect(screen.queryByText('Cargar código fuente')).not.toBeInTheDocument()
   expect(screen.queryByRole('link', { name: 'Configurar generación' })).not.toBeInTheDocument()
-  expect(screen.getByRole('link', { name: /Herramientas legacy/ })).toHaveAttribute('href', '/projects/prj_checkout_demo/legacy')
+  expect(screen.queryByRole('link', { name: /Herramientas legacy/ })).not.toBeInTheDocument()
 })
 
 test('HU30: un proyecto sin binding ofrece conectar GitHub', async () => {

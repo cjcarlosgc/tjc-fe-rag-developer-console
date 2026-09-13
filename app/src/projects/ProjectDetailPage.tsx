@@ -29,7 +29,8 @@ export function ProjectDetailPage() {
           <div className="empty-inline"><strong>Sin repositorio vinculado</strong><p>Conecta una GitHub App para habilitar análisis automático por PR.</p><Link className="button primary button-link" to={`/projects/${project.id}/integrations/github`}>Conectar GitHub →</Link></div>
         )}
       </div>
-      <p className="empty-inline-note"><Link to={`/projects/${project.id}/legacy`}>Herramientas legacy (ZIP, desarrollo/experimento) →</Link></p>
+      {/* El link a "Herramientas legacy" (/projects/:id/legacy, LegacyToolsPage) se ocultó a pedido
+          explícito del usuario: la ruta y el código siguen intactos, solo se retiró de la UI principal. */}
     </section>
   )
 }
