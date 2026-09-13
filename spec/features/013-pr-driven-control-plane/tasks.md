@@ -9,10 +9,18 @@
 
 ## Implementación posterior — requiere selección humana
 
-- [ ] HU30/HU32: bindings, Projects y Runs.
+- [x] HU30/HU32: repository binding, Analysis Runs por PR/HEAD y obsolescencia —
+      mock-first, 9 escenarios de `spec.md`. Ver
+      `harness/reports/HU30-HU32-HU39-HU40-control-plane-mock.md`.
 - [ ] HU35-HU36: persistencia de Functional Knowledge y continuación real del Run (Core).
 - [x] HU37-HU38: Focus Mode, bandeja Action Required y deep-link `returnTo` — mock-first,
       dos escenarios (action required, corrección/HEAD nuevo). Ver
       `harness/reports/HU37-HU38-focus-mode-action-required.md`.
-- [ ] HU39-HU40: Checks, review, freshness y publicación.
+- [x] HU39-HU40: Checks (representados en el detalle de Run), review, freshness y
+      publicación por companion PR — mock-first. Ver
+      `harness/reports/HU30-HU32-HU39-HU40-control-plane-mock.md`.
 - [ ] HU44-HU45: retiro legacy y colaboración.
+
+Con este corte, todo el mock-first del Developer Console para SDD 2.0 queda completo
+salvo lo explícitamente Core-side (HU35/36) y P4 (HU44/45). Adapters live siguen
+`PendingContractError` en todos los casos.
