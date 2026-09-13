@@ -14,6 +14,9 @@ export function AppShell() {
           <span className="brand-mark" aria-hidden="true">R</span>
           <span>RAG Developer Console</span>
         </Link>
+        <nav className="topbar-nav" aria-label="Navegación principal">
+          <Link to="/action-required">Action Required</Link>
+        </nav>
         <div className="topbar-badges">
           <span className={`environment ${mockData ? 'environment-demo' : ''}`}><i aria-hidden="true" />{mockData ? 'DEMO · DATOS SIMULADOS' : 'LIVE · CORE API'}</span>
           {mockAuth && <span className="environment environment-demo"><i aria-hidden="true" />DEMO · IDENTIDAD SIMULADA</span>}

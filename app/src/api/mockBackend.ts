@@ -1,3 +1,4 @@
+import type { ActionRequiredListPage, FunctionalAnswerAcceptedResponse, FunctionalQuestionResponse, FunctionalQuestionSetResponse, SubmitFunctionalAnswerRequest } from '../action-required/types'
 import type { ArtifactViewModel } from '../artifacts/types'
 import type { AgentTrajectoryStep, ContextTraceDetail, ContextTracePage, ContextTraceSummary, DiscoveredFilePage, ExperimentContextTraceFilters, RagCandidateNode, RunContextTraceFilters, SourceExcerpt } from '../context-explorer/types'
 import type { ExperimentAccepted, ExperimentOperation, ExperimentResultViewModel } from '../experiments/types'
@@ -38,12 +39,21 @@ interface MockContextTraceState {
   polls: number
 }
 
+/** HU37/HU38: preguntas de un `AnalysisRun` (control plane PR-driven), ordenadas — solo una `PENDING` a la vez está vigente. `headChanged` simula que llegó un HEAD nuevo mientras se respondía: la pregunta pasa a `OBSOLETE` en vez de `ANSWERED` y el Run no se reanuda. */
+interface MockActionRequiredRunState {
+  analysisRunId: string
+  projectId: string
+  questions: FunctionalQuestionResponse[]
+  headChanged: boolean
+}
+
 const projects = new Map<string, Project>()
 const versions = new Map<string, MockVersionState>()
 const runs = new Map<string, MockRunState>()
 const artifacts = new Map<string, ArtifactViewModel[]>()
 const experiments = new Map<string, MockExperimentState>()
 const contextTraces = new Map<string, MockContextTraceState>()
+const actionRequiredRuns = new Map<string, MockActionRequiredRunState>()
 let sequence = 2000
 
 const clone = <T>(value: T): T => structuredClone(value)
@@ -229,6 +239,67 @@ function seed(): void {
   })
   artifacts.set('run_checkout_seed', buildArtifacts('run_checkout_seed', inventoryViewTargets(buildInventory('ver_checkout_7'))))
   seedContextTraces()
+  seedActionRequired()
+}
+
+/** HU37/HU38: dos escenarios — `arun_checkout_pr42` (action required normal, dos preguntas adaptativas encadenadas) y `arun_billing_pr17` (corrección/HEAD nuevo: cualquier respuesta deja la pregunta `OBSOLETE` sin reanudar el Run). */
+function seedActionRequired(): void {
+  actionRequiredRuns.set('arun_checkout_pr42', {
+    analysisRunId: 'arun_checkout_pr42',
+    projectId: 'prj_checkout_demo',
+    headChanged: false,
+    questions: [
+      {
+        id: 'fq_checkout_pr42_1',
+        analysisRunId: 'arun_checkout_pr42',
+        projectId: 'prj_checkout_demo',
+        repositoryName: 'acme/checkout-service',
+        pullRequestNumber: 42,
+        headSha: 'a1b2c3d',
+        target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'CouponPolicy.apply', filePath: 'src/domain/CouponPolicy.ts', changeKind: 'DIRECTLY_CHANGED' },
+        question: '¿"apply" debe rechazar un cupón vencido aunque el pedido ya esté marcado como pagado?',
+        rationale: 'El PR modifica la validación de vigencia de "apply" pero no hay una prueba existente que fije el comportamiento cuando el pedido ya está pagado.',
+        status: 'PENDING',
+        visualAid: { kind: 'MINI_DIFF', title: 'CouponPolicy.ts — cambio en apply', language: 'typescript', content: '- apply(order: Order, code: string): number {\n-   return this.discountFor(code)\n+ apply(order: Order, code: string): number {\n+   if (this.isExpired(code)) throw new ExpiredCouponError(code)\n+   return this.discountFor(code)' },
+        createdAt: '2026-09-12T18:20:00.000Z',
+      },
+      {
+        id: 'fq_checkout_pr42_2',
+        analysisRunId: 'arun_checkout_pr42',
+        projectId: 'prj_checkout_demo',
+        repositoryName: 'acme/checkout-service',
+        pullRequestNumber: 42,
+        headSha: 'a1b2c3d',
+        target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'POTENTIALLY_IMPACTED' },
+        question: '¿El redondeo de "calculateTotal" debe truncar o redondear al centavo más cercano?',
+        rationale: '"calculateTotal" invoca a "CouponPolicy.apply" y el PR introduce un nuevo cálculo de descuento; el redondeo no está documentado en el código ni en pruebas previas.',
+        status: 'PENDING',
+        visualAid: { kind: 'CODE_FRAGMENT', title: 'OrderService.ts:42', language: 'typescript', content: 'calculateTotal(order: Order): number {\n  const discount = this.coupons.apply(order, order.couponCode)\n  return order.subtotal - discount // redondeo pendiente de definir\n}' },
+        createdAt: '2026-09-12T18:20:00.000Z',
+      },
+    ],
+  })
+  actionRequiredRuns.set('arun_billing_pr17', {
+    analysisRunId: 'arun_billing_pr17',
+    projectId: 'prj_billing_demo',
+    headChanged: true,
+    questions: [
+      {
+        id: 'fq_billing_pr17_1',
+        analysisRunId: 'arun_billing_pr17',
+        projectId: 'prj_billing_demo',
+        repositoryName: 'acme/billing-engine',
+        pullRequestNumber: 17,
+        headSha: 'f9e8d7c',
+        target: { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'DiscountEngine', filePath: 'src/domain/DiscountEngine.ts', changeKind: 'DIRECTLY_CHANGED' },
+        question: '¿"DiscountEngine.applyDiscount" puede dejar el total en negativo si el cupón excede el subtotal?',
+        rationale: '"applyDiscount" cambia su firma en este PR y "OrderService" depende de su resultado para el total final.',
+        status: 'PENDING',
+        visualAid: { kind: 'SYMBOL_RELATION', title: 'DiscountEngine ↔ OrderService', language: null, content: 'OrderService.calculateTotal() --usa--> DiscountEngine.applyDiscount()\nDiscountEngine.applyDiscount() --modificado en PR#17-->' },
+        createdAt: '2026-09-11T09:05:00.000Z',
+      },
+    ],
+  })
 }
 
 export function resetMockBackend(): void {
@@ -238,6 +309,7 @@ export function resetMockBackend(): void {
   artifacts.clear()
   experiments.clear()
   contextTraces.clear()
+  actionRequiredRuns.clear()
   sequence = 2000
   seed()
 }
@@ -640,4 +712,49 @@ export async function mockListDiscoveredFiles(traceId: string, step: number, cur
   const end = Math.min(start + DISCOVERED_FILES_PAGE_SIZE, DISCOVERED_FILES_TOTAL)
   const items = Array.from({ length: Math.max(0, end - start) }, (_, index) => ({ filePath: `src/domain/discovered/file-${start + index + 1}.ts` }))
   return { items, nextCursor: end < DISCOVERED_FILES_TOTAL ? String(end) : null }
+}
+
+function currentActionRequiredQuestion(state: MockActionRequiredRunState): FunctionalQuestionResponse | null {
+  return state.questions.find((question) => question.status === 'PENDING') ?? null
+}
+
+/** HU38: `GET /action-required?projectId&cursor&limit` — una entrada por Run vigente con pregunta pendiente. */
+export async function mockListActionRequired(projectId?: string): Promise<ActionRequiredListPage> {
+  await latency()
+  const items = Array.from(actionRequiredRuns.values())
+    .filter((state) => !projectId || state.projectId === projectId)
+    .map(currentActionRequiredQuestion)
+    .filter((question): question is FunctionalQuestionResponse => question !== null)
+    .sort((left, right) => left.createdAt.localeCompare(right.createdAt))
+  return { items: clone(items), nextCursor: null }
+}
+
+/** HU37: `GET /analysis-runs/{analysisRunId}/context-questions`. */
+export async function mockGetContextQuestionSet(analysisRunId: string): Promise<FunctionalQuestionSetResponse> {
+  await latency()
+  const state = actionRequiredRuns.get(analysisRunId)
+  if (!state) notFound(`No existe el Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  const currentQuestion = currentActionRequiredQuestion(state)
+  const functionalBehaviorValidated = currentQuestion === null && state.questions.every((question) => question.status === 'ANSWERED')
+  return clone({ analysisRunId, currentQuestion, functionalBehaviorValidated })
+}
+
+/** HU37: `POST /analysis-runs/{analysisRunId}/context-questions/{questionId}/answers`. `headChanged` simula que un HEAD nuevo llegó mientras se respondía: la pregunta queda `OBSOLETE`, no `ANSWERED`, y el Run no se reanuda (`continuationAttemptId: null`). */
+export async function mockSubmitFunctionalAnswer(analysisRunId: string, questionId: string, input: SubmitFunctionalAnswerRequest): Promise<FunctionalAnswerAcceptedResponse> {
+  await latency()
+  const state = actionRequiredRuns.get(analysisRunId)
+  if (!state) notFound(`No existe el Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  const question = state.questions.find((item) => item.id === questionId)
+  if (!question) notFound(`No existe la pregunta demo "${questionId}".`, 'QUESTION_NOT_FOUND')
+  if (question.status !== 'PENDING') throw new ApiError('La pregunta demo ya no está pendiente.', 409, 'demo-correlation-id', 'QUESTION_NOT_PENDING')
+
+  if (state.headChanged) {
+    question.status = 'OBSOLETE'
+    return { status: 'PENDING', pollAfterMs: 400, analysisRunId, questionId, continuationAttemptId: null, knowledgeId: null }
+  }
+
+  question.status = 'ANSWERED'
+  sequence += 1
+  const knowledgeId = input.choice === 'UNKNOWN' ? null : `fk_demo_${sequence}`
+  return { status: 'PENDING', pollAfterMs: 300, analysisRunId, questionId, continuationAttemptId: `attempt_demo_${sequence}`, knowledgeId }
 }

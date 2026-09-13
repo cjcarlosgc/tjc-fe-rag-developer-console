@@ -14,6 +14,8 @@ import { ArtifactsPage } from './artifacts/ArtifactsPage'
 import { ExperimentPage } from './experiments/ExperimentPage'
 import { AnalysisHistoryPage } from './analysis/AnalysisHistoryPage'
 import { ContextExplorerPage } from './context-explorer/ContextExplorerPage'
+import { ActionRequiredPage } from './action-required/ActionRequiredPage'
+import { FocusModePage } from './action-required/FocusModePage'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -27,6 +29,8 @@ export const router = createBrowserRouter([
         element: <AppShell />,
         children: [
           { index: true, element: <ProjectsPage /> },
+          { path: 'action-required', element: <ActionRequiredPage /> },
+          { path: 'action-required/:analysisRunId', element: <FocusModePage /> },
           { path: 'projects/:projectId', element: <ProjectDetailPage /> },
           { path: 'projects/:projectId/analyses', element: <AnalysisHistoryPage /> },
           { path: 'projects/:projectId/inventory', element: <InventoryPage /> },
