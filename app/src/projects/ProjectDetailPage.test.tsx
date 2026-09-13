@@ -21,6 +21,7 @@ test('HU30: un proyecto vinculado muestra el binding y enlaces a Runs/Integratio
   expect(await screen.findByText('acme/checkout-service')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: /Ver Runs de este proyecto/ })).toHaveAttribute('href', '/analysis-runs?projectId=prj_checkout_demo')
   expect(screen.getByRole('link', { name: /Gestionar integración/ })).toHaveAttribute('href', '/projects/prj_checkout_demo/integrations/github')
+  expect(screen.getByRole('link', { name: /Functional Knowledge/ })).toHaveAttribute('href', '/projects/prj_checkout_demo/functional-knowledge')
 })
 
 test('HU19: "Modo experimental" es visible como capacidad propia, no legacy', async () => {

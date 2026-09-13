@@ -23,7 +23,7 @@ export function ProjectDetailPage() {
         {binding ? (
           <>
             <dl className="metadata"><div><dt>Repositorio</dt><dd>{binding.repositoryName}</dd></div><div><dt>Integration branch</dt><dd><code>{binding.integrationBranch}</code></dd></div><div><dt>Estado</dt><dd><span className="status-badge status-success">{binding.status}</span></dd></div></dl>
-            <div className="detail-actions"><Link className="button secondary button-link" to={`/analysis-runs?projectId=${project.id}`}>Ver Runs de este proyecto →</Link><Link className="button secondary button-link" to={`/projects/${project.id}/integrations/github`}>Gestionar integración →</Link></div>
+            <div className="detail-actions"><Link className="button secondary button-link" to={`/analysis-runs?projectId=${project.id}`}>Ver Runs de este proyecto →</Link><Link className="button secondary button-link" to={`/projects/${project.id}/functional-knowledge`}>Functional Knowledge →</Link><Link className="button secondary button-link" to={`/projects/${project.id}/integrations/github`}>Gestionar integración →</Link></div>
           </>
         ) : (
           <div className="empty-inline"><strong>Sin repositorio vinculado</strong><p>Conecta una GitHub App para habilitar análisis automático por PR.</p><Link className="button primary button-link" to={`/projects/${project.id}/integrations/github`}>Conectar GitHub →</Link></div>

@@ -17,6 +17,8 @@ import { AnalysisHistoryPage } from './analysis/AnalysisHistoryPage'
 import { ContextExplorerPage } from './context-explorer/ContextExplorerPage'
 import { ActionRequiredPage } from './action-required/ActionRequiredPage'
 import { FocusModePage } from './action-required/FocusModePage'
+import { FunctionalKnowledgeDetailPage } from './action-required/FunctionalKnowledgeDetailPage'
+import { FunctionalKnowledgePage } from './action-required/FunctionalKnowledgePage'
 import { AnalysisRunDetailPage } from './control-plane/AnalysisRunDetailPage'
 import { IntegrationsPage } from './control-plane/IntegrationsPage'
 import { RunsPage } from './control-plane/RunsPage'
@@ -38,6 +40,8 @@ export const router = createBrowserRouter([
           { path: 'analysis-runs', element: <RunsPage /> },
           { path: 'projects/:projectId', element: <ProjectDetailPage /> },
           { path: 'projects/:projectId/runs/:analysisRunId', element: <AnalysisRunDetailPage /> },
+          { path: 'projects/:projectId/functional-knowledge', element: <FunctionalKnowledgePage /> },
+          { path: 'projects/:projectId/functional-knowledge/:knowledgeId', element: <FunctionalKnowledgeDetailPage /> },
           { path: 'projects/:projectId/legacy', element: <LegacyToolsPage /> },
           { path: 'projects/:projectId/integrations/github', element: <IntegrationsPage /> },
           { path: 'projects/:projectId/analyses', element: <AnalysisHistoryPage /> },
