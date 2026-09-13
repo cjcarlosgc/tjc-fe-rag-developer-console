@@ -45,6 +45,14 @@ test('presenta el escenario semilla en modo demo sin consultar la red', async ()
   expect(fetchMock).not.toHaveBeenCalled()
 })
 
+test('el banner de demo apunta al tour de Runs de SDD 2.0, no al flujo ZIP', async () => {
+  setDataSourceForTests('mock')
+  renderApp(<ProjectsPage />)
+  await screen.findByText('Demo preparada')
+  expect(screen.getByRole('link', { name: /Ver Runs/ })).toHaveAttribute('href', '/analysis-runs')
+  expect(screen.queryByText(/demostrar la carga ZIP/)).not.toBeInTheDocument()
+})
+
 test('HU25: filtra proyectos por nombre cuando hay más de cuatro', async () => {
   setDataSourceForTests('mock')
   resetMockBackend()
