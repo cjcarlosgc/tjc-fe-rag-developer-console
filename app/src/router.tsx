@@ -16,6 +16,8 @@ import { AnalysisHistoryPage } from './analysis/AnalysisHistoryPage'
 import { ContextExplorerPage } from './context-explorer/ContextExplorerPage'
 import { ActionRequiredPage } from './action-required/ActionRequiredPage'
 import { FocusModePage } from './action-required/FocusModePage'
+import { AnalysisRunDetailPage } from './control-plane/AnalysisRunDetailPage'
+import { RunsPage } from './control-plane/RunsPage'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -31,6 +33,8 @@ export const router = createBrowserRouter([
           { index: true, element: <ProjectsPage /> },
           { path: 'action-required', element: <ActionRequiredPage /> },
           { path: 'action-required/:analysisRunId', element: <FocusModePage /> },
+          { path: 'analysis-runs', element: <RunsPage /> },
+          { path: 'analysis-runs/:analysisRunId', element: <AnalysisRunDetailPage /> },
           { path: 'projects/:projectId', element: <ProjectDetailPage /> },
           { path: 'projects/:projectId/analyses', element: <AnalysisHistoryPage /> },
           { path: 'projects/:projectId/inventory', element: <InventoryPage /> },

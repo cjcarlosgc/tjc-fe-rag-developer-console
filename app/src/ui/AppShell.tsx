@@ -15,6 +15,7 @@ export function AppShell() {
           <span>RAG Developer Console</span>
         </Link>
         <nav className="topbar-nav" aria-label="Navegación principal">
+          <Link to="/analysis-runs">Runs</Link>
           <Link to="/action-required">Action Required</Link>
         </nav>
         <div className="topbar-badges">
