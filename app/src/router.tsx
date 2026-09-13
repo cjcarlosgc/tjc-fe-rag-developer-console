@@ -7,6 +7,7 @@ import { AppShell } from './ui/AppShell'
 import { ProjectDetailPage } from './projects/ProjectDetailPage'
 import { ProjectsPage } from './projects/ProjectsPage'
 import { InventoryPage } from './inventory/InventoryPage'
+import { LegacyToolsPage } from './projects/LegacyToolsPage'
 import { GenerationPage } from './generation/GenerationPage'
 import { RunPage } from './runs/RunPage'
 import { RunHistoryPage } from './runs/RunHistoryPage'
@@ -37,6 +38,7 @@ export const router = createBrowserRouter([
           { path: 'analysis-runs', element: <RunsPage /> },
           { path: 'analysis-runs/:analysisRunId', element: <AnalysisRunDetailPage /> },
           { path: 'projects/:projectId', element: <ProjectDetailPage /> },
+          { path: 'projects/:projectId/legacy', element: <LegacyToolsPage /> },
           { path: 'projects/:projectId/integrations/github', element: <IntegrationsPage /> },
           { path: 'projects/:projectId/analyses', element: <AnalysisHistoryPage /> },
           { path: 'projects/:projectId/inventory', element: <InventoryPage /> },
