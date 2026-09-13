@@ -11,19 +11,21 @@ beforeEach(() => {
 })
 
 test('HU32: lista los 9 Analysis Runs con su badge de estado', async () => {
-  renderApp(<RunsPage />, { initialEntry: '/analysis-runs' })
+  const { container } = renderApp(<RunsPage />, { initialEntry: '/analysis-runs' })
 
-  expect(await screen.findByText('acme/checkout-service · PR #42')).toBeInTheDocument()
+  expect(await screen.findByText('PR #42', { selector: '.pr-ref' })).toBeInTheDocument()
+  expect(screen.getAllByText('checkout-service').length).toBeGreaterThan(0)
   expect(screen.getAllByText('Success')).toHaveLength(2)
   expect(screen.getByText('Behavioral mismatch')).toBeInTheDocument()
   expect(screen.getByText('Obsolete (HEAD nuevo)')).toBeInTheDocument()
   expect(screen.getByText('NO VIGENTE')).toBeInTheDocument()
-  expect(screen.getAllByText(/acme\/(checkout-service|billing-engine)/)).toHaveLength(9)
+  expect(container.querySelectorAll('.repo-chip')).toHaveLength(9)
 })
 
 test('HU32: filtra por proyecto vía ?projectId=', async () => {
   renderApp(<RunsPage />, { initialEntry: '/analysis-runs?projectId=prj_billing_demo' })
 
-  expect(await screen.findByText('acme/billing-engine · PR #20')).toBeInTheDocument()
-  expect(screen.queryByText('acme/checkout-service · PR #42')).not.toBeInTheDocument()
+  expect(await screen.findByText('PR #20', { selector: '.pr-ref' })).toBeInTheDocument()
+  expect(screen.getAllByText('billing-engine').length).toBeGreaterThan(0)
+  expect(screen.queryByText('PR #42', { selector: '.pr-ref' })).not.toBeInTheDocument()
 })

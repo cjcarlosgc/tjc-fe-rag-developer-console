@@ -33,7 +33,7 @@ test('HU30: muestra el binding ENABLED y permite desconectar', async () => {
   const user = userEvent.setup()
   renderIntegrations('prj_checkout_demo')
 
-  expect(await screen.findByText('acme/checkout-service')).toBeInTheDocument()
+  expect(await screen.findByText('checkout-service', { selector: '.repo-name' })).toBeInTheDocument()
   expect(screen.getByText('ENABLED')).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'Desconectar' }))
@@ -51,6 +51,6 @@ test('HU30: sin binding, el flujo de 2 pasos reconecta el repositorio', async ()
   expect(await screen.findByText('Instalación simulada iniciada')).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'Simular instalación completada' }))
-  expect(await screen.findByText('acme/billing-engine')).toBeInTheDocument()
+  expect(await screen.findByText('billing-engine', { selector: '.repo-name' })).toBeInTheDocument()
   expect(screen.getByText('ENABLED')).toBeInTheDocument()
 })

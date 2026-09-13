@@ -2,6 +2,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { isMockDataSource } from '../api/dataSource'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
+import { RepoChip } from '../ui/RepoChip'
 import { useAnalysisRuns } from './queries'
 import { ANALYSIS_RUN_STATUS_LABELS, analysisRunStatusClass } from './status'
 
@@ -31,7 +32,8 @@ export function RunsPage() {
             <li key={run.id} className={`panel analysis-run-item${run.current ? '' : ' analysis-run-item-obsolete'}`}>
               <Link to={`/projects/${run.projectId}/runs/${run.id}`}>
                 <div className="analysis-run-item-heading">
-                  <span className="pr-ref">{run.pullRequest.repositoryName} · PR #{run.pullRequest.number}</span>
+                  <RepoChip repositoryName={run.pullRequest.repositoryName} />
+                  <span className="pr-ref">PR #{run.pullRequest.number}</span>
                   <span className={`status-badge ${analysisRunStatusClass(run.status)}`}>{ANALYSIS_RUN_STATUS_LABELS[run.status]}</span>
                   {!run.current && <span className="status-badge status-muted">NO VIGENTE</span>}
                 </div>

@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useRepositoryBinding } from '../control-plane/queries'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
+import { RepoChip } from '../ui/RepoChip'
 import { useProject } from './queries'
 
 export function ProjectDetailPage() {
@@ -22,7 +23,7 @@ export function ProjectDetailPage() {
         <div className="section-heading"><div><h2>Repository binding</h2><p>El control plane PR-driven es el camino principal de este proyecto.</p></div></div>
         {binding ? (
           <>
-            <dl className="metadata"><div><dt>Repositorio</dt><dd>{binding.repositoryName}</dd></div><div><dt>Integration branch</dt><dd><code>{binding.integrationBranch}</code></dd></div><div><dt>Estado</dt><dd><span className="status-badge status-success">{binding.status}</span></dd></div></dl>
+            <dl className="metadata"><div><dt>Repositorio</dt><dd><RepoChip repositoryName={binding.repositoryName} /></dd></div><div><dt>Integration branch</dt><dd><code>{binding.integrationBranch}</code></dd></div><div><dt>Estado</dt><dd><span className="status-badge status-success">{binding.status}</span></dd></div></dl>
             <div className="detail-actions"><Link className="button secondary button-link" to={`/analysis-runs?projectId=${project.id}`}>Ver Runs de este proyecto →</Link><Link className="button secondary button-link" to={`/projects/${project.id}/functional-knowledge`}>Functional Knowledge →</Link><Link className="button secondary button-link" to={`/projects/${project.id}/integrations/github`}>Gestionar integración →</Link></div>
           </>
         ) : (

@@ -5,6 +5,7 @@ import { useAuth } from '../auth/useAuth'
 import { useProject } from '../projects/queries'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
+import { RepoChip } from '../ui/RepoChip'
 import { useCompleteGitHubInstallation, useDisconnectRepository, useRepositoryBinding, useStartGitHubInstallation } from './queries'
 
 /** HU30 — repository binding. La instalación real de la GitHub App requiere un popup de GitHub que este mock no puede reproducir: se simula en 2 pasos explícitos, siempre etiquetados DEMO. */
@@ -37,7 +38,7 @@ export function IntegrationsPage() {
     {binding ? (
       <div className="panel integration-panel">
         <dl className="metadata">
-          <div><dt>Repositorio</dt><dd>{binding.repositoryName}</dd></div>
+          <div><dt>Repositorio</dt><dd><RepoChip repositoryName={binding.repositoryName} /></dd></div>
           <div><dt>Integration branch</dt><dd><code>{binding.integrationBranch}</code></dd></div>
           <div><dt>Estado</dt><dd><span className="status-badge status-success">{binding.status}</span></dd></div>
         </dl>

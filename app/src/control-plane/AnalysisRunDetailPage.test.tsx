@@ -19,13 +19,16 @@ test('HU39/HU40: un Run SUCCESS lista propuestas AVAILABLE y publica un companio
   const user = userEvent.setup()
   renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
 
-  expect(await screen.findByText('acme/checkout-service · PR #45')).toBeInTheDocument()
+  expect(await screen.findByText('PR #45', { selector: '.pr-number' })).toBeInTheDocument()
+  expect(screen.getByText('checkout-service')).toBeInTheDocument()
+  expect(screen.getByText('feature/rounding-mode')).toBeInTheDocument()
   expect(await screen.findAllByText('AVAILABLE')).toHaveLength(3)
 
   await user.click(screen.getByRole('button', { name: /Publicar 3 propuesta\(s\)/ }))
 
   expect(await screen.findByText('Companion PR publicado')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: /PR #145 en acme\/checkout-service/ })).toHaveAttribute('href', 'https://github.com/acme/checkout-service/pull/145')
+  expect(screen.getByRole('link', { name: 'PR #145' })).toHaveAttribute('href', 'https://github.com/acme/checkout-service/pull/145')
+  expect(screen.getAllByText('feature/rounding-mode').length).toBeGreaterThanOrEqual(2)
   expect(screen.getAllByText('PUBLISHED')).toHaveLength(3)
 })
 

@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { isMockDataSource } from '../api/dataSource'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
+import { RepoChip } from '../ui/RepoChip'
 import { useContextQuestionSet, useSubmitFunctionalAnswer } from './queries'
 import type { FunctionalAnswerChoice, VisualAidResponse } from './types'
 
@@ -72,7 +73,7 @@ export function FocusModePage() {
     )}
 
     {currentQuestion && <div className="panel focus-mode-card">
-      <span className="pr-ref">{currentQuestion.repositoryName} · PR #{currentQuestion.pullRequestNumber} · {currentQuestion.target.qualifiedName}</span>
+      <span className="run-heading-meta"><RepoChip repositoryName={currentQuestion.repositoryName} /><span className="pr-ref">PR #{currentQuestion.pullRequestNumber} · {currentQuestion.target.qualifiedName}</span></span>
       <h2>{currentQuestion.question}</h2>
       <p className="focus-mode-rationale">{currentQuestion.rationale}</p>
       {currentQuestion.visualAid && <VisualAid aid={currentQuestion.visualAid} />}

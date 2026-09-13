@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { isMockDataSource } from '../api/dataSource'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
+import { RepoChip } from '../ui/RepoChip'
 import { useActionRequiredList } from './queries'
 
 /** HU38 — bandeja de Runs con contexto funcional pendiente; cada fila abre Focus Mode con retorno seguro. */
@@ -28,7 +29,8 @@ export function ActionRequiredPage() {
             <li key={question.id} className="panel action-required-item">
               <Link to={`/action-required/${question.analysisRunId}?returnTo=${encodeURIComponent('/action-required')}`}>
                 <div className="action-required-item-heading">
-                  <span className="pr-ref">{question.repositoryName} · PR #{question.pullRequestNumber}</span>
+                  <RepoChip repositoryName={question.repositoryName} />
+                  <span className="pr-ref">PR #{question.pullRequestNumber}</span>
                   <span className="target-ref">{question.target.qualifiedName}</span>
                 </div>
                 <p>{question.question}</p>
