@@ -56,3 +56,26 @@ export interface ActionRequiredListPage {
   items: FunctionalQuestionResponse[]
   nextCursor: string | null
 }
+
+export type FunctionalKnowledgeSource = 'HUMAN_ANSWER' | 'APPROVED_IMPORT'
+export type FunctionalKnowledgeStatus = 'ACTIVE' | 'SUPERSEDED'
+
+export interface FunctionalKnowledgeResponse {
+  id: string
+  projectId: string
+  scope: FunctionalScope
+  targetRef: string | null
+  originalQuestion: string
+  originalAnswer: string
+  normalizedRule: string
+  source: FunctionalKnowledgeSource
+  status: FunctionalKnowledgeStatus
+  supersedesId: string | null
+  createdAt: string
+}
+
+/** `GET /projects/{projectId}/functional-knowledge?status&cursor&limit` -> `Page<FunctionalKnowledgeResponse>`. */
+export interface FunctionalKnowledgeListPage {
+  items: FunctionalKnowledgeResponse[]
+  nextCursor: string | null
+}

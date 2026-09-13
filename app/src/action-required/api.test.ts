@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { resetMockBackend } from '../api/mockBackend'
 import { setDataSourceForTests } from '../api/dataSource'
-import { getContextQuestionSet, listActionRequired, submitFunctionalAnswer } from './api'
+import { getContextQuestionSet, listActionRequired, listFunctionalKnowledge, submitFunctionalAnswer } from './api'
 
 beforeEach(() => {
   setDataSourceForTests('mock')
@@ -64,6 +64,27 @@ describe('action-required api (mock)', () => {
   })
 })
 
+describe('action-required api (mock) — HU35/HU36 Functional Knowledge', () => {
+  it('lista las reglas de un proyecto, ordenadas por más reciente primero', async () => {
+    const page = await listFunctionalKnowledge('prj_checkout_demo')
+    expect(page.items.map((item) => item.id)).toEqual(['fk_coupon_expiry', 'fk_rounding_v2', 'fk_rounding_v1'])
+  })
+
+  it('filtra por status', async () => {
+    const active = await listFunctionalKnowledge('prj_checkout_demo', 'ACTIVE')
+    expect(active.items.map((item) => item.id).sort()).toEqual(['fk_coupon_expiry', 'fk_rounding_v2'])
+
+    const superseded = await listFunctionalKnowledge('prj_checkout_demo', 'SUPERSEDED')
+    expect(superseded.items.map((item) => item.id)).toEqual(['fk_rounding_v1'])
+  })
+
+  it('la regla ACTIVE de rounding referencia a la que reemplaza vía supersedesId', async () => {
+    const page = await listFunctionalKnowledge('prj_checkout_demo', 'ACTIVE')
+    const v2 = page.items.find((item) => item.id === 'fk_rounding_v2')
+    expect(v2?.supersedesId).toBe('fk_rounding_v1')
+  })
+})
+
 describe('action-required api (live, INTEROP-2.0 aún no publicado)', () => {
   beforeEach(() => setDataSourceForTests('live'))
 
@@ -77,5 +98,9 @@ describe('action-required api (live, INTEROP-2.0 aún no publicado)', () => {
 
   it('submitFunctionalAnswer rechaza con PendingContractError', async () => {
     await expect(submitFunctionalAnswer('arun_checkout_pr42', 'fq_checkout_pr42_1', { choice: 'YES', answer: null })).rejects.toThrow(/todavía no publicó/)
+  })
+
+  it('listFunctionalKnowledge rechaza con PendingContractError', async () => {
+    await expect(listFunctionalKnowledge('prj_checkout_demo')).rejects.toThrow(/todavía no publicó/)
   })
 })

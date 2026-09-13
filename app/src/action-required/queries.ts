@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getContextQuestionSet, listActionRequired, submitFunctionalAnswer } from './api'
-import type { SubmitFunctionalAnswerRequest } from './types'
+import { getContextQuestionSet, listActionRequired, listFunctionalKnowledge, submitFunctionalAnswer } from './api'
+import type { FunctionalKnowledgeStatus, SubmitFunctionalAnswerRequest } from './types'
 
 export const actionRequiredKeys = {
   list: (projectId?: string) => ['action-required', 'list', projectId ?? null] as const,
   questionSet: (analysisRunId: string) => ['action-required', 'question-set', analysisRunId] as const,
+  functionalKnowledge: (projectId: string, status?: FunctionalKnowledgeStatus) => ['action-required', 'functional-knowledge', projectId, status ?? null] as const,
 }
 
 export function useActionRequiredList(projectId?: string) {
@@ -19,6 +20,14 @@ export function useContextQuestionSet(analysisRunId: string) {
     queryKey: actionRequiredKeys.questionSet(analysisRunId),
     queryFn: () => getContextQuestionSet(analysisRunId),
     enabled: Boolean(analysisRunId),
+  })
+}
+
+export function useFunctionalKnowledge(projectId: string, status?: FunctionalKnowledgeStatus) {
+  return useQuery({
+    queryKey: actionRequiredKeys.functionalKnowledge(projectId, status),
+    queryFn: () => listFunctionalKnowledge(projectId, status),
+    enabled: Boolean(projectId),
   })
 }
 

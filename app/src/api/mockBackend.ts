@@ -1,4 +1,4 @@
-import type { ActionRequiredListPage, FunctionalAnswerAcceptedResponse, FunctionalQuestionResponse, FunctionalQuestionSetResponse, SubmitFunctionalAnswerRequest } from '../action-required/types'
+import type { ActionRequiredListPage, FunctionalAnswerAcceptedResponse, FunctionalKnowledgeListPage, FunctionalKnowledgeResponse, FunctionalKnowledgeStatus, FunctionalQuestionResponse, FunctionalQuestionSetResponse, SubmitFunctionalAnswerRequest } from '../action-required/types'
 import type { ArtifactViewModel } from '../artifacts/types'
 import type { AgentTrajectoryStep, ContextTraceDetail, ContextTracePage, ContextTraceSummary, DiscoveredFilePage, ExperimentContextTraceFilters, RagCandidateNode, RunContextTraceFilters, SourceExcerpt } from '../context-explorer/types'
 import type { ExperimentAccepted, ExperimentOperation, ExperimentResultViewModel } from '../experiments/types'
@@ -72,6 +72,7 @@ const repositoryBindings = new Map<string, ProjectRepositoryBindingResponse | nu
 const analysisRuns = new Map<string, AnalysisRunDetailResponse>()
 const testProposals = new Map<string, GeneratedTestProposalResponse[]>()
 const testPublications = new Map<string, TestPublicationResponse>()
+const functionalKnowledge = new Map<string, FunctionalKnowledgeResponse>()
 let sequence = 2000
 
 const clone = <T>(value: T): T => structuredClone(value)
@@ -259,6 +260,7 @@ function seed(): void {
   seedContextTraces()
   seedActionRequired()
   seedControlPlane()
+  seedFunctionalKnowledge()
 }
 
 /** HU37/HU38: dos escenarios — `arun_checkout_pr42` (action required normal, dos preguntas adaptativas encadenadas) y `arun_billing_pr17` (corrección/HEAD nuevo: cualquier respuesta deja la pregunta `OBSOLETE` sin reanudar el Run). */
@@ -439,6 +441,41 @@ function seedControlPlane(): void {
   }
 }
 
+/** HU35/HU36: 4 reglas sobre los dos proyectos demo — 3 ACTIVE y un par ACTIVE/SUPERSEDED sobre el mismo target (OrderService.calculateTotal) para demostrar la supersesión del handoff. */
+function seedFunctionalKnowledge(): void {
+  const items: FunctionalKnowledgeResponse[] = [
+    {
+      id: 'fk_coupon_expiry', projectId: 'prj_checkout_demo', scope: 'METHOD', targetRef: 'CouponPolicy.apply',
+      originalQuestion: '¿"apply" debe rechazar un cupón vencido aunque el pedido ya esté marcado como pagado?',
+      originalAnswer: 'Sí',
+      normalizedRule: 'Un cupón vencido nunca debe aplicarse, incluso si el pedido ya está marcado como pagado.',
+      source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-12T18:22:00.000Z',
+    },
+    {
+      id: 'fk_discount_engine', projectId: 'prj_billing_demo', scope: 'METHOD', targetRef: 'DiscountEngine.applyDiscount',
+      originalQuestion: '¿"DiscountEngine.applyDiscount" puede dejar el total en negativo si el cupón excede el subtotal?',
+      originalAnswer: 'No',
+      normalizedRule: 'El descuento aplicado nunca debe dejar el total del pedido en negativo.',
+      source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-11T09:50:00.000Z',
+    },
+    {
+      id: 'fk_rounding_v1', projectId: 'prj_checkout_demo', scope: 'METHOD', targetRef: 'OrderService.calculateTotal',
+      originalQuestion: '¿El redondeo de "calculateTotal" debe truncar o redondear al centavo más cercano?',
+      originalAnswer: 'Trunca al centavo inferior',
+      normalizedRule: 'El total calculado trunca al centavo inferior; no redondea.',
+      source: 'HUMAN_ANSWER', status: 'SUPERSEDED', supersedesId: null, createdAt: '2026-08-20T10:00:00.000Z',
+    },
+    {
+      id: 'fk_rounding_v2', projectId: 'prj_checkout_demo', scope: 'METHOD', targetRef: 'OrderService.calculateTotal',
+      originalQuestion: '¿El redondeo de "calculateTotal" debe truncar o redondear al centavo más cercano?',
+      originalAnswer: 'Redondea al centavo más cercano',
+      normalizedRule: 'El total calculado redondea al centavo más cercano (no trunca).',
+      source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: 'fk_rounding_v1', createdAt: '2026-09-12T09:05:00.000Z',
+    },
+  ]
+  for (const item of items) functionalKnowledge.set(item.id, item)
+}
+
 export function resetMockBackend(): void {
   projects.clear()
   versions.clear()
@@ -451,6 +488,7 @@ export function resetMockBackend(): void {
   analysisRuns.clear()
   testProposals.clear()
   testPublications.clear()
+  functionalKnowledge.clear()
   sequence = 2000
   seed()
 }
@@ -1028,4 +1066,15 @@ export async function mockGetTestPublication(publicationId: string): Promise<Tes
   const publication = testPublications.get(publicationId)
   if (!publication) notFound(`No existe la publicación demo "${publicationId}".`, 'PUBLICATION_NOT_FOUND')
   return clone(publication)
+}
+
+/** HU35/HU36: `GET /projects/{projectId}/functional-knowledge?status&cursor&limit`. */
+export async function mockListFunctionalKnowledge(projectId: string, status?: FunctionalKnowledgeStatus): Promise<FunctionalKnowledgeListPage> {
+  await latency()
+  requireProject(projectId)
+  const items = Array.from(functionalKnowledge.values())
+    .filter((item) => item.projectId === projectId)
+    .filter((item) => !status || item.status === status)
+    .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+  return { items: clone(items), nextCursor: null }
 }

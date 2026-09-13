@@ -1,6 +1,6 @@
 import { getDataSource, PendingContractError } from '../api/dataSource'
-import { mockGetContextQuestionSet, mockListActionRequired, mockSubmitFunctionalAnswer } from '../api/mockBackend'
-import type { ActionRequiredListPage, FunctionalAnswerAcceptedResponse, FunctionalQuestionSetResponse, SubmitFunctionalAnswerRequest } from './types'
+import { mockGetContextQuestionSet, mockListActionRequired, mockListFunctionalKnowledge, mockSubmitFunctionalAnswer } from '../api/mockBackend'
+import type { ActionRequiredListPage, FunctionalAnswerAcceptedResponse, FunctionalKnowledgeListPage, FunctionalKnowledgeStatus, FunctionalQuestionSetResponse, SubmitFunctionalAnswerRequest } from './types'
 
 /** HU38: `GET /action-required?projectId&cursor&limit`. RAG Core todavía no publica el control plane PR-driven; la rama live queda pendiente (INTEROP-2.0 §6.11). */
 export function listActionRequired(projectId?: string): Promise<ActionRequiredListPage> {
@@ -18,4 +18,10 @@ export function getContextQuestionSet(analysisRunId: string): Promise<Functional
 export function submitFunctionalAnswer(analysisRunId: string, questionId: string, input: SubmitFunctionalAnswerRequest): Promise<FunctionalAnswerAcceptedResponse> {
   if (getDataSource() === 'mock') return mockSubmitFunctionalAnswer(analysisRunId, questionId, input)
   return Promise.reject(new PendingContractError('el envío de una respuesta funcional'))
+}
+
+/** HU35/HU36: `GET /projects/{projectId}/functional-knowledge?status&cursor&limit`. */
+export function listFunctionalKnowledge(projectId: string, status?: FunctionalKnowledgeStatus): Promise<FunctionalKnowledgeListPage> {
+  if (getDataSource() === 'mock') return mockListFunctionalKnowledge(projectId, status)
+  return Promise.reject(new PendingContractError('el conocimiento funcional persistido'))
 }
