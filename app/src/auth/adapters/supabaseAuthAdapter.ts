@@ -37,6 +37,15 @@ export const supabaseAuthAdapter: AuthAdapter = {
     if (error || !session) throw new Error(invalidCredentialsMessage)
     return session
   },
+  /** HU29 ampliado: `signInWithOAuth` redirige el navegador a GitHub; la sesión llega después vía `onAuthStateChange`, no en este retorno. */
+  async signInWithGitHub() {
+    const { error } = await getClient().auth.signInWithOAuth({ provider: 'github' })
+    if (error) throw new Error(invalidCredentialsMessage)
+    const { data } = await getClient().auth.getSession()
+    const session = toSession(data.session)
+    if (!session) throw new Error(invalidCredentialsMessage)
+    return session
+  },
   async signOut() {
     await getClient().auth.signOut()
   },

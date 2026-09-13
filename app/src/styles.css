@@ -475,6 +475,9 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .auth-form { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; }
 .auth-links { display: flex; justify-content: space-between; gap: 12px; margin-top: 20px; font-size: 13px; }
 .auth-links a { color: var(--accent); }
+.auth-divider { display: flex; align-items: center; gap: 10px; margin: 20px 0; color: var(--text-dim); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border-subtle); }
+.auth-github-button { width: 100%; }
 .auth-block-screen { display: flex; flex-direction: column; gap: 12px; max-width: 640px; margin: 80px auto; padding: 32px; border: 1px solid #693c45; border-radius: 12px; background: #1d1420; }
 .auth-block-screen h1 { font-size: 22px; }
 .auth-block-screen p { color: var(--muted); line-height: 1.6; }

@@ -20,4 +20,10 @@ describe('mockAuthAdapter', () => {
     await mockAuthAdapter.signOut()
     expect(await mockAuthAdapter.getSession()).toBeNull()
   })
+
+  it('HU29 ampliado: signInWithGitHub persiste una identidad demo distinguible del login por contraseña', async () => {
+    const session = await mockAuthAdapter.signInWithGitHub()
+    expect(session.accessToken).toBe('mock-github-session-token')
+    expect(await mockAuthAdapter.getSession()).toEqual(session)
+  })
 })

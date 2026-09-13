@@ -65,6 +65,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setStatus('authenticated')
   }, [])
 
+  const signInWithGitHub = useCallback(async () => {
+    const next = await activeAdapter().signInWithGitHub()
+    setSession(next)
+    setStatus('authenticated')
+  }, [])
+
   const signOut = useCallback(async () => {
     await activeAdapter().signOut()
     setSession(null)
@@ -74,8 +80,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const requestPasswordReset = useCallback((email: string) => activeAdapter().resetPasswordForEmail(email), [])
 
   const value = useMemo(
-    () => ({ status, session, signIn, signOut, requestPasswordReset }),
-    [status, session, signIn, signOut, requestPasswordReset],
+    () => ({ status, session, signIn, signInWithGitHub, signOut, requestPasswordReset }),
+    [status, session, signIn, signInWithGitHub, signOut, requestPasswordReset],
   )
 
   if (blocked) {

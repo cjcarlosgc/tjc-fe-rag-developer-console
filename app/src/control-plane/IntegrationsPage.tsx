@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { isMockDataSource } from '../api/dataSource'
+import { useAuth } from '../auth/useAuth'
 import { useProject } from '../projects/queries'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
@@ -10,12 +11,13 @@ import { useCompleteGitHubInstallation, useDisconnectRepository, useRepositoryBi
 export function IntegrationsPage() {
   const { projectId = '' } = useParams()
   const mock = isMockDataSource()
+  const { session: authSession } = useAuth()
   const projectQuery = useProject(projectId)
   const bindingQuery = useRepositoryBinding(projectId)
   const startInstallation = useStartGitHubInstallation(projectId)
   const completeInstallation = useCompleteGitHubInstallation(projectId)
   const disconnect = useDisconnectRepository(projectId)
-  const [session, setSession] = useState<{ installationUrl: string; state: string } | null>(null)
+  const [installationSession, setInstallationSession] = useState<{ installationUrl: string; state: string } | null>(null)
 
   if (bindingQuery.isPending || projectQuery.isPending) return <LoadingState label="Cargando integración…" />
   if (bindingQuery.isError) return <ErrorState message={bindingQuery.error.message} onRetry={() => void bindingQuery.refetch()} />
@@ -47,12 +49,12 @@ export function IntegrationsPage() {
     ) : (
       <div className="panel integration-panel">
         <div className="empty-inline"><strong>Sin repositorio vinculado</strong><p>Conecta la GitHub App para que los PR hacia la rama de integración disparen análisis automáticos.</p></div>
-        {!session ? (
+        {!installationSession ? (
           <button
             type="button"
             className="button primary"
             disabled={startInstallation.isPending}
-            onClick={() => startInstallation.mutate(undefined, { onSuccess: (result) => setSession({ installationUrl: result.installationUrl, state: result.installationUrl.split('state=')[1] ?? '' }) })}
+            onClick={() => startInstallation.mutate(undefined, { onSuccess: (result) => setInstallationSession({ installationUrl: result.installationUrl, state: result.installationUrl.split('state=')[1] ?? '' }) })}
           >
             {startInstallation.isPending ? 'Iniciando…' : 'Conectar GitHub App'}
           </button>
@@ -60,13 +62,13 @@ export function IntegrationsPage() {
           <div className="panel success-note contract-note">
             <div>
               <strong>Instalación simulada iniciada</strong>
-              <p>En un flujo real, se abriría <code>{session.installationUrl}</code> en GitHub. Esta demo no realiza la instalación real.</p>
+              <p>En un flujo real, se abriría <code>{installationSession.installationUrl}</code> en GitHub{authSession ? ` como ${authSession.user.email}` : ''}. Esta demo no realiza la instalación real.</p>
             </div>
             <button
               type="button"
               className="button primary"
               disabled={completeInstallation.isPending}
-              onClick={() => completeInstallation.mutate({ installationId: `inst_demo_${session.state}`, repositoryId: 'demo', state: session.state }, { onSuccess: () => setSession(null) })}
+              onClick={() => completeInstallation.mutate({ installationId: `inst_demo_${installationSession.state}`, repositoryId: 'demo', state: installationSession.state }, { onSuccess: () => setInstallationSession(null) })}
             >
               {completeInstallation.isPending ? 'Vinculando…' : 'Simular instalación completada'}
             </button>

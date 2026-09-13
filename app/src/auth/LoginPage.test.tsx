@@ -68,4 +68,15 @@ describe('LoginPage', () => {
     await user.click(screen.getByRole('button', { name: 'Iniciar sesión' }))
     expect(await screen.findByText('Inicio')).toBeInTheDocument()
   })
+
+  it('HU29 ampliado: "Continuar con GitHub" inicia sesión y respeta el mismo returnTo', async () => {
+    const user = userEvent.setup()
+    renderAuthPage(<LoginPage />, {
+      initialEntry: '/login?returnTo=%2Fanalysis-runs',
+      routePath: '/login',
+      extraRoutes: <Route path="/analysis-runs" element={<div>Runs</div>} />,
+    })
+    await user.click(screen.getByRole('button', { name: 'Continuar con GitHub' }))
+    expect(await screen.findByText('Runs')).toBeInTheDocument()
+  })
 })

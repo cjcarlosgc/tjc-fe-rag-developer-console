@@ -11,14 +11,21 @@ function safeReturnTo(value: string | null): string | null {
 }
 
 export function LoginPage() {
-  const { signIn } = useAuth()
+  const { signIn, signInWithGitHub } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [pending, setPending] = useState(false)
+  const [githubPending, setGithubPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  function navigateAfterLogin() {
+    const returnTo = safeReturnTo(searchParams.get('returnTo'))
+    const from = (location.state as { from?: { pathname: string; search: string } } | null)?.from
+    navigate(returnTo ?? (from ? `${from.pathname}${from.search}` : '/'), { replace: true })
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -26,13 +33,24 @@ export function LoginPage() {
     setError(null)
     try {
       await signIn(email, password)
-      const returnTo = safeReturnTo(searchParams.get('returnTo'))
-      const from = (location.state as { from?: { pathname: string; search: string } } | null)?.from
-      navigate(returnTo ?? (from ? `${from.pathname}${from.search}` : '/'), { replace: true })
+      navigateAfterLogin()
     } catch (err) {
       setError(authErrorMessage(err))
     } finally {
       setPending(false)
+    }
+  }
+
+  async function submitWithGitHub() {
+    setGithubPending(true)
+    setError(null)
+    try {
+      await signInWithGitHub()
+      navigateAfterLogin()
+    } catch (err) {
+      setError(authErrorMessage(err))
+    } finally {
+      setGithubPending(false)
     }
   }
 
@@ -52,6 +70,10 @@ export function LoginPage() {
         {error && <p className="inline-error" role="alert">{error}</p>}
         <button className="button primary" type="submit" disabled={pending}>{pending ? 'Verificando…' : 'Iniciar sesión'}</button>
       </form>
+      <div className="auth-divider" role="separator"><span>o</span></div>
+      <button type="button" className="button secondary auth-github-button" disabled={githubPending} onClick={() => void submitWithGitHub()}>
+        {githubPending ? 'Conectando…' : 'Continuar con GitHub'}
+      </button>
       <div className="auth-links">
         <Link to="/reset-password">¿Olvidaste tu contraseña?</Link>
         <Link to="/request-access">Solicitar acceso</Link>
