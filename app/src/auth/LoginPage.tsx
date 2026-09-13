@@ -1,13 +1,20 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { authErrorMessage } from './errors'
 import { useAuth } from './useAuth'
+
+/** Evita open-redirect: solo se acepta una ruta interna como destino tras el login. */
+function safeReturnTo(value: string | null): string | null {
+  if (!value || !value.startsWith('/') || value.startsWith('//')) return null
+  return value
+}
 
 export function LoginPage() {
   const { signIn } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const [searchParams] = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [pending, setPending] = useState(false)
@@ -19,8 +26,9 @@ export function LoginPage() {
     setError(null)
     try {
       await signIn(email, password)
+      const returnTo = safeReturnTo(searchParams.get('returnTo'))
       const from = (location.state as { from?: { pathname: string; search: string } } | null)?.from
-      navigate(from ? `${from.pathname}${from.search}` : '/', { replace: true })
+      navigate(returnTo ?? (from ? `${from.pathname}${from.search}` : '/'), { replace: true })
     } catch (err) {
       setError(authErrorMessage(err))
     } finally {

@@ -42,4 +42,30 @@ describe('LoginPage', () => {
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent('No pudimos verificar tus credenciales. Revisa el correo y la contraseña.')
   })
+
+  it('HU38: navega a "returnTo" por query string aunque no haya state.from (deep-link tras recarga)', async () => {
+    const user = userEvent.setup()
+    renderAuthPage(<LoginPage />, {
+      initialEntry: '/login?returnTo=%2Faction-required%2Farun_checkout_pr42',
+      routePath: '/login',
+      extraRoutes: <Route path="/action-required/:analysisRunId" element={<div>Focus Mode arun_checkout_pr42</div>} />,
+    })
+    await user.type(screen.getByLabelText('Correo'), 'demo@rag-test-studio.local')
+    await user.type(screen.getByLabelText('Contraseña'), 'secret1')
+    await user.click(screen.getByRole('button', { name: 'Iniciar sesión' }))
+    expect(await screen.findByText('Focus Mode arun_checkout_pr42')).toBeInTheDocument()
+  })
+
+  it('HU38: ignora un "returnTo" externo (open-redirect) y navega a la ruta por defecto', async () => {
+    const user = userEvent.setup()
+    renderAuthPage(<LoginPage />, {
+      initialEntry: '/login?returnTo=' + encodeURIComponent('//evil.example/phish'),
+      routePath: '/login',
+      extraRoutes: <Route path="/" element={<Home />} />,
+    })
+    await user.type(screen.getByLabelText('Correo'), 'demo@rag-test-studio.local')
+    await user.type(screen.getByLabelText('Contraseña'), 'secret1')
+    await user.click(screen.getByRole('button', { name: 'Iniciar sesión' }))
+    expect(await screen.findByText('Inicio')).toBeInTheDocument()
+  })
 })
