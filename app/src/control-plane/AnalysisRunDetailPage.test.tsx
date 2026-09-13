@@ -11,13 +11,13 @@ beforeEach(() => {
   resetMockBackend()
 })
 
-function renderDetail(analysisRunId: string) {
-  return renderApp(<AnalysisRunDetailPage />, { initialEntry: `/analysis-runs/${analysisRunId}`, routePath: '/analysis-runs/:analysisRunId' })
+function renderDetail(analysisRunId: string, projectId: string) {
+  return renderApp(<AnalysisRunDetailPage />, { initialEntry: `/projects/${projectId}/runs/${analysisRunId}`, routePath: '/projects/:projectId/runs/:analysisRunId' })
 }
 
 test('HU39/HU40: un Run SUCCESS lista propuestas AVAILABLE y publica un companion PR', async () => {
   const user = userEvent.setup()
-  renderDetail('arun_checkout_pr45')
+  renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
 
   expect(await screen.findByText('acme/checkout-service · PR #45')).toBeInTheDocument()
   expect(await screen.findAllByText('AVAILABLE')).toHaveLength(3)
@@ -30,14 +30,14 @@ test('HU39/HU40: un Run SUCCESS lista propuestas AVAILABLE y publica un companio
 })
 
 test('HU32: un Run ACTION_REQUIRED enlaza a Focus Mode con returnTo de vuelta al Run', async () => {
-  renderDetail('arun_checkout_pr42')
+  renderDetail('arun_checkout_pr42', 'prj_checkout_demo')
 
   const link = await screen.findByRole('link', { name: 'Abrir Focus Mode →' })
-  expect(link).toHaveAttribute('href', `/action-required/arun_checkout_pr42?returnTo=${encodeURIComponent('/analysis-runs/arun_checkout_pr42')}`)
+  expect(link).toHaveAttribute('href', `/action-required/arun_checkout_pr42?returnTo=${encodeURIComponent('/projects/prj_checkout_demo/runs/arun_checkout_pr42')}`)
 })
 
 test('HU32: un Run OBSOLETE muestra el aviso de HEAD nuevo sin acciones', async () => {
-  renderDetail('arun_billing_pr17')
+  renderDetail('arun_billing_pr17', 'prj_billing_demo')
 
   expect(await screen.findByText('Run obsoleto')).toBeInTheDocument()
   expect(screen.getByText(/HEAD nuevo llegó a PR#17/)).toBeInTheDocument()
@@ -45,7 +45,7 @@ test('HU32: un Run OBSOLETE muestra el aviso de HEAD nuevo sin acciones', async 
 })
 
 test('HU39: un Run BEHAVIORAL_MISMATCH mantiene sus propuestas HELD, sin botón de publicar', async () => {
-  renderDetail('arun_checkout_pr46')
+  renderDetail('arun_checkout_pr46', 'prj_checkout_demo')
 
   expect(await screen.findAllByText('Behavioral mismatch')).not.toHaveLength(0)
   expect(screen.getByText('HELD')).toBeInTheDocument()
@@ -53,7 +53,7 @@ test('HU39: un Run BEHAVIORAL_MISMATCH mantiene sus propuestas HELD, sin botón 
 })
 
 test('un Run BASELINE_FAILED muestra el panel de fallo con resultSummary', async () => {
-  renderDetail('arun_billing_pr20')
+  renderDetail('arun_billing_pr20', 'prj_billing_demo')
 
   expect(await screen.findByRole('alert')).toHaveTextContent('La suite existente ya falla')
 })

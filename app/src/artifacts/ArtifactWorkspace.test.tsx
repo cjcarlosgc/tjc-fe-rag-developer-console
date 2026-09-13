@@ -38,5 +38,5 @@ test('el link "Ver contexto" apunta al explorador filtrado por artifactId', asyn
   const user = userEvent.setup()
   renderWithRouter(<ArtifactWorkspace artifacts={artifacts} projectId="prj1" />)
   await user.click(screen.getByRole('button', { name: /user.test.ts/ }))
-  expect(screen.getByRole('link', { name: 'Ver contexto' })).toHaveAttribute('href', '/projects/prj1/runs/r1/context?artifactId=a2')
+  expect(screen.getByRole('link', { name: 'Ver contexto' })).toHaveAttribute('href', '/projects/prj1/legacy/runs/r1/context?artifactId=a2')
 })

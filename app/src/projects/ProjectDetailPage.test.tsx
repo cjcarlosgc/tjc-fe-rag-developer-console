@@ -23,6 +23,13 @@ test('HU30: un proyecto vinculado muestra el binding y enlaces a Runs/Integratio
   expect(screen.getByRole('link', { name: /Gestionar integración/ })).toHaveAttribute('href', '/projects/prj_checkout_demo/integrations/github')
 })
 
+test('HU19: "Modo experimental" es visible como capacidad propia, no legacy', async () => {
+  renderDetail('prj_checkout_demo')
+
+  await screen.findByText('acme/checkout-service')
+  expect(screen.getByRole('link', { name: /Modo experimental/ })).toHaveAttribute('href', '/projects/prj_checkout_demo/experimental')
+})
+
 test('el flujo ZIP no aparece en la página principal ni su link a herramientas legacy (oculto a pedido del usuario; la ruta sigue existiendo)', async () => {
   renderDetail('prj_checkout_demo')
 

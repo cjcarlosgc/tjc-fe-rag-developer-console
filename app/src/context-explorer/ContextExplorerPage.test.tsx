@@ -6,8 +6,8 @@ import { mockStartExperiment, resetMockBackend } from '../api/mockBackend'
 import { clickGraphNode, renderApp } from '../test/render'
 import { ContextExplorerPage } from './ContextExplorerPage'
 
-const ROUTE = '/projects/:projectId/runs/:runId/context'
-const RUN_ENTRY = '/projects/prj_checkout_demo/runs/run_checkout_seed/context'
+const ROUTE = '/projects/:projectId/legacy/runs/:runId/context'
+const RUN_ENTRY = '/projects/prj_checkout_demo/legacy/runs/run_checkout_seed/context'
 const EXPERIMENT_ROUTE = '/projects/:projectId/experimental/:experimentId/context'
 
 beforeEach(() => {
@@ -84,7 +84,7 @@ describe('ContextExplorerPage', () => {
   })
 
   it('muestra un estado vacío cuando el run no tiene trazas de contexto', async () => {
-    renderApp(<ContextExplorerPage />, { initialEntry: '/projects/prj_checkout_demo/runs/run_sin_contexto/context', routePath: ROUTE })
+    renderApp(<ContextExplorerPage />, { initialEntry: '/projects/prj_checkout_demo/legacy/runs/run_sin_contexto/context', routePath: ROUTE })
     expect(await screen.findByText('Sin trazas de contexto')).toBeInTheDocument()
   })
 

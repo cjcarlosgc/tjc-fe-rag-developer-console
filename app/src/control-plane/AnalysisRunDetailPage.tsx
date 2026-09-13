@@ -103,7 +103,7 @@ export function AnalysisRunDetailPage() {
           <strong>Este Run necesita contexto funcional</strong>
           <p>Hay {run.actionRequiredCount} pregunta(s) pendiente(s) antes de continuar el análisis.</p>
         </div>
-        <Link className="button primary button-link" to={`/action-required/${run.id}?returnTo=${encodeURIComponent(`/analysis-runs/${run.id}`)}`}>Abrir Focus Mode →</Link>
+        <Link className="button primary button-link" to={`/action-required/${run.id}?returnTo=${encodeURIComponent(`/projects/${run.projectId}/runs/${run.id}`)}`}>Abrir Focus Mode →</Link>
       </div>
     )}
 

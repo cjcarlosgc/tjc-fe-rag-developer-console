@@ -11,7 +11,7 @@ test('HU24: reintenta un target inválido desde la página del run y termina en 
   resetMockBackend()
   const user = userEvent.setup()
 
-  renderApp(<RunPage />, { initialEntry: '/projects/prj_checkout_demo/runs/run_checkout_seed', routePath: '/projects/:projectId/runs/:runId' })
+  renderApp(<RunPage />, { initialEntry: '/projects/prj_checkout_demo/legacy/runs/run_checkout_seed', routePath: '/projects/:projectId/legacy/runs/:runId' })
 
   const retryButton = await screen.findByRole('button', { name: 'Reintentar' })
   await user.click(retryButton)

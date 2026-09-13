@@ -10,15 +10,15 @@ beforeEach(() => {
   resetMockBackend()
 })
 
-test('conserva el flujo ZIP completo (versión actual, upload, enlaces de generación/experimento/análisis)', async () => {
+test('conserva el flujo ZIP completo (versión actual, upload, enlaces de generación/análisis) sin el modo experimental', async () => {
   renderApp(<LegacyToolsPage />, { initialEntry: '/projects/prj_checkout_demo/legacy', routePath: '/projects/:projectId/legacy' })
 
   expect(await screen.findByText('Herramientas ZIP de checkout-service')).toBeInTheDocument()
   expect(screen.getByText('LEGACY · DESARROLLO')).toBeInTheDocument()
   expect(screen.getByText('ver_checkout_7')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Modo experimental' })).toHaveAttribute('href', '/projects/prj_checkout_demo/experimental')
+  expect(screen.queryByRole('link', { name: 'Modo experimental' })).not.toBeInTheDocument()
   expect(screen.getByRole('link', { name: /Historial de análisis/ })).toHaveAttribute('href', '/projects/prj_checkout_demo/analyses')
-  expect(screen.getByRole('link', { name: /Historial de generaciones/ })).toHaveAttribute('href', '/projects/prj_checkout_demo/runs')
+  expect(screen.getByRole('link', { name: /Historial de generaciones/ })).toHaveAttribute('href', '/projects/prj_checkout_demo/legacy/runs')
   expect(screen.getByRole('link', { name: /Configurar generación/ })).toHaveAttribute('href', '/projects/prj_checkout_demo/generate')
   expect(screen.getByText('Cargar código fuente')).toBeInTheDocument()
 })

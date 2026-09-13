@@ -169,7 +169,7 @@ export function ContextExplorerPage() {
     : [
       { label: 'Proyectos', to: '/' },
       { label: projectQuery.data?.name ?? projectId, to: `/projects/${projectId}` },
-      { label: `Run ${runId}`, to: `/projects/${projectId}/runs/${runId}` },
+      { label: `Run ${runId}`, to: `/projects/${projectId}/legacy/runs/${runId}` },
       { label: 'Explorar contexto' },
     ]
 

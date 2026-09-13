@@ -29,6 +29,9 @@ export function ProjectDetailPage() {
           <div className="empty-inline"><strong>Sin repositorio vinculado</strong><p>Conecta una GitHub App para habilitar análisis automático por PR.</p><Link className="button primary button-link" to={`/projects/${project.id}/integrations/github`}>Conectar GitHub →</Link></div>
         )}
       </div>
+      {/* HU19 (RAG vs agente generalista) es capacidad de tesis vigente, no ZIP-legacy — vive fuera
+          del panel de binding y de "Herramientas legacy" a propósito. */}
+      <div className="detail-actions"><Link className="button secondary button-link" to={`/projects/${project.id}/experimental`}>Modo experimental →</Link></div>
       {/* El link a "Herramientas legacy" (/projects/:id/legacy, LegacyToolsPage) se ocultó a pedido
           explícito del usuario: la ruta y el código siguen intactos, solo se retiró de la UI principal. */}
     </section>

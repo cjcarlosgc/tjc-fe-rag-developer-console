@@ -29,7 +29,7 @@ export function RunsPage() {
       : <ul className="analysis-run-list">
           {runsQuery.data.items.map((run) => (
             <li key={run.id} className={`panel analysis-run-item${run.current ? '' : ' analysis-run-item-obsolete'}`}>
-              <Link to={`/analysis-runs/${run.id}`}>
+              <Link to={`/projects/${run.projectId}/runs/${run.id}`}>
                 <div className="analysis-run-item-heading">
                   <span className="pr-ref">{run.pullRequest.repositoryName} · PR #{run.pullRequest.number}</span>
                   <span className={`status-badge ${analysisRunStatusClass(run.status)}`}>{ANALYSIS_RUN_STATUS_LABELS[run.status]}</span>

@@ -15,12 +15,12 @@ test('lista el historial de generaciones de la versión actual del proyecto', as
   resetMockBackend()
   const fetchMock = vi.spyOn(globalThis, 'fetch')
 
-  renderApp(<RunHistoryPage />, { initialEntry: '/projects/prj_checkout_demo/runs', routePath: '/projects/:projectId/runs' })
+  renderApp(<RunHistoryPage />, { initialEntry: '/projects/prj_checkout_demo/legacy/runs', routePath: '/projects/:projectId/legacy/runs' })
 
   expect(await screen.findByText('run_checkout_seed')).toBeInTheDocument()
   expect(screen.getByText('Faltantes del proyecto')).toBeInTheDocument()
   expect(screen.getByText('1 válidos · 1 inválidos / 2')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'run_checkout_seed' }).getAttribute('href')).toBe('/projects/prj_checkout_demo/runs/run_checkout_seed')
+  expect(screen.getByRole('link', { name: 'run_checkout_seed' }).getAttribute('href')).toBe('/projects/prj_checkout_demo/legacy/runs/run_checkout_seed')
   expect(fetchMock).not.toHaveBeenCalled()
 })
 
@@ -36,7 +36,7 @@ test('HU20: filtra el historial por estado', async () => {
   for (let index = 0; index < 4 && !isTerminalRunStatus(run.status); index += 1) run = await getRun(accepted.runId)
   expect(run.status).toBe('COMPLETED')
 
-  renderApp(<RunHistoryPage />, { initialEntry: '/projects/prj_checkout_demo/runs', routePath: '/projects/:projectId/runs' })
+  renderApp(<RunHistoryPage />, { initialEntry: '/projects/prj_checkout_demo/legacy/runs', routePath: '/projects/:projectId/legacy/runs' })
 
   expect(await screen.findByText('run_checkout_seed')).toBeInTheDocument()
   expect(screen.getByText(accepted.runId)).toBeInTheDocument()
@@ -59,8 +59,8 @@ test('acepta un projectVersionId explícito por ruta', async () => {
   resetMockBackend()
 
   renderApp(<RunHistoryPage />, {
-    initialEntry: '/projects/prj_checkout_demo/versions/ver_checkout_6/runs',
-    routePath: '/projects/:projectId/versions/:projectVersionId/runs',
+    initialEntry: '/projects/prj_checkout_demo/legacy/versions/ver_checkout_6/runs',
+    routePath: '/projects/:projectId/legacy/versions/:projectVersionId/runs',
   })
 
   expect(await screen.findByText('Sin generaciones registradas')).toBeInTheDocument()

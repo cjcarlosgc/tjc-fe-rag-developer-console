@@ -8,11 +8,12 @@ import type { UploadAccepted } from './types'
 import { useProject } from './queries'
 
 /**
- * Herramientas del flujo ZIP legacy (SDD 1.x): carga manual, análisis, inventario,
- * generación y experimento. Reubicado fuera de `ProjectDetailPage` a pedido explícito
- * del usuario — deja de ser la navegación/UX principal de la Console (el control plane
- * PR-driven lo es), pero se conserva intacto como mecanismo técnico de desarrollo y
- * para el experimento de tesis (HU19), que todavía depende de un target de inventario.
+ * Herramientas del flujo ZIP legacy (SDD 1.x): carga manual, análisis, inventario y
+ * generación. Reubicado fuera de `ProjectDetailPage` a pedido explícito del usuario —
+ * deja de ser la navegación/UX principal de la Console (el control plane PR-driven lo
+ * es), pero se conserva intacto como mecanismo técnico de desarrollo. El modo
+ * experimental (HU19) NO vive aquí — es capacidad de tesis vigente, no legacy; su
+ * enlace está en `ProjectDetailPage`.
  */
 export function LegacyToolsPage() {
   const { projectId = '' } = useParams()
@@ -38,7 +39,7 @@ export function LegacyToolsPage() {
           <div className="empty-inline"><strong>Sin versiones cargadas</strong><p>Carga un ZIP para crear e indexar la primera ProjectVersion.</p></div>
         )}
       </div>
-      <div className="detail-actions"><Link className="button secondary button-link" to={`/projects/${project.id}/experimental`}>Modo experimental</Link><Link className="button secondary button-link" to={`/projects/${project.id}/analyses`}>Historial de análisis <span aria-hidden="true">→</span></Link><Link className="button secondary button-link" to={`/projects/${project.id}/runs`}>Historial de generaciones <span aria-hidden="true">→</span></Link><Link className="button primary button-link" to={`/projects/${project.id}/generate`}>Configurar generación <span aria-hidden="true">→</span></Link></div>
+      <div className="detail-actions"><Link className="button secondary button-link" to={`/projects/${project.id}/analyses`}>Historial de análisis <span aria-hidden="true">→</span></Link><Link className="button secondary button-link" to={`/projects/${project.id}/legacy/runs`}>Historial de generaciones <span aria-hidden="true">→</span></Link><Link className="button primary button-link" to={`/projects/${project.id}/generate`}>Configurar generación <span aria-hidden="true">→</span></Link></div>
       <div className="flow-connector" aria-hidden="true"><span>01</span><i /></div>
       <div className="panel upload-panel">
         <div className="section-heading"><div><p className="eyebrow">Nueva ProjectVersion</p><h2>Cargar código fuente</h2><p>Cada ZIP crea una versión nueva sin reemplazar el historial anterior.</p></div><span className="step-number">UPLOAD</span></div>

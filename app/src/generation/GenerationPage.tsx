@@ -25,7 +25,7 @@ export function GenerationPage() {
     // Cada confirmación explícita del usuario es una acción lógica nueva: se genera una
     // key por invocación de mutate(), no una compartida entre distintos envíos.
     mutationFn: (configuration: GenerationConfiguration) => startGeneration(configuration, createIdempotencyKey()),
-    onSuccess: (accepted) => navigate(`/projects/${accepted.projectId}/runs/${accepted.runId}`),
+    onSuccess: (accepted) => navigate(`/projects/${accepted.projectId}/legacy/runs/${accepted.runId}`),
   })
 
   if (projectQuery.isPending || (targetId && inventoryQuery.isPending)) return <LoadingState label="Preparando configuración…" />
