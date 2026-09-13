@@ -17,6 +17,7 @@ import { ContextExplorerPage } from './context-explorer/ContextExplorerPage'
 import { ActionRequiredPage } from './action-required/ActionRequiredPage'
 import { FocusModePage } from './action-required/FocusModePage'
 import { AnalysisRunDetailPage } from './control-plane/AnalysisRunDetailPage'
+import { IntegrationsPage } from './control-plane/IntegrationsPage'
 import { RunsPage } from './control-plane/RunsPage'
 
 export const router = createBrowserRouter([
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
           { path: 'analysis-runs', element: <RunsPage /> },
           { path: 'analysis-runs/:analysisRunId', element: <AnalysisRunDetailPage /> },
           { path: 'projects/:projectId', element: <ProjectDetailPage /> },
+          { path: 'projects/:projectId/integrations/github', element: <IntegrationsPage /> },
           { path: 'projects/:projectId/analyses', element: <AnalysisHistoryPage /> },
           { path: 'projects/:projectId/inventory', element: <InventoryPage /> },
           { path: 'projects/:projectId/versions/:projectVersionId/inventory', element: <InventoryPage /> },
