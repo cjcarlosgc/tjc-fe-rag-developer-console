@@ -27,8 +27,9 @@ test('HU39/HU40: un Run SUCCESS lista propuestas AVAILABLE y publica un companio
   await user.click(screen.getByRole('button', { name: /Publicar 3 propuesta\(s\)/ }))
 
   expect(await screen.findByText('Companion PR publicado')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'PR #145' })).toHaveAttribute('href', 'https://github.com/acme/checkout-service/pull/145')
+  expect(screen.getByText('rag-tests/pr-45-e5e5e5e')).toBeInTheDocument()
   expect(screen.getAllByText('feature/rounding-mode').length).toBeGreaterThanOrEqual(2)
+  expect(screen.getByText(/Se mergea a la rama que ya vas a mergear/)).toBeInTheDocument()
   expect(screen.getAllByText('PUBLISHED')).toHaveLength(3)
 })
 

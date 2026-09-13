@@ -12,7 +12,7 @@ import { ANALYSIS_RUN_STATUS_LABELS, analysisRunStatusClass } from './status'
 const FAILURE_STATUSES = new Set(['BASELINE_FAILED', 'TECHNICAL_GENERATION_FAILURE', 'INFRASTRUCTURE_FAILURE'])
 const INFORMATIONAL_STATUSES = new Set(['NO_ADDITIONAL_TESTS_REQUIRED', 'NO_TEST_RELEVANT_CHANGES'])
 
-function PublishSection({ analysisRunId, repositoryName, targetBranch }: { analysisRunId: string; repositoryName: string; targetBranch: string }) {
+function PublishSection({ analysisRunId, targetBranch }: { analysisRunId: string; targetBranch: string }) {
   const proposalsQuery = useTestProposals(analysisRunId)
   const publishMutation = usePublishTests(analysisRunId)
   const [publicationId, setPublicationId] = useState<string | null>(null)
@@ -43,7 +43,7 @@ function PublishSection({ analysisRunId, repositoryName, targetBranch }: { analy
         <div>
           <strong>Companion PR publicado</strong>
           <p className="branch-flow-line">Rama <code>{publicationQuery.data.branchName}</code><span aria-hidden="true">→</span><code>{targetBranch}</code></p>
-          <p><a href={publicationQuery.data.companionPullRequestUrl ?? '#'} target="_blank" rel="noreferrer">PR #{publicationQuery.data.companionPullRequestNumber}</a> en <RepoChip repositoryName={repositoryName} />. No hacia <code>develop</code> directamente — recién cuando el PR original se mergee, estos tests viajan con él. Requiere revisión y merge humano.</p>
+          <p className="empty-inline-note">Se mergea a la rama que ya vas a mergear a <code>develop</code> — de ahí en adelante lo maneja GitHub.</p>
         </div>
       </div>
     )}
@@ -128,8 +128,8 @@ export function AnalysisRunDetailPage() {
         <div><strong>Behavioral mismatch</strong><p>{run.resultSummary} Las propuestas quedan retenidas (<code>HELD</code>) y no se ofrecen para publicar.</p></div>
       </div>
     )}
-    {run.status === 'BEHAVIORAL_MISMATCH' && <PublishSection analysisRunId={run.id} repositoryName={run.pullRequest.repositoryName} targetBranch={run.pullRequest.headRef} />}
+    {run.status === 'BEHAVIORAL_MISMATCH' && <PublishSection analysisRunId={run.id} targetBranch={run.pullRequest.headRef} />}
 
-    {run.status === 'SUCCESS' && <PublishSection analysisRunId={run.id} repositoryName={run.pullRequest.repositoryName} targetBranch={run.pullRequest.headRef} />}
+    {run.status === 'SUCCESS' && <PublishSection analysisRunId={run.id} targetBranch={run.pullRequest.headRef} />}
   </section>
 }
