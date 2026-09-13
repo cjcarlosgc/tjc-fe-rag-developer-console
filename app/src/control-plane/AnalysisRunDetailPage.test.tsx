@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, test } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
 import { resetMockBackend } from '../api/mockBackend'
-import { renderApp } from '../test/render'
+import { clickGraphNode, renderApp } from '../test/render'
 import { AnalysisRunDetailPage } from './AnalysisRunDetailPage'
 
 beforeEach(() => {
@@ -60,4 +60,21 @@ test('un Run BASELINE_FAILED muestra el panel de fallo con resultSummary', async
   renderDetail('arun_billing_pr20', 'prj_billing_demo')
 
   expect(await screen.findByRole('alert')).toHaveTextContent('La suite existente ya falla')
+})
+
+test('el Run de PR#45 muestra el contexto RAG recolectado (grafo target→candidatos) y permite navegar nodos', async () => {
+  renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
+
+  expect(await screen.findByText('Contexto recolectado')).toBeInTheDocument()
+  expect(screen.getAllByText('calculateTotal').length).toBeGreaterThan(0)
+
+  clickGraphNode(screen.getByRole('button', { name: /formatCurrency/ }))
+  expect(await screen.findByRole('heading', { name: 'formatCurrency' })).toBeInTheDocument()
+})
+
+test('un Run sin traza de contexto mockeada no muestra la sección "Contexto recolectado"', async () => {
+  renderDetail('arun_billing_pr17', 'prj_billing_demo')
+
+  await screen.findByText('Run obsoleto')
+  expect(screen.queryByText('Contexto recolectado')).not.toBeInTheDocument()
 })

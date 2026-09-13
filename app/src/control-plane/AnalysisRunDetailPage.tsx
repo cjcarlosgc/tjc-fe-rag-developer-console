@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 import { isMockDataSource } from '../api/dataSource'
+import { RagGraph } from '../context-explorer/rag/RagGraph'
+import { RagSidePanel } from '../context-explorer/rag/RagSidePanel'
+import { useAnalysisRunContextTrace } from '../context-explorer/queries'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
 import { RepoChip } from '../ui/RepoChip'
@@ -60,6 +63,24 @@ function PublishSection({ analysisRunId, targetBranch }: { analysisRunId: string
       </div>
     )}
     {publishMutation.isError && <p className="inline-error" role="alert">{publishMutation.error.message}</p>}
+  </div>
+}
+
+/** Reusa el árbol de nodos de contexto de Context Explorer (HU27, pre-SDD-2.0); sin forma de contrato aún, ver §6.7. */
+function ContextSection({ analysisRunId }: { analysisRunId: string }) {
+  const traceQuery = useAnalysisRunContextTrace(analysisRunId)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+
+  if (traceQuery.isPending) return <div className="panel"><LoadingState label="Cargando contexto recolectado…" /></div>
+  if (!traceQuery.data) return null
+
+  const trace = traceQuery.data
+  return <div className="panel">
+    <div className="section-heading"><div><h2>Contexto recolectado</h2><p>Nodos de contexto (RAG) usados para generar estas pruebas.</p></div></div>
+    <div className="context-explorer-body">
+      <RagGraph detail={trace} selectedId={selectedId ?? trace.targetId} onSelect={setSelectedId} />
+      <RagSidePanel detail={trace} selectedId={selectedId ?? trace.targetId} />
+    </div>
   </div>
 }
 
@@ -131,5 +152,7 @@ export function AnalysisRunDetailPage() {
     {run.status === 'BEHAVIORAL_MISMATCH' && <PublishSection analysisRunId={run.id} targetBranch={run.pullRequest.headRef} />}
 
     {run.status === 'SUCCESS' && <PublishSection analysisRunId={run.id} targetBranch={run.pullRequest.headRef} />}
+
+    <ContextSection analysisRunId={run.id} />
   </section>
 }
