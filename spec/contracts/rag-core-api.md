@@ -1,7 +1,9 @@
 # Contrato de integración — RAG Core API
 
 **Estado:** aprobado para consumo frontend, con disponibilidad indicada por operación.  
-**Fuente:** RAG Core SDD 1.16 / SYSTEM-1.6 / INTEROP-1.6 y código implementado, contrastados el 2026-09-11.
+**Fuente:** implementación legacy de RAG Core contrastada al 2026-09-11 y contrato objetivo SDD 2.0 / SYSTEM-2.0 / INTEROP-2.0.
+
+> Este documento conserva la disponibilidad real de APIs legacy. Para nuevas capacidades PR-driven manda `interoperability-contract.md`; una ausencia aquí no vuelve `PENDING` un contrato ya aprobado en INTEROP-2.0.
 **Servicio:** `tjc-be-rag-core-api`; el navegador nunca consume directamente el Sandbox.
 
 Este documento registra disponibilidad y detalles implementados para el frontend. La autoridad de rutas, DTOs y semántica compartida es `interoperability-contract.md`; este archivo no puede redefinirla.
@@ -130,7 +132,7 @@ Errores confirmados:
 
 ### Listado de proyectos — IMPLEMENTADO
 
-`GET /projects?cursor&limit` devuelve `Page<ProjectResponse>` conforme a `INTEROP-1.6`.
+`GET /projects?cursor&limit` devuelve `Page<ProjectResponse>` conforme a `INTEROP-2.0`.
 
 ## Indexación de ProjectVersion — IMPLEMENTADO
 
@@ -233,7 +235,7 @@ interface ProjectVersionResultsResponse {
 
 ### Listado de ProjectVersions por proyecto — IMPLEMENTADO
 
-`GET /projects/{projectId}/versions?cursor&limit` devuelve `Page<ProjectVersionSummaryResponse>` conforme a `INTEROP-1.6`. La demo puede conservar su adapter mock, pero no confundirlo con live.
+`GET /projects/{projectId}/versions?cursor&limit` devuelve `Page<ProjectVersionSummaryResponse>` conforme a `INTEROP-2.0`. La demo puede conservar su adapter mock, pero no confundirlo con live.
 
 ## Inventario de tests — IMPLEMENTADO
 
@@ -286,7 +288,7 @@ interface CreateTestRunRequest {
 }
 ```
 
-`POST /test-runs` crea el run y captura `currentVersionId`; status y resultados se consultan en `GET /test-runs/{runId}` y `/results`. Las combinaciones de `mode` y `targetId` se rigen por `INTEROP-1.6`. El frontend no usa `POST /tests/generate`.
+`POST /test-runs` crea el run y captura `currentVersionId`; status y resultados se consultan en `GET /test-runs/{runId}` y `/results`. Las combinaciones de `mode` y `targetId` se rigen por `INTEROP-2.0`. El frontend no usa `POST /tests/generate`.
 
 El contrato exige `Idempotency-Key`; Core implementa deduplicación durable. El adapter frontend crea una key por acción lógica y la reutiliza solo para retries de esa acción.
 
@@ -306,7 +308,7 @@ type FailureType =
   | 'UNKNOWN'
 ```
 
-`validation.valid=false` es un resultado normal de negocio/técnico, no un HTTP 5xx. `ValidationResponse`, `TargetRunResultResponse` y `TestRunResultsResponse` quedan definidos en `INTEROP-1.6`. La autenticación Core↔Sandbox es independiente del token del usuario.
+`validation.valid=false` es un resultado normal de negocio/técnico, no un HTTP 5xx. `ValidationResponse`, `TargetRunResultResponse` y `TestRunResultsResponse` quedan definidos en `INTEROP-2.0`. La autenticación Core↔Sandbox es independiente del token del usuario.
 
 ## Artifacts — IMPLEMENTADOS EN CORE; ADAPTER FRONTEND PENDIENTE
 
@@ -323,11 +325,11 @@ interface ArtifactResponse {
 }
 ```
 
-`INTEROP-1.6` define listado por run, descarga individual, ZIP total y diff. `storageKey` nunca pertenece al DTO del navegador. Solicitar diff de un artifact `CREATED` produce `409 DIFF_NOT_AVAILABLE`.
+`INTEROP-2.0` define listado por run, descarga individual, ZIP total y diff. `storageKey` nunca pertenece al DTO del navegador. Solicitar diff de un artifact `CREATED` produce `409 DIFF_NOT_AVAILABLE`.
 
 ## Experimento RAG vs agente generalista — IMPLEMENTADO E INTEGRADO
 
-Está aprobado un único experimento entre `RAG` y `GENERALIST_AGENT`, con tres repeticiones por target y estrategia por defecto y sin autorepair. `INTEROP-1.6` define rutas y DTOs sin usar `BASELINE`. `DEC-EXP-002` está APROBADO y el backend existe. El POST exige `Idempotency-Key` y Core implementa su deduplicación durable. El resultado conserva:
+Está aprobado un único experimento entre `RAG` y `GENERALIST_AGENT`, con tres repeticiones por target y estrategia por defecto y sin autorepair. `INTEROP-2.0` define rutas y DTOs sin usar `BASELINE`. `DEC-EXP-002` está APROBADO y el backend existe. El POST exige `Idempotency-Key` y Core implementa su deduplicación durable. El resultado conserva:
 
 - `compiled`, `executed`, `passed`, `valid`, `failureType`;
 - `generationDurationMs`, `executionDurationMs`, `totalDurationMs`;
@@ -346,7 +348,7 @@ Solo respuestas obtenidas por adapters `live` pueden contabilizarse como evidenc
 
 ## Explorador de contexto — APROBADO; IMPLEMENTACIÓN PENDIENTE
 
-`INTEROP-1.6` sección 6.7 define listados/detalle para runs y experimentos, paginación de archivos descubiertos y la unión discriminada `RAG|AGENT`. El frontend puede construir adapters live sin inventar DTOs, pero debe tratar estas rutas como no disponibles hasta que Core publique su implementación.
+`INTEROP-2.0` sección 6.7 define listados/detalle para runs y experimentos, paginación de archivos descubiertos y la unión discriminada `RAG|AGENT`. El frontend puede construir adapters live sin inventar DTOs, pero debe tratar estas rutas como no disponibles hasta que Core publique su implementación.
 
 - RAG entrega candidatos seleccionados y descartados, señales, scores, tokens y motivo de descarte.
 - AGENT entrega trayectoria cronológica observable, tool calls y excerpts; no entrega chain-of-thought ni afirma contexto utilizado.
@@ -359,7 +361,7 @@ Supabase Auth resuelve la sesión del navegador. Core exige Bearer para recursos
 
 ## Historial, WebSockets y retry manual — IMPLEMENTADOS EN CORE
 
-`INTEROP-1.6` fija e implementa historial paginado (`GET /project-versions/{projectVersionId}/test-runs`), suscripciones Socket.IO por id y eventos `project-version:update`/`test-run:update`, manteniendo HTTP como fallback. HU24 usa `POST /test-runs/{runId}/targets/{targetId}/retry` sobre un target `INVALID`/`FAILED` de un run terminal y exige `Idempotency-Key`.
+`INTEROP-2.0` fija e implementa historial paginado (`GET /project-versions/{projectVersionId}/test-runs`), suscripciones Socket.IO por id y eventos `project-version:update`/`test-run:update`, manteniendo HTTP como fallback. HU24 usa `POST /test-runs/{runId}/targets/{targetId}/retry` sobre un target `INVALID`/`FAILED` de un run terminal y exige `Idempotency-Key`.
 
 HU23 está descartada definitivamente: no existen reparación automática, attempts ni corrección vía LLM. El frontend debe eliminar cualquier supuesto anterior al respecto.
 
@@ -378,7 +380,7 @@ HU23 está descartada definitivamente: no existen reparación automática, attem
 | Artifacts | Implementado en Core | sí |
 | Experimentos | Implementado e integrado; idempotencia durable | sí |
 | Historial/WebSocket/retry | Implementado en Core y Developer Console | sí |
-| Explorador de contexto RAG/agente | Aprobado en `INTEROP-1.6`; Core pendiente | sí, cuando Core publique las rutas |
-| Autenticación correo + propiedad | Aprobada en `INTEROP-1.6`; Core/FE pendientes | sí |
-| GitHub real | `DEC-GH-001` PENDING | no |
-| GitHub simulado | Contrato de demo frontend | sí, solo mock y rotulado |
+| Explorador de contexto RAG/agente | Aprobado en `INTEROP-2.0`; Core pendiente | sí, cuando Core publique las rutas |
+| Autenticación correo + propiedad | Aprobada en `INTEROP-2.0`; Core/FE pendientes | sí |
+| GitHub App, bindings y AnalysisRun | Aprobado en `INTEROP-2.0`; implementación posterior a T-001 | sí, mediante mock 2.0; live cuando Core publique |
+| GitHub simulado | Contrato de demo frontend 2.0 | sí, solo mock y rotulado |

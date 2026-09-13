@@ -37,7 +37,7 @@ Mostrar en una pantalla amplia y navegable la evidencia de contexto recolectada 
 - Canvas con pan/zoom, reencuadre, minimap discreto y navegación por teclado. Seleccionar un nodo abre panel lateral liquid glass; hover ofrece resumen sin reemplazar el panel.
 - Búsqueda y filtros cambian según el modo: RAG filtra señal/decisión/motivo; agente filtra herramienta/estado/path.
 - Estados loading, vacío, error y retry siguen `design-system` y `accessibility`. En concreto para esta pantalla: el loading debe mostrar fase textual y tiempo transcurrido (p. ej. "Cargando detalle de la traza… T+2.3s"), nunca un spinner sin fase ni fallback; una traza que sigue procesándose (`CONTEXT_TRACE_NOT_FINISHED`, reintentada por polling) es un estado de carga, no un error, y no debe mostrarse como tal.
-- El frontend consume únicamente `INTEROP-1.6` sección 6.7; no reconstruye scores, motivos ni observaciones desde strings.
+- El frontend consume únicamente `INTEROP-2.0` sección 6.7; no reconstruye scores, motivos ni observaciones desde strings.
 
 ## Fuera de alcance
 

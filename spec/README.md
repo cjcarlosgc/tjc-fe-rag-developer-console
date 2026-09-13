@@ -1,4 +1,4 @@
-# SDD — RAG Developer Console
+# SDD 2.0 — RAG Developer Console
 
 `spec/` es la fuente de verdad del proyecto.
 
@@ -6,11 +6,11 @@ Orden de lectura: `contracts/system-contract.md` -> `contracts/interoperability-
 
 ## Contratos entre servicios
 
-- [`contracts/system-contract.md`](contracts/system-contract.md): copia espejo `SYSTEM-1.6` del contrato común de los tres componentes; su propietario canónico es RAG Core.
-- [`contracts/interoperability-contract.md`](contracts/interoperability-contract.md): copia espejo `INTEROP-1.6` con rutas, DTOs, estados, errores y transporte universales.
+- [`contracts/system-contract.md`](contracts/system-contract.md): copia espejo `SYSTEM-2.0` del contrato común de los tres componentes; su propietario canónico es RAG Core.
+- [`contracts/interoperability-contract.md`](contracts/interoperability-contract.md): copia espejo `INTEROP-2.0` con rutas, DTOs, estados, errores y transporte universales.
 - [`contracts/rag-core-api.md`](contracts/rag-core-api.md): contrato HTTP y semántico que el frontend consume de RAG Core, con disponibilidad implementada/aprobada/PENDING.
 
-La demostración local usa por defecto la fuente `mock` definida en [`transversal/demo-mode/spec.md`](transversal/demo-mode/spec.md); esto no modifica el contrato real de RAG Core.
+La demostración local usa por defecto la fuente `mock` definida en [`transversal/demo-mode/spec.md`](transversal/demo-mode/spec.md). Sus fixtures 2.0 no modifican el contrato real de RAG Core ni constituyen integración GitHub.
 
 ## Versionado
 

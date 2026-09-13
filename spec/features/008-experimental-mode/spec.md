@@ -24,7 +24,7 @@ Ofrecer una sección de evaluación experimental con una única acción RAG vs a
 
 ### Puertas de decisión y disponibilidad
 
-- `DEC-EXP-002` está APROBADO en RAG Core: HU19 ya no está bloqueada por decisión. Las herramientas, límites y paridad pertenecen al backend; el frontend solo consume el contrato experimental de `INTEROP-1.6` y no reproduce esa lógica.
+- `DEC-EXP-002` está APROBADO en RAG Core: HU19 ya no está bloqueada por decisión. Las herramientas, límites y paridad pertenecen al backend; el frontend solo consume el contrato experimental de `INTEROP-2.0` y no reproduce esa lógica.
 - RAG Core ya implementa las rutas aprobadas; el adapter live del frontend sigue pendiente de implementación. El demo permanece claramente simulado hasta reemplazarlo.
 - `DEC-MET-001` mantiene mutation score/StrykerJS PENDING después del núcleo de Sprint 2; solo bloquea una futura implementación de esa métrica.
 

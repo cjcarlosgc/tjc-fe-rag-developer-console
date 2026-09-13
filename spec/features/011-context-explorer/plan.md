@@ -2,7 +2,7 @@
 
 ## Dependencias
 
-- `INTEROP-1.6`, artifacts, resultados de run y modo experimental.
+- `INTEROP-2.0`, artifacts, resultados de run y modo experimental.
 - Transversales `api-client`, `async-state`, `design-system`, `accessibility` y `testing`.
 
 ## Diseño técnico

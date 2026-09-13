@@ -16,12 +16,12 @@ Consolidar toda la aplicación como una consola técnica coherente, oscura y rec
 - La densidad informativa prioriza resultados técnicos; el glass, glow y partículas no reducen legibilidad ni esconden controles.
 - El nombre visible de la aplicación coincide con el nombre aprobado del proyecto Stitch: `RAG Test Studio`.
 
-## Demo futura de GitHub
+## Demo GitHub anterior — SUPERSEDED
 
-- HU26 incluye una trayectoria interactiva mock: alternativa “Continuar con GitHub”, selector de repositorios propios o donde el usuario es colaborador, selección de rama base —`develop` por defecto— y revisión/creación simulada de un PR.
+- La trayectoria HU26 “Continuar con GitHub” -> importar repositorio -> crear PR queda sustituida por la feature 013. Solo pueden reutilizarse componentes visuales que no preserven esa semántica.
 - La rama generada se presenta como `rag-test-studio/{run-slug}`; el destino del PR es `develop` por defecto y puede cambiarse.
 - Toda pantalla de ese recorrido mantiene el rótulo `DEMO · GITHUB SIMULADO`. No ejecuta OAuth, no recibe tokens, no consulta GitHub ni crea ramas/PR reales.
-- Esta maqueta no está bloqueada por `DEC-GH-001`; esa decisión bloquea exclusivamente la integración real.
+- La demo vigente representa GitHub App instalada, repository binding, PR/HEAD y AnalysisRun; sigue rotulada y sin efectos externos.
 
 ## Fuera de alcance
 

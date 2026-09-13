@@ -1,6 +1,6 @@
 # 011-context-explorer — Tareas
 
-- [ ] Implementar adapters live/mock para los endpoints de trazas `INTEROP-1.6`.
+- [ ] Implementar adapters live/mock para los endpoints de trazas `INTEROP-2.0`.
 - [ ] Construir shell del explorador, selector RAG/agente, búsqueda, filtros y navegación run/artifact/experimento.
 - [ ] Implementar grafo horizontal RAG con nodos seleccionados/descartados y todas las conexiones terminadas.
 - [ ] Implementar trayectoria cronológica del agente y expansión paginada “Mostrar descubiertos”.

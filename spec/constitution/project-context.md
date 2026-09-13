@@ -1,18 +1,11 @@
 # Contexto operativo del proyecto
 
-**Estado:** APROBADO
-**Alcance:** contexto mínimo para especificación, implementación y revisión; no agrega contratos funcionales.
+**Estado:** APROBADO — SDD 2.0
 
-`tjc-fe-rag-developer-console` es el frontend/cliente web de referencia de una solución de tesis compuesta por dos backends y un frontend. Su usuario principal es el desarrollador del área de desarrollo de la empresa participante. Este repositorio implementa solo la consola y consume exclusivamente RAG Core.
+`tjc-fe-rag-developer-console` es el cliente web de la arquitectura. Consume exclusivamente RAG Core para dominio y usa Supabase Auth para identidad humana.
 
-La implementación de la consola usa TypeScript. Distintamente, el lenguaje de los proyectos que el producto analiza y valida también queda restringido en V1 a TypeScript (`.ts`/`.tsx`) con Jest o Vitest; describir académicamente el ecosistema como JavaScript/TypeScript no habilita JavaScript puro.
+El producto objetivo es PR-driven: repositorio vinculado, PR/HEAD, `AnalysisRun`, Action Required, Check, review y companion PR. ZIP y generación manual son compatibilidad legacy. La GitHub App se instala y opera en Core; OAuth de login no concede por sí mismo acceso a repositorios.
 
-La validación final ocurre contra servicios `live` en una empresa real. El modo mock es únicamente una ayuda de desarrollo y demostración, no evidencia experimental. Código, rutas, logs, diffs y artefactos pueden ser confidenciales y deben representarse sin exposición innecesaria.
+La SPA sigue implementada en TypeScript, pero representa proyectos TypeScript/Jest/Vitest y PHP/Laravel/PHPUnit según el execution profile informado. El modo mock es desarrollo/demostración, nunca evidencia experimental o integración real.
 
-El producto conserva el flujo ZIP independiente de GitHub. La identidad aprobada para ese flujo es correo/contraseña mediante Supabase Auth con autorización por propietario. El flujo GitHub real continúa pendiente, pero una maqueta interactiva claramente simulada forma parte de la demo de experiencia y no bloquea la versión funcional basada en ZIP.
-
-Las trazas visualizan evidencia observable: candidatos y decisiones RAG o contenido efectivamente entregado al agente. Nunca se presentan como razonamiento interno ni como prueba de qué información influyó causalmente en el modelo.
-
-No incorporar aquí papers, marco teórico, nombres académicos, estructura de capítulos ni roles organizativos que no cambien un contrato implementable.
-
-Las condiciones todavía pendientes para la validación empresarial se rigen por `DEC-VAL-001` en `spec/contracts/system-contract.md`.
+Código, preguntas, respuestas, diffs y artefactos pueden ser confidenciales. Las trazas exponen evidencia observable, nunca chain-of-thought ni causalidad inferida.
