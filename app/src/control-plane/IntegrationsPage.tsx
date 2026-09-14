@@ -5,6 +5,7 @@ import { useAuth } from '../auth/useAuth'
 import { useProject } from '../projects/queries'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
+import { ProjectTabs } from '../ui/ProjectTabs'
 import { RepoChip } from '../ui/RepoChip'
 import { useCompleteGitHubInstallation, useDisconnectRepository, useRepositoryBinding, useStartGitHubInstallation } from './queries'
 
@@ -26,6 +27,7 @@ export function IntegrationsPage() {
   const binding = bindingQuery.data
   return <section>
     <Breadcrumbs items={[{ label: 'Proyectos', to: '/' }, { label: projectQuery.data?.name ?? projectId, to: `/projects/${projectId}` }, { label: 'Integrations / GitHub' }]} />
+    <ProjectTabs projectId={projectId} />
     <div className="page-heading">
       <div>
         <p className="eyebrow">Integrations / GitHub</p>

@@ -4,6 +4,7 @@ import { isMockDataSource } from '../api/dataSource'
 import { useProject } from '../projects/queries'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
+import { ProjectTabs } from '../ui/ProjectTabs'
 import { useFunctionalKnowledge } from './queries'
 import type { FunctionalKnowledgeStatus } from './types'
 
@@ -25,6 +26,7 @@ export function FunctionalKnowledgePage() {
 
   return <section>
     <Breadcrumbs items={[{ label: 'Proyectos', to: '/' }, { label: projectQuery.data?.name ?? projectId, to: `/projects/${projectId}` }, { label: 'Functional Knowledge' }]} />
+    <ProjectTabs projectId={projectId} />
     <div className="page-heading">
       <div>
         <p className="eyebrow">Control plane / human-in-the-loop</p>

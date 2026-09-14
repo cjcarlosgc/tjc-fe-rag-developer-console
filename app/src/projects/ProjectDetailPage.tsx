@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useRepositoryBinding } from '../control-plane/queries'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
+import { ProjectTabs } from '../ui/ProjectTabs'
 import { RepoChip } from '../ui/RepoChip'
 import { useProject } from './queries'
 
@@ -18,14 +19,13 @@ export function ProjectDetailPage() {
   return (
     <section>
       <Breadcrumbs items={[{ label: 'Proyectos', to: '/' }, { label: project.name }]} />
+      <ProjectTabs projectId={project.id} />
       <div className="page-heading detail-heading"><div><p className="eyebrow">Proyecto</p><h1>{project.name}</h1><p>ID: <code>{project.id}</code></p></div></div>
       <div className="panel">
         <div className="section-heading"><div><h2>Repository binding</h2><p>El control plane PR-driven es el camino principal de este proyecto.</p></div></div>
         {binding ? (
-          <>
-            <dl className="metadata"><div><dt>Repositorio</dt><dd><RepoChip repositoryName={binding.repositoryName} /></dd></div><div><dt>Integration branch</dt><dd><code>{binding.integrationBranch}</code></dd></div><div><dt>Estado</dt><dd><span className="status-badge status-success">{binding.status}</span></dd></div></dl>
-            <div className="detail-actions"><Link className="button secondary button-link" to={`/analysis-runs?projectId=${project.id}`}>Ver Runs de este proyecto →</Link><Link className="button secondary button-link" to={`/projects/${project.id}/functional-knowledge`}>Functional Knowledge →</Link><Link className="button secondary button-link" to={`/projects/${project.id}/integrations/github`}>Gestionar integración →</Link></div>
-          </>
+          /* Ver Runs / Functional Knowledge / Gestionar integración ya viven en <ProjectTabs> arriba — no se duplican acá. */
+          <dl className="metadata"><div><dt>Repositorio</dt><dd><RepoChip repositoryName={binding.repositoryName} /></dd></div><div><dt>Integration branch</dt><dd><code>{binding.integrationBranch}</code></dd></div><div><dt>Estado</dt><dd><span className="status-badge status-success">{binding.status}</span></dd></div></dl>
         ) : (
           <div className="empty-inline"><strong>Sin repositorio vinculado</strong><p>Conecta una GitHub App para habilitar análisis automático por PR.</p><Link className="button primary button-link" to={`/projects/${project.id}/integrations/github`}>Conectar GitHub →</Link></div>
         )}

@@ -2,6 +2,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { isMockDataSource } from '../api/dataSource'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
+import { ProjectTabs } from '../ui/ProjectTabs'
 import { RepoChip } from '../ui/RepoChip'
 import { useAnalysisRuns } from './queries'
 import { ANALYSIS_RUN_STATUS_LABELS, analysisRunStatusClass } from './status'
@@ -15,6 +16,7 @@ export function RunsPage() {
 
   return <section>
     <Breadcrumbs items={[{ label: 'Proyectos', to: '/' }, { label: 'Runs' }]} />
+    {projectId && <ProjectTabs projectId={projectId} />}
     <div className="page-heading">
       <div>
         <p className="eyebrow">Control plane / PR-driven</p>

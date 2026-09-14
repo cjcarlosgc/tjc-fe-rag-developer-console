@@ -475,6 +475,11 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .topbar-nav { display: flex; align-items: center; gap: 18px; }
 .topbar-nav a { color: var(--muted); font: 700 13px 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .04em; text-decoration: none; }
 .topbar-nav a:hover, .topbar-nav a:focus-visible { color: var(--accent); }
+.nav-badge { display: inline-grid; place-items: center; min-width: 18px; height: 18px; margin-left: 6px; padding: 0 5px; border-radius: 999px; background: #1d1a10; color: #e5b968; border: 1px solid #695b35; font: 800 10px 'JetBrains Mono', ui-monospace, monospace; }
+.project-tabs { display: flex; align-items: center; gap: 4px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 28px; overflow-x: auto; }
+.project-tabs a { padding: 10px 14px; color: var(--muted); font: 700 13px 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .03em; text-decoration: none; border-bottom: 2px solid transparent; white-space: nowrap; }
+.project-tabs a:hover { color: #eae7f7; }
+.project-tabs a.active { color: var(--accent); border-bottom-color: var(--accent); }
 .topbar-badges { display: flex; align-items: center; gap: 12px; }
 .user-menu { display: flex; align-items: center; gap: 10px; }
 .user-email { color: var(--muted); font: 12px ui-monospace, monospace; }

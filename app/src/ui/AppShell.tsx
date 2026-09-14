@@ -1,4 +1,5 @@
 import { Link, Outlet } from 'react-router-dom'
+import { useActionRequiredList } from '../action-required/queries'
 import { isMockDataSource } from '../api/dataSource'
 import { isMockAuth } from '../auth/authMode'
 import { useAuth } from '../auth/useAuth'
@@ -7,6 +8,8 @@ export function AppShell() {
   const mockData = isMockDataSource()
   const mockAuth = isMockAuth()
   const { session, signOut } = useAuth()
+  const actionRequiredQuery = useActionRequiredList()
+  const actionRequiredCount = actionRequiredQuery.data?.items.length ?? 0
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -16,7 +19,7 @@ export function AppShell() {
         </Link>
         <nav className="topbar-nav" aria-label="Navegación principal">
           <Link to="/analysis-runs">Runs</Link>
-          <Link to="/action-required">Action Required</Link>
+          <Link to="/action-required">Action Required{actionRequiredCount > 0 && <span className="nav-badge">{actionRequiredCount}</span>}</Link>
         </nav>
         <div className="topbar-badges">
           <span className={`environment ${mockData ? 'environment-demo' : ''}`}><i aria-hidden="true" />{mockData ? 'DEMO · DATOS SIMULADOS' : 'LIVE · CORE API'}</span>
