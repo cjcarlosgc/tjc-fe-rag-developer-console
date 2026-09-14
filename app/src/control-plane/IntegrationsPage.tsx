@@ -7,6 +7,7 @@ import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
 import { ProjectTabs } from '../ui/ProjectTabs'
 import { RepoChip } from '../ui/RepoChip'
+import { DEMO_INSTALLABLE_REPOSITORIES } from './demoRepositories'
 import { useCompleteGitHubInstallation, useDisconnectRepository, useRepositoryBinding, useStartGitHubInstallation } from './queries'
 
 /** HU30 — repository binding. La instalación real de la GitHub App requiere un popup de GitHub que este mock no puede reproducir: se simula en 2 pasos explícitos, siempre etiquetados DEMO. */
@@ -20,6 +21,7 @@ export function IntegrationsPage() {
   const completeInstallation = useCompleteGitHubInstallation(projectId)
   const disconnect = useDisconnectRepository(projectId)
   const [installationSession, setInstallationSession] = useState<{ installationUrl: string; state: string } | null>(null)
+  const [chosenRepositoryId, setChosenRepositoryId] = useState(DEMO_INSTALLABLE_REPOSITORIES[0].repositoryId)
 
   if (bindingQuery.isPending || projectQuery.isPending) return <LoadingState label="Cargando integración…" />
   if (bindingQuery.isError) return <ErrorState message={bindingQuery.error.message} onRetry={() => void bindingQuery.refetch()} />
@@ -67,11 +69,18 @@ export function IntegrationsPage() {
               <strong>Instalación simulada iniciada</strong>
               <p>En un flujo real, se abriría <code>{installationSession.installationUrl}</code> en GitHub{authSession ? ` como ${authSession.user.email}` : ''}. Esta demo no realiza la instalación real.</p>
             </div>
+            <div className="field">
+              <label htmlFor="repository-picker">Repositorio a autorizar</label>
+              <select id="repository-picker" value={chosenRepositoryId} onChange={(event) => setChosenRepositoryId(event.target.value)}>
+                {DEMO_INSTALLABLE_REPOSITORIES.map((repo) => <option key={repo.repositoryId} value={repo.repositoryId}>{repo.repositoryName}</option>)}
+              </select>
+              <span className="field-hint">En un flujo real, esta selección ocurre en la propia pantalla de instalación de GitHub, no en la Console.</span>
+            </div>
             <button
               type="button"
               className="button primary"
               disabled={completeInstallation.isPending}
-              onClick={() => completeInstallation.mutate({ installationId: `inst_demo_${installationSession.state}`, repositoryId: 'demo', state: installationSession.state }, { onSuccess: () => setInstallationSession(null) })}
+              onClick={() => completeInstallation.mutate({ installationId: `inst_demo_${installationSession.state}`, repositoryId: chosenRepositoryId, state: installationSession.state }, { onSuccess: () => setInstallationSession(null) })}
             >
               {completeInstallation.isPending ? 'Vinculando…' : 'Simular instalación completada'}
             </button>

@@ -6,6 +6,7 @@ import type { GenerationAccepted, GenerationConfiguration } from '../generation/
 import type { InventoryTargetViewModel, TestInventoryResponse } from '../inventory/types'
 import type { AnalysisHistoryItem, AnalysisOperation, AnalysisResult, CreateProjectInput, Project, UploadAccepted } from '../projects/types'
 import type { GenerationMode, RunViewModel, TargetRetryAccepted, TargetRunViewModel, TestRunHistoryPage, TestRunSummary } from '../runs/types'
+import { DEMO_INSTALLABLE_REPOSITORIES } from '../control-plane/demoRepositories'
 import type {
   AnalysisRunDetailResponse,
   AnalysisRunListPage,
@@ -1092,11 +1093,12 @@ export async function mockStartGitHubInstallation(projectId: string): Promise<Gi
   }
 }
 
-/** HU30: `POST /projects/{projectId}/integrations/github/callback`. Demo: siempre vincula el repositorio por defecto del proyecto (no hay selector real de repos). */
+/** HU30: `POST /projects/{projectId}/integrations/github/callback`. Usa el `repositoryId` elegido en el selector simulado. */
 export async function mockCompleteGitHubInstallation(projectId: string, input: CompleteGitHubInstallationRequest): Promise<ProjectRepositoryBindingResponse> {
   await latency()
   requireProject(projectId)
-  const fallback = DEFAULT_REPOSITORY_BY_PROJECT[projectId] ?? { repositoryId: input.repositoryId, repositoryName: input.repositoryId }
+  const chosen = DEMO_INSTALLABLE_REPOSITORIES.find((repo) => repo.repositoryId === input.repositoryId)
+  const fallback = chosen ?? DEFAULT_REPOSITORY_BY_PROJECT[projectId] ?? { repositoryId: input.repositoryId, repositoryName: input.repositoryId }
   const createdAt = nowIso()
   sequence += 1
   const binding: ProjectRepositoryBindingResponse = {

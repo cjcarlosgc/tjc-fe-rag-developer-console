@@ -41,7 +41,7 @@ test('HU30: muestra el binding ENABLED y permite desconectar', async () => {
   expect(await screen.findByText('Sin repositorio vinculado')).toBeInTheDocument()
 })
 
-test('HU30: sin binding, el flujo de 2 pasos reconecta el repositorio', async () => {
+test('HU30: sin binding, el flujo de 2 pasos reconecta el repositorio elegido en el selector', async () => {
   const user = userEvent.setup()
   renderIntegrations('prj_billing_demo')
   await user.click(await screen.findByRole('button', { name: 'Desconectar' }))
@@ -50,7 +50,24 @@ test('HU30: sin binding, el flujo de 2 pasos reconecta el repositorio', async ()
   await user.click(screen.getByRole('button', { name: 'Conectar GitHub App' }))
   expect(await screen.findByText('Instalación simulada iniciada')).toBeInTheDocument()
 
+  await user.selectOptions(screen.getByLabelText('Repositorio a autorizar'), 'acme/billing-engine')
   await user.click(screen.getByRole('button', { name: 'Simular instalación completada' }))
   expect(await screen.findByText('billing-engine', { selector: '.repo-name' })).toBeInTheDocument()
   expect(screen.getByText('ENABLED')).toBeInTheDocument()
+})
+
+test('el selector de repositorio ofrece más de un repo candidato y respeta la elección', async () => {
+  const user = userEvent.setup()
+  renderIntegrations('prj_billing_demo')
+  await user.click(await screen.findByRole('button', { name: 'Desconectar' }))
+  await screen.findByText('Sin repositorio vinculado')
+  await user.click(screen.getByRole('button', { name: 'Conectar GitHub App' }))
+  await screen.findByText('Instalación simulada iniciada')
+
+  const picker = screen.getByLabelText('Repositorio a autorizar') as HTMLSelectElement
+  expect(Array.from(picker.options).map((option) => option.textContent)).toEqual(['acme/checkout-service', 'acme/billing-engine', 'acme/notifications-service'])
+
+  await user.selectOptions(picker, 'acme/notifications-service')
+  await user.click(screen.getByRole('button', { name: 'Simular instalación completada' }))
+  expect(await screen.findByText('notifications-service', { selector: '.repo-name' })).toBeInTheDocument()
 })
