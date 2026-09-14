@@ -1,6 +1,6 @@
 # 012-authentication — Especificación
 
-> **Adaptación SDD 2.0:** Supabase Auth admite correo/contraseña y GitHub OAuth solo para identidad. La GitHub App, repository binding y permisos de repositorio pertenecen a Core; cualquier login/import mock anterior queda superseded.
+> **Adaptación SDD 2.1:** Supabase Auth admite correo/contraseña y GitHub OAuth solo para identidad. La GitHub App, repository binding y permisos de repositorio pertenecen a Core; cualquier login/import mock anterior queda superseded.
 
 **Estado:** aprobado para implementar.
 **Historia:** HU29

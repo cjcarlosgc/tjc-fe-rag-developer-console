@@ -1,7 +1,19 @@
 # Contrato de integración — RAG Core API
 
+> **Desactualizado por SDD 2.1 (2026-09-14):** este documento contrasta la
+> implementación legacy al 2026-09-11, ANTES del retiro de ZIP/generación
+> manual en `INTEROP-2.1`. Las secciones que describen `POST /projects/index`,
+> los 5 modos de generación, `POST /test-runs` y endpoints asociados, los 4
+> endpoints de artifacts y el evento `test-run:update` ya no reflejan una API
+> real disponible — quedan retiradas en `interoperability-contract.md`
+> §6.2-6.4/§6.6 (fuente canónica, manda sobre este documento en caso de
+> conflicto). No se reescribe el detalle endpoint-por-endpoint de este archivo
+> en este corte; ver `harness/reports/console-interop-2.1-sync.md` para el
+> detalle y decidir si vale la pena actualizarlo o dejarlo como referencia
+> histórica de la implementación legacy.
+
 **Estado:** aprobado para consumo frontend, con disponibilidad indicada por operación.  
-**Fuente:** implementación legacy de RAG Core contrastada al 2026-09-11 y contrato objetivo SDD 2.0 / SYSTEM-2.0 / INTEROP-2.0.
+**Fuente:** implementación legacy de RAG Core contrastada al 2026-09-11 y contrato objetivo SDD 2.1 / SYSTEM-2.1 / INTEROP-2.1.
 
 > Este documento conserva la disponibilidad real de APIs legacy. Para nuevas capacidades PR-driven manda `interoperability-contract.md`; una ausencia aquí no vuelve `PENDING` un contrato ya aprobado en INTEROP-2.0.
 **Servicio:** `tjc-be-rag-core-api`; el navegador nunca consume directamente el Sandbox.

@@ -1,6 +1,6 @@
 # Misión
 
-**Estado:** APROBADO — SDD 2.0
+**Estado:** APROBADO — SDD 2.1
 
 Proveer el control plane web de una plataforma PR-driven: vincular repositorios, observar `AnalysisRun` por PR/HEAD, resolver contexto funcional faltante, revisar resultados y publicar tests mediante un companion PR. La consola hace visible la evidencia de Core sin replicar sus reglas.
 

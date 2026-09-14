@@ -1,5 +1,19 @@
 # Progreso actual
 
+**SDD 2.1 / SYSTEM-2.1 / INTEROP-2.1 (2026-09-14).** RAG Core retira ZIP upload
+y generación manual como ruta de producto (sin compatibilidad legacy paralela,
+a diferencia de `INTEROP-2.0`): `POST /projects/index`, los 5 modos manuales +
+`POST /test-runs` y asociados, los 4 endpoints de artifacts, el evento
+`test-run:update` y el endpoint de trazas run-scoped (HU27) quedan retirados;
+Experiments (HU19) se conserva pero `POST /experiments` con `targetId` nuevo
+queda sin ruta hasta reapuntarlo a `AnalysisRun` (P1/P4 futuro). A pedido
+explícito del usuario tras handoff cross-session verificado contra el repo
+`tjc-be-rag-core-api` real: se hizo mirror byte-por-byte de los contratos, bump
+de `sddVersion`/línea base declarativa en `spec/` (sin reescribir reportes
+históricos) y auditoría de UI/mocks (todo queda `KEEP` con nota de superseded
+en spec, ningún componente ni ruta se tocó/borró). Ver
+`harness/reports/console-interop-2.1-sync.md`. `activeWorkItem` sigue `null`.
+
 Sesión de prueba manual con RAG Core y Test Execution Sandbox reales corriendo en local (Docker
 Desktop) deriva en conectar el resto de adapters live que solo funcionaban en mock: listado de
 proyectos (HU01), envío/progreso/resultados de generación (HU08-14) y el experimento RAG vs

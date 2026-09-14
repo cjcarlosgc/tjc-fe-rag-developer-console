@@ -7,7 +7,7 @@
 - [x] New version flow.
 - [x] Historial demo con tres o más ProjectVersions indexadas.
 - [x] Inventario histórico por ProjectVersion.
-- [ ] Adapter live de listado de versiones según `INTEROP-2.0` (backend ya implementado).
+- [ ] Adapter live de listado de versiones según `INTEROP-2.1` (backend ya implementado; lectura de `ProjectVersion` sobrevive el retiro de la carga ZIP en `INTEROP-2.1` §6.2, ver reporte de sincronización 2.1).
 
 ## Calidad
 

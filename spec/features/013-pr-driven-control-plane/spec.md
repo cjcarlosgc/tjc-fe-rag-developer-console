@@ -2,7 +2,7 @@
 
 **Estado:** APROBADO
 **Story IDs:** HU30, HU32, HU35-HU40, HU44-HU45
-**Contrato:** SYSTEM-2.0 / INTEROP-2.0
+**Contrato:** SYSTEM-2.1 / INTEROP-2.1
 
 ## Objetivo
 
@@ -19,7 +19,7 @@ Representar el ciclo de un repositorio vinculado y sus `AnalysisRun` por PR/HEAD
 
 ## Mock-first
 
-La primera entrega usa adapters `mock` con fixtures que respetan INTEROP-2.0 y una etiqueta visible de demo. `mock` y `live` permanecen separados y la UI no simula efectos externos como reales.
+La primera entrega usa adapters `mock` con fixtures que respetan INTEROP-2.1 y una etiqueta visible de demo. `mock` y `live` permanecen separados y la UI no simula efectos externos como reales.
 
 Debe cubrir nueve escenarios navegables: success, action required, behavioral mismatch, correction/new HEAD, existing tests sufficient, baseline failed, technical generation failure, no relevant changes y publication/freshness.
 

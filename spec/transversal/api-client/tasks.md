@@ -6,7 +6,7 @@
 - [x] Copiar y contrastar el contrato disponible de RAG Core.
 - [x] Alinear adapters Sprint 1 con rutas/DTO implementados y aprobados.
 - [x] Bloquear o aislar capacidades cuyo contrato RAG Core está PENDING.
-- [x] Sincronizar adapters live con `INTEROP-2.0` para historial, WebSockets y retry (HU20/HU21/HU22/HU24). El resto de adapters live (proyectos, generación, artifacts, experimentos) permanece PENDING, fuera de este work item.
+- [x] Sincronizar adapters live con `INTEROP-2.1` para historial, WebSockets y retry (HU20/HU21/HU22/HU24). El resto de adapters live (proyectos, generación, artifacts, experimentos) permanece PENDING, fuera de este work item. `INTEROP-2.1` retira historial de test-runs (HU20), el evento `test-run:update` (HU21/HU22) y el retry manual (HU24) como ruta de producto — estos adapters live quedan sin endpoint real detrás, ver reporte de sincronización 2.1.
 - [x] Propagar `Idempotency-Key` estable sin introducir credenciales Core↔Sandbox (`api/idempotency.ts`, usado en `retryTarget`).
 
 ## Calidad

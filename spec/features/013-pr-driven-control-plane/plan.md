@@ -2,13 +2,13 @@
 
 ## Dependencias
 
-- SYSTEM-2.0 e INTEROP-2.0 sincronizados.
+- SYSTEM-2.1 e INTEROP-2.1 sincronizados.
 - Supabase Auth aislado detrás de su adapter.
 - sistema de diseño, routing, query cache y demo mode existentes.
 
 ## Cortes posteriores
 
-1. Shell y fixtures INTEROP-2.0 para Projects, Runs e Integrations/GitHub.
+1. Shell y fixtures INTEROP-2.1 para Projects, Runs e Integrations/GitHub.
 2. Action Required y Focus Mode con `returnTo`, evidencia y `UNKNOWN`.
 3. Detalle de Run, clasificación, Check y obsolescencia por HEAD.
 4. Review/freshness/publication del companion PR.

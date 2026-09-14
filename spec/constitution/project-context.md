@@ -1,6 +1,6 @@
 # Contexto operativo del proyecto
 
-**Estado:** APROBADO — SDD 2.0
+**Estado:** APROBADO — SDD 2.1
 
 `tjc-fe-rag-developer-console` es el cliente web de la arquitectura. Consume exclusivamente RAG Core para dominio y usa Supabase Auth para identidad humana.
 
