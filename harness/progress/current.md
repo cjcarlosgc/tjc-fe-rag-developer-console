@@ -1,5 +1,22 @@
 # Progreso actual
 
+**Cierre de gaps mock-first — MVP control plane completo (2026-09-14).** A
+pedido del usuario, tras cerrar el work item de adapters live: 5 escenarios
+mock nuevos dentro del contrato ya aprobado (INFRASTRUCTURE_FAILURE,
+bootstrap vía `indexMode`, "PR grande" resumido desde `symbols`, `STALE`
+proposals, caso "respuesta revela inconsistencia" que muta un Run a
+BEHAVIORAL_MISMATCH al responder su pregunta — 9→14 AnalysisRuns demo);
+badge de conteo en "Action Required" del nav + `ProjectTabs` (sub-nav
+persistente Overview/Runs/Functional Knowledge/Integrations por proyecto,
+"History" fuera a propósito por falta de contrato); selector de repositorio
+en el mock de instalación de GitHub App (antes siempre vinculaba el repo por
+defecto). Caso 2 (cobertura previa), conflicto de Functional Knowledge y
+timeline de Run siguen genuinamente bloqueados por el contrato, documentados
+sin implementar. Verificación: tsc/lint/build limpios, 235 pruebas en verde,
+recorrido manual en navegador confirmando cada escenario end-to-end. Ver
+`harness/reports/console-mock-first-gap-closure.md`. `activeWorkItem` vuelve
+a `null`.
+
 **Adapters live de Analysis Runs + historial de ProjectVersion (2026-09-14).**
 A pedido del usuario ("implementa las funciones que el backend expone en SDD
 2.1"), se leyeron los 6 controllers reales de `tjc-be-rag-core-api` (no solo
