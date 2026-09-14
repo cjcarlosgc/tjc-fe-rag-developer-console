@@ -1,7 +1,7 @@
 # 011-context-explorer — Especificación
 
-**Estado:** aprobado para implementar.
-**Historias:** HU27, HU28
+**Estado:** aprobado para implementar (HU27, HU28) — HU54 es `PROPOSED`, ver sección propia abajo.
+**Historias:** HU27, HU28, HU54
 
 ## Objetivo
 
@@ -38,6 +38,20 @@ Mostrar en una pantalla amplia y navegable la evidencia de contexto recolectada 
 - Búsqueda y filtros cambian según el modo: RAG filtra señal/decisión/motivo; agente filtra herramienta/estado/path.
 - Estados loading, vacío, error y retry siguen `design-system` y `accessibility`. En concreto para esta pantalla: el loading debe mostrar fase textual y tiempo transcurrido (p. ej. "Cargando detalle de la traza… T+2.3s"), nunca un spinner sin fase ni fallback; una traza que sigue procesándose (`CONTEXT_TRACE_NOT_FINISHED`, reintentada por polling) es un estado de carga, no un error, y no debe mostrarse como tal.
 - El frontend consume únicamente `INTEROP-2.1` sección 6.7; no reconstruye scores, motivos ni observaciones desde strings. `INTEROP-2.1` retiró el endpoint de trazas por `test-runs` (run-scoped, HU27) junto con la generación manual — solo sobrevive el de trazas por `experiments` (HU27/HU28); ver hallazgo en el reporte de sincronización 2.1.
+
+## Pendiente de implementar — HU54 (PROPOSED, registrada 2026-09-14)
+
+El árbol de contexto hoy solo representa señal RAG (semántica/estructural,
+HU27) y trayectoria del agente (HU28) — nunca conocimiento funcional
+persistido ni evidencia de tests existentes, aunque ambos alimentan el
+Context Builder real de un `AnalysisRun` (§9 de la arquitectura objetivo).
+Falta: representar esos dos orígenes como nodos/paneles propios en el mismo
+árbol, distintos de los candidatos RAG — sin inventar campos: hoy no hay
+forma de contrato para esto (§6.7 sigue sin adaptar al modelo `AnalysisRun`
+más allá de lo ya cubierto por `AnalysisRunDetailPage`'s `ContextSection`,
+que reusa HU27 mock-only). Hallazgo original en
+`harness/reports/console-15-case-walkthrough-findings.md` (Caso 1, punto 2).
+Sin alcance de implementación aprobado todavía.
 
 ## Fuera de alcance
 

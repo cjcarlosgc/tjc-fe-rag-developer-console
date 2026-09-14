@@ -5,9 +5,13 @@
 > targetId`) queda sin ruta vigente para crear experimentos nuevos: `targetId`
 > referenciaba un `TestTarget` producido por la indexación ZIP, ahora retirada
 > (`INTEROP-2.1` §6.2/§6.5). Reapuntar la unidad experimental a un
-> `AnalysisRun` existente es un corte P1/P4 posterior, no bloquea el trabajo
-> P0 en curso. El modo mock de esta spec sigue funcionando igual mientras
-> tanto. Ver `harness/reports/console-interop-2.1-sync.md`.
+> `AnalysisRun` existente queda registrado como **HU48 (P1)**/**HU49 (P4)**
+> en `spec/features/014-analysisrun-experiments/` — `PROPOSED`, no bloquea el
+> trabajo P0 en curso. El selector de target manual de esta spec queda
+> `DROP/ADAPT` cuando HU48 se implemente (ver clasificación completa en
+> `harness/reports/console-experiments-analysisrun-classification.md`); hasta
+> entonces el modo mock de esta spec sigue funcionando igual. Ver también
+> `harness/reports/console-interop-2.1-sync.md`.
 
 **Estado:** aprobado para SDD 1.0 salvo elementos marcados PENDING/PROPOSED.  
 **Historias:** HU19

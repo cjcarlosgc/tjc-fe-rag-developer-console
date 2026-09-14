@@ -8,6 +8,13 @@
 - [ ] Implementar pan/zoom, minimap, virtualización/colapso y deep links.
 - [ ] Cubrir loading, vacío, error, retry y últimos/intentos anteriores.
 
+## Propuesta sin implementar (HU54 — `PROPOSED`, registrada 2026-09-14)
+
+- [ ] HU54: nodos/paneles de conocimiento funcional y evidencia de tests
+      existentes en el árbol de contexto. Bloqueado: sin forma de contrato
+      para esto en `AnalysisRun` todavía. Ver `spec.md` y
+      `harness/reports/console-backlog-formalization.md`.
+
 ## Calidad
 
 - [ ] Agregar pruebas unitarias, integración y navegación.

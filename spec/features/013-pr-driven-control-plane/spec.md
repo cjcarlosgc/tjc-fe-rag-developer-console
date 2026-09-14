@@ -1,7 +1,7 @@
 # 013 — Control plane PR-driven
 
-**Estado:** APROBADO
-**Story IDs:** HU30, HU32, HU35-HU40, HU44-HU45
+**Estado:** APROBADO (HU30, HU32, HU35-HU40, HU44-HU45) — HU50/HU51/HU52/HU53/HU55 son `PROPOSED`, ver sección propia abajo
+**Story IDs:** HU30, HU32, HU35-HU40, HU44-HU45, HU50, HU51, HU52, HU53, HU55
 **Contrato:** SYSTEM-2.1 / INTEROP-2.1
 
 ## Objetivo
@@ -32,3 +32,25 @@ El navegador solo consume Core para dominio. Nunca recibe secretos de GitHub App
 - adapters live o integración GitHub real;
 - colaboración Owner/Maintainer/Reviewer antes de HU45;
 - iniciar automáticamente otra HU después de aprobar esta baseline.
+
+## Pendiente de implementar (PROPOSED, registradas 2026-09-14)
+
+Capacidades identificadas como necesarias durante el uso/auditoría de esta
+feature, sin alcance de implementación aprobado todavía. Detalle completo en
+`harness/reports/console-backlog-formalization.md`.
+
+- **HU50** — indicador de cobertura previa (ninguna/parcial/suficiente) de un
+  símbolo en `AnalysisRunDetailPage`. Bloqueado por contrato: `AnalysisRunDetailResponse`
+  no tiene ese campo todavía.
+- **HU51** — Focus Mode avisa si la regla que se va a fijar contradice una
+  `FunctionalKnowledge` `ACTIVE` existente. Bloqueado por contrato: Core no
+  expone esa señal.
+- **HU52** — en `FunctionalKnowledgeDetailPage`, qué Analysis Runs usaron
+  esa regla. No está en INTEROP-2.1 §6.11 todavía.
+- **HU53** — historial de transiciones de estado de un `AnalysisRun`
+  (más allá de `createdAt`/`updatedAt`/`completedAt`). Sin campo en contrato.
+- **HU55** — listado de Analysis Runs cross-proyecto. Verificado contra el
+  controller real de Core (`console-analysisrun-live-adapters.md`): no
+  existe ruta global, solo `GET /projects/{projectId}/analysis-runs`. Hoy
+  `RunsPage`/`ProjectsPage` cubren esto solo en mock; el adapter live rechaza
+  ese caso explícitamente.

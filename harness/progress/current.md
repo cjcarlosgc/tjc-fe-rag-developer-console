@@ -1,5 +1,20 @@
 # Progreso actual
 
+**Formalización de HU48–HU55 (2026-09-14, registro puro, sin código).** Tras
+preguntar cómo entrar a un experimento desde un Run, se confirmó que esa
+capacidad (`experimentos.md`) nunca tuvo HU asignado — el usuario pidió
+auditar si había "otros casos así" antes de planear implementación. Un
+research cruzó los ~20 `harness/reports/` y los 3 handoffs contra el
+HU01–HU47 completo de `spec/backlog.md` y encontró 7 capacidades sin
+historia (8 HU nuevas, una se partió en P1/P4). Registradas como `PROPOSED`
+(HU48/49 en `spec/features/014-analysisrun-experiments/`, nueva; HU50/51/
+52/53/55 extendiendo `013-pr-driven-control-plane`; HU54 extendiendo
+`011-context-explorer`), cada una con su bloqueador explícito (todas
+dependen de que Core publique un contrato/señal que hoy no existe). Cero
+implementación. `spec/backlog.md` queda pendiente de homologar con
+Core/Sandbox — se avisa por mensaje, sin bloquear. Ver
+`harness/reports/console-backlog-formalization.md`.
+
 **Cierre de gaps mock-first — MVP control plane completo (2026-09-14).** A
 pedido del usuario, tras cerrar el work item de adapters live: 5 escenarios
 mock nuevos dentro del contrato ya aprobado (INFRASTRUCTURE_FAILURE,
