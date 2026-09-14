@@ -1,5 +1,25 @@
 # Progreso actual
 
+**Adapters live de Analysis Runs + historial de ProjectVersion (2026-09-14).**
+A pedido del usuario ("implementa las funciones que el backend expone en SDD
+2.1"), se leyeron los 6 controllers reales de `tjc-be-rag-core-api` (no solo
+el contrato aprobado) antes de tocar código — work item pasó por
+SPEC_VERIFIED/AWAITING_APPROVAL/IN_PROGRESS explícitos en `harness/state.json`.
+Se conectaron `getAnalysisRun`/`listAnalysisRuns` (`control-plane/api.ts`) y
+`listAnalysisHistory` (`analysis/api.ts`) contra los endpoints reales; el
+listado global de Analysis Runs sin `projectId` (usado por `RunsPage`/
+`ProjectsPage`) no tiene ruta en Core ni en el contrato, sigue rechazando en
+vivo con mensaje propio. El resto (binding, Checks/publicación, Action
+Required, Functional Knowledge, context-traces) sigue sin controller, sin
+tocar. El usuario también compartió `~/Downloads/experimentos.md` (handoff de
+reorientación de Experiments a P0/P1/P4, también enviado a Core): se entregó
+la clasificación KEEP/ADAPT/DEFER/DROP que pide, sin implementar P1/P4 todavía
+(explícitamente diferido por el propio handoff para no interrumpir P0). ZIP/
+generación manual UI queda tal cual. Ver `harness/reports/console-analysisrun-live-adapters.md`
+y `harness/reports/console-experiments-analysisrun-classification.md`.
+Verificación: tsc/lint/build limpios, 223 pruebas en verde. `activeWorkItem`
+vuelve a `null`.
+
 **SDD 2.1 / SYSTEM-2.1 / INTEROP-2.1 (2026-09-14).** RAG Core retira ZIP upload
 y generación manual como ruta de producto (sin compatibilidad legacy paralela,
 a diferencia de `INTEROP-2.0`): `POST /projects/index`, los 5 modos manuales +

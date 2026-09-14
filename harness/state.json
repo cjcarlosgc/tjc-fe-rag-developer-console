@@ -3,5 +3,5 @@
   "sddVersion": "2.1",
   "allowedStatuses": ["SELECTED", "SPEC_VERIFIED", "AWAITING_APPROVAL", "IN_PROGRESS", "IN_REVIEW", "BLOCKED", "DONE"],
   "activeWorkItem": null,
-  "lastUpdatedAt": "2026-09-14T00:00:00-05:00"
+  "lastUpdatedAt": "2026-09-14T01:30:00-05:00"
 }

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
 import { resetMockBackend } from '../api/mockBackend'
 import {
@@ -107,13 +107,41 @@ describe('control-plane api (mock) — HU39/HU40 propuestas y companion PR', () 
   })
 })
 
-describe('control-plane api (live, INTEROP-2.0 aún no publicado)', () => {
+describe('control-plane api (live) — lo que Core todavía no implementa (sin controller real)', () => {
   beforeEach(() => setDataSourceForTests('live'))
 
-  it('cada función rechaza con PendingContractError', async () => {
+  it('binding y propuestas siguen sin ruta: rechazan con PendingContractError', async () => {
     await expect(getRepositoryBinding('prj_checkout_demo')).rejects.toThrow(/todavía no publicó/)
-    await expect(listAnalysisRuns()).rejects.toThrow(/todavía no publicó/)
-    await expect(getAnalysisRun('arun_checkout_pr45')).rejects.toThrow(/todavía no publicó/)
     await expect(listTestProposals('arun_checkout_pr45')).rejects.toThrow(/todavía no publicó/)
+  })
+
+  it('el listado global de Analysis Runs (sin projectId) no tiene ruta en Core — rechaza con mensaje propio', async () => {
+    await expect(listAnalysisRuns()).rejects.toThrow(/listado por proyecto/)
+  })
+})
+
+describe('control-plane api (live) — HU32 Analysis Runs, Core ya lo implementa', () => {
+  beforeEach(() => setDataSourceForTests('live'))
+
+  it('getAnalysisRun pide GET /analysis-runs/{id}', async () => {
+    const detail = { id: 'arun_checkout_pr45', projectId: 'prj_checkout_demo', status: 'SUCCESS', current: true, actionRequiredCount: 0, generatedTestsCount: 3, createdAt: '2026-09-12T09:00:00.000Z', updatedAt: '2026-09-12T09:12:00.000Z', completedAt: '2026-09-12T09:12:00.000Z', attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: 'e5e5e5e', indexDeltaBaseSha: 'c1c1c1c', symbols: [], functionalBehaviorValidated: true, resultSummary: '3 pruebas generadas.', detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr45', pullRequest: { repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service', number: 45, title: 'x', baseRef: 'develop', headRef: 'feature/x', baseSha: 'c1c1c1c', headSha: 'e5e5e5e', draft: false, state: 'OPEN', actorLogin: null } }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(detail), { status: 200 }))
+
+    const result = await getAnalysisRun('arun_checkout_pr45')
+
+    expect(result.status).toBe('SUCCESS')
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/analysis-runs/arun_checkout_pr45'), expect.anything())
+  })
+
+  it('listAnalysisRuns(projectId) pide GET /projects/{projectId}/analysis-runs con status y cursor en la query', async () => {
+    const page = { items: [], nextCursor: null }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(page), { status: 200 }))
+
+    await listAnalysisRuns('prj_checkout_demo', 'SUCCESS', 'cur-1')
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringMatching(/\/projects\/prj_checkout_demo\/analysis-runs\?.*status=SUCCESS.*cursor=cur-1|\/projects\/prj_checkout_demo\/analysis-runs\?.*cursor=cur-1.*status=SUCCESS/),
+      expect.anything(),
+    )
   })
 })

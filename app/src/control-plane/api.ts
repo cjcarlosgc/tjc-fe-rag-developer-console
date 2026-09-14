@@ -1,3 +1,4 @@
+import { apiRequest } from '../api/client'
 import { getDataSource, PendingContractError } from '../api/dataSource'
 import {
   mockCompleteGitHubInstallation,
@@ -45,16 +46,27 @@ export function disconnectRepository(projectId: string): Promise<void> {
   return Promise.reject(new PendingContractError('desconectar el repository binding'))
 }
 
-// HU32 — Analysis Runs por PR/HEAD (INTEROP-2.0 §6.10).
+// HU32 — Analysis Runs por PR/HEAD (INTEROP-2.1 §6.10).
 
-export function listAnalysisRuns(projectId?: string, status?: AnalysisRunStatus): Promise<AnalysisRunListPage> {
+/**
+ * `GET /projects/{projectId}/analysis-runs?status&cursor&limit`. Core (verificado contra su
+ * controller real) exige `projectId` en el path — no existe un listado global. La vista "todos
+ * los Runs" de `RunsPage`/`ProjectsPage` no tiene ruta live: se rechaza con un mensaje propio en
+ * vez de intentar simular una agregación cross-proyecto que el contrato nunca definió.
+ */
+export function listAnalysisRuns(projectId?: string, status?: AnalysisRunStatus, cursor?: string | null): Promise<AnalysisRunListPage> {
   if (getDataSource() === 'mock') return mockListAnalysisRuns(projectId, status)
-  return Promise.reject(new PendingContractError('el listado de Analysis Runs'))
+  if (!projectId) return Promise.reject(new PendingContractError('un listado global de Analysis Runs — INTEROP-2.1 §6.10 solo aprueba el listado por proyecto'))
+  const params = new URLSearchParams()
+  if (status) params.set('status', status)
+  if (cursor) params.set('cursor', cursor)
+  const query = params.toString()
+  return apiRequest<AnalysisRunListPage>(`/projects/${encodeURIComponent(projectId)}/analysis-runs${query ? `?${query}` : ''}`)
 }
 
 export function getAnalysisRun(analysisRunId: string): Promise<AnalysisRunDetailResponse> {
   if (getDataSource() === 'mock') return mockGetAnalysisRun(analysisRunId)
-  return Promise.reject(new PendingContractError('el detalle de un Analysis Run'))
+  return apiRequest<AnalysisRunDetailResponse>(`/analysis-runs/${encodeURIComponent(analysisRunId)}`)
 }
 
 // HU39/HU40 — Checks, propuestas y companion PR (INTEROP-2.0 §6.12).
