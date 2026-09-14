@@ -2,6 +2,18 @@
   "schemaVersion": 2,
   "sddVersion": "2.1",
   "allowedStatuses": ["SELECTED", "SPEC_VERIFIED", "AWAITING_APPROVAL", "IN_PROGRESS", "IN_REVIEW", "BLOCKED", "DONE"],
-  "activeWorkItem": null,
-  "lastUpdatedAt": "2026-09-14T01:30:00-05:00"
+  "activeWorkItem": {
+    "storyIds": ["HU25", "HU30", "HU32", "HU37", "HU38", "HU39", "HU40"],
+    "sprint": "mock-first-gap-closure",
+    "specPaths": [
+      "spec/features/013-pr-driven-control-plane/spec.md",
+      "spec/features/013-pr-driven-control-plane/tasks.md",
+      "spec/features/012-authentication/spec.md"
+    ],
+    "transversalPaths": ["spec/transversal/demo-mode", "spec/transversal/design-system", "spec/transversal/accessibility"],
+    "status": "IN_PROGRESS",
+    "decisionGate": { "blockingDecisionIds": [] },
+    "summary": "Cierra gaps mock-first del control plane dentro del contrato ya aprobado: INFRASTRUCTURE_FAILURE, bootstrap (indexMode), PR grande (símbolos), STALE proposals, caso 'respuesta revela inconsistencia' (corte A); badge Action Required + sub-nav por proyecto (corte B); selector de repositorio en el mock GitHub App (corte C). Ver plan aprobado en /Users/jean/.claude/plans/kind-twirling-waterfall.md."
+  },
+  "lastUpdatedAt": "2026-09-14T02:00:00-05:00"
 }

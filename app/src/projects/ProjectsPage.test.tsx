@@ -105,7 +105,7 @@ test('crea un proyecto con el contrato implementado, tras abrir el panel "Conect
   expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/projects'), expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'checkout' }) }))
 })
 
-test('KPIs reflejan el estado real del workspace demo (2 proyectos, 2 Action Required resaltado)', async () => {
+test('KPIs reflejan el estado real del workspace demo (2 proyectos, 3 Action Required resaltado)', async () => {
   setDataSourceForTests('mock')
   resetMockBackend()
   renderApp(<ProjectsPage />)
@@ -115,10 +115,10 @@ test('KPIs reflejan el estado real del workspace demo (2 proyectos, 2 Action Req
   expect(projectsCard).toHaveTextContent('2')
 
   const activePrCard = screen.getByText('PR activos', { selector: '.kpi-card span' }).closest('.kpi-card')
-  expect(activePrCard).toHaveTextContent('8')
+  expect(activePrCard).toHaveTextContent('13')
 
   const actionRequiredCard = screen.getByText('Action Required', { selector: '.kpi-card span' }).closest('.kpi-card')
-  expect(actionRequiredCard).toHaveTextContent('2')
+  expect(actionRequiredCard).toHaveTextContent('3')
   expect(actionRequiredCard).toHaveClass('kpi-card-alert')
 
   const runsWeekCard = screen.getByText('Runs esta semana', { selector: '.kpi-card span' }).closest('.kpi-card')
@@ -151,9 +151,9 @@ test('la tarjeta de un proyecto conectado muestra binding, Active PRs, Action Re
   const scope = within(checkoutCard)
   expect(scope.getByText('CONNECTED')).toBeInTheDocument()
   expect(scope.getByText('develop')).toBeInTheDocument()
-  expect(scope.getByText('Active PRs').closest('div')).toHaveTextContent('4')
+  expect(scope.getByText('Active PRs').closest('div')).toHaveTextContent('7')
   expect(scope.getByText('Action Required').closest('div')).toHaveTextContent('1')
-  expect(scope.getByText(/PR #42/, { selector: 'p' })).toBeInTheDocument()
+  expect(scope.getByText(/PR #50/, { selector: 'p' })).toBeInTheDocument()
 })
 
 test('un proyecto sin binding muestra NOT CONNECTED y enlaza a integrations/github', async () => {

@@ -78,3 +78,44 @@ test('un Run sin traza de contexto mockeada no muestra la sección "Contexto rec
   await screen.findByText('Run obsoleto')
   expect(screen.queryByText('Contexto recolectado')).not.toBeInTheDocument()
 })
+
+test('un Run INFRASTRUCTURE_FAILURE muestra el panel de fallo con resultSummary', async () => {
+  renderDetail('arun_checkout_pr48', 'prj_checkout_demo')
+
+  expect(await screen.findByRole('alert')).toHaveTextContent('La GitHub Compare API no respondió')
+})
+
+test('caso Bootstrap: un Run con indexMode BOOTSTRAP muestra el aviso de primer análisis', async () => {
+  renderDetail('arun_billing_pr23', 'prj_billing_demo')
+
+  expect(await screen.findByText('Primer análisis de este repositorio')).toBeInTheDocument()
+  expect(screen.getByText(/se indexó el repositorio completo \(bootstrap\)/)).toBeInTheDocument()
+})
+
+test('un Run incremental normal no muestra el aviso de bootstrap', async () => {
+  renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
+
+  await screen.findByText('checkout-service', { selector: '.repo-name' })
+  expect(screen.queryByText('Primer análisis de este repositorio')).not.toBeInTheDocument()
+})
+
+test('caso PR grande: resume símbolos directos/impactados cuando el changeset es grande', async () => {
+  renderDetail('arun_checkout_pr49', 'prj_checkout_demo')
+
+  expect(await screen.findByText(/Changeset grande: 6 símbolo\(s\) con cambio directo, 8 potencialmente impactado\(s\)\./)).toBeInTheDocument()
+})
+
+test('un changeset chico no muestra el resumen de "changeset grande"', async () => {
+  renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
+
+  await screen.findByText('checkout-service', { selector: '.repo-name' })
+  expect(screen.queryByText(/Changeset grande/)).not.toBeInTheDocument()
+})
+
+test('caso propuestas STALE: un intento anterior queda STALE y el vigente AVAILABLE', async () => {
+  renderDetail('arun_checkout_pr50', 'prj_checkout_demo')
+
+  expect(await screen.findByText('STALE')).toBeInTheDocument()
+  expect(screen.getAllByText('AVAILABLE')).toHaveLength(2)
+  expect(screen.getByRole('button', { name: /Publicar 2 propuesta\(s\)/ })).toBeInTheDocument()
+})

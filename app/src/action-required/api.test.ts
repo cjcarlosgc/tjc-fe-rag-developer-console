@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { resetMockBackend } from '../api/mockBackend'
 import { setDataSourceForTests } from '../api/dataSource'
+import { getAnalysisRun, listTestProposals } from '../control-plane/api'
 import { getContextQuestionSet, listActionRequired, listFunctionalKnowledge, submitFunctionalAnswer } from './api'
 
 beforeEach(() => {
@@ -11,7 +12,7 @@ beforeEach(() => {
 describe('action-required api (mock)', () => {
   it('HU38: lista la pregunta vigente por cada Run con contexto pendiente', async () => {
     const page = await listActionRequired()
-    expect(page.items.map((item) => item.analysisRunId)).toEqual(['arun_billing_pr17', 'arun_checkout_pr42'])
+    expect(page.items.map((item) => item.analysisRunId)).toEqual(['arun_billing_pr17', 'arun_checkout_pr42', 'arun_billing_pr24'])
     expect(page.items.every((item) => item.status === 'PENDING')).toBe(true)
   })
 
@@ -61,6 +62,19 @@ describe('action-required api (mock)', () => {
   it('rechaza responder una pregunta que ya no está PENDING', async () => {
     await submitFunctionalAnswer('arun_checkout_pr42', 'fq_checkout_pr42_1', { choice: 'YES', answer: null })
     await expect(submitFunctionalAnswer('arun_checkout_pr42', 'fq_checkout_pr42_1', { choice: 'YES', answer: null })).rejects.toThrow()
+  })
+
+  it('caso "respuesta revela inconsistencia": responder la pregunta de PR#24 muta el Run a BEHAVIORAL_MISMATCH', async () => {
+    const before = await getAnalysisRun('arun_billing_pr24')
+    expect(before.status).toBe('ACTION_REQUIRED')
+
+    await submitFunctionalAnswer('arun_billing_pr24', 'fq_billing_pr24_1', { choice: 'NO', answer: null })
+
+    const after = await getAnalysisRun('arun_billing_pr24')
+    expect(after.status).toBe('BEHAVIORAL_MISMATCH')
+    expect(after.resultSummary).toContain('contradice la regla')
+    const proposals = await listTestProposals('arun_billing_pr24')
+    expect(proposals.items).toEqual([expect.objectContaining({ status: 'HELD' })])
   })
 })
 

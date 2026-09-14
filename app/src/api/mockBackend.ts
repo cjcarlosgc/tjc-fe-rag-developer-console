@@ -323,6 +323,28 @@ function seedActionRequired(): void {
       },
     ],
   })
+  /** Caso "respuesta revela inconsistencia": responder esta pregunta muta el AnalysisRun a BEHAVIORAL_MISMATCH — ver mockSubmitFunctionalAnswer. */
+  actionRequiredRuns.set('arun_billing_pr24', {
+    analysisRunId: 'arun_billing_pr24',
+    projectId: 'prj_billing_demo',
+    headChanged: false,
+    questions: [
+      {
+        id: 'fq_billing_pr24_1',
+        analysisRunId: 'arun_billing_pr24',
+        projectId: 'prj_billing_demo',
+        repositoryName: 'acme/billing-engine',
+        pullRequestNumber: 24,
+        headSha: 'e4e4e4e',
+        target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'InvoiceService.applyLateFee', filePath: 'src/domain/InvoiceService.ts', changeKind: 'DIRECTLY_CHANGED' },
+        question: '¿"applyLateFee" debe aplicarse si la factura ya fue marcada como pagada parcialmente?',
+        rationale: '"applyLateFee" no tiene pruebas existentes que fijen su comportamiento cuando ya hubo un pago parcial antes de la fecha de mora.',
+        status: 'PENDING',
+        visualAid: { kind: 'CODE_FRAGMENT', title: 'InvoiceService.ts:88', language: 'typescript', content: 'applyLateFee(invoice: Invoice): Invoice {\n  // ¿debe saltarse si invoice.paidAmount > 0?\n  return { ...invoice, total: invoice.total + this.feeFor(invoice) }\n}' },
+        createdAt: '2026-09-13T21:05:00.000Z',
+      },
+    ],
+  })
 }
 
 interface AnalysisRunSeed extends AnalysisRunDetailResponse {
@@ -434,6 +456,81 @@ function seedControlPlane(): void {
       attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: '222222c', indexDeltaBaseSha: null,
       symbols: [],
       functionalBehaviorValidated: true, resultSummary: 'El PR solo cambia documentación; no hay símbolos testables afectados.', detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr22',
+    },
+    {
+      id: 'arun_checkout_pr48', projectId: 'prj_checkout_demo',
+      pullRequest: pr('repo_checkout', 'acme/checkout-service', 48, 'Normaliza validación de direcciones de envío', 'feature/shipping-address-validation', '888bbb8', 'devB'),
+      status: 'INFRASTRUCTURE_FAILURE', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
+      createdAt: '2026-09-13T10:00:00.000Z', updatedAt: '2026-09-13T10:04:00.000Z', completedAt: '2026-09-13T10:04:00.000Z',
+      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: '888bbb8', indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [{ language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'ShippingAddressValidator', filePath: 'src/domain/ShippingAddressValidator.ts', changeKind: 'DIRECTLY_CHANGED' }],
+      functionalBehaviorValidated: false, resultSummary: 'La GitHub Compare API no respondió al materializar el snapshot del HEAD — falla de infraestructura, no del código. El Run puede reintentarse.', detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr48',
+    },
+    {
+      id: 'arun_billing_pr23', projectId: 'prj_billing_demo',
+      pullRequest: pr('repo_billing', 'acme/billing-engine', 23, 'Agrega cálculo de impuestos regionales', 'feature/regional-tax', 'b0b0b0b', 'devA'),
+      status: 'SUCCESS', current: true, actionRequiredCount: 0, generatedTestsCount: 2,
+      createdAt: '2026-09-05T08:00:00.000Z', updatedAt: '2026-09-05T08:22:00.000Z', completedAt: '2026-09-05T08:22:00.000Z',
+      attemptCount: 1, indexMode: 'BOOTSTRAP', changesetBaseSha: '000c1c1', changesetHeadSha: 'b0b0b0b', indexDeltaBaseSha: null,
+      symbols: [{ language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'TaxCalculator', filePath: 'src/domain/TaxCalculator.ts', changeKind: 'DIRECTLY_CHANGED' }],
+      functionalBehaviorValidated: true, resultSummary: 'Primer AnalysisRun de este proyecto tras conectar el repositorio — bootstrap completo. 2 pruebas generadas y validadas.', detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr23',
+      __proposals: [
+        { id: 'prop_pr23_1', relativePath: 'src/domain/TaxCalculator.spec.ts', target: { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'TaxCalculator', filePath: 'src/domain/TaxCalculator.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr23_1'), status: 'AVAILABLE' },
+        { id: 'prop_pr23_2', relativePath: 'src/domain/TaxCalculator.regional.spec.ts', target: { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'TaxCalculator', filePath: 'src/domain/TaxCalculator.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr23_2'), status: 'AVAILABLE' },
+      ],
+    },
+    {
+      id: 'arun_checkout_pr49', projectId: 'prj_checkout_demo',
+      pullRequest: pr('repo_checkout', 'acme/checkout-service', 49, 'Refactor grande del pipeline de checkout', 'feature/checkout-pipeline-refactor', 'c9c9c9c', 'devC'),
+      status: 'SUCCESS', current: true, actionRequiredCount: 0, generatedTestsCount: 4,
+      createdAt: '2026-09-13T16:00:00.000Z', updatedAt: '2026-09-13T16:40:00.000Z', completedAt: '2026-09-13T16:40:00.000Z',
+      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: 'c9c9c9c', indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [
+        { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' },
+        { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.createOrder', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' },
+        { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'CouponPolicy', filePath: 'src/domain/CouponPolicy.ts', changeKind: 'DIRECTLY_CHANGED' },
+        { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'DiscountEngine', filePath: 'src/domain/DiscountEngine.ts', changeKind: 'DIRECTLY_CHANGED' },
+        { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'ShippingAddressValidator', filePath: 'src/domain/ShippingAddressValidator.ts', changeKind: 'DIRECTLY_CHANGED' },
+        { language: 'TYPESCRIPT', kind: 'FUNCTION', qualifiedName: 'formatCurrency', filePath: 'src/shared/money.ts', changeKind: 'DIRECTLY_CHANGED' },
+        { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'InvoiceService', filePath: 'src/domain/InvoiceService.ts', changeKind: 'POTENTIALLY_IMPACTED' },
+        { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'RefundPolicy', filePath: 'src/domain/RefundPolicy.ts', changeKind: 'POTENTIALLY_IMPACTED' },
+        { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'TaxCalculator', filePath: 'src/domain/TaxCalculator.ts', changeKind: 'POTENTIALLY_IMPACTED' },
+        { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'PaymentGateway.charge', filePath: 'src/domain/PaymentGateway.ts', changeKind: 'POTENTIALLY_IMPACTED' },
+        { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'PaymentGateway.refund', filePath: 'src/domain/PaymentGateway.ts', changeKind: 'POTENTIALLY_IMPACTED' },
+        { language: 'TYPESCRIPT', kind: 'INTERFACE', qualifiedName: 'OrderItem', filePath: 'src/domain/OrderItem.ts', changeKind: 'POTENTIALLY_IMPACTED' },
+        { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'Inventory', filePath: 'src/domain/Inventory.ts', changeKind: 'POTENTIALLY_IMPACTED' },
+        { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'AuditTrail', filePath: 'src/domain/AuditTrail.ts', changeKind: 'POTENTIALLY_IMPACTED' },
+      ],
+      functionalBehaviorValidated: true, resultSummary: 'Changeset grande: 6 símbolos con cambio directo y 8 potencialmente impactados. 4 pruebas generadas y validadas contra el HEAD vigente.', detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr49',
+      __proposals: [
+        { id: 'prop_pr49_1', relativePath: 'src/domain/OrderService.pipeline.spec.ts', target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr49_1'), status: 'AVAILABLE' },
+        { id: 'prop_pr49_2', relativePath: 'src/domain/CouponPolicy.pipeline.spec.ts', target: { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'CouponPolicy', filePath: 'src/domain/CouponPolicy.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr49_2'), status: 'AVAILABLE' },
+        { id: 'prop_pr49_3', relativePath: 'src/domain/DiscountEngine.pipeline.spec.ts', target: { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'DiscountEngine', filePath: 'src/domain/DiscountEngine.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr49_3'), status: 'AVAILABLE' },
+        { id: 'prop_pr49_4', relativePath: 'src/domain/ShippingAddressValidator.pipeline.spec.ts', target: { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'ShippingAddressValidator', filePath: 'src/domain/ShippingAddressValidator.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr49_4'), status: 'AVAILABLE' },
+      ],
+    },
+    {
+      id: 'arun_checkout_pr50', projectId: 'prj_checkout_demo',
+      pullRequest: pr('repo_checkout', 'acme/checkout-service', 50, 'Ajusta política de reintentos de pago', 'feature/payment-retry-policy', 'd0d0d0d', 'devA'),
+      status: 'SUCCESS', current: true, actionRequiredCount: 0, generatedTestsCount: 3,
+      createdAt: '2026-09-13T20:00:00.000Z', updatedAt: '2026-09-13T20:35:00.000Z', completedAt: '2026-09-13T20:35:00.000Z',
+      attemptCount: 2, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: 'd0d0d0d', indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [{ language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'PaymentGateway.charge', filePath: 'src/domain/PaymentGateway.ts', changeKind: 'DIRECTLY_CHANGED' }],
+      functionalBehaviorValidated: true, resultSummary: 'El primer intento generó una prueba contra un HEAD que luego recibió un push adicional; el segundo intento la regeneró junto con dos más, ya frescas.', detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr50',
+      __proposals: [
+        { id: 'prop_pr50_1_stale', relativePath: 'src/domain/PaymentGateway.retry.spec.ts', target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'PaymentGateway.charge', filePath: 'src/domain/PaymentGateway.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr50_1_stale'), status: 'STALE' },
+        { id: 'prop_pr50_2', relativePath: 'src/domain/PaymentGateway.retry.spec.ts', target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'PaymentGateway.charge', filePath: 'src/domain/PaymentGateway.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr50_2'), status: 'AVAILABLE' },
+        { id: 'prop_pr50_3', relativePath: 'src/domain/PaymentGateway.retry.edgecases.spec.ts', target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'PaymentGateway.charge', filePath: 'src/domain/PaymentGateway.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr50_3'), status: 'AVAILABLE' },
+      ],
+    },
+    {
+      id: 'arun_billing_pr24', projectId: 'prj_billing_demo',
+      pullRequest: pr('repo_billing', 'acme/billing-engine', 24, 'Recargo por mora en facturas', 'feature/late-fee', 'e4e4e4e', 'devE'),
+      status: 'ACTION_REQUIRED', current: true, actionRequiredCount: 1, generatedTestsCount: 0,
+      createdAt: '2026-09-13T21:00:00.000Z', updatedAt: '2026-09-13T21:05:00.000Z', completedAt: null,
+      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: 'e4e4e4e', indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [{ language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'InvoiceService.applyLateFee', filePath: 'src/domain/InvoiceService.ts', changeKind: 'DIRECTLY_CHANGED' }],
+      functionalBehaviorValidated: false, resultSummary: null, detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr24',
     },
   ]
 
@@ -946,6 +1043,22 @@ export async function mockSubmitFunctionalAnswer(analysisRunId: string, question
   question.status = 'ANSWERED'
   sequence += 1
   const knowledgeId = input.choice === 'UNKNOWN' ? null : `fk_demo_${sequence}`
+
+  /** Caso "respuesta revela inconsistencia": la regla que fija la respuesta contradice el comportamiento observado en Sandbox. */
+  if (analysisRunId === 'arun_billing_pr24') {
+    const run = analysisRuns.get(analysisRunId)
+    if (run) {
+      run.status = 'BEHAVIORAL_MISMATCH'
+      run.functionalBehaviorValidated = true
+      run.resultSummary = 'La respuesta funcional estableció que "applyLateFee" no debe aplicarse a facturas con pago parcial previo, pero el comportamiento observado en Sandbox muestra que el recargo se aplica igual — contradice la regla recién fijada.'
+      run.updatedAt = nowIso()
+      run.completedAt = nowIso()
+      testProposals.set(analysisRunId, [
+        { id: 'prop_pr24_1', relativePath: 'src/domain/InvoiceService.lateFee.spec.ts', target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'InvoiceService.applyLateFee', filePath: 'src/domain/InvoiceService.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr24_1'), status: 'HELD' },
+      ])
+    }
+  }
+
   return { status: 'PENDING', pollAfterMs: 300, analysisRunId, questionId, continuationAttemptId: `attempt_demo_${sequence}`, knowledgeId }
 }
 

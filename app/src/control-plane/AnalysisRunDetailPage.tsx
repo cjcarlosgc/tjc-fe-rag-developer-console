@@ -37,7 +37,7 @@ function PublishSection({ analysisRunId, targetBranch }: { analysisRunId: string
       {proposalsQuery.data.items.map((item) => (
         <li key={item.id} className="test-proposal-item">
           <code>{item.relativePath}</code>
-          <span className={`status-badge ${item.status === 'PUBLISHED' ? 'status-success' : ''}`}>{item.status}</span>
+          <span className={`status-badge ${item.status === 'PUBLISHED' ? 'status-success' : item.status === 'STALE' ? 'status-muted' : ''}`}>{item.status}</span>
         </li>
       ))}
     </ul>
@@ -93,6 +93,9 @@ export function AnalysisRunDetailPage() {
   if (runQuery.isError) return <ErrorState message={runQuery.error.message} onRetry={() => void runQuery.refetch()} />
 
   const run = runQuery.data
+  const directCount = run.symbols.filter((symbol) => symbol.changeKind === 'DIRECTLY_CHANGED').length
+  const impactedCount = run.symbols.length - directCount
+  const isLargeChangeset = run.symbols.length > 8
   return <section>
     <Breadcrumbs items={[{ label: 'Proyectos', to: '/' }, { label: 'Runs', to: '/analysis-runs' }, { label: `PR #${run.pullRequest.number}` }]} />
     <div className="page-heading">
@@ -105,6 +108,15 @@ export function AnalysisRunDetailPage() {
       {mock && <span className="demo-stamp">DEMO · DATOS SIMULADOS</span>}
     </div>
 
+    {run.indexMode === 'BOOTSTRAP' && (
+      <div className="panel success-note contract-note">
+        <div>
+          <strong>Primer análisis de este repositorio</strong>
+          <p>No había un ProjectVersion previo para este proyecto — se indexó el repositorio completo (bootstrap) en vez de aplicar un índice incremental.</p>
+        </div>
+      </div>
+    )}
+
     <div className="panel analysis-run-summary">
       <span className={`status-badge ${analysisRunStatusClass(run.status)}`}>{ANALYSIS_RUN_STATUS_LABELS[run.status]}</span>
       <dl className="metadata">
@@ -114,6 +126,7 @@ export function AnalysisRunDetailPage() {
       </dl>
       {run.symbols.length > 0 && <>
         <h3>Símbolos cambiados</h3>
+        {isLargeChangeset && <p className="empty-inline-note">Changeset grande: {directCount} símbolo(s) con cambio directo, {impactedCount} potencialmente impactado(s).</p>}
         <ul className="symbol-list">
           {run.symbols.map((symbol) => <li key={symbol.qualifiedName}><code>{symbol.qualifiedName}</code><span className="target-ref">{symbol.changeKind === 'DIRECTLY_CHANGED' ? 'cambio directo' : 'potencialmente impactado'}</span></li>)}
         </ul>

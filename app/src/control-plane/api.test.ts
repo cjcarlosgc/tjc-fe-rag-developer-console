@@ -37,19 +37,19 @@ describe('control-plane api (mock) — HU30 repository binding', () => {
   })
 })
 
-describe('control-plane api (mock) — HU32 Analysis Runs, los 9 escenarios', () => {
-  it('lista los 9 Analysis Runs (incluye el par obsoleto/nuevo HEAD de PR#17)', async () => {
+describe('control-plane api (mock) — HU32 Analysis Runs, los 14 escenarios', () => {
+  it('lista los 14 Analysis Runs (incluye el par obsoleto/nuevo HEAD de PR#17)', async () => {
     const page = await listAnalysisRuns()
-    expect(page.items).toHaveLength(9)
+    expect(page.items).toHaveLength(14)
   })
 
   it('filtra por proyecto y por status', async () => {
     const checkoutRuns = await listAnalysisRuns('prj_checkout_demo')
     expect(checkoutRuns.items.every((run) => run.projectId === 'prj_checkout_demo')).toBe(true)
-    expect(checkoutRuns.items).toHaveLength(4)
+    expect(checkoutRuns.items).toHaveLength(7)
 
     const successRuns = await listAnalysisRuns(undefined, 'SUCCESS')
-    expect(successRuns.items.map((run) => run.id).sort()).toEqual(['arun_billing_pr17_2', 'arun_checkout_pr45'])
+    expect(successRuns.items.map((run) => run.id).sort()).toEqual(['arun_billing_pr17_2', 'arun_billing_pr23', 'arun_checkout_pr45', 'arun_checkout_pr49', 'arun_checkout_pr50'])
   })
 
   it('el par pr17/pr17_2 representa la corrección por HEAD nuevo', async () => {
@@ -63,7 +63,7 @@ describe('control-plane api (mock) — HU32 Analysis Runs, los 9 escenarios', ()
     expect(fresh.pullRequest.headSha).not.toBe(old.pullRequest.headSha)
   })
 
-  it('cada uno de los 9 escenarios existe con su status esperado', async () => {
+  it('cada uno de los 14 escenarios existe con su status esperado', async () => {
     const expected: Record<string, string> = {
       arun_checkout_pr42: 'ACTION_REQUIRED',
       arun_checkout_pr45: 'SUCCESS',
@@ -74,6 +74,11 @@ describe('control-plane api (mock) — HU32 Analysis Runs, los 9 escenarios', ()
       arun_billing_pr20: 'BASELINE_FAILED',
       arun_billing_pr21: 'TECHNICAL_GENERATION_FAILURE',
       arun_billing_pr22: 'NO_TEST_RELEVANT_CHANGES',
+      arun_checkout_pr48: 'INFRASTRUCTURE_FAILURE',
+      arun_billing_pr23: 'SUCCESS',
+      arun_checkout_pr49: 'SUCCESS',
+      arun_checkout_pr50: 'SUCCESS',
+      arun_billing_pr24: 'ACTION_REQUIRED',
     }
     for (const [id, status] of Object.entries(expected)) {
       const run = await getAnalysisRun(id)
