@@ -37,9 +37,16 @@ export interface FunctionalQuestionSetResponse {
   functionalBehaviorValidated: boolean
 }
 
+/** INTEROP-2.1 §6.11 (HU51, definido 2026-09-15 — Core no lo implementó todavía). */
+export interface ConflictResolution {
+  conflictId: string
+  action: 'SUPERSEDE' | 'KEEP_EXISTING'
+}
+
 export interface SubmitFunctionalAnswerRequest {
   choice: FunctionalAnswerChoice
   answer: string | null
+  conflictResolution?: ConflictResolution
 }
 
 export interface FunctionalAnswerAcceptedResponse {
@@ -78,4 +85,18 @@ export interface FunctionalKnowledgeResponse {
 export interface FunctionalKnowledgeListPage {
   items: FunctionalKnowledgeResponse[]
   nextCursor: string | null
+}
+
+/**
+ * INTEROP-2.1 §6.11 (HU51, definido 2026-09-15 — Core no lo implementó
+ * todavía). `details` de un `409 FUNCTIONAL_KNOWLEDGE_CONFLICT`: la regla
+ * `ACTIVE` existente que la respuesta contradice, junto a la regla que se
+ * propondría. `conflictId` es de un solo uso y expira si el HEAD cambia.
+ */
+export interface FunctionalKnowledgeConflictResponse {
+  conflictId: string
+  analysisRunId: string
+  questionId: string
+  conflictingKnowledge: FunctionalKnowledgeResponse
+  proposedNormalizedRule: string
 }

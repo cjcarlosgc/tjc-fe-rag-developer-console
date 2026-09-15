@@ -1,4 +1,4 @@
-import type { ActionRequiredListPage, FunctionalAnswerAcceptedResponse, FunctionalKnowledgeListPage, FunctionalKnowledgeResponse, FunctionalKnowledgeStatus, FunctionalQuestionResponse, FunctionalQuestionSetResponse, SubmitFunctionalAnswerRequest } from '../action-required/types'
+import type { ActionRequiredListPage, FunctionalAnswerAcceptedResponse, FunctionalKnowledgeConflictResponse, FunctionalKnowledgeListPage, FunctionalKnowledgeResponse, FunctionalKnowledgeStatus, FunctionalQuestionResponse, FunctionalQuestionSetResponse, SubmitFunctionalAnswerRequest } from '../action-required/types'
 import type { ArtifactViewModel } from '../artifacts/types'
 import type { AgentTrajectoryStep, ContextTraceDetail, ContextTracePage, ContextTraceSummary, DiscoveredFilePage, ExperimentContextTraceFilters, RagCandidateNode, RagContextTraceDetail, RunContextTraceFilters, SourceExcerpt } from '../context-explorer/types'
 import type { ExperimentAccepted, ExperimentOperation, ExperimentResultViewModel } from '../experiments/types'
@@ -57,12 +57,13 @@ interface MockContextTraceState {
   polls: number
 }
 
-/** HU37/HU38: preguntas de un `AnalysisRun` (control plane PR-driven), ordenadas — solo una `PENDING` a la vez está vigente. `headChanged` simula que llegó un HEAD nuevo mientras se respondía: la pregunta pasa a `OBSOLETE` en vez de `ANSWERED` y el Run no se reanuda. */
+/** HU37/HU38: preguntas de un `AnalysisRun` (control plane PR-driven), ordenadas — solo una `PENDING` a la vez está vigente. `headChanged` simula que llegó un HEAD nuevo mientras se respondía: la pregunta pasa a `OBSOLETE` en vez de `ANSWERED` y el Run no se reanuda. `conflictQuestionId` (HU51, INTEROP-2.1 §6.11) marca la única pregunta demo cuyo primer envío choca con una `FunctionalKnowledge` `ACTIVE` existente — intencionalmente no es un chequeo genérico por `targetRef`: varias preguntas HU37/38 ya comparten `targetRef` con FK seedeadas y romperían su propio flujo si el conflicto se evaluara siempre. */
 interface MockActionRequiredRunState {
   analysisRunId: string
   projectId: string
   questions: FunctionalQuestionResponse[]
   headChanged: boolean
+  conflictQuestionId?: string
 }
 
 const projects = new Map<string, Project>()
@@ -70,7 +71,7 @@ const versions = new Map<string, MockVersionState>()
 const runs = new Map<string, MockRunState>()
 const artifacts = new Map<string, ArtifactViewModel[]>()
 const experiments = new Map<string, MockExperimentState>()
-/** PROPUESTA — HU48, ver run-comparison/types.ts. Mapa aparte de `experiments` a propósito: no es la misma capacidad. */
+/** INTEROP-2.1 §6.5 (HU48, definido/no implementado), ver run-comparison/types.ts. Mapa aparte de `experiments` a propósito: no es la misma capacidad. */
 const runComparisons = new Map<string, { polls: number; operation: RunComparisonOperation }>()
 const contextTraces = new Map<string, MockContextTraceState>()
 /** No es parte de INTEROP-2.0 (§6.7 sigue legacy) — mapeo demo-only de AnalysisRun a la traza RAG que "explica" sus pruebas generadas. */
@@ -351,6 +352,29 @@ function seedActionRequired(): void {
       },
     ],
   })
+  /** Caso HU51 (INTEROP-2.1 §6.11, definido/no implementado): responder esta pregunta choca con `fk_shipping_zone` (ACTIVE) — ver mockSubmitFunctionalAnswer. Solo demo en Focus Mode: sin `AnalysisRun` propio en control-plane. */
+  actionRequiredRuns.set('arun_checkout_pr52', {
+    analysisRunId: 'arun_checkout_pr52',
+    projectId: 'prj_checkout_demo',
+    headChanged: false,
+    conflictQuestionId: 'fq_checkout_pr52_1',
+    questions: [
+      {
+        id: 'fq_checkout_pr52_1',
+        analysisRunId: 'arun_checkout_pr52',
+        projectId: 'prj_checkout_demo',
+        repositoryName: 'acme/checkout-service',
+        pullRequestNumber: 52,
+        headSha: 'b2c3d4e',
+        target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'ShippingAddressValidator.validate', filePath: 'src/domain/ShippingAddressValidator.ts', changeKind: 'DIRECTLY_CHANGED' },
+        question: '¿"validate" debe aceptar direcciones con código postal fuera de las zonas habilitadas si el cliente es corporativo?',
+        rationale: 'El PR agrega una excepción para clientes corporativos, pero ya existe una regla vigente sobre zonas de envío habilitadas para este símbolo.',
+        status: 'PENDING',
+        visualAid: null,
+        createdAt: '2026-09-15T10:00:00.000Z',
+      },
+    ],
+  })
 }
 
 interface AnalysisRunSeed extends AnalysisRunDetailResponse {
@@ -555,6 +579,13 @@ function seedFunctionalKnowledge(): void {
       originalAnswer: 'Sí',
       normalizedRule: 'Un cupón vencido nunca debe aplicarse, incluso si el pedido ya está marcado como pagado.',
       source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-12T18:22:00.000Z',
+    },
+    {
+      id: 'fk_shipping_zone', projectId: 'prj_checkout_demo', scope: 'METHOD', targetRef: 'ShippingAddressValidator.validate',
+      originalQuestion: '¿"validate" debe rechazar direcciones fuera de las zonas de envío habilitadas?',
+      originalAnswer: 'Sí',
+      normalizedRule: 'Ninguna dirección fuera de las zonas de envío habilitadas debe pasar "validate", sin excepciones por tipo de cliente.',
+      source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-10T14:00:00.000Z',
     },
     {
       id: 'fk_discount_engine', projectId: 'prj_billing_demo', scope: 'METHOD', targetRef: 'DiscountEngine.applyDiscount',
@@ -1059,6 +1090,11 @@ export async function mockGetContextQuestionSet(analysisRunId: string): Promise<
   return clone({ analysisRunId, currentQuestion, functionalBehaviorValidated })
 }
 
+/** HU51 (INTEROP-2.1 §6.11, definido/no implementado): regla `ACTIVE` en el mismo Project que ya cubre el símbolo de la pregunta — simplificación de demo de "scope compatible" (el contrato también contempla scope contenedor, no solo igualdad de targetRef). */
+function findConflictingKnowledge(projectId: string, targetRef: string): FunctionalKnowledgeResponse | null {
+  return Array.from(functionalKnowledge.values()).find((item) => item.projectId === projectId && item.status === 'ACTIVE' && item.targetRef === targetRef) ?? null
+}
+
 /** HU37: `POST /analysis-runs/{analysisRunId}/context-questions/{questionId}/answers`. `headChanged` simula que un HEAD nuevo llegó mientras se respondía: la pregunta queda `OBSOLETE`, no `ANSWERED`, y el Run no se reanuda (`continuationAttemptId: null`). */
 export async function mockSubmitFunctionalAnswer(analysisRunId: string, questionId: string, input: SubmitFunctionalAnswerRequest): Promise<FunctionalAnswerAcceptedResponse> {
   await latency()
@@ -1073,9 +1109,37 @@ export async function mockSubmitFunctionalAnswer(analysisRunId: string, question
     return { status: 'PENDING', pollAfterMs: 400, analysisRunId, questionId, continuationAttemptId: null, knowledgeId: null }
   }
 
+  const conflicting = questionId === state.conflictQuestionId ? findConflictingKnowledge(state.projectId, question.target.qualifiedName) : null
+  if (conflicting && !input.conflictResolution) {
+    sequence += 1
+    const details: FunctionalKnowledgeConflictResponse = {
+      conflictId: `conflict_demo_${sequence}`,
+      analysisRunId,
+      questionId,
+      conflictingKnowledge: clone(conflicting),
+      proposedNormalizedRule: `Regla propuesta a partir de la respuesta: "${input.answer?.trim() || question.question}".`,
+    }
+    throw new ApiError('La respuesta propuesta contradice una regla de conocimiento funcional vigente — resuelve el conflicto antes de continuar.', 409, 'demo-correlation-id', 'FUNCTIONAL_KNOWLEDGE_CONFLICT', details)
+  }
+
   question.status = 'ANSWERED'
   sequence += 1
-  const knowledgeId = input.choice === 'UNKNOWN' ? null : `fk_demo_${sequence}`
+
+  if (conflicting && input.conflictResolution?.action === 'KEEP_EXISTING') {
+    return { status: 'PENDING', pollAfterMs: 300, analysisRunId, questionId, continuationAttemptId: `attempt_demo_${sequence}`, knowledgeId: null }
+  }
+
+  let knowledgeId = input.choice === 'UNKNOWN' ? null : `fk_demo_${sequence}`
+  if (conflicting && input.conflictResolution?.action === 'SUPERSEDE') {
+    conflicting.status = 'SUPERSEDED'
+    knowledgeId = `fk_demo_${sequence}`
+    functionalKnowledge.set(knowledgeId, {
+      id: knowledgeId, projectId: state.projectId, scope: conflicting.scope, targetRef: question.target.qualifiedName,
+      originalQuestion: question.question, originalAnswer: input.answer?.trim() || input.choice,
+      normalizedRule: `Regla propuesta a partir de la respuesta: "${input.answer?.trim() || question.question}".`,
+      source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: conflicting.id, createdAt: nowIso(),
+    })
+  }
 
   /** Caso "respuesta revela inconsistencia": la regla que fija la respuesta contradice el comportamiento observado en Sandbox. */
   if (analysisRunId === 'arun_billing_pr24') {

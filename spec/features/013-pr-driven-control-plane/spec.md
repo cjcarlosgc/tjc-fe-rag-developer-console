@@ -48,8 +48,14 @@ feature. Detalle completo en `harness/reports/console-backlog-formalization.md`.
   `FunctionalKnowledge` `ACTIVE` existente. Contrato **definido** 2026-09-15
   (INTEROP-2.1 §6.11): `SubmitFunctionalAnswerRequest.conflictResolution?
   {conflictId, action: 'SUPERSEDE'|'KEEP_EXISTING'}`; sin resolución y con
-  conflicto responde `409 FUNCTIONAL_KNOWLEDGE_CONFLICT`. Pendiente de
-  implementación en Console y en Core.
+  conflicto responde `409 FUNCTIONAL_KNOWLEDGE_CONFLICT` con
+  `details: FunctionalKnowledgeConflictResponse`. **Implementado en Console**
+  (mock-first normal, `PendingContractError` en live): caso demo dedicado
+  `arun_checkout_pr52`/`fq_checkout_pr52_1` vs. `fk_shipping_zone` (ACTIVE) —
+  la detección de conflicto es explícita por pregunta demo, no un chequeo
+  genérico por `targetRef` (varias preguntas HU37/38 ya comparten `targetRef`
+  con FK seedeadas y romperían su propio flujo si se evaluara siempre).
+  Pendiente de implementación real en Core.
 - **HU52** — en `FunctionalKnowledgeDetailPage`, qué Analysis Runs usaron
   esa regla. Sigue `PROPOSED`, sin contrato — no está en INTEROP-2.1 §6.11.
 - **HU53** — historial de transiciones de estado de un `AnalysisRun`. Contrato

@@ -68,3 +68,40 @@ test('HU38: valida "returnTo" externo como interno inseguro y cae al valor por d
   await screen.findByText('¿"DiscountEngine.applyDiscount" puede dejar el total en negativo si el cupón excede el subtotal?')
   expect(screen.getByRole('link', { name: 'Volver' })).toHaveAttribute('href', '/action-required')
 })
+
+test('HU51 (INTEROP-2.1 §6.11, definido/no implementado): responder muestra el conflicto con la regla vigente', async () => {
+  const user = userEvent.setup()
+  renderFocusMode('arun_checkout_pr52')
+
+  await screen.findByText(/¿"validate" debe aceptar direcciones/)
+  await user.click(screen.getByRole('button', { name: 'Sí' }))
+
+  expect(await screen.findByText('Esta respuesta contradice una regla vigente')).toBeInTheDocument()
+  expect(screen.getByText('Ninguna dirección fuera de las zonas de envío habilitadas debe pasar "validate", sin excepciones por tipo de cliente.')).toBeInTheDocument()
+})
+
+test('HU51: "Reemplazar regla vigente" (SUPERSEDE) persiste la respuesta y avanza el Run', async () => {
+  const user = userEvent.setup()
+  renderFocusMode('arun_checkout_pr52')
+
+  await screen.findByText(/¿"validate" debe aceptar direcciones/)
+  await user.click(screen.getByRole('button', { name: 'Sí' }))
+  await screen.findByText('Esta respuesta contradice una regla vigente')
+
+  await user.click(screen.getByRole('button', { name: 'Reemplazar regla vigente' }))
+
+  expect(await screen.findByText('Contexto funcional confirmado')).toBeInTheDocument()
+})
+
+test('HU51: "Mantener la vigente" (KEEP_EXISTING) avanza sin tocar la regla', async () => {
+  const user = userEvent.setup()
+  renderFocusMode('arun_checkout_pr52')
+
+  await screen.findByText(/¿"validate" debe aceptar direcciones/)
+  await user.click(screen.getByRole('button', { name: 'No' }))
+  await screen.findByText('Esta respuesta contradice una regla vigente')
+
+  await user.click(screen.getByRole('button', { name: 'Mantener la vigente, guardar como evidencia' }))
+
+  expect(await screen.findByText('Contexto funcional confirmado')).toBeInTheDocument()
+})

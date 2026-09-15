@@ -523,6 +523,7 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .target-ref { color: var(--accent); font: 700 12px 'JetBrains Mono', ui-monospace, monospace; }
 
 .focus-mode-card { display: flex; flex-direction: column; gap: 16px; max-width: 720px; }
+.focus-mode-conflict { border: 1px solid rgba(244,63,94,.35); background: rgba(244,63,94,.08); display: flex; flex-direction: column; gap: 10px; }
 .focus-mode-card h2 { margin: 0; font-size: 22px; line-height: 1.35; }
 .focus-mode-rationale { color: var(--muted); line-height: 1.6; margin: 0; }
 .visual-aid { border: 1px solid var(--border-subtle); border-radius: 10px; background: var(--surface-2); overflow: hidden; }

@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { ApiError } from '../api/client'
 import { isMockDataSource } from '../api/dataSource'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
 import { RepoChip } from '../ui/RepoChip'
 import { useContextQuestionSet, useSubmitFunctionalAnswer } from './queries'
-import type { FunctionalAnswerChoice, VisualAidResponse } from './types'
+import type { ConflictResolution, FunctionalAnswerChoice, FunctionalKnowledgeConflictResponse, VisualAidResponse } from './types'
 
 /** Evita open-redirect: `returnTo` solo puede ser una ruta interna. */
 function safeReturnTo(value: string | null): string {
@@ -35,18 +36,32 @@ export function FocusModePage() {
   const questionSetQuery = useContextQuestionSet(analysisRunId)
   const submitAnswer = useSubmitFunctionalAnswer(analysisRunId)
   const [answerText, setAnswerText] = useState('')
+  const [pendingAnswer, setPendingAnswer] = useState<{ questionId: string; choice: FunctionalAnswerChoice; answer: string | null } | null>(null)
 
   if (questionSetQuery.isPending) return <LoadingState label="Abriendo Focus Mode…" />
   if (questionSetQuery.isError) return <ErrorState message={questionSetQuery.error.message} onRetry={() => void questionSetQuery.refetch()} />
 
   const { currentQuestion, functionalBehaviorValidated } = questionSetQuery.data
+  const conflict = submitAnswer.error instanceof ApiError && submitAnswer.error.code === 'FUNCTIONAL_KNOWLEDGE_CONFLICT'
+    ? submitAnswer.error.details as FunctionalKnowledgeConflictResponse
+    : null
 
   function submit(choice: FunctionalAnswerChoice) {
     if (!currentQuestion) return
     const answer = answerText.trim() ? answerText.trim() : null
+    setPendingAnswer({ questionId: currentQuestion.id, choice, answer })
     submitAnswer.mutate(
       { questionId: currentQuestion.id, input: { choice, answer } },
-      { onSuccess: () => setAnswerText('') },
+      { onSuccess: () => { setAnswerText(''); setPendingAnswer(null) } },
+    )
+  }
+
+  /** HU51 (INTEROP-2.1 §6.11, definido/no implementado): reenvía la misma respuesta con la decisión del conflicto. */
+  function resolveConflict(action: ConflictResolution['action']) {
+    if (!pendingAnswer || !conflict) return
+    submitAnswer.mutate(
+      { questionId: pendingAnswer.questionId, input: { choice: pendingAnswer.choice, answer: pendingAnswer.answer, conflictResolution: { conflictId: conflict.conflictId, action } } },
+      { onSuccess: () => { setAnswerText(''); setPendingAnswer(null) } },
     )
   }
 
@@ -94,7 +109,22 @@ export function FocusModePage() {
         Responder solo con este texto
       </button>
 
-      {submitAnswer.isError && <p className="inline-error" role="alert">{submitAnswer.error.message}</p>}
+      {conflict && (
+        <div className="panel focus-mode-conflict" role="alert">
+          <strong>Esta respuesta contradice una regla vigente</strong>
+          <p>Ya existe una regla activa para <code>{conflict.conflictingKnowledge.targetRef}</code>. Decide antes de continuar — no se persiste nada todavía.</p>
+          <dl className="metadata">
+            <div><dt>Regla vigente</dt><dd>{conflict.conflictingKnowledge.normalizedRule}</dd></div>
+            <div><dt>Regla propuesta</dt><dd>{conflict.proposedNormalizedRule}</dd></div>
+          </dl>
+          <div className="answer-choices" role="group" aria-label="Resolución del conflicto">
+            <button type="button" className="button primary" disabled={submitAnswer.isPending} onClick={() => resolveConflict('SUPERSEDE')}>Reemplazar regla vigente</button>
+            <button type="button" className="button secondary" disabled={submitAnswer.isPending} onClick={() => resolveConflict('KEEP_EXISTING')}>Mantener la vigente, guardar como evidencia</button>
+          </div>
+        </div>
+      )}
+
+      {submitAnswer.isError && !conflict && <p className="inline-error" role="alert">{submitAnswer.error.message}</p>}
     </div>}
 
     <div className="run-actions"><Link className="button secondary button-link" to={returnTo}>Volver</Link></div>

@@ -13,11 +13,12 @@ beforeEach(() => {
 test('HU38: lista los Runs con contexto funcional pendiente y enlaza a Focus Mode con returnTo', async () => {
   renderApp(<ActionRequiredPage />, { initialEntry: '/action-required' })
 
-  expect(await screen.findByText('checkout-service', { selector: '.repo-name' })).toBeInTheDocument()
+  expect(await screen.findAllByText('checkout-service', { selector: '.repo-name' })).toHaveLength(2)
   expect(screen.getByText('PR #42', { selector: '.pr-ref' })).toBeInTheDocument()
   expect(screen.getAllByText('billing-engine', { selector: '.repo-name' }).length).toBe(2)
   expect(screen.getByText('PR #17', { selector: '.pr-ref' })).toBeInTheDocument()
   expect(screen.getByText('PR #24', { selector: '.pr-ref' })).toBeInTheDocument()
+  expect(screen.getByText('PR #52', { selector: '.pr-ref' })).toBeInTheDocument()
 
   const links = await screen.findAllByRole('link')
   const link = links.find((item) => item.textContent?.includes('CouponPolicy.apply'))

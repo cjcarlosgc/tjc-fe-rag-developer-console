@@ -19,7 +19,7 @@ test('HU35/HU36: lista las reglas del proyecto con badge ACTIVE/SUPERSEDED', asy
   renderPage('prj_checkout_demo')
 
   expect(await screen.findByText('Un cupón vencido nunca debe aplicarse, incluso si el pedido ya está marcado como pagado.')).toBeInTheDocument()
-  expect(screen.getAllByText('ACTIVE')).toHaveLength(2)
+  expect(screen.getAllByText('ACTIVE')).toHaveLength(3)
   expect(screen.getByText('SUPERSEDED')).toBeInTheDocument()
 })
 
@@ -31,5 +31,5 @@ test('HU35/HU36: filtra por estado', async () => {
   await user.click(screen.getByRole('button', { name: 'Active' }))
 
   expect(screen.queryByText('SUPERSEDED')).not.toBeInTheDocument()
-  expect(screen.getAllByText('ACTIVE')).toHaveLength(2)
+  expect(screen.getAllByText('ACTIVE')).toHaveLength(3)
 })

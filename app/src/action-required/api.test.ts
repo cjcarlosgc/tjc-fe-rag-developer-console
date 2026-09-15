@@ -12,14 +12,13 @@ beforeEach(() => {
 describe('action-required api (mock)', () => {
   it('HU38: lista la pregunta vigente por cada Run con contexto pendiente', async () => {
     const page = await listActionRequired()
-    expect(page.items.map((item) => item.analysisRunId)).toEqual(['arun_billing_pr17', 'arun_checkout_pr42', 'arun_billing_pr24'])
+    expect(page.items.map((item) => item.analysisRunId)).toEqual(['arun_billing_pr17', 'arun_checkout_pr42', 'arun_billing_pr24', 'arun_checkout_pr52'])
     expect(page.items.every((item) => item.status === 'PENDING')).toBe(true)
   })
 
   it('HU38: filtra por projectId', async () => {
     const page = await listActionRequired('prj_checkout_demo')
-    expect(page.items).toHaveLength(1)
-    expect(page.items[0].analysisRunId).toBe('arun_checkout_pr42')
+    expect(page.items.map((item) => item.analysisRunId)).toEqual(['arun_checkout_pr42', 'arun_checkout_pr52'])
   })
 
   it('HU37: la pregunta adaptativa avanza a la siguiente del mismo Run tras responder', async () => {
@@ -78,15 +77,64 @@ describe('action-required api (mock)', () => {
   })
 })
 
+describe('action-required api (mock) — HU51, conflicto de Functional Knowledge (INTEROP-2.1 §6.11, definido/no implementado)', () => {
+  it('sin conflictResolution: rechaza con 409 y expone la regla ACTIVE existente', async () => {
+    await expect(submitFunctionalAnswer('arun_checkout_pr52', 'fq_checkout_pr52_1', { choice: 'YES', answer: 'sí, para corporativos' }))
+      .rejects.toMatchObject({
+        status: 409,
+        code: 'FUNCTIONAL_KNOWLEDGE_CONFLICT',
+        details: expect.objectContaining({ conflictingKnowledge: expect.objectContaining({ id: 'fk_shipping_zone', status: 'ACTIVE' }) }),
+      })
+
+    const after = await getContextQuestionSet('arun_checkout_pr52')
+    expect(after.currentQuestion?.status).toBe('PENDING')
+  })
+
+  it('SUPERSEDE: persiste la nueva regla ACTIVE y pasa la existente a SUPERSEDED', async () => {
+    let conflictId = ''
+    try {
+      await submitFunctionalAnswer('arun_checkout_pr52', 'fq_checkout_pr52_1', { choice: 'YES', answer: 'sí, para corporativos' })
+    } catch (error) {
+      conflictId = (error as { details: { conflictId: string } }).details.conflictId
+    }
+    expect(conflictId).not.toBe('')
+
+    const accepted = await submitFunctionalAnswer('arun_checkout_pr52', 'fq_checkout_pr52_1', { choice: 'YES', answer: 'sí, para corporativos', conflictResolution: { conflictId, action: 'SUPERSEDE' } })
+    expect(accepted.knowledgeId).not.toBeNull()
+
+    const rules = await listFunctionalKnowledge('prj_checkout_demo')
+    const existing = rules.items.find((item) => item.id === 'fk_shipping_zone')
+    expect(existing?.status).toBe('SUPERSEDED')
+    const superseded = rules.items.find((item) => item.supersedesId === 'fk_shipping_zone')
+    expect(superseded?.status).toBe('ACTIVE')
+  })
+
+  it('KEEP_EXISTING: registra la respuesta como evidencia sin tocar la regla vigente', async () => {
+    let conflictId = ''
+    try {
+      await submitFunctionalAnswer('arun_checkout_pr52', 'fq_checkout_pr52_1', { choice: 'NO', answer: null })
+    } catch (error) {
+      conflictId = (error as { details: { conflictId: string } }).details.conflictId
+    }
+
+    const accepted = await submitFunctionalAnswer('arun_checkout_pr52', 'fq_checkout_pr52_1', { choice: 'NO', answer: null, conflictResolution: { conflictId, action: 'KEEP_EXISTING' } })
+    expect(accepted.knowledgeId).toBeNull()
+    expect(accepted.continuationAttemptId).not.toBeNull()
+
+    const rules = await listFunctionalKnowledge('prj_checkout_demo', 'ACTIVE')
+    expect(rules.items.find((item) => item.id === 'fk_shipping_zone')?.status).toBe('ACTIVE')
+  })
+})
+
 describe('action-required api (mock) — HU35/HU36 Functional Knowledge', () => {
   it('lista las reglas de un proyecto, ordenadas por más reciente primero', async () => {
     const page = await listFunctionalKnowledge('prj_checkout_demo')
-    expect(page.items.map((item) => item.id)).toEqual(['fk_coupon_expiry', 'fk_rounding_v2', 'fk_rounding_v1'])
+    expect(page.items.map((item) => item.id)).toEqual(['fk_coupon_expiry', 'fk_rounding_v2', 'fk_shipping_zone', 'fk_rounding_v1'])
   })
 
   it('filtra por status', async () => {
     const active = await listFunctionalKnowledge('prj_checkout_demo', 'ACTIVE')
-    expect(active.items.map((item) => item.id).sort()).toEqual(['fk_coupon_expiry', 'fk_rounding_v2'])
+    expect(active.items.map((item) => item.id).sort()).toEqual(['fk_coupon_expiry', 'fk_rounding_v2', 'fk_shipping_zone'])
 
     const superseded = await listFunctionalKnowledge('prj_checkout_demo', 'SUPERSEDED')
     expect(superseded.items.map((item) => item.id)).toEqual(['fk_rounding_v1'])

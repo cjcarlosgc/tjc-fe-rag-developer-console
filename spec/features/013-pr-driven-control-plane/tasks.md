@@ -35,8 +35,9 @@ sin contrato) — HU50/HU52 siguen sin contrato.
 
 - [x] HU50: indicador de cobertura previa en Run Detail — especulativo (sin
       contrato), `control-plane/speculative/priorCoverage.ts`.
-- [ ] HU51: detección de conflicto de Functional Knowledge en Focus Mode —
-      contrato definido (INTEROP-2.1 §6.11), pendiente de implementación.
+- [x] HU51: detección de conflicto de Functional Knowledge en Focus Mode —
+      contrato definido (INTEROP-2.1 §6.11), implementado mock-first en
+      Console; pendiente de implementación real en Core.
 - [ ] HU52: trazabilidad inversa "Runs que usaron esta regla" — sigue sin
       contrato.
 - [ ] HU53: historial de transiciones de estado de un AnalysisRun — contrato
