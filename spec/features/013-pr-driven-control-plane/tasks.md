@@ -27,16 +27,24 @@
       `harness/reports/HU30-HU32-HU39-HU40-control-plane-mock.md`.
 - [ ] HU44-HU45: retiro legacy y colaboración.
 
-## Propuestas sin implementar (HU50-53, HU55 — `PROPOSED`, registradas 2026-09-14)
+## Propuestas registradas 2026-09-14 (HU50-53, HU55)
 
 Ver detalle de cada una en `spec.md` y en `harness/reports/console-backlog-formalization.md`.
+Contrato de HU51/HU53/HU55 definido por Core el 2026-09-15 (ya no `PROPOSED`
+sin contrato) — HU50/HU52 siguen sin contrato.
 
-- [ ] HU50: indicador de cobertura previa en Run Detail.
-- [ ] HU51: detección de conflicto de Functional Knowledge en Focus Mode.
-- [ ] HU52: trazabilidad inversa "Runs que usaron esta regla".
-- [ ] HU53: historial de transiciones de estado de un AnalysisRun.
-- [ ] HU55: listado de Analysis Runs cross-proyecto (bloqueado: Core no
-      publica la ruta global — ver `console-analysisrun-live-adapters.md`).
+- [x] HU50: indicador de cobertura previa en Run Detail — especulativo (sin
+      contrato), `control-plane/speculative/priorCoverage.ts`.
+- [ ] HU51: detección de conflicto de Functional Knowledge en Focus Mode —
+      contrato definido (INTEROP-2.1 §6.11), pendiente de implementación.
+- [ ] HU52: trazabilidad inversa "Runs que usaron esta regla" — sigue sin
+      contrato.
+- [ ] HU53: historial de transiciones de estado de un AnalysisRun — contrato
+      definido (INTEROP-2.1 §6.10), pendiente de implementación.
+- [ ] HU55: listado de Analysis Runs cross-proyecto — contrato definido
+      (`GET /analysis-runs?status&cursor&limit`), pendiente de implementación
+      en Core (antes bloqueado: no existía ruta global — ver
+      `console-analysisrun-live-adapters.md`).
 
 Con este corte, todo el mock-first del Developer Console para SDD 2.0 queda completo
 salvo lo explícitamente Core-side (HU35/36) y P4 (HU44/45). Adapters live: Analysis

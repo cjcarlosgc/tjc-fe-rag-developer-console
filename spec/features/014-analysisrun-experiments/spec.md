@@ -1,13 +1,19 @@
 # 014 — Experimentos ligados a AnalysisRun
 
-**Estado:** PROPOSED — registrada 2026-09-14. Se formaliza la historia para
-que quede en el SDD; **no se aprueba todavía alcance de implementación**.
+**Estado:** HU48 con contrato **definido** (INTEROP-2.1 §6.5, 2026-09-15;
+Core todavía no implementó el controller) — mock-first implementado en
+Console contra esa forma, adapter live pendiente. HU49 sigue `PROPOSED`
+(depende de HU48, sin contrato propio) — registradas 2026-09-14.
 **Story IDs:** HU48 (P1), HU49 (P4)
 **Origen:** handoff del usuario `~/Downloads/experimentos.md` ("Reorientación
 de Experimentos en SDD 2.0"), enviado también a `tjc-be-rag-core-api`.
-**Contrato:** ninguno todavía. `interoperability-contract.md` no define la
-forma `AnalysisRun`↔`ExperimentRun` — este feature no puede pasar a
-`SPEC_VERIFIED` real hasta que Core publique esa forma (ver `plan.md`).
+**Contrato:** HU48 — `interoperability-contract.md` §6.5 define
+`CreateExperimentRequest{analysisRunId, symbolFilePath, symbolQualifiedName}`
+y `ExperimentStatusResponse`/`ExperimentResultsResponse` con `analysisRunId`+
+`symbol: AnalysisSymbolResponse` (reemplaza `projectId`/`targetId`); más
+`GET /analysis-runs/{analysisRunId}/experiments`. **Definido, pendiente de
+implementación** — no hay adapter live todavía (`PendingContractError`).
+HU49 no tiene forma de contrato propia.
 
 ## Objetivo
 
@@ -23,7 +29,16 @@ descarta HU19, se reorienta su forma de entrada.
 
 ## HU48 (P1) — Run comparison
 
-Flujo: `AnalysisRun` existente → acción "Run comparison" → se crea un
+**Implementado en Console (mock-first, `feature/T-001`):** `run-comparison/`
+(`types.ts`/`api.ts`/`RunComparisonPage.tsx`), entrada desde
+`AnalysisRunDetailPage` cuando hay un símbolo `DIRECTLY_CHANGED`
+`METHOD`/`FUNCTION` elegible. Simplificación de demo respecto al flujo
+completo descrito abajo: arranca automáticamente al entrar (sin selector de
+`trial`/"Replay" todavía) y usa el primer símbolo elegible del Run, no una
+lista de símbolos — cubre la regla de `ACTION_REQUIRED` del handoff.
+
+Flujo objetivo (contrato, no todo implementado en la demo): `AnalysisRun`
+existente → acción "Run comparison" → se crea un
 `ExperimentRun` con dos `ExperimentExecution` (`RAG` y `GENERALIST_AGENT`)
 que comparten HEAD SHA, snapshot, changeset y target set — misma unidad de
 entrada para ambos brazos, para que la comparación sea defendible

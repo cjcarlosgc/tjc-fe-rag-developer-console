@@ -2,13 +2,15 @@
 
 ## Dependencias
 
-- **Bloqueante real:** `interoperability-contract.md` no define la forma
-  `AnalysisRun`↔`ExperimentRun` (qué endpoint crea un `ExperimentRun` a
-  partir de un `analysisRunId`, qué DTO tiene). Sin esa forma, este feature
-  no puede pasar de `PROPOSED` a `SPEC_VERIFIED` real — la puerta de
-  decisiones lo detectaría como dependencia inexistente. Hasta entonces, el
-  trabajo posible es de diseño/mock puro, sin contrato que mockear con
-  fidelidad.
+- **Resuelto 2026-09-15:** Core publicó la forma en
+  `interoperability-contract.md` §6.5 — `CreateExperimentRequest{analysisRunId,
+  symbolFilePath, symbolQualifiedName}`, `ExperimentStatusResponse`/
+  `ExperimentResultsResponse` con `analysisRunId`+`symbol: AnalysisSymbolResponse`,
+  y `GET /analysis-runs/{analysisRunId}/experiments`. **Definido, pendiente
+  de implementación** en Core — sin adapter live todavía. Console ya
+  implementó mock-first contra esa forma (`run-comparison/`). Queda
+  bloqueante real solo para el adapter live (rechaza con
+  `PendingContractError`).
 - HU30/HU32 (repository binding, `AnalysisRun` por PR/HEAD) deben estar
   operando con datos reales antes de que HU48 tenga sentido en producción
   (§31 del handoff: "cuando el flujo empresarial pueda producir AnalysisRun

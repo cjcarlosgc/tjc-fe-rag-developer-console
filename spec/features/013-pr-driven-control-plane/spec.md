@@ -1,6 +1,6 @@
 # 013 — Control plane PR-driven
 
-**Estado:** APROBADO (HU30, HU32, HU35-HU40, HU44-HU45) — HU50/HU51/HU52/HU53/HU55 son `PROPOSED`, ver sección propia abajo
+**Estado:** APROBADO (HU30, HU32, HU35-HU40, HU44-HU45). HU51/HU53/HU55 tienen contrato **definido** desde 2026-09-15 (INTEROP-2.1, pendiente de implementación en Core) — mock-first normal, ya no especulativo. HU50/HU52 siguen `PROPOSED` (sin contrato). Ver sección propia abajo.
 **Story IDs:** HU30, HU32, HU35-HU40, HU44-HU45, HU50, HU51, HU52, HU53, HU55
 **Contrato:** SYSTEM-2.1 / INTEROP-2.1
 
@@ -33,24 +33,33 @@ El navegador solo consume Core para dominio. Nunca recibe secretos de GitHub App
 - colaboración Owner/Maintainer/Reviewer antes de HU45;
 - iniciar automáticamente otra HU después de aprobar esta baseline.
 
-## Pendiente de implementar (PROPOSED, registradas 2026-09-14)
+## Pendiente de implementar (registradas 2026-09-14; contrato de HU51/53/55 definido 2026-09-15)
 
 Capacidades identificadas como necesarias durante el uso/auditoría de esta
-feature, sin alcance de implementación aprobado todavía. Detalle completo en
-`harness/reports/console-backlog-formalization.md`.
+feature. Detalle completo en `harness/reports/console-backlog-formalization.md`.
 
 - **HU50** — indicador de cobertura previa (ninguna/parcial/suficiente) de un
-  símbolo en `AnalysisRunDetailPage`. Bloqueado por contrato: `AnalysisRunDetailResponse`
-  no tiene ese campo todavía.
+  símbolo en `AnalysisRunDetailPage`. Sigue `PROPOSED`, sin contrato:
+  `AnalysisRunDetailResponse` no tiene ese campo. **Implementado en Console**
+  como capa especulativa (`control-plane/speculative/priorCoverage.ts`,
+  `ProposedCapabilityError` en live) — puede requerir rediseño si Core define
+  una forma distinta a la fabricada localmente.
 - **HU51** — Focus Mode avisa si la regla que se va a fijar contradice una
-  `FunctionalKnowledge` `ACTIVE` existente. Bloqueado por contrato: Core no
-  expone esa señal.
+  `FunctionalKnowledge` `ACTIVE` existente. Contrato **definido** 2026-09-15
+  (INTEROP-2.1 §6.11): `SubmitFunctionalAnswerRequest.conflictResolution?
+  {conflictId, action: 'SUPERSEDE'|'KEEP_EXISTING'}`; sin resolución y con
+  conflicto responde `409 FUNCTIONAL_KNOWLEDGE_CONFLICT`. Pendiente de
+  implementación en Console y en Core.
 - **HU52** — en `FunctionalKnowledgeDetailPage`, qué Analysis Runs usaron
-  esa regla. No está en INTEROP-2.1 §6.11 todavía.
-- **HU53** — historial de transiciones de estado de un `AnalysisRun`
-  (más allá de `createdAt`/`updatedAt`/`completedAt`). Sin campo en contrato.
-- **HU55** — listado de Analysis Runs cross-proyecto. Verificado contra el
-  controller real de Core (`console-analysisrun-live-adapters.md`): no
-  existe ruta global, solo `GET /projects/{projectId}/analysis-runs`. Hoy
+  esa regla. Sigue `PROPOSED`, sin contrato — no está en INTEROP-2.1 §6.11.
+- **HU53** — historial de transiciones de estado de un `AnalysisRun`. Contrato
+  **definido** 2026-09-15 (INTEROP-2.1 §6.10): `AnalysisRunDetailResponse.history:
+  AnalysisRunTransitionResponse[]` append-only, con los 8 valores de
+  `AnalysisRunTransitionReason` derivados 1:1 de los call sites reales del
+  service de Core. Pendiente de implementación en Console y en Core.
+- **HU55** — listado de Analysis Runs cross-proyecto. Contrato **definido**
+  2026-09-15: `GET /analysis-runs?status&cursor&limit` (mismo shape, mismo
+  ownership por token). Verificado antes contra el controller real de Core
+  (`console-analysisrun-live-adapters.md`): no existía ruta global. Hoy
   `RunsPage`/`ProjectsPage` cubren esto solo en mock; el adapter live rechaza
-  ese caso explícitamente.
+  ese caso hasta que Core implemente la ruta nueva.
