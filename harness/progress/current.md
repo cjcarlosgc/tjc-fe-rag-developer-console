@@ -1,5 +1,41 @@
 # Progreso actual
 
+**Implementación mock-first de HU48–HU55, en curso (2026-09-15).** A pedido
+del usuario ("continua por orden de prioridad, y todos los que estén listos
+para implementar"), se verificó de nuevo el estado de contrato de las 8 HU
+registradas el día anterior: ninguna tenía forma aprobada todavía. El
+usuario eligió explícitamente avanzar con "mock-first especulativo,
+etiquetado como tal" para las 8 — se diseñó una capa especulativa nueva
+(tipos propios por HU, `ProposedCapabilityError` distinto de
+`PendingContractError`, badge `.proposal-stamp` violeta distinto de
+`.demo-stamp`). A mitad de implementar HU48, un peer de Core
+(`tjc-be-rag-core-api`, sesión `snapshot-intelligence-changeset`) avisó por
+mensaje cross-session que acababa de definir contrato (sin implementar)
+para 4 de las 8: HU48 (§6.5, `CreateExperimentRequest` reapunta a
+`AnalysisRun`+símbolo), HU51 (§6.11, `conflictResolution`/`409
+FUNCTIONAL_KNOWLEDGE_CONFLICT`), HU53 (§6.10, `AnalysisRunDetailResponse.history`)
+y HU55 (§6.10, `GET /analysis-runs` sin `projectId`). Se preguntó al usuario
+cómo priorizar y eligió "realinear ya, antes de seguir": se sincronizó el
+mirror de contratos, se rehizo HU48 contra la forma real (dejó de ser
+especulativo, ahora usa `PendingContractError` como el resto del
+mock-first normal — sin tocar el adapter live de HU19, que sigue sirviendo
+contra el controller viejo de Core), y se implementaron HU51/HU53
+directamente contra el contrato real (ya no capa especulativa). HU55 no
+necesitó código nuevo (el mock ya lo cubría completo), solo se corrigió un
+mensaje de error desactualizado. HU54 se implementó como capa especulativa
+genuina (sigue sin contrato) — panel de lista junto al grafo RAG real de
+HU27, sin tocarlo. HU50 también especulativo (sin contrato): badge de
+cobertura previa por símbolo.
+
+Completadas en este corte: HU48, HU50, HU51, HU53, HU54, HU55 (7 commits,
+uno por HU/corrección + uno de sync de contrato). Verificación tras cada
+commit: `tsc`/`lint`/`test`/`build` en verde (267 pruebas). Quedan
+pendientes: HU52 (trazabilidad inversa "Runs que usaron esta regla",
+especulativa, sin contrato) y HU49 (Capture next PR, P4, depende de HU48 ya
+implementado). `activeWorkItem` en `null` — usuario pidió parar por hoy,
+retomar HU52/HU49 en la próxima sesión sin re-verificar contrato de las 6
+ya cerradas (solo las 2 restantes, si Core manda algo nuevo).
+
 **Formalización de HU48–HU55 (2026-09-14, registro puro, sin código).** Tras
 preguntar cómo entrar a un experimento desde un Run, se confirmó que esa
 capacidad (`experimentos.md`) nunca tuvo HU asignado — el usuario pidió
