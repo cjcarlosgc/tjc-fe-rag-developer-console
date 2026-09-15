@@ -3,6 +3,7 @@ import type { ArtifactViewModel } from '../artifacts/types'
 import type { AgentTrajectoryStep, ContextTraceDetail, ContextTracePage, ContextTraceSummary, DiscoveredFilePage, ExperimentContextTraceFilters, RagCandidateNode, RagContextTraceDetail, RunContextTraceFilters, SourceExcerpt } from '../context-explorer/types'
 import type { ExperimentAccepted, ExperimentOperation, ExperimentResultViewModel } from '../experiments/types'
 import type { RunComparisonAccepted, RunComparisonOperation } from '../run-comparison/types'
+import type { PriorCoverageLevel } from '../control-plane/speculative/priorCoverage'
 import type { GenerationAccepted, GenerationConfiguration } from '../generation/types'
 import type { InventoryTargetViewModel, TestInventoryResponse } from '../inventory/types'
 import type { AnalysisHistoryItem, AnalysisOperation, AnalysisResult, CreateProjectInput, Project, UploadAccepted } from '../projects/types'
@@ -13,6 +14,7 @@ import type {
   AnalysisRunListPage,
   AnalysisRunStatus,
   AnalysisRunSummaryResponse,
+  AnalysisSymbolResponse,
   CompleteGitHubInstallationRequest,
   CreateTestPublicationRequest,
   GeneratedTestProposalResponse,
@@ -943,17 +945,17 @@ export async function mockGetExperiment(experimentId: string): Promise<Experimen
   return clone(state.operation)
 }
 
-/** PROPUESTA — HU48. Reusa `experimentResult` (misma fabricación de métricas que el experimento legacy); solo cambia el origen (un AnalysisRun en vez de un target manual). */
-export async function mockStartRunComparison(analysisRunId: string): Promise<RunComparisonAccepted> {
+/** INTEROP-2.1 §6.5 (HU48, definido/no implementado). Reusa `experimentResult` (misma fabricación de métricas que HU19); solo cambia la identidad (`analysisRunId`+símbolo en vez de `projectId`/`targetId`). */
+export async function mockStartRunComparison(analysisRunId: string, symbol: AnalysisSymbolResponse): Promise<RunComparisonAccepted> {
   await latency()
   const run = analysisRuns.get(analysisRunId)
   if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   if (run.status === 'ACTION_REQUIRED') throw new ApiError('Este Run todavía necesita contexto funcional antes de compararse — resuelve las preguntas pendientes primero.', 409, 'demo-correlation-id', 'RUN_NOT_ELIGIBLE')
+  if (symbol.changeKind !== 'DIRECTLY_CHANGED' || (symbol.kind !== 'METHOD' && symbol.kind !== 'FUNCTION')) throw new ApiError(`"${symbol.qualifiedName}" no es un símbolo METHOD/FUNCTION con cambio directo — no es una unidad experimental válida.`, 422, 'demo-correlation-id', 'UNSUPPORTED_SYMBOL_KIND')
   sequence += 1
   const comparisonId = `runcmp_demo_${sequence}`
-  const label = run.symbols[0]?.qualifiedName ?? run.pullRequest.title
-  runComparisons.set(comparisonId, { polls: 0, operation: { id: comparisonId, analysisRunId, projectId: run.projectId, status: 'PENDING', progress: 0, result: experimentResult(label) } })
-  return { comparisonId, status: 'PENDING', pollAfterMs: 460 }
+  runComparisons.set(comparisonId, { polls: 0, operation: { id: comparisonId, analysisRunId, projectId: run.projectId, projectVersionId: `ver_${run.projectId}`, symbol, status: 'PENDING', progress: 0, result: experimentResult(symbol.qualifiedName) } })
+  return { analysisRunId, comparisonId, projectVersionId: `ver_${run.projectId}`, status: 'PENDING', pollAfterMs: 460 }
 }
 
 export async function mockGetRunComparison(comparisonId: string): Promise<RunComparisonOperation> {
@@ -1172,6 +1174,29 @@ export async function mockGetAnalysisRun(analysisRunId: string): Promise<Analysi
   const run = analysisRuns.get(analysisRunId)
   if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   return clone(run)
+}
+
+const PRIOR_COVERAGE_FIXTURES: Record<string, PriorCoverageLevel> = {
+  'CouponPolicy.apply': 'NONE',
+  'OrderService.calculateTotal': 'PARTIAL',
+  'formatCurrency': 'SUFFICIENT',
+}
+
+function fallbackPriorCoverage(qualifiedName: string): PriorCoverageLevel {
+  const levels: PriorCoverageLevel[] = ['NONE', 'PARTIAL', 'SUFFICIENT']
+  let hash = 0
+  for (let i = 0; i < qualifiedName.length; i += 1) hash = (hash * 31 + qualifiedName.charCodeAt(i)) >>> 0
+  return levels[hash % levels.length]
+}
+
+/** PROPUESTA — HU50. `AnalysisRunDetailResponse` no expone esto hoy; se deriva localmente por símbolo. */
+export async function mockGetPriorCoverage(analysisRunId: string): Promise<Record<string, PriorCoverageLevel>> {
+  await latency()
+  const run = analysisRuns.get(analysisRunId)
+  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  const result: Record<string, PriorCoverageLevel> = {}
+  for (const symbol of run.symbols) result[symbol.qualifiedName] = PRIOR_COVERAGE_FIXTURES[symbol.qualifiedName] ?? fallbackPriorCoverage(symbol.qualifiedName)
+  return result
 }
 
 /** HU40: `GET /analysis-runs/{analysisRunId}/test-proposals`. */

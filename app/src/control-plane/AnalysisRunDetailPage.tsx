@@ -11,6 +11,8 @@ import { RepoChip } from '../ui/RepoChip'
 import { getTestPublication } from './api'
 import { useAnalysisRun, usePublishTests, useTestProposals } from './queries'
 import { ANALYSIS_RUN_STATUS_LABELS, analysisRunStatusClass } from './status'
+import { getPriorCoverage, PRIOR_COVERAGE_LABELS } from './speculative/priorCoverage'
+import { findEligibleSymbol } from '../run-comparison/types'
 
 const FAILURE_STATUSES = new Set(['BASELINE_FAILED', 'TECHNICAL_GENERATION_FAILURE', 'INFRASTRUCTURE_FAILURE'])
 const INFORMATIONAL_STATUSES = new Set(['NO_ADDITIONAL_TESTS_REQUIRED', 'NO_TEST_RELEVANT_CHANGES'])
@@ -88,6 +90,11 @@ export function AnalysisRunDetailPage() {
   const { analysisRunId = '' } = useParams()
   const mock = isMockDataSource()
   const runQuery = useAnalysisRun(analysisRunId)
+  const priorCoverageQuery = useQuery({
+    queryKey: ['control-plane', 'speculative', 'prior-coverage', analysisRunId],
+    queryFn: () => getPriorCoverage(analysisRunId),
+    enabled: Boolean(analysisRunId),
+  })
 
   if (runQuery.isPending) return <LoadingState label="Cargando Analysis Run…" />
   if (runQuery.isError) return <ErrorState message={runQuery.error.message} onRetry={() => void runQuery.refetch()} />
@@ -96,6 +103,7 @@ export function AnalysisRunDetailPage() {
   const directCount = run.symbols.filter((symbol) => symbol.changeKind === 'DIRECTLY_CHANGED').length
   const impactedCount = run.symbols.length - directCount
   const isLargeChangeset = run.symbols.length > 8
+  const canCompare = run.status !== 'ACTION_REQUIRED' && Boolean(findEligibleSymbol(run.symbols))
   return <section>
     <Breadcrumbs items={[{ label: 'Proyectos', to: '/' }, { label: 'Runs', to: '/analysis-runs' }, { label: `PR #${run.pullRequest.number}` }]} />
     <div className="page-heading">
@@ -106,7 +114,7 @@ export function AnalysisRunDetailPage() {
         <p className="branch-flow-line"><code>{run.pullRequest.headRef}</code><span aria-hidden="true">→</span><code>{run.pullRequest.baseRef}</code></p>
       </div>
       <div className="run-heading-actions">
-        {run.status !== 'ACTION_REQUIRED' && <Link className="button secondary button-link" to={`/projects/${run.projectId}/runs/${run.id}/comparison`}>Run comparison <span className="proposal-stamp">PROPUESTA</span></Link>}
+        {canCompare && <Link className="button secondary button-link" to={`/projects/${run.projectId}/runs/${run.id}/comparison`}>Run comparison →</Link>}
         {mock && <span className="demo-stamp">DEMO · DATOS SIMULADOS</span>}
       </div>
     </div>
@@ -131,7 +139,14 @@ export function AnalysisRunDetailPage() {
         <h3>Símbolos cambiados</h3>
         {isLargeChangeset && <p className="empty-inline-note">Changeset grande: {directCount} símbolo(s) con cambio directo, {impactedCount} potencialmente impactado(s).</p>}
         <ul className="symbol-list">
-          {run.symbols.map((symbol) => <li key={symbol.qualifiedName}><code>{symbol.qualifiedName}</code><span className="target-ref">{symbol.changeKind === 'DIRECTLY_CHANGED' ? 'cambio directo' : 'potencialmente impactado'}</span></li>)}
+          {run.symbols.map((symbol) => {
+            const coverage = priorCoverageQuery.data?.[symbol.qualifiedName]
+            return <li key={symbol.qualifiedName}>
+              <code>{symbol.qualifiedName}</code>
+              <span className="target-ref">{symbol.changeKind === 'DIRECTLY_CHANGED' ? 'cambio directo' : 'potencialmente impactado'}</span>
+              {coverage && <span className="proposal-stamp prior-coverage-stamp" title="HU50 — propuesta sin contrato aprobado, cobertura fabricada localmente">{PRIOR_COVERAGE_LABELS[coverage]}</span>}
+            </li>
+          })}
         </ul>
       </>}
     </div>

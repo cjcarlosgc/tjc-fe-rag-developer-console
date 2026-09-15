@@ -40,18 +40,32 @@ test('HU32: un Run ACTION_REQUIRED enlaza a Focus Mode con returnTo de vuelta al
   expect(link).toHaveAttribute('href', `/action-required/arun_checkout_pr42?returnTo=${encodeURIComponent('/projects/prj_checkout_demo/runs/arun_checkout_pr42')}`)
 })
 
-test('HU48 (especulativo): un Run resuelto enlaza a Run comparison', async () => {
+test('HU48: un Run resuelto con símbolo elegible enlaza a Run comparison', async () => {
   renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
 
   const link = await screen.findByRole('link', { name: /Run comparison/ })
   expect(link).toHaveAttribute('href', '/projects/prj_checkout_demo/runs/arun_checkout_pr45/comparison')
 })
 
-test('HU48 (especulativo): un Run ACTION_REQUIRED no ofrece Run comparison todavía', async () => {
+test('HU48: un Run ACTION_REQUIRED no ofrece Run comparison todavía', async () => {
   renderDetail('arun_checkout_pr42', 'prj_checkout_demo')
 
   await screen.findByRole('link', { name: 'Abrir Focus Mode →' })
   expect(screen.queryByRole('link', { name: /Run comparison/ })).not.toBeInTheDocument()
+})
+
+test('HU48: un Run sin símbolo METHOD/FUNCTION elegible no ofrece Run comparison', async () => {
+  renderDetail('arun_billing_pr22', 'prj_billing_demo')
+
+  await screen.findByText('No relevant changes', { selector: '.status-badge' })
+  expect(screen.queryByRole('link', { name: /Run comparison/ })).not.toBeInTheDocument()
+})
+
+test('HU50 (especulativo): cada símbolo muestra su cobertura previa fabricada', async () => {
+  renderDetail('arun_checkout_pr42', 'prj_checkout_demo')
+
+  expect(await screen.findByText('sin cobertura previa')).toBeInTheDocument()
+  expect(screen.getByText('cobertura previa parcial')).toBeInTheDocument()
 })
 
 test('HU32: un Run OBSOLETE muestra el aviso de HEAD nuevo sin acciones', async () => {

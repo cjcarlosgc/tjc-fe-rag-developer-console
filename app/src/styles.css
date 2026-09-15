@@ -16,6 +16,7 @@ a { color: inherit; }
 .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 32px; }
 .run-heading-actions { display: flex; align-items: center; gap: 12px; }
 .run-heading-actions .button-link { display: inline-flex; align-items: center; gap: 8px; }
+.prior-coverage-stamp { margin-left: auto; padding: 4px 8px; font-size: 9px; }
 h1, h2, p { margin-top: 0; }
 h1, h2 { font-family: 'Space Grotesk', 'Super Sans VF', sans-serif; }
 h1 { font-size: clamp(32px, 5vw, 48px); margin-bottom: 8px; letter-spacing: -.04em; }
