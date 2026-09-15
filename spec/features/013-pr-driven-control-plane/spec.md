@@ -71,7 +71,10 @@ feature. Detalle completo en `harness/reports/console-backlog-formalization.md`.
   Pendiente de implementación real en Core.
 - **HU55** — listado de Analysis Runs cross-proyecto. Contrato **definido**
   2026-09-15: `GET /analysis-runs?status&cursor&limit` (mismo shape, mismo
-  ownership por token). Verificado antes contra el controller real de Core
-  (`console-analysisrun-live-adapters.md`): no existía ruta global. Hoy
-  `RunsPage`/`ProjectsPage` cubren esto solo en mock; el adapter live rechaza
-  ese caso hasta que Core implemente la ruta nueva.
+  ownership por token). **Sin código nuevo**: el mock ya cubría esto
+  completamente (`RunsPage`/`ProjectsPage` funcionan sin `projectId`); solo
+  se corrigió el mensaje de `PendingContractError` en `control-plane/api.ts`
+  (decía "INTEROP-2.1 §6.10 solo aprueba el listado por proyecto", ya
+  desactualizado — ahora refleja que el contrato existe y Core no lo
+  implementó). El adapter live sigue rechazando ese caso hasta que Core
+  publique la ruta nueva.

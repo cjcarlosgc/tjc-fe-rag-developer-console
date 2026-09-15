@@ -56,7 +56,7 @@ export function disconnectRepository(projectId: string): Promise<void> {
  */
 export function listAnalysisRuns(projectId?: string, status?: AnalysisRunStatus, cursor?: string | null): Promise<AnalysisRunListPage> {
   if (getDataSource() === 'mock') return mockListAnalysisRuns(projectId, status)
-  if (!projectId) return Promise.reject(new PendingContractError('un listado global de Analysis Runs — INTEROP-2.1 §6.10 solo aprueba el listado por proyecto'))
+  if (!projectId) return Promise.reject(new PendingContractError('un listado global de Analysis Runs (HU55) — INTEROP-2.1 §6.10 ya define GET /analysis-runs, Core todavía no lo implementó'))
   const params = new URLSearchParams()
   if (status) params.set('status', status)
   if (cursor) params.set('cursor', cursor)

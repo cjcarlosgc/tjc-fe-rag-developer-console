@@ -144,8 +144,8 @@ describe('control-plane api (live) — lo que Core todavía no implementa (sin c
     await expect(listTestProposals('arun_checkout_pr45')).rejects.toThrow(/todavía no publicó/)
   })
 
-  it('el listado global de Analysis Runs (sin projectId) no tiene ruta en Core — rechaza con mensaje propio', async () => {
-    await expect(listAnalysisRuns()).rejects.toThrow(/listado por proyecto/)
+  it('HU55: el listado global de Analysis Runs (sin projectId) tiene contrato definido pero Core no lo implementó — PendingContractError', async () => {
+    await expect(listAnalysisRuns()).rejects.toThrow(/todavía no lo implementó/)
   })
 })
 

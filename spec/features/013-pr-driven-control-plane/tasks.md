@@ -44,9 +44,11 @@ sin contrato) — HU50/HU52 siguen sin contrato.
       definido (INTEROP-2.1 §6.10), implementado mock-first en Console
       (campo opcional en el mirror, live adapter existente tolera su
       ausencia hasta que Core lo implemente).
-- [ ] HU55: listado de Analysis Runs cross-proyecto — contrato definido
-      (`GET /analysis-runs?status&cursor&limit`), pendiente de implementación
-      en Core (antes bloqueado: no existía ruta global — ver
+- [x] HU55: listado de Analysis Runs cross-proyecto — contrato definido
+      (`GET /analysis-runs?status&cursor&limit`). Sin código nuevo: el mock
+      ya cubría esto completo; solo se corrigió el mensaje desactualizado
+      de `PendingContractError` en `control-plane/api.ts`. Pendiente de
+      implementación en Core (antes bloqueado: no existía ruta global — ver
       `console-analysisrun-live-adapters.md`).
 
 Con este corte, todo el mock-first del Developer Console para SDD 2.0 queda completo
