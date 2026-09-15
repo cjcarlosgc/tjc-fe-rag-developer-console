@@ -22,6 +22,7 @@ import { FunctionalKnowledgePage } from './action-required/FunctionalKnowledgePa
 import { AnalysisRunDetailPage } from './control-plane/AnalysisRunDetailPage'
 import { IntegrationsPage } from './control-plane/IntegrationsPage'
 import { RunsPage } from './control-plane/RunsPage'
+import { RunComparisonPage } from './run-comparison/RunComparisonPage'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -40,6 +41,7 @@ export const router = createBrowserRouter([
           { path: 'analysis-runs', element: <RunsPage /> },
           { path: 'projects/:projectId', element: <ProjectDetailPage /> },
           { path: 'projects/:projectId/runs/:analysisRunId', element: <AnalysisRunDetailPage /> },
+          { path: 'projects/:projectId/runs/:analysisRunId/comparison', element: <RunComparisonPage /> },
           { path: 'projects/:projectId/functional-knowledge', element: <FunctionalKnowledgePage /> },
           { path: 'projects/:projectId/functional-knowledge/:knowledgeId', element: <FunctionalKnowledgeDetailPage /> },
           { path: 'projects/:projectId/legacy', element: <LegacyToolsPage /> },

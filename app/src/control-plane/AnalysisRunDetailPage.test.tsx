@@ -40,6 +40,20 @@ test('HU32: un Run ACTION_REQUIRED enlaza a Focus Mode con returnTo de vuelta al
   expect(link).toHaveAttribute('href', `/action-required/arun_checkout_pr42?returnTo=${encodeURIComponent('/projects/prj_checkout_demo/runs/arun_checkout_pr42')}`)
 })
 
+test('HU48 (especulativo): un Run resuelto enlaza a Run comparison', async () => {
+  renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
+
+  const link = await screen.findByRole('link', { name: /Run comparison/ })
+  expect(link).toHaveAttribute('href', '/projects/prj_checkout_demo/runs/arun_checkout_pr45/comparison')
+})
+
+test('HU48 (especulativo): un Run ACTION_REQUIRED no ofrece Run comparison todavía', async () => {
+  renderDetail('arun_checkout_pr42', 'prj_checkout_demo')
+
+  await screen.findByRole('link', { name: 'Abrir Focus Mode →' })
+  expect(screen.queryByRole('link', { name: /Run comparison/ })).not.toBeInTheDocument()
+})
+
 test('HU32: un Run OBSOLETE muestra el aviso de HEAD nuevo sin acciones', async () => {
   renderDetail('arun_billing_pr17', 'prj_billing_demo')
 

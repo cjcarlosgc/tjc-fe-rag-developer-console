@@ -2,6 +2,7 @@ import type { ActionRequiredListPage, FunctionalAnswerAcceptedResponse, Function
 import type { ArtifactViewModel } from '../artifacts/types'
 import type { AgentTrajectoryStep, ContextTraceDetail, ContextTracePage, ContextTraceSummary, DiscoveredFilePage, ExperimentContextTraceFilters, RagCandidateNode, RagContextTraceDetail, RunContextTraceFilters, SourceExcerpt } from '../context-explorer/types'
 import type { ExperimentAccepted, ExperimentOperation, ExperimentResultViewModel } from '../experiments/types'
+import type { RunComparisonAccepted, RunComparisonOperation } from '../run-comparison/types'
 import type { GenerationAccepted, GenerationConfiguration } from '../generation/types'
 import type { InventoryTargetViewModel, TestInventoryResponse } from '../inventory/types'
 import type { AnalysisHistoryItem, AnalysisOperation, AnalysisResult, CreateProjectInput, Project, UploadAccepted } from '../projects/types'
@@ -67,6 +68,8 @@ const versions = new Map<string, MockVersionState>()
 const runs = new Map<string, MockRunState>()
 const artifacts = new Map<string, ArtifactViewModel[]>()
 const experiments = new Map<string, MockExperimentState>()
+/** PROPUESTA — HU48, ver run-comparison/types.ts. Mapa aparte de `experiments` a propósito: no es la misma capacidad. */
+const runComparisons = new Map<string, { polls: number; operation: RunComparisonOperation }>()
 const contextTraces = new Map<string, MockContextTraceState>()
 /** No es parte de INTEROP-2.0 (§6.7 sigue legacy) — mapeo demo-only de AnalysisRun a la traza RAG que "explica" sus pruebas generadas. */
 const analysisRunContextTraceId: Record<string, string> = { arun_checkout_pr45: 'trace_rag_order_total' }
@@ -582,6 +585,7 @@ export function resetMockBackend(): void {
   runs.clear()
   artifacts.clear()
   experiments.clear()
+  runComparisons.clear()
   contextTraces.clear()
   actionRequiredRuns.clear()
   repositoryBindings.clear()
@@ -932,6 +936,30 @@ export async function mockGetExperiment(experimentId: string): Promise<Experimen
   await latency()
   const state = experiments.get(experimentId)
   if (!state) notFound(`No existe el experimento demo "${experimentId}".`, 'INVALID_REQUEST')
+  state.polls += 1
+  if (state.polls === 1) state.operation = { ...state.operation, status: 'RUNNING', progress: 34 }
+  else if (state.polls === 2) state.operation = { ...state.operation, status: 'RUNNING', progress: 72 }
+  else state.operation = { ...state.operation, status: 'COMPLETED', progress: 100 }
+  return clone(state.operation)
+}
+
+/** PROPUESTA — HU48. Reusa `experimentResult` (misma fabricación de métricas que el experimento legacy); solo cambia el origen (un AnalysisRun en vez de un target manual). */
+export async function mockStartRunComparison(analysisRunId: string): Promise<RunComparisonAccepted> {
+  await latency()
+  const run = analysisRuns.get(analysisRunId)
+  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (run.status === 'ACTION_REQUIRED') throw new ApiError('Este Run todavía necesita contexto funcional antes de compararse — resuelve las preguntas pendientes primero.', 409, 'demo-correlation-id', 'RUN_NOT_ELIGIBLE')
+  sequence += 1
+  const comparisonId = `runcmp_demo_${sequence}`
+  const label = run.symbols[0]?.qualifiedName ?? run.pullRequest.title
+  runComparisons.set(comparisonId, { polls: 0, operation: { id: comparisonId, analysisRunId, projectId: run.projectId, status: 'PENDING', progress: 0, result: experimentResult(label) } })
+  return { comparisonId, status: 'PENDING', pollAfterMs: 460 }
+}
+
+export async function mockGetRunComparison(comparisonId: string): Promise<RunComparisonOperation> {
+  await latency()
+  const state = runComparisons.get(comparisonId)
+  if (!state) notFound(`No existe la comparación demo "${comparisonId}".`, 'INVALID_REQUEST')
   state.polls += 1
   if (state.polls === 1) state.operation = { ...state.operation, status: 'RUNNING', progress: 34 }
   else if (state.polls === 2) state.operation = { ...state.operation, status: 'RUNNING', progress: 72 }

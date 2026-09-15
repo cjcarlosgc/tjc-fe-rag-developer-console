@@ -105,7 +105,10 @@ export function AnalysisRunDetailPage() {
         <h1>{run.pullRequest.title}</h1>
         <p className="branch-flow-line"><code>{run.pullRequest.headRef}</code><span aria-hidden="true">→</span><code>{run.pullRequest.baseRef}</code></p>
       </div>
-      {mock && <span className="demo-stamp">DEMO · DATOS SIMULADOS</span>}
+      <div className="run-heading-actions">
+        {run.status !== 'ACTION_REQUIRED' && <Link className="button secondary button-link" to={`/projects/${run.projectId}/runs/${run.id}/comparison`}>Run comparison <span className="proposal-stamp">PROPUESTA</span></Link>}
+        {mock && <span className="demo-stamp">DEMO · DATOS SIMULADOS</span>}
+      </div>
     </div>
 
     {run.indexMode === 'BOOTSTRAP' && (

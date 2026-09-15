@@ -14,6 +14,8 @@ a { color: inherit; }
 .environment-demo i { background: #e5b968; box-shadow: 0 0 0 4px rgba(229,185,104,.1); }
 .content { width: min(1120px, calc(100% - 40px)); margin: 0 auto; padding: 64px 0; }
 .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 32px; }
+.run-heading-actions { display: flex; align-items: center; gap: 12px; }
+.run-heading-actions .button-link { display: inline-flex; align-items: center; gap: 8px; }
 h1, h2, p { margin-top: 0; }
 h1, h2 { font-family: 'Space Grotesk', 'Super Sans VF', sans-serif; }
 h1 { font-size: clamp(32px, 5vw, 48px); margin-bottom: 8px; letter-spacing: -.04em; }
@@ -91,6 +93,9 @@ h2 { font-size: 19px; }
 .project-card p + p { margin-top: 6px; }
 .card-link { margin-top: auto; color: var(--accent); font-weight: 700; font-size: 14px; }
 .demo-stamp { color: #e5b968; border: 1px solid #695b35; background: #1d1a10; padding: 8px 10px; font: 800 10px 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .12em; }
+/** Distinto de .demo-stamp a propósito: .demo-stamp marca datos simulados de un contrato ya aprobado; esto marca una propuesta de producto sin contrato aprobado en absoluto (HU48-55). */
+.proposal-stamp { color: var(--signal-agent); border: 1px solid rgba(167,139,250,.4); background: rgba(167,139,250,.08); padding: 8px 10px; font: 800 10px 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .12em; }
+.proposal-note { border-left: 3px solid var(--signal-agent); padding: 8px 16px; color: var(--muted); font-size: 13px; }
 .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
 .kpi-card { border: 1px solid var(--border-subtle); border-radius: 12px; background: var(--surface-1); padding: 18px 20px; }
 .kpi-card strong { display: block; font: 800 32px 'Space Grotesk', ui-monospace, monospace; }

@@ -9,6 +9,19 @@ export class PendingContractError extends Error {
   }
 }
 
+/**
+ * Distinta de `PendingContractError`: esa implica que el contrato ya existe (aprobado en
+ * INTEROP) y solo falta que Core lo implemente. Esta se usa para capacidades HU48-55
+ * (`PROPOSED` en spec/backlog.md) que ni siquiera tienen una forma de contrato aprobada
+ * todavía — no hay nada que "publicar en live" porque no hay nada acordado que publicar.
+ */
+export class ProposedCapabilityError extends Error {
+  constructor(capability: string) {
+    super(`${capability} es una propuesta de producto sin contrato aprobado todavía — no aplica a modo live. Usa VITE_DATA_SOURCE=mock para explorar la propuesta.`)
+    this.name = 'ProposedCapabilityError'
+  }
+}
+
 export function getDataSource(): DataSource {
   if (dataSourceOverride) return dataSourceOverride
   const configured = import.meta.env.VITE_DATA_SOURCE
