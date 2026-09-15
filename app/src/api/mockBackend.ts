@@ -3,6 +3,7 @@ import type { ArtifactViewModel } from '../artifacts/types'
 import type { AgentTrajectoryStep, ContextTraceDetail, ContextTracePage, ContextTraceSummary, DiscoveredFilePage, ExperimentContextTraceFilters, RagCandidateNode, RagContextTraceDetail, RunContextTraceFilters, SourceExcerpt } from '../context-explorer/types'
 import type { ExperimentAccepted, ExperimentOperation, ExperimentResultViewModel } from '../experiments/types'
 import type { RunComparisonAccepted, RunComparisonOperation } from '../run-comparison/types'
+import type { ContextProvenance } from '../context-explorer/speculative/contextProvenance'
 import type { PriorCoverageLevel } from '../control-plane/speculative/priorCoverage'
 import type { GenerationAccepted, GenerationConfiguration } from '../generation/types'
 import type { InventoryTargetViewModel, TestInventoryResponse } from '../inventory/types'
@@ -1050,6 +1051,22 @@ export async function mockGetAnalysisRunContextTrace(analysisRunId: string): Pro
   const state = traceId ? contextTraces.get(traceId) : undefined
   if (!state || state.detail.kind !== 'RAG') return null
   return clone(state.detail)
+}
+
+/** PROPUESTA — HU54, ver context-explorer/speculative/contextProvenance.ts. */
+export async function mockGetContextProvenance(analysisRunId: string): Promise<ContextProvenance> {
+  await latency()
+  const run = analysisRuns.get(analysisRunId)
+  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  const symbolNames = new Set(run.symbols.map((symbol) => symbol.qualifiedName))
+  const functionalKnowledgeRefs = Array.from(functionalKnowledge.values())
+    .filter((item) => item.projectId === run.projectId && item.status === 'ACTIVE' && item.targetRef !== null && symbolNames.has(item.targetRef))
+    .map((item) => ({ id: item.id, normalizedRule: item.normalizedRule }))
+  const existingTestEvidence = run.symbols.slice(0, 2).map((symbol) => ({
+    filePath: symbol.filePath.replace(/\.ts$/, '.spec.ts'),
+    testName: `${symbol.qualifiedName} — comportamiento existente`,
+  }))
+  return clone({ functionalKnowledgeRefs, existingTestEvidence })
 }
 
 const DISCOVERED_FILES_PAGE_SIZE = 50

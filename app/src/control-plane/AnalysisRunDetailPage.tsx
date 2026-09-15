@@ -5,6 +5,7 @@ import { isMockDataSource } from '../api/dataSource'
 import { RagGraph } from '../context-explorer/rag/RagGraph'
 import { RagSidePanel } from '../context-explorer/rag/RagSidePanel'
 import { useAnalysisRunContextTrace } from '../context-explorer/queries'
+import { getContextProvenance } from '../context-explorer/speculative/contextProvenance'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
 import { RepoChip } from '../ui/RepoChip'
@@ -85,17 +86,39 @@ function PublishSection({ analysisRunId, targetBranch }: { analysisRunId: string
 function ContextSection({ analysisRunId }: { analysisRunId: string }) {
   const traceQuery = useAnalysisRunContextTrace(analysisRunId)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const provenanceQuery = useQuery({
+    queryKey: ['context-explorer', 'speculative', 'provenance', analysisRunId],
+    queryFn: () => getContextProvenance(analysisRunId),
+    enabled: Boolean(traceQuery.data),
+  })
 
   if (traceQuery.isPending) return <div className="panel"><LoadingState label="Cargando contexto recolectado…" /></div>
   if (!traceQuery.data) return null
 
   const trace = traceQuery.data
+  const provenance = provenanceQuery.data
   return <div className="panel">
     <div className="section-heading"><div><h2>Contexto recolectado</h2><p>Nodos de contexto (RAG) usados para generar estas pruebas.</p></div></div>
     <div className="context-explorer-body">
       <RagGraph detail={trace} selectedId={selectedId ?? trace.targetId} onSelect={setSelectedId} />
       <RagSidePanel detail={trace} selectedId={selectedId ?? trace.targetId} />
     </div>
+
+    {provenance && (provenance.functionalKnowledgeRefs.length > 0 || provenance.existingTestEvidence.length > 0) && (
+      <div className="context-provenance">
+        <div className="section-heading"><div><h3>Qué más alimentó este contexto</h3><p>Reglas de conocimiento funcional y evidencia de tests existentes junto a los nodos RAG.</p></div><span className="proposal-stamp">PROPUESTA</span></div>
+        {provenance.functionalKnowledgeRefs.length > 0 && (
+          <ul className="context-provenance-list">
+            {provenance.functionalKnowledgeRefs.map((ref) => <li key={ref.id}><span className="target-ref">Functional Knowledge</span>{ref.normalizedRule}</li>)}
+          </ul>
+        )}
+        {provenance.existingTestEvidence.length > 0 && (
+          <ul className="context-provenance-list">
+            {provenance.existingTestEvidence.map((evidence) => <li key={evidence.filePath}><span className="target-ref">Test existente</span><code>{evidence.filePath}</code> — {evidence.testName}</li>)}
+          </ul>
+        )}
+      </div>
+    )}
   </div>
 }
 

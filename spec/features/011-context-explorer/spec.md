@@ -1,6 +1,6 @@
 # 011-context-explorer — Especificación
 
-**Estado:** aprobado para implementar (HU27, HU28) — HU54 es `PROPOSED`, ver sección propia abajo.
+**Estado:** aprobado para implementar (HU27, HU28) — HU54 sigue `PROPOSED`, sin contrato (implementada en Console como capa especulativa, ver sección propia abajo).
 **Historias:** HU27, HU28, HU54
 
 ## Objetivo
@@ -52,6 +52,18 @@ más allá de lo ya cubierto por `AnalysisRunDetailPage`'s `ContextSection`,
 que reusa HU27 mock-only). Hallazgo original en
 `harness/reports/console-15-case-walkthrough-findings.md` (Caso 1, punto 2).
 Sin alcance de implementación aprobado todavía.
+
+**Implementado en Console (mock-first especulativo, `feature/T-001`):**
+simplificación deliberada respecto al diseño completo de arriba — no son
+nodos/paneles nuevos dentro del árbol de contexto (RagGraph/RagSidePanel
+siguen intactos, HU27 sin tocar), sino un panel de lista aparte, debajo del
+grafo, dentro del mismo `ContextSection` de `AnalysisRunDetailPage`:
+`context-explorer/speculative/contextProvenance.ts` deriva qué reglas de
+Functional Knowledge `ACTIVE` y qué evidencia de tests existentes
+comparten símbolo con el Run, y los lista con el badge `.proposal-stamp`.
+`ProposedCapabilityError` en modo live — sigue sin contrato real. Integrar
+esto al árbol como nodos propios (el diseño original) queda pendiente si
+Core llega a definir una forma.
 
 ## Fuera de alcance
 
