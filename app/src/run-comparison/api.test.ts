@@ -21,6 +21,7 @@ describe('run-comparison api (mock) — HU48, INTEROP-2.1 §6.5 definido/no impl
     const first = await getRunComparison(accepted.comparisonId)
     expect(first.status).toBe('RUNNING')
     expect(first.symbol).toEqual(calculateTotal)
+    expect(first.result).toBeUndefined()
 
     await getRunComparison(accepted.comparisonId)
     const completed = await getRunComparison(accepted.comparisonId)

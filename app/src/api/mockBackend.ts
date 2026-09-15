@@ -958,6 +958,7 @@ export async function mockStartRunComparison(analysisRunId: string, symbol: Anal
   return { analysisRunId, comparisonId, projectVersionId: `ver_${run.projectId}`, status: 'PENDING', pollAfterMs: 460 }
 }
 
+/** El contrato real separa `GET /experiments/{id}` (sin `result`) de `GET .../results` (409 hasta estado terminal, §5). Esta vista compuesta simula esa regla: `result` no viaja hasta `COMPLETED`, igual que exigiría un adapter live real. */
 export async function mockGetRunComparison(comparisonId: string): Promise<RunComparisonOperation> {
   await latency()
   const state = runComparisons.get(comparisonId)
@@ -966,7 +967,8 @@ export async function mockGetRunComparison(comparisonId: string): Promise<RunCom
   if (state.polls === 1) state.operation = { ...state.operation, status: 'RUNNING', progress: 34 }
   else if (state.polls === 2) state.operation = { ...state.operation, status: 'RUNNING', progress: 72 }
   else state.operation = { ...state.operation, status: 'COMPLETED', progress: 100 }
-  return clone(state.operation)
+  const snapshot = clone(state.operation)
+  return snapshot.status === 'COMPLETED' ? snapshot : { ...snapshot, result: undefined }
 }
 
 /** HU27/HU28: `INTEROP-1.6 §6.7`. */
