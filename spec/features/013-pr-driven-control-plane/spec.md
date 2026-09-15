@@ -62,7 +62,13 @@ feature. Detalle completo en `harness/reports/console-backlog-formalization.md`.
   **definido** 2026-09-15 (INTEROP-2.1 §6.10): `AnalysisRunDetailResponse.history:
   AnalysisRunTransitionResponse[]` append-only, con los 8 valores de
   `AnalysisRunTransitionReason` derivados 1:1 de los call sites reales del
-  service de Core. Pendiente de implementación en Console y en Core.
+  service de Core. **Implementado en Console**: `history?` opcional en el
+  mirror (`control-plane/types.ts`) porque `getAnalysisRun` sí tiene adapter
+  live hoy contra el controller real, que todavía no devuelve el campo — el
+  mock lo deriva de status/timestamps ya seedeados
+  (`deriveRunHistory` en `mockBackend.ts`) en vez de autorarlo por cada uno
+  de los ~20 fixtures. `<details>` colapsable en `AnalysisRunDetailPage`.
+  Pendiente de implementación real en Core.
 - **HU55** — listado de Analysis Runs cross-proyecto. Contrato **definido**
   2026-09-15: `GET /analysis-runs?status&cursor&limit` (mismo shape, mismo
   ownership por token). Verificado antes contra el controller real de Core

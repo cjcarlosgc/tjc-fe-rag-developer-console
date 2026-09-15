@@ -14,6 +14,7 @@ import type {
   AnalysisRunListPage,
   AnalysisRunStatus,
   AnalysisRunSummaryResponse,
+  AnalysisRunTransitionResponse,
   AnalysisSymbolResponse,
   CompleteGitHubInstallationRequest,
   CreateTestPublicationRequest,
@@ -1234,12 +1235,34 @@ export async function mockListAnalysisRuns(projectId: string | undefined, status
   return { items: clone(items), nextCursor: null }
 }
 
+/** HU53 (INTEROP-2.1 §6.10, definido/no implementado): deriva una secuencia plausible a partir de status/timestamps ya seedeados en vez de autorar `history` a mano por cada uno de los ~20 fixtures de AnalysisRun. */
+function deriveRunHistory(run: AnalysisRunDetailResponse): AnalysisRunTransitionResponse[] {
+  const history: AnalysisRunTransitionResponse[] = [
+    { fromStatus: null, toStatus: 'QUEUED', reason: 'RUN_CREATED', occurredAt: run.createdAt },
+    { fromStatus: 'QUEUED', toStatus: 'PROCESSING', reason: 'SNAPSHOT_PROCESSING_STARTED', occurredAt: run.createdAt },
+  ]
+  if (run.status === 'ACTION_REQUIRED') {
+    history.push({ fromStatus: 'PROCESSING', toStatus: 'ACTION_REQUIRED', reason: 'FUNCTIONAL_CONTEXT_REQUIRED', occurredAt: run.updatedAt })
+    return history
+  }
+  if (run.status === 'OBSOLETE') {
+    history.push({ fromStatus: 'PROCESSING', toStatus: 'OBSOLETE', reason: 'GITHUB_HEAD_SUPERSEDED', occurredAt: run.updatedAt })
+    return history
+  }
+  if (run.attemptCount > 1) {
+    history.push({ fromStatus: 'PROCESSING', toStatus: 'ACTION_REQUIRED', reason: 'FUNCTIONAL_CONTEXT_REQUIRED', occurredAt: run.createdAt })
+    history.push({ fromStatus: 'ACTION_REQUIRED', toStatus: 'PROCESSING', reason: 'FUNCTIONAL_ANSWER_CONTINUATION', occurredAt: run.updatedAt })
+  }
+  history.push({ fromStatus: 'PROCESSING', toStatus: run.status, reason: 'GENERATION_COMPLETED', occurredAt: run.completedAt ?? run.updatedAt })
+  return history
+}
+
 /** HU32: `GET /analysis-runs/{analysisRunId}`. */
 export async function mockGetAnalysisRun(analysisRunId: string): Promise<AnalysisRunDetailResponse> {
   await latency()
   const run = analysisRuns.get(analysisRunId)
   if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
-  return clone(run)
+  return { ...clone(run), history: deriveRunHistory(run) }
 }
 
 const PRIOR_COVERAGE_FIXTURES: Record<string, PriorCoverageLevel> = {

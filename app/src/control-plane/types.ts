@@ -81,6 +81,24 @@ export interface AnalysisSymbolResponse {
   changeKind: SymbolChangeKind
 }
 
+export type AnalysisRunTransitionReason =
+  | 'RUN_CREATED'
+  | 'SNAPSHOT_PROCESSING_STARTED'
+  | 'FUNCTIONAL_CONTEXT_REQUIRED'
+  | 'FUNCTIONAL_ANSWER_CONTINUATION'
+  | 'GENERATION_COMPLETED'
+  | 'GITHUB_HEAD_SUPERSEDED'
+  | 'PULL_REQUEST_CLOSED'
+  | 'MANUAL_OBSOLETE'
+
+/** INTEROP-2.1 §6.10 (HU53, definido 2026-09-15). */
+export interface AnalysisRunTransitionResponse {
+  fromStatus: AnalysisRunStatus | null
+  toStatus: AnalysisRunStatus
+  reason: AnalysisRunTransitionReason
+  occurredAt: string
+}
+
 export interface AnalysisRunDetailResponse extends AnalysisRunSummaryResponse {
   attemptCount: number
   indexMode: 'BOOTSTRAP' | 'INCREMENTAL'
@@ -88,6 +106,14 @@ export interface AnalysisRunDetailResponse extends AnalysisRunSummaryResponse {
   changesetHeadSha: string
   indexDeltaBaseSha: string | null
   symbols: AnalysisSymbolResponse[]
+  /**
+   * HU53 (INTEROP-2.1 §6.10) — definido, pendiente de implementación en
+   * Core: el controller real todavía no lo devuelve, por eso es opcional
+   * acá aunque el contrato lo declare requerido. `getAnalysisRun` sí tiene
+   * adapter live (§6.10 GET .../{id}), así que este campo debe tolerar
+   * ausencia en una respuesta real hasta que Core lo implemente.
+   */
+  history?: AnalysisRunTransitionResponse[]
   functionalBehaviorValidated: boolean
   resultSummary: string | null
   detailsUrl: string

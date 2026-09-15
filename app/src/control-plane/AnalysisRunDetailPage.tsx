@@ -13,8 +13,21 @@ import { useAnalysisRun, usePublishTests, useTestProposals } from './queries'
 import { ANALYSIS_RUN_STATUS_LABELS, analysisRunStatusClass } from './status'
 import { getPriorCoverage, PRIOR_COVERAGE_LABELS } from './speculative/priorCoverage'
 import { findEligibleSymbol } from '../run-comparison/types'
+import type { AnalysisRunTransitionReason } from './types'
 
 const FAILURE_STATUSES = new Set(['BASELINE_FAILED', 'TECHNICAL_GENERATION_FAILURE', 'INFRASTRUCTURE_FAILURE'])
+
+/** HU53 (INTEROP-2.1 §6.10, definido/no implementado). */
+const RUN_TRANSITION_REASON_LABELS: Record<AnalysisRunTransitionReason, string> = {
+  RUN_CREATED: 'Run creado',
+  SNAPSHOT_PROCESSING_STARTED: 'Snapshot indexado, análisis iniciado',
+  FUNCTIONAL_CONTEXT_REQUIRED: 'Contexto funcional requerido',
+  FUNCTIONAL_ANSWER_CONTINUATION: 'Respuesta funcional recibida, continúa el análisis',
+  GENERATION_COMPLETED: 'Generación completada',
+  GITHUB_HEAD_SUPERSEDED: 'HEAD nuevo reemplazó este Run',
+  PULL_REQUEST_CLOSED: 'Pull Request cerrado',
+  MANUAL_OBSOLETE: 'Marcado obsoleto manualmente',
+}
 const INFORMATIONAL_STATUSES = new Set(['NO_ADDITIONAL_TESTS_REQUIRED', 'NO_TEST_RELEVANT_CHANGES'])
 
 function PublishSection({ analysisRunId, targetBranch }: { analysisRunId: string; targetBranch: string }) {
@@ -150,6 +163,21 @@ export function AnalysisRunDetailPage() {
         </ul>
       </>}
     </div>
+
+    {run.history && run.history.length > 0 && (
+      <details className="panel run-history">
+        <summary>Historial de transiciones ({run.history.length})</summary>
+        <ol className="run-history-timeline">
+          {run.history.map((transition, index) => (
+            <li key={index}>
+              <span className="run-history-status">{transition.fromStatus ? ANALYSIS_RUN_STATUS_LABELS[transition.fromStatus] : 'Creación'} → {ANALYSIS_RUN_STATUS_LABELS[transition.toStatus]}</span>
+              <span className="run-history-reason">{RUN_TRANSITION_REASON_LABELS[transition.reason]}</span>
+              <time dateTime={transition.occurredAt}>{new Date(transition.occurredAt).toLocaleString()}</time>
+            </li>
+          ))}
+        </ol>
+      </details>
+    )}
 
     {run.status === 'ACTION_REQUIRED' && (
       <div className="panel success-note contract-note">

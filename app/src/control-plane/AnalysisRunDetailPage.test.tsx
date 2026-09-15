@@ -147,3 +147,15 @@ test('caso propuestas STALE: un intento anterior queda STALE y el vigente AVAILA
   expect(screen.getAllByText('AVAILABLE')).toHaveLength(2)
   expect(screen.getByRole('button', { name: /Publicar 2 propuesta\(s\)/ })).toBeInTheDocument()
 })
+
+test('HU53 (INTEROP-2.1 §6.10, definido/no implementado): el historial de transiciones se puede expandir', async () => {
+  const user = userEvent.setup()
+  renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
+
+  const summary = await screen.findByText(/Historial de transiciones \(3\)/)
+  await user.click(summary)
+
+  expect(screen.getByText('Run creado')).toBeInTheDocument()
+  expect(screen.getByText('Snapshot indexado, análisis iniciado')).toBeInTheDocument()
+  expect(screen.getByText('Generación completada')).toBeInTheDocument()
+})

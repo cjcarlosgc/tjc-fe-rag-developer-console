@@ -87,6 +87,30 @@ describe('control-plane api (mock) — HU32 Analysis Runs, los 14 escenarios', (
   })
 })
 
+describe('control-plane api (mock) — HU53, historial de transiciones (INTEROP-2.1 §6.10, definido/no implementado)', () => {
+  it('siempre empieza con la creación inicial (fromStatus null, toStatus QUEUED) en orden cronológico ascendente', async () => {
+    const run = await getAnalysisRun('arun_checkout_pr45')
+    expect(run.history?.[0]).toMatchObject({ fromStatus: null, toStatus: 'QUEUED', reason: 'RUN_CREATED' })
+    const timestamps = run.history?.map((item) => item.occurredAt) ?? []
+    expect([...timestamps].sort()).toEqual(timestamps)
+  })
+
+  it('un Run SUCCESS termina en GENERATION_COMPLETED', async () => {
+    const run = await getAnalysisRun('arun_checkout_pr45')
+    expect(run.history?.at(-1)).toMatchObject({ toStatus: 'SUCCESS', reason: 'GENERATION_COMPLETED' })
+  })
+
+  it('un Run ACTION_REQUIRED termina en FUNCTIONAL_CONTEXT_REQUIRED', async () => {
+    const run = await getAnalysisRun('arun_checkout_pr42')
+    expect(run.history?.at(-1)).toMatchObject({ toStatus: 'ACTION_REQUIRED', reason: 'FUNCTIONAL_CONTEXT_REQUIRED' })
+  })
+
+  it('un Run OBSOLETE termina en GITHUB_HEAD_SUPERSEDED', async () => {
+    const run = await getAnalysisRun('arun_billing_pr17')
+    expect(run.history?.at(-1)).toMatchObject({ toStatus: 'OBSOLETE', reason: 'GITHUB_HEAD_SUPERSEDED' })
+  })
+})
+
 describe('control-plane api (mock) — HU39/HU40 propuestas y companion PR', () => {
   it('lista propuestas AVAILABLE de un Run SUCCESS y las publica', async () => {
     const set = await listTestProposals('arun_checkout_pr45')

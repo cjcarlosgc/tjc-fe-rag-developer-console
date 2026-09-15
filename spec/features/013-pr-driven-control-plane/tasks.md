@@ -40,8 +40,10 @@ sin contrato) — HU50/HU52 siguen sin contrato.
       Console; pendiente de implementación real en Core.
 - [ ] HU52: trazabilidad inversa "Runs que usaron esta regla" — sigue sin
       contrato.
-- [ ] HU53: historial de transiciones de estado de un AnalysisRun — contrato
-      definido (INTEROP-2.1 §6.10), pendiente de implementación.
+- [x] HU53: historial de transiciones de estado de un AnalysisRun — contrato
+      definido (INTEROP-2.1 §6.10), implementado mock-first en Console
+      (campo opcional en el mirror, live adapter existente tolera su
+      ausencia hasta que Core lo implemente).
 - [ ] HU55: listado de Analysis Runs cross-proyecto — contrato definido
       (`GET /analysis-runs?status&cursor&limit`), pendiente de implementación
       en Core (antes bloqueado: no existía ruta global — ver

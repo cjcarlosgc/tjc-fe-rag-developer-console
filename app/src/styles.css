@@ -546,6 +546,12 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .analysis-run-item-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 8px; }
 
 .analysis-run-summary { display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+.run-history summary { color: var(--accent); cursor: pointer; font-weight: 700; font-size: 14px; }
+.run-history-timeline { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 10px; }
+.run-history-timeline li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; border-left: 2px solid var(--border-subtle); padding-left: 12px; }
+.run-history-status { font-weight: 700; }
+.run-history-reason { color: var(--muted); font-size: 13px; }
+.run-history-timeline time { margin-left: auto; color: var(--text-dim); font: 12px 'JetBrains Mono', ui-monospace, monospace; }
 .symbol-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .symbol-list li { display: flex; align-items: center; gap: 10px; }
 
