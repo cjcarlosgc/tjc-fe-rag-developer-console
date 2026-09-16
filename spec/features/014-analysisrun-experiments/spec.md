@@ -2,8 +2,9 @@
 
 **Estado:** HU48 con contrato **definido** (INTEROP-2.1 §6.5, 2026-09-15;
 Core todavía no implementó el controller) — mock-first implementado en
-Console contra esa forma, adapter live pendiente. HU49 sigue `PROPOSED`
-(depende de HU48, sin contrato propio) — registradas 2026-09-14.
+Console contra esa forma, adapter live pendiente. HU49 sigue `PROPOSED` (sin
+contrato propio, depende de HU48) — **implementada en Console como capa
+especulativa** sobre el mock-first de HU48 (2026-09-16).
 **Story IDs:** HU48 (P1), HU49 (P4)
 **Origen:** handoff del usuario `~/Downloads/experimentos.md` ("Reorientación
 de Experimentos en SDD 2.0"), enviado también a `tjc-be-rag-core-api`.
@@ -67,6 +68,18 @@ normal) → al llegar, crea automáticamente el `ExperimentRun` → vuelve a
 `OFF`. No es un toggle permanente ("Experimental Mode = ON" que corra ambos
 brazos en cada PR está explícitamente prohibido por el handoff). Reusa el
 mismo modelo de HU48, no un motor experimental paralelo.
+
+**Implementado en Console (2026-09-16) como capa especulativa** (sin
+contrato, `ProposedCapabilityError` en live):
+`run-comparison/speculative/captureNextPr.ts` + panel `CaptureNextPrPanel` en
+`ExperimentPage` ("Modo experimental"), estado `ARMED`/`OFF` por proyecto. Al
+capturar, navega a `RunComparisonPage` (HU48) sin duplicar su lógica de
+inicio. **Desviación de demo deliberada respecto al flujo objetivo:** no
+existe un webhook real que dispare "el próximo PR elegible" — mientras está
+`ARMED`, la Console expone un botón "Simular llegada del PR (demo)" que
+fabrica ese `AnalysisRun` explícitamente, en vez de esperar pasivamente un
+evento que hoy no puede llegar. No sustituye el mecanismo final descrito
+arriba, solo permite demostrar el flujo `ARMED`→captura→`OFF` en vivo.
 
 ## Restricciones explícitas del handoff (§39, "No hacer")
 
