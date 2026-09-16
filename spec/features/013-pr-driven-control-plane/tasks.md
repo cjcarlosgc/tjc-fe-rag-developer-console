@@ -38,8 +38,10 @@ sin contrato) — HU50/HU52 siguen sin contrato.
 - [x] HU51: detección de conflicto de Functional Knowledge en Focus Mode —
       contrato definido (INTEROP-2.1 §6.11), implementado mock-first en
       Console; pendiente de implementación real en Core.
-- [ ] HU52: trazabilidad inversa "Runs que usaron esta regla" — sigue sin
-      contrato.
+- [x] HU52: trazabilidad inversa "Runs que usaron esta regla" — especulativo
+      (sin contrato), `action-required/speculative/ruleUsage.ts`. Coincidencia
+      local por símbolo == `targetRef` dentro del mismo proyecto, panel nuevo
+      en `FunctionalKnowledgeDetailPage`.
 - [x] HU53: historial de transiciones de estado de un AnalysisRun — contrato
       definido (INTEROP-2.1 §6.10), implementado mock-first en Console
       (campo opcional en el mirror, live adapter existente tolera su

@@ -40,3 +40,18 @@ test('HU35/HU36: la regla ACTIVE vigente enlaza hacia atrás a la regla que reem
   const link = screen.getByRole('link', { name: 'Ver regla reemplazada →' })
   expect(link).toHaveAttribute('href', '/projects/prj_checkout_demo/functional-knowledge/fk_rounding_v1')
 })
+
+test('HU52 (propuesta): lista los Analysis Runs cuyo símbolo coincide con el target de la regla', async () => {
+  renderDetail('prj_checkout_demo', 'fk_coupon_expiry')
+
+  expect(await screen.findByText('Runs que usaron esta regla')).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'PR #42' })).toHaveAttribute('href', '/projects/prj_checkout_demo/runs/arun_checkout_pr42')
+  expect(screen.getByRole('link', { name: 'PR #46' })).toHaveAttribute('href', '/projects/prj_checkout_demo/runs/arun_checkout_pr46')
+})
+
+test('HU52 (propuesta): sin coincidencias muestra el estado vacío en vez de la lista', async () => {
+  renderDetail('prj_billing_demo', 'fk_discount_engine')
+
+  expect(await screen.findByText('Runs que usaron esta regla')).toBeInTheDocument()
+  expect(screen.getByText('Ningún Analysis Run demo tocó este símbolo todavía.')).toBeInTheDocument()
+})

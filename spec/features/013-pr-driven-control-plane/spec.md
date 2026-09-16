@@ -58,6 +58,12 @@ feature. Detalle completo en `harness/reports/console-backlog-formalization.md`.
   Pendiente de implementación real en Core.
 - **HU52** — en `FunctionalKnowledgeDetailPage`, qué Analysis Runs usaron
   esa regla. Sigue `PROPOSED`, sin contrato — no está en INTEROP-2.1 §6.11.
+  **Implementado en Console** como capa especulativa
+  (`action-required/speculative/ruleUsage.ts`, `ProposedCapabilityError` en
+  live): coincidencia local por símbolo == `targetRef` dentro del mismo
+  proyecto, sin distinguir qué versión de la regla estaba `ACTIVE` en el
+  momento de cada Run — puede requerir rediseño si Core define una forma
+  distinta (p.ej. un vínculo explícito Run↔FK persistido).
 - **HU53** — historial de transiciones de estado de un `AnalysisRun`. Contrato
   **definido** 2026-09-15 (INTEROP-2.1 §6.10): `AnalysisRunDetailResponse.history:
   AnalysisRunTransitionResponse[]` append-only, con los 8 valores de

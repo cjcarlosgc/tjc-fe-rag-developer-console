@@ -1,9 +1,13 @@
+import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 import { isMockDataSource } from '../api/dataSource'
+import { ANALYSIS_RUN_STATUS_LABELS, analysisRunStatusClass } from '../control-plane/status'
 import { useProject } from '../projects/queries'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
+import { RepoChip } from '../ui/RepoChip'
 import { useFunctionalKnowledge } from './queries'
+import { getRuleUsage } from './speculative/ruleUsage'
 
 /** HU35/HU36 — detalle de una regla de Functional Knowledge, con trazabilidad de supersesión. */
 export function FunctionalKnowledgeDetailPage() {
@@ -11,6 +15,11 @@ export function FunctionalKnowledgeDetailPage() {
   const mock = isMockDataSource()
   const projectQuery = useProject(projectId)
   const knowledgeQuery = useFunctionalKnowledge(projectId)
+  const usageQuery = useQuery({
+    queryKey: ['action-required', 'speculative', 'rule-usage', knowledgeId],
+    queryFn: () => getRuleUsage(knowledgeId),
+    enabled: Boolean(knowledgeId),
+  })
 
   if (knowledgeQuery.isPending) return <LoadingState label="Cargando regla…" />
   if (knowledgeQuery.isError) return <ErrorState message={knowledgeQuery.error.message} onRetry={() => void knowledgeQuery.refetch()} />
@@ -46,6 +55,23 @@ export function FunctionalKnowledgeDetailPage() {
       <p><strong>Pregunta:</strong> {item.originalQuestion}</p>
       <p><strong>Respuesta:</strong> {item.originalAnswer}</p>
     </div>
+
+    {usageQuery.isSuccess && (
+      <div className="panel">
+        <div className="section-heading"><div><h2>Runs que usaron esta regla</h2><p>Analysis Runs cuyo símbolo cambiado coincide con el target de esta regla.</p></div><span className="proposal-stamp" title="HU52 — propuesta sin contrato aprobado, coincidencia inferida localmente por símbolo">PROPUESTA</span></div>
+        {usageQuery.data.length === 0
+          ? <p className="empty-inline-note">Ningún Analysis Run demo tocó este símbolo todavía.</p>
+          : <ul className="context-provenance-list">
+              {usageQuery.data.map((run) => (
+                <li key={run.id}>
+                  <RepoChip repositoryName={run.pullRequest.repositoryName} />
+                  <Link to={`/projects/${run.projectId}/runs/${run.id}`}>PR #{run.pullRequest.number}</Link>
+                  <span className={`status-badge ${analysisRunStatusClass(run.status)}`}>{ANALYSIS_RUN_STATUS_LABELS[run.status]}</span>
+                </li>
+              ))}
+            </ul>}
+      </div>
+    )}
 
     {supersedes && (
       <div className="panel contract-note">

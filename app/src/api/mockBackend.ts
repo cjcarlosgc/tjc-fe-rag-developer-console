@@ -1363,3 +1363,21 @@ export async function mockListFunctionalKnowledge(projectId: string, status?: Fu
     .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
   return { items: clone(items), nextCursor: null }
 }
+
+/**
+ * PROPUESTA — HU52, ver action-required/speculative/ruleUsage.ts. Coincidencia
+ * local por símbolo == `targetRef` dentro del mismo proyecto, sin distinguir
+ * qué versión de la regla estaba `ACTIVE` en el momento de cada Run.
+ */
+export async function mockGetRuleUsage(knowledgeId: string): Promise<AnalysisRunSummaryResponse[]> {
+  await latency()
+  const knowledge = functionalKnowledge.get(knowledgeId)
+  if (!knowledge) notFound(`No existe la regla de Functional Knowledge demo "${knowledgeId}".`, 'FUNCTIONAL_KNOWLEDGE_NOT_FOUND')
+  if (!knowledge.targetRef) return []
+  const items = Array.from(analysisRuns.values())
+    .filter((run) => run.projectId === knowledge.projectId)
+    .filter((run) => run.symbols.some((symbol) => symbol.qualifiedName === knowledge.targetRef))
+    .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+    .map(toAnalysisRunSummary)
+  return clone(items)
+}
