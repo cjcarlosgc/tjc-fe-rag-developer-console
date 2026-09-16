@@ -1,5 +1,25 @@
 # Progreso actual
 
+**HU52 y HU49 cierran el corte HU48–HU55 (2026-09-16).** A pedido del
+usuario de retomar la sesión pausada ("continua la implementacion"), se
+implementaron las 2 historias que quedaban pendientes del corte anterior,
+ambas sin contrato de Core y como capa especulativa (mismo patrón que
+HU50/HU54: tipos propios, `ProposedCapabilityError`, badge
+`.proposal-stamp`). HU52: `action-required/speculative/ruleUsage.ts`, panel
+"Runs que usaron esta regla" en `FunctionalKnowledgeDetailPage`, coincidencia
+local por símbolo == `targetRef`. HU49: `run-comparison/speculative/
+captureNextPr.ts`, panel `CaptureNextPrPanel` en `ExperimentPage`, estado
+`ARMED`/`OFF` por proyecto; al capturar navega a `RunComparisonPage` (HU48)
+sin duplicar su lógica. Sin webhook real para "el próximo PR elegible", se
+documentó un botón de demo explícito ("Simular llegada del PR") como
+desviación deliberada. Verificación: `tsc`/`lint`/`build` limpios, 282
+pruebas en verde (+9). El recorrido manual en navegador no pudo confirmarse
+por la misma desconexión intermitente de la extensión Claude in Chrome ya
+documentada en sesiones previas. Con esto, las 8 historias de
+`console-backlog-formalization.md` (HU48–HU55) quedan todas con alguna
+implementación en Console — ver `harness/reports/HU49-HU52-speculative-closure.md`.
+`activeWorkItem` vuelve a `null`.
+
 **Implementación mock-first de HU48–HU55, en curso (2026-09-15).** A pedido
 del usuario ("continua por orden de prioridad, y todos los que estén listos
 para implementar"), se verificó de nuevo el estado de contrato de las 8 HU
