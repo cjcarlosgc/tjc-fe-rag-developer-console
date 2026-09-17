@@ -1,44 +1,64 @@
 import { apiRequest } from '../api/client'
 import { getDataSource, PendingContractError } from '../api/dataSource'
 import {
-  mockCompleteGitHubInstallation,
+  mockCreateRepositoryBinding,
   mockCreateTestPublication,
   mockDisconnectRepository,
   mockGetAnalysisRun,
   mockGetRepositoryBinding,
   mockGetTestPublication,
   mockListAnalysisRuns,
+  mockListGitHubRepositoryBranches,
+  mockListGitHubUserRepositories,
   mockListTestProposals,
-  mockStartGitHubInstallation,
+  mockVerifyGitHubAppAccess,
 } from '../api/mockBackend'
 import type {
   AnalysisRunDetailResponse,
   AnalysisRunListPage,
   AnalysisRunStatus,
-  CompleteGitHubInstallationRequest,
+  CreateRepositoryBindingRequest,
   CreateTestPublicationRequest,
   GeneratedTestProposalSetResponse,
-  GitHubInstallationSessionResponse,
+  GitHubAppAccessResponse,
+  GitHubRepositoryBranchesResponse,
+  GitHubUserRepositoryPage,
   ProjectRepositoryBindingResponse,
   TestPublicationAcceptedResponse,
   TestPublicationResponse,
+  VerifyGitHubAppAccessRequest,
 } from './types'
 
-// HU30 — repository binding / GitHub App. RAG Core todavía no publica estas rutas (INTEROP-2.0 §6.8).
+// HU30 — repository binding / GitHub App, user-centric (INTEROP-2.2 §6.8). RAG Core todavía no publica estas rutas.
 
 export function getRepositoryBinding(projectId: string): Promise<ProjectRepositoryBindingResponse | null> {
   if (getDataSource() === 'mock') return mockGetRepositoryBinding(projectId)
   return Promise.reject(new PendingContractError('el repository binding de un proyecto'))
 }
 
-export function startGitHubInstallation(projectId: string): Promise<GitHubInstallationSessionResponse> {
-  if (getDataSource() === 'mock') return mockStartGitHubInstallation(projectId)
-  return Promise.reject(new PendingContractError('la instalación de la GitHub App'))
+/**
+ * `GET /integrations/github/repositories` exige `X-GitHub-Provider-Token` según el contrato, pero
+ * el mock no tiene un servidor real que lo valide — es la UI (`IntegrationsPage`) quien decide si
+ * llamar esta función según `authSession.githubProviderToken`, en vez de duplicar esa validación acá.
+ */
+export function listGitHubUserRepositories(): Promise<GitHubUserRepositoryPage> {
+  if (getDataSource() === 'mock') return mockListGitHubUserRepositories()
+  return Promise.reject(new PendingContractError('el descubrimiento de repositorios GitHub del usuario'))
 }
 
-export function completeGitHubInstallation(projectId: string, input: CompleteGitHubInstallationRequest): Promise<ProjectRepositoryBindingResponse> {
-  if (getDataSource() === 'mock') return mockCompleteGitHubInstallation(projectId, input)
-  return Promise.reject(new PendingContractError('completar la instalación de la GitHub App'))
+export function verifyGitHubAppAccess(input: VerifyGitHubAppAccessRequest): Promise<GitHubAppAccessResponse> {
+  if (getDataSource() === 'mock') return mockVerifyGitHubAppAccess(input)
+  return Promise.reject(new PendingContractError('la verificación de acceso de la GitHub App a un repositorio'))
+}
+
+export function listGitHubRepositoryBranches(owner: string, repo: string): Promise<GitHubRepositoryBranchesResponse> {
+  if (getDataSource() === 'mock') return mockListGitHubRepositoryBranches(owner, repo)
+  return Promise.reject(new PendingContractError('el listado de ramas de un repositorio GitHub'))
+}
+
+export function createRepositoryBinding(projectId: string, input: CreateRepositoryBindingRequest): Promise<ProjectRepositoryBindingResponse> {
+  if (getDataSource() === 'mock') return mockCreateRepositoryBinding(projectId, input)
+  return Promise.reject(new PendingContractError('la creación del repository binding user-centric'))
 }
 
 export function disconnectRepository(projectId: string): Promise<void> {

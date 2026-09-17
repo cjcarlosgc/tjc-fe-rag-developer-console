@@ -10,7 +10,7 @@ import type { GenerationAccepted, GenerationConfiguration } from '../generation/
 import type { InventoryTargetViewModel, TestInventoryResponse } from '../inventory/types'
 import type { AnalysisHistoryItem, AnalysisOperation, AnalysisResult, CreateProjectInput, Project, UploadAccepted } from '../projects/types'
 import type { GenerationMode, RunViewModel, TargetRetryAccepted, TargetRunViewModel, TestRunHistoryPage, TestRunSummary } from '../runs/types'
-import { DEMO_INSTALLABLE_REPOSITORIES } from '../control-plane/demoRepositories'
+import { DEMO_GITHUB_REPOSITORIES } from '../control-plane/demoRepositories'
 import type {
   AnalysisRunDetailResponse,
   AnalysisRunListPage,
@@ -18,14 +18,18 @@ import type {
   AnalysisRunSummaryResponse,
   AnalysisRunTransitionResponse,
   AnalysisSymbolResponse,
-  CompleteGitHubInstallationRequest,
+  CreateRepositoryBindingRequest,
   CreateTestPublicationRequest,
   GeneratedTestProposalResponse,
   GeneratedTestProposalSetResponse,
-  GitHubInstallationSessionResponse,
+  GitHubAppAccessResponse,
+  GitHubRepositoryBranchResponse,
+  GitHubRepositoryBranchesResponse,
+  GitHubUserRepositoryPage,
   ProjectRepositoryBindingResponse,
   TestPublicationAcceptedResponse,
   TestPublicationResponse,
+  VerifyGitHubAppAccessRequest,
 } from '../control-plane/types'
 import { ApiError } from './client'
 
@@ -81,6 +85,8 @@ const contextTraces = new Map<string, MockContextTraceState>()
 const analysisRunContextTraceId: Record<string, string> = { arun_checkout_pr45: 'trace_rag_order_total' }
 const actionRequiredRuns = new Map<string, MockActionRequiredRunState>()
 const repositoryBindings = new Map<string, ProjectRepositoryBindingResponse | null>()
+/** HU30 user-centric (INTEROP-2.2 §6.8): intentos de verificación de acceso de la App por repo, para simular NOT_AUTHORIZED->revalidar->AUTHORIZED. */
+const githubAppAccessVerifications = new Map<string, number>()
 const analysisRuns = new Map<string, AnalysisRunDetailResponse>()
 const testProposals = new Map<string, GeneratedTestProposalResponse[]>()
 const testPublications = new Map<string, TestPublicationResponse>()
@@ -628,6 +634,7 @@ export function resetMockBackend(): void {
   contextTraces.clear()
   actionRequiredRuns.clear()
   repositoryBindings.clear()
+  githubAppAccessVerifications.clear()
   analysisRuns.clear()
   testProposals.clear()
   testPublications.clear()
@@ -1264,37 +1271,67 @@ export async function mockGetRepositoryBinding(projectId: string): Promise<Proje
   return clone(repositoryBindings.get(projectId) ?? null)
 }
 
-const DEFAULT_REPOSITORY_BY_PROJECT: Record<string, { repositoryId: string; repositoryName: string }> = {
-  prj_checkout_demo: { repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service' },
-  prj_billing_demo: { repositoryId: 'repo_billing', repositoryName: 'acme/billing-engine' },
+/** HU30 user-centric: ramas demo por repositorio (fixture, no derivadas de GitHub real). */
+const DEMO_BRANCHES_BY_REPOSITORY: Record<string, GitHubRepositoryBranchResponse[]> = {
+  repo_checkout: [{ name: 'main', protected: true }, { name: 'develop', protected: false }, { name: 'release/2.3', protected: true }],
+  repo_billing: [{ name: 'main', protected: true }, { name: 'develop', protected: false }],
+  repo_notifications: [{ name: 'main', protected: true }, { name: 'develop', protected: false }, { name: 'feature/webhooks-v2', protected: false }],
+  repo_playground: [{ name: 'main', protected: false }],
 }
 
-/** HU30: `POST /projects/{projectId}/integrations/github/installations`. */
-export async function mockStartGitHubInstallation(projectId: string): Promise<GitHubInstallationSessionResponse> {
+function isGitHubAppAuthorized(repositoryId: string): boolean {
+  const attempts = githubAppAccessVerifications.get(repositoryId) ?? 0
+  return repositoryId !== 'repo_playground' || attempts >= 2
+}
+
+/** HU30: `GET /integrations/github/repositories`. No pagina de verdad (fixture pequeño): siempre `nextCursor: null`. */
+export async function mockListGitHubUserRepositories(): Promise<GitHubUserRepositoryPage> {
   await latency()
-  requireProject(projectId)
-  sequence += 1
+  return { items: clone(DEMO_GITHUB_REPOSITORIES), nextCursor: null }
+}
+
+/** HU30: `POST /integrations/github/repositories/verify-app-access`. `repo_playground` exige 2 llamadas para pasar a `AUTHORIZED` (demuestra el CTA de configuración + "Revalidar"); el resto de repos conocidos ya está `AUTHORIZED` desde la primera. */
+export async function mockVerifyGitHubAppAccess(input: VerifyGitHubAppAccessRequest): Promise<GitHubAppAccessResponse> {
+  await latency()
+  const repo = DEMO_GITHUB_REPOSITORIES.find((item) => item.repositoryId === input.repositoryId)
+  if (!repo) notFound(`No existe el repositorio demo "${input.repositoryId}".`, 'GITHUB_REPOSITORY_NOT_FOUND')
+  githubAppAccessVerifications.set(input.repositoryId, (githubAppAccessVerifications.get(input.repositoryId) ?? 0) + 1)
+  const authorized = isGitHubAppAuthorized(input.repositoryId)
   return {
-    projectId,
-    installationUrl: `https://github.com/apps/rag-test-studio-demo/installations/new?state=demo_state_${sequence}`,
-    stateExpiresAt: new Date(Date.now() + 10 * 60_000).toISOString(),
+    repositoryId: repo.repositoryId,
+    repositoryName: repo.repositoryName,
+    status: authorized ? 'AUTHORIZED' : 'NOT_AUTHORIZED',
+    installationId: authorized ? `inst_demo_${repo.repositoryId}` : null,
+    app: { displayName: 'RAG Test Studio (demo)', configureUrl: `https://github.com/apps/rag-test-studio-demo/installations/select_target?repository=${encodeURIComponent(repo.repositoryName)}` },
   }
 }
 
-/** HU30: `POST /projects/{projectId}/integrations/github/callback`. Usa el `repositoryId` elegido en el selector simulado. */
-export async function mockCompleteGitHubInstallation(projectId: string, input: CompleteGitHubInstallationRequest): Promise<ProjectRepositoryBindingResponse> {
+/** HU30: `GET /integrations/github/repositories/{owner}/{repo}/branches`. Simula 403 si la App todavía no tiene acceso — "las ramas se consultan con el installation access token". */
+export async function mockListGitHubRepositoryBranches(owner: string, repo: string): Promise<GitHubRepositoryBranchesResponse> {
+  await latency()
+  const repositoryName = `${owner}/${repo}`
+  const found = DEMO_GITHUB_REPOSITORIES.find((item) => item.repositoryName === repositoryName)
+  if (!found) notFound(`No existe el repositorio demo "${repositoryName}".`, 'GITHUB_REPOSITORY_NOT_FOUND')
+  if (!isGitHubAppAuthorized(found.repositoryId)) throw new ApiError(`La GitHub App no tiene acceso a "${repositoryName}" todavía.`, 403, 'demo-correlation-id', 'GITHUB_APP_ACCESS_REQUIRED')
+  return { items: clone(DEMO_BRANCHES_BY_REPOSITORY[found.repositoryId] ?? [{ name: found.defaultBranch, protected: true }]) }
+}
+
+/** HU30: `POST /projects/{projectId}/integrations/github`. `installationId` no viaja desde el navegador: Core lo resuelve — acá se reconstruye a partir del estado de verificación ya guardado. */
+export async function mockCreateRepositoryBinding(projectId: string, input: CreateRepositoryBindingRequest): Promise<ProjectRepositoryBindingResponse> {
   await latency()
   requireProject(projectId)
-  const chosen = DEMO_INSTALLABLE_REPOSITORIES.find((repo) => repo.repositoryId === input.repositoryId)
-  const fallback = chosen ?? DEFAULT_REPOSITORY_BY_PROJECT[projectId] ?? { repositoryId: input.repositoryId, repositoryName: input.repositoryId }
+  const existing = repositoryBindings.get(projectId)
+  if (existing && existing.status === 'ENABLED') throw new ApiError('Este proyecto ya tiene un repositorio vinculado.', 409, 'demo-correlation-id', 'REPOSITORY_BINDING_ALREADY_EXISTS')
+  if (!isGitHubAppAuthorized(input.repositoryId)) throw new ApiError(`La GitHub App no tiene acceso a "${input.repositoryName}" todavía.`, 403, 'demo-correlation-id', 'GITHUB_APP_ACCESS_REQUIRED')
+  const branches = DEMO_BRANCHES_BY_REPOSITORY[input.repositoryId] ?? []
+  if (!branches.some((branch) => branch.name === input.integrationBranch)) notFound(`La rama "${input.integrationBranch}" no existe en "${input.repositoryName}".`, 'INTEGRATION_BRANCH_NOT_FOUND')
   const createdAt = nowIso()
-  sequence += 1
   const binding: ProjectRepositoryBindingResponse = {
     projectId,
-    installationId: input.installationId || `inst_demo_${sequence}`,
-    repositoryId: fallback.repositoryId,
-    repositoryName: fallback.repositoryName,
-    integrationBranch: input.integrationBranch?.trim() || 'develop',
+    installationId: `inst_demo_${input.repositoryId}`,
+    repositoryId: input.repositoryId,
+    repositoryName: input.repositoryName,
+    integrationBranch: input.integrationBranch,
     status: 'ENABLED',
     createdAt,
     updatedAt: createdAt,

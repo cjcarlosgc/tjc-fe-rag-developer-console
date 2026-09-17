@@ -1,20 +1,58 @@
 /** SDD 2.0 / INTEROP-2.0 §6.8, §6.10, §6.12 — control plane PR-driven (Project↔Repository → PR/HEAD → Run → Check/Proposal). */
 
-// §6.8 — GitHub App y repository binding (HU30)
-
+/**
+ * §6.8 — GitHub App y repository binding (HU30, INTEROP-2.2 — discovery user-centric,
+ * autorización/binding GitHub-App-centric). Reemplaza el flujo installation-centric anterior:
+ * discovery vía provider token OAuth → verificar acceso de la App a un repo concreto → listar
+ * sus ramas reales → crear el binding. `installationId` nunca viaja desde el navegador, lo
+ * resuelve Core.
+ */
 export type RepositoryBindingStatus = 'ENABLED' | 'DISABLED' | 'REVOKED'
 
-export interface GitHubInstallationSessionResponse {
-  projectId: string
-  installationUrl: string
-  stateExpiresAt: string
+export interface GitHubUserRepositoryResponse {
+  repositoryId: string
+  name: string
+  repositoryName: string // owner/name
+  owner: { login: string; type: 'User' | 'Organization'; avatarUrl: string | null }
+  private: boolean
+  defaultBranch: string
+  permissions: { admin: boolean; maintain: boolean; push: boolean; pull: boolean }
 }
 
-export interface CompleteGitHubInstallationRequest {
-  installationId: string
+/** `GET /integrations/github/repositories?cursor&limit` -> `Page<GitHubUserRepositoryResponse>`. */
+export interface GitHubUserRepositoryPage {
+  items: GitHubUserRepositoryResponse[]
+  nextCursor: string | null
+}
+
+export type GitHubAppAccessStatus = 'AUTHORIZED' | 'NOT_AUTHORIZED'
+
+export interface VerifyGitHubAppAccessRequest {
   repositoryId: string
-  state: string
-  integrationBranch?: string
+  repositoryName: string
+}
+
+export interface GitHubAppAccessResponse {
+  repositoryId: string
+  repositoryName: string
+  status: GitHubAppAccessStatus
+  installationId: string | null
+  app: { displayName: string; configureUrl: string }
+}
+
+export interface GitHubRepositoryBranchResponse {
+  name: string
+  protected: boolean
+}
+
+export interface GitHubRepositoryBranchesResponse {
+  items: GitHubRepositoryBranchResponse[]
+}
+
+export interface CreateRepositoryBindingRequest {
+  repositoryId: string
+  repositoryName: string
+  integrationBranch: string
 }
 
 export interface ProjectRepositoryBindingResponse {

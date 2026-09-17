@@ -564,3 +564,5 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .test-proposal-item code { font-size: 13px; }
 
 .integration-panel { display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+.integration-panel .field, .integration-panel .action-required-list { width: 100%; }
+.repo-picker-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; }

@@ -1,18 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  completeGitHubInstallation,
+  createRepositoryBinding,
   createTestPublication,
   disconnectRepository,
   getAnalysisRun,
   getRepositoryBinding,
   listAnalysisRuns,
+  listGitHubRepositoryBranches,
+  listGitHubUserRepositories,
   listTestProposals,
-  startGitHubInstallation,
+  verifyGitHubAppAccess,
 } from './api'
-import type { AnalysisRunStatus, CompleteGitHubInstallationRequest, CreateTestPublicationRequest } from './types'
+import type { AnalysisRunStatus, CreateRepositoryBindingRequest, CreateTestPublicationRequest, VerifyGitHubAppAccessRequest } from './types'
 
 export const controlPlaneKeys = {
   binding: (projectId: string) => ['control-plane', 'binding', projectId] as const,
+  githubRepositories: () => ['control-plane', 'github-repositories'] as const,
+  githubBranches: (repositoryName: string) => ['control-plane', 'github-branches', repositoryName] as const,
   runs: (projectId?: string, status?: AnalysisRunStatus) => ['control-plane', 'runs', projectId ?? null, status ?? null] as const,
   run: (analysisRunId: string) => ['control-plane', 'run', analysisRunId] as const,
   proposals: (analysisRunId: string) => ['control-plane', 'proposals', analysisRunId] as const,
@@ -23,6 +27,35 @@ export function useRepositoryBinding(projectId: string) {
     queryKey: controlPlaneKeys.binding(projectId),
     queryFn: () => getRepositoryBinding(projectId),
     enabled: Boolean(projectId),
+  })
+}
+
+export function useGitHubUserRepositories(enabled: boolean) {
+  return useQuery({
+    queryKey: controlPlaneKeys.githubRepositories(),
+    queryFn: () => listGitHubUserRepositories(),
+    enabled,
+  })
+}
+
+export function useVerifyGitHubAppAccess() {
+  return useMutation({ mutationFn: (input: VerifyGitHubAppAccessRequest) => verifyGitHubAppAccess(input) })
+}
+
+export function useGitHubRepositoryBranches(repositoryName: string | null) {
+  const [owner = '', repo = ''] = repositoryName?.split('/') ?? []
+  return useQuery({
+    queryKey: controlPlaneKeys.githubBranches(repositoryName ?? ''),
+    queryFn: () => listGitHubRepositoryBranches(owner, repo),
+    enabled: Boolean(owner && repo),
+  })
+}
+
+export function useCreateRepositoryBinding(projectId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: CreateRepositoryBindingRequest) => createRepositoryBinding(projectId, input),
+    onSuccess: (binding) => queryClient.setQueryData(controlPlaneKeys.binding(projectId), binding),
   })
 }
 
@@ -46,18 +79,6 @@ export function useTestProposals(analysisRunId: string) {
     queryKey: controlPlaneKeys.proposals(analysisRunId),
     queryFn: () => listTestProposals(analysisRunId),
     enabled: Boolean(analysisRunId),
-  })
-}
-
-export function useStartGitHubInstallation(projectId: string) {
-  return useMutation({ mutationFn: () => startGitHubInstallation(projectId) })
-}
-
-export function useCompleteGitHubInstallation(projectId: string) {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (input: CompleteGitHubInstallationRequest) => completeGitHubInstallation(projectId, input),
-    onSuccess: (binding) => queryClient.setQueryData(controlPlaneKeys.binding(projectId), binding),
   })
 }
 

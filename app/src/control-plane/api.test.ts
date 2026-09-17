@@ -2,15 +2,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
 import { resetMockBackend } from '../api/mockBackend'
 import {
-  completeGitHubInstallation,
+  createRepositoryBinding,
   createTestPublication,
   disconnectRepository,
   getAnalysisRun,
   getRepositoryBinding,
   getTestPublication,
   listAnalysisRuns,
+  listGitHubRepositoryBranches,
+  listGitHubUserRepositories,
   listTestProposals,
-  startGitHubInstallation,
+  verifyGitHubAppAccess,
 } from './api'
 
 beforeEach(() => {
@@ -18,22 +20,61 @@ beforeEach(() => {
   resetMockBackend()
 })
 
-describe('control-plane api (mock) — HU30 repository binding', () => {
+describe('control-plane api (mock) — HU30 repository binding user-centric (INTEROP-2.2 §6.8)', () => {
   it('devuelve el binding ENABLED de un proyecto vinculado', async () => {
     const binding = await getRepositoryBinding('prj_checkout_demo')
     expect(binding).toMatchObject({ repositoryName: 'acme/checkout-service', integrationBranch: 'develop', status: 'ENABLED' })
   })
 
-  it('desconectar limpia el binding y luego se puede reconectar', async () => {
+  it('lista los repositorios descubiertos del usuario', async () => {
+    const page = await listGitHubUserRepositories()
+    expect(page.items.map((repo) => repo.repositoryName)).toEqual(expect.arrayContaining(['acme/checkout-service', 'acme/billing-engine', 'acme/notifications-service']))
+    expect(page.nextCursor).toBeNull()
+  })
+
+  it('verifica acceso AUTHORIZED desde la primera llamada para un repo conocido', async () => {
+    const access = await verifyGitHubAppAccess({ repositoryId: 'repo_notifications', repositoryName: 'acme/notifications-service' })
+    expect(access).toMatchObject({ status: 'AUTHORIZED', installationId: 'inst_demo_repo_notifications' })
+  })
+
+  it('repo_playground: NOT_AUTHORIZED en la primera verificación, AUTHORIZED en la segunda (revalidar)', async () => {
+    const first = await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' })
+    expect(first).toMatchObject({ status: 'NOT_AUTHORIZED', installationId: null })
+    expect(first.app.configureUrl).toContain('github.com')
+
+    const second = await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' })
+    expect(second).toMatchObject({ status: 'AUTHORIZED' })
+  })
+
+  it('las ramas de un repo sin acceso verificado rechazan con 403 GITHUB_APP_ACCESS_REQUIRED', async () => {
+    await expect(listGitHubRepositoryBranches('demo-user', 'integration-playground')).rejects.toThrow(/no tiene acceso/)
+  })
+
+  it('las ramas de un repo ya autorizado se listan normalmente', async () => {
+    await verifyGitHubAppAccess({ repositoryId: 'repo_notifications', repositoryName: 'acme/notifications-service' })
+    const branches = await listGitHubRepositoryBranches('acme', 'notifications-service')
+    expect(branches.items.map((branch) => branch.name)).toEqual(expect.arrayContaining(['main', 'develop']))
+  })
+
+  it('desconectar limpia el binding y luego se puede recrear contra el flujo nuevo', async () => {
     await disconnectRepository('prj_checkout_demo')
     expect(await getRepositoryBinding('prj_checkout_demo')).toBeNull()
 
-    const session = await startGitHubInstallation('prj_checkout_demo')
-    expect(session.installationUrl).toContain('github.com')
-
-    const binding = await completeGitHubInstallation('prj_checkout_demo', { installationId: 'inst_x', repositoryId: 'repo_checkout', state: session.installationUrl.split('state=')[1] })
-    expect(binding).toMatchObject({ repositoryName: 'acme/checkout-service', status: 'ENABLED' })
+    await verifyGitHubAppAccess({ repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service' })
+    const binding = await createRepositoryBinding('prj_checkout_demo', { repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service', integrationBranch: 'develop' })
+    expect(binding).toMatchObject({ repositoryName: 'acme/checkout-service', status: 'ENABLED', integrationBranch: 'develop' })
     expect(await getRepositoryBinding('prj_checkout_demo')).toMatchObject({ status: 'ENABLED' })
+  })
+
+  it('crear binding con el proyecto ya vinculado rechaza con 409', async () => {
+    await verifyGitHubAppAccess({ repositoryId: 'repo_notifications', repositoryName: 'acme/notifications-service' })
+    await expect(createRepositoryBinding('prj_checkout_demo', { repositoryId: 'repo_notifications', repositoryName: 'acme/notifications-service', integrationBranch: 'main' })).rejects.toThrow(/ya tiene un repositorio vinculado/)
+  })
+
+  it('crear binding con una rama inexistente rechaza con 404', async () => {
+    await disconnectRepository('prj_checkout_demo')
+    await verifyGitHubAppAccess({ repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service' })
+    await expect(createRepositoryBinding('prj_checkout_demo', { repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service', integrationBranch: 'no-existe' })).rejects.toThrow(/no existe/)
   })
 })
 
@@ -142,6 +183,13 @@ describe('control-plane api (live) — lo que Core todavía no implementa (sin c
   it('binding y propuestas siguen sin ruta: rechazan con PendingContractError', async () => {
     await expect(getRepositoryBinding('prj_checkout_demo')).rejects.toThrow(/todavía no publicó/)
     await expect(listTestProposals('arun_checkout_pr45')).rejects.toThrow(/todavía no publicó/)
+  })
+
+  it('HU30 user-centric: discovery, verify-app-access, ramas y creación de binding rechazan con PendingContractError', async () => {
+    await expect(listGitHubUserRepositories()).rejects.toThrow(/todavía no publicó/)
+    await expect(verifyGitHubAppAccess({ repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service' })).rejects.toThrow(/todavía no publicó/)
+    await expect(listGitHubRepositoryBranches('acme', 'checkout-service')).rejects.toThrow(/todavía no publicó/)
+    await expect(createRepositoryBinding('prj_checkout_demo', { repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service', integrationBranch: 'main' })).rejects.toThrow(/todavía no publicó/)
   })
 
   it('HU55: el listado global de Analysis Runs (sin projectId) tiene contrato definido pero Core no lo implementó — PendingContractError', async () => {
