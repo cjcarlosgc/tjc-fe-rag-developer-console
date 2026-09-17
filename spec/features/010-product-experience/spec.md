@@ -11,17 +11,15 @@ Consolidar toda la aplicación como una consola técnica coherente, oscura y rec
 
 - El lenguaje visual vigente es **Black Glass**, definido por la transversal `design-system`: base negra, superficies de vidrio controladas, jerarquía tipográfica editorial y movimiento suave con propósito. Sustituye la dirección parcial anterior basada en paneles azul oscuro/índigo.
 - La referencia elaborada en Google Stitch orienta composición, ritmo y acabado visual, pero esta SDD mantiene la autoridad sobre comportamiento, estados, accesibilidad y contratos.
-- La homologación abarca login, proyectos, alta/carga ZIP, indexación, versión/inventario, configuración de generación, progreso, resultados, artifacts/diff, historial, experimento, explorador de contexto y estados vacíos/error/loading.
+- La homologación abarca login, Projects, Integrations/GitHub, Runs, Action Required, review/publicación, Experiments, explorador de contexto y estados vacíos/error/loading. Los componentes visuales y de estado reutilizables se reaplican a estas superficies PR-driven.
 - Filtros para múltiples proyectos/versiones/runs, jerarquía y breadcrumbs claros.
 - La densidad informativa prioriza resultados técnicos; el glass, glow y partículas no reducen legibilidad ni esconden controles.
 - El nombre visible de la aplicación coincide con el nombre aprobado del proyecto Stitch: `RAG Test Studio`.
 
 ## Demo GitHub anterior — SUPERSEDED
 
-- La trayectoria HU26 “Continuar con GitHub” -> importar repositorio -> crear PR queda sustituida por la feature 013. Solo pueden reutilizarse componentes visuales que no preserven esa semántica.
-- La rama generada se presenta como `rag-test-studio/{run-slug}`; el destino del PR es `develop` por defecto y puede cambiarse.
-- Toda pantalla de ese recorrido mantiene el rótulo `DEMO · GITHUB SIMULADO`. No ejecuta OAuth, no recibe tokens, no consulta GitHub ni crea ramas/PR reales.
-- La demo vigente representa GitHub App instalada, repository binding, PR/HEAD y AnalysisRun; sigue rotulada y sin efectos externos.
+- La trayectoria HU26 anterior queda retirada. Solo pueden reutilizarse componentes visuales y de estado que no preserven su semántica.
+- La demo vigente implementa el binding mock de INTEROP-2.2: discovery, validación de App, selección de rama, RepositoryBinding, PR/HEAD y AnalysisRun. Se rotula y no produce efectos externos.
 
 ## Fuera de alcance
 

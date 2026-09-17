@@ -2,7 +2,7 @@
 
 ## Dependencias
 
-- `INTEROP-2.1`, Supabase Auth y `DEC-WEB-AUTH-001`.
+- `INTEROP-2.2`, Supabase Auth y `DEC-WEB-AUTH-001`.
 - Transversales `api-client`, `async-state`, `design-system`, `accessibility`, `demo-mode` y `testing`.
 
 ## Diseño técnico

@@ -1,6 +1,6 @@
 # Contrato de integración — RAG Core API
 
-> **Desactualizado por SDD 2.1 (2026-09-14):** este documento contrasta la
+> **Archivo de referencia legacy, excluido de la SDD activa desde INTEROP-2.2:** este documento contrasta la
 > implementación legacy al 2026-09-11, ANTES del retiro de ZIP/generación
 > manual en `INTEROP-2.1`. Las secciones que describen `POST /projects/index`,
 > los 5 modos de generación, `POST /test-runs` y endpoints asociados, los 4
@@ -13,9 +13,9 @@
 > histórica de la implementación legacy.
 
 **Estado:** aprobado para consumo frontend, con disponibilidad indicada por operación.  
-**Fuente:** implementación legacy de RAG Core contrastada al 2026-09-11 y contrato objetivo SDD 2.1 / SYSTEM-2.1 / INTEROP-2.1.
+**Fuente:** implementación legacy de RAG Core contrastada al 2026-09-11. El contrato objetivo vigente es SDD 2.1 / SYSTEM-2.2 / INTEROP-2.2.
 
-> Este documento conserva la disponibilidad real de APIs legacy. Para nuevas capacidades PR-driven manda `interoperability-contract.md`; una ausencia aquí no vuelve `PENDING` un contrato ya aprobado en INTEROP-2.0.
+> Para nuevas capacidades PR-driven manda `interoperability-contract.md`; una ausencia aquí no vuelve `PENDING` un contrato ya aprobado en INTEROP-2.2.
 **Servicio:** `tjc-be-rag-core-api`; el navegador nunca consume directamente el Sandbox.
 
 Este documento registra disponibilidad y detalles implementados para el frontend. La autoridad de rutas, DTOs y semántica compartida es `interoperability-contract.md`; este archivo no puede redefinirla.
@@ -367,9 +367,9 @@ Solo respuestas obtenidas por adapters `live` pueden contabilizarse como evidenc
 - Los listados muestran el último intento por defecto y aceptan `includeSuperseded=true`.
 - `ArtifactResponse.targetIds` permite abrir el explorador filtrado desde un artifact.
 
-## Autenticación web — APROBADA; IMPLEMENTACIÓN PENDIENTE
+## Autenticación web y repository discovery — APROBADA; IMPLEMENTACIÓN PENDIENTE
 
-Supabase Auth resuelve la sesión del navegador. Core exige Bearer para recursos privados, guarda propietario en `Project` y responde `404` tanto para recursos inexistentes como ajenos. `AUTH_REQUIRED` e `INVALID_ACCESS_TOKEN` son errores `401`. Un bypass solo se admite en configuración local/mock y debe impedir el arranque productivo.
+Supabase Auth resuelve la sesión del navegador. Core exige Bearer para recursos privados, guarda propietario en `Project` y responde `404` tanto para recursos inexistentes como ajenos. `AUTH_REQUIRED` e `INVALID_ACCESS_TOKEN` son errores `401`. La sesión GitHub solicita scope `repo`; su provider token efímero se envía exclusivamente como `X-GitHub-Provider-Token` al listar repositorios visibles. Un bypass solo se admite en configuración local/mock y debe impedir el arranque productivo.
 
 ## Historial, WebSockets y retry manual — IMPLEMENTADOS EN CORE
 
@@ -394,5 +394,5 @@ HU23 está descartada definitivamente: no existen reparación automática, attem
 | Historial/WebSocket/retry | Implementado en Core y Developer Console | sí |
 | Explorador de contexto RAG/agente | Aprobado en `INTEROP-2.0`; Core pendiente | sí, cuando Core publique las rutas |
 | Autenticación correo + propiedad | Aprobada en `INTEROP-2.0`; Core/FE pendientes | sí |
-| GitHub App, bindings y AnalysisRun | Aprobado en `INTEROP-2.0`; implementación posterior a T-001 | sí, mediante mock 2.0; live cuando Core publique |
+| GitHub App, bindings y AnalysisRun | Aprobado en `INTEROP-2.2`; binding mock-first user-centric pendiente | sí, mediante mock 2.2; live solo tras aprobación humana |
 | GitHub simulado | Contrato de demo frontend 2.0 | sí, solo mock y rotulado |

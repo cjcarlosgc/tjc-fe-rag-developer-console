@@ -2,16 +2,19 @@
 
 ## Baseline T-001
 
-- [x] Adoptar SYSTEM-2.0 e INTEROP-2.0.
+- [x] Adoptar SYSTEM-2.2 e INTEROP-2.2.
 - [x] Definir navegación, Focus Mode y nueve escenarios mock-first.
 - [x] Marcar la demo GitHub anterior como superseded.
 - [x] Registrar backlog, state, changelog y reporte de revisión.
 
 ## Implementación posterior — requiere selección humana
 
-- [x] HU30/HU32: repository binding, Analysis Runs por PR/HEAD y obsolescencia —
-      mock-first, 9 escenarios de `spec.md`. Ver
-      `harness/reports/HU30-HU32-HU39-HU40-control-plane-mock.md`.
+- [ ] HU30: repository binding mock-first user-centric — listado de repositorios
+      por provider token, validación App, CTA/revalidación, ramas reales simuladas,
+      binding sin `installationId` y desconexión. Reconciliar con INTEROP-2.2 sin
+      activar live hasta aprobación humana explícita.
+- [x] HU32: Analysis Runs por PR/HEAD y obsolescencia — mock-first, 9 escenarios
+      de `spec.md`. Ver `harness/reports/HU30-HU32-HU39-HU40-control-plane-mock.md`.
 - [x] HU32 (parcial, live): `getAnalysisRun`/`listAnalysisRuns` conectados a los
       controllers reales de Core (`GET /analysis-runs/{id}`,
       `GET /projects/{projectId}/analysis-runs`). Repository binding (HU30) y
@@ -36,14 +39,14 @@ sin contrato) — HU50/HU52 siguen sin contrato.
 - [x] HU50: indicador de cobertura previa en Run Detail — especulativo (sin
       contrato), `control-plane/speculative/priorCoverage.ts`.
 - [x] HU51: detección de conflicto de Functional Knowledge en Focus Mode —
-      contrato definido (INTEROP-2.1 §6.11), implementado mock-first en
+      contrato heredado en INTEROP-2.2 §6.11, implementado mock-first en
       Console; pendiente de implementación real en Core.
 - [x] HU52: trazabilidad inversa "Runs que usaron esta regla" — especulativo
       (sin contrato), `action-required/speculative/ruleUsage.ts`. Coincidencia
       local por símbolo == `targetRef` dentro del mismo proyecto, panel nuevo
       en `FunctionalKnowledgeDetailPage`.
 - [x] HU53: historial de transiciones de estado de un AnalysisRun — contrato
-      definido (INTEROP-2.1 §6.10), implementado mock-first en Console
+      heredado en INTEROP-2.2 §6.10, implementado mock-first en Console
       (campo opcional en el mirror, live adapter existente tolera su
       ausencia hasta que Core lo implemente).
 - [x] HU55: listado de Analysis Runs cross-proyecto — contrato definido
@@ -53,9 +56,9 @@ sin contrato) — HU50/HU52 siguen sin contrato.
       implementación en Core (antes bloqueado: no existía ruta global — ver
       `console-analysisrun-live-adapters.md`).
 
-Con este corte, todo el mock-first del Developer Console para SDD 2.0 queda completo
-salvo lo explícitamente Core-side (HU35/36) y P4 (HU44/45). Adapters live: Analysis
-Runs y listado de `ProjectVersion` ya conectados contra Core real (ver arriba); el
-resto (binding, Checks/propuestas/publicación, Action Required, Functional
-Knowledge, context-traces) sigue `PendingContractError` — Core no publica esos
-controllers todavía.
+El mock-first anterior queda completo salvo lo explícitamente Core-side (HU35/36) y
+P4 (HU44/45). HU30 se reabre para el binding user-centric de INTEROP-2.2. Adapters
+live: Analysis Runs y listado de `ProjectVersion` ya conectados contra Core real
+(ver arriba); el binding, Checks/propuestas/publicación, Action Required,
+Functional Knowledge y context-traces siguen sin live. El binding no se conecta a
+Core hasta recibir aprobación humana explícita después de su reconciliación mock.

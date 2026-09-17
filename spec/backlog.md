@@ -1,6 +1,6 @@
 # Product Backlog global
 
-**Estado:** línea base global vigente SDD 2.1 / SYSTEM-2.1 / INTEROP-2.1
+**Estado:** línea base global vigente SDD 2.1 / SYSTEM-2.2 / INTEROP-2.2
 
 Este backlog es compartido conceptualmente por los tres repositorios. Cada SDD local indica su participación concreta. La numeración expresa trazabilidad y orden lógico, no ejecución estrictamente secuencial.
 
@@ -58,6 +58,8 @@ Este backlog es compartido conceptualmente por los tres repositorios. Cada SDD l
 
 La experiencia HU26 de GitHub login -> repositorios -> selección/importación corresponde a una exploración anterior y queda **SUPERSEDED BY SDD 2.0 / T-001**. Sus componentes reutilizables pueden conservarse, pero la demo vigente debe representar una GitHub App ya instalada, un repository binding y un PR que dispara análisis automático. Ningún dato mock constituye evidencia científica o empresarial.
 
+HU01-HU05 y HU07 (ZIP upload/indexación), HU06 (inventario sobre una versión ZIP), HU08-HU12 (modos manuales de generación), HU13-HU18 (progreso/validación/artefactos de runs manuales) y HU20/HU24 (historial y retry manual) quedan **RETIRED — SUPERSEDED BY SDD 2.0 / 013-pr-driven-analysis**: ya no son una ruta de producto vigente; el único disparador de análisis real es PR-driven (`AnalysisRun`). Esto es más estricto que la clasificación `ADAPT` registrada en `spec/backlog-migration-sdd-2.0.md` (reporte histórico de T-001, no se reescribe); esta nota es la vigente. HU19 (Experiments, RAG vs GENERALIST_AGENT) **se conserva** — su creación depende hoy de `TestTarget` producido por la indexación ZIP ahora retirada, por lo que queda sin una ruta vigente para generar targets nuevos hasta reapuntarla a `AnalysisRun` en un corte P1/P4 futuro (ver handoff de reorientación referenciado en `CHANGELOG.md`); esto no bloquea el desarrollo P0 (HU30-HU43) en curso.
+
 ## Criterio de prioridad
 
 La prioridad se interpreta contra la arquitectura SDD 2.0: P0 materializa el nuevo norte de tesis; P1 habilita operación end-to-end; P2 preserva experimento/validación; P3 aporta producto; P4 corresponde a legado, limpieza o evolución futura. El orden histórico de HU01-HU29 no obliga a continuar trabajo que haya quedado superseded.
@@ -66,7 +68,7 @@ La prioridad se interpreta contra la arquitectura SDD 2.0: P0 materializa el nue
 
 | HU | Épica | Hito | Prioridad | Nombre | Descripción |
 |---|---|---|---|---|---|
-| HU30 | EP10 | A | P0 | Vincular Project con repositorio | Como usuario autorizado, quiero instalar/configurar la GitHub App y vincular un repositorio a un Project, para habilitar análisis PR-driven sin confundirlo con mi login. |
+| HU30 | EP10 | A | P0 | Vincular Project con repositorio | Como usuario autorizado, quiero descubrir repositorios visibles con mi identidad GitHub y vincular al Project uno autorizado por la GitHub App, eligiendo una rama real de integración, para habilitar análisis PR-driven sin confundir discovery con automatización. |
 | HU31 | EP10 | B | P0 | Ingerir eventos de Pull Request | Como plataforma, quiero verificar, normalizar y deduplicar eventos relevantes de Pull Request, para iniciar análisis automáticos únicamente sobre PR vinculados. |
 | HU32 | EP10 | A | P0 | Gestionar AnalysisRun por PR y HEAD | Como desarrollador, quiero que cada análisis represente un HEAD concreto y vuelva obsoleto al anterior, para confiar en que resultados y Checks corresponden al código vigente. |
 | HU33 | EP11 | C | P0 | Construir PR CHANGESET e INDEX DELTA | Como plataforma, quiero separar qué propone el PR de qué debe reindexarse, para validar el cambio completo y mantener el índice eficientemente. |
@@ -85,14 +87,21 @@ La prioridad se interpreta contra la arquitectura SDD 2.0: P0 materializa el nue
 | HU46 | EP15 | Research | P2 | Investigar mutation testing | Como investigador, quiero evaluar mutation testing por stack y costo, para decidir su aporte sin volver Mutation Score obligatorio prematuramente. |
 | HU47 | EP15 | Infra | P2 | Desplegar Sandbox remoto | Como operador, quiero seleccionar y desplegar una VM Sandbox con aislamiento, red y retención aprobados, para validar fuera del entorno local cuando `DEC-INF-001` se resuelva. |
 
+### Evoluciones posteriores de repository binding
+
+- Soporte de GitHub Organizations (prioridad baja): discovery y binding de repositorios organizacionales, incluyendo políticas OAuth, aprobación administrativa cuando corresponda e instalación/restricción de la App. No forma parte del primer flujo end-to-end.
+- Colaboración multiusuario (HU45, prioridad baja/media): el `RepositoryBinding`, los AnalysisRuns, Functional Knowledge y evidencia pertenecen al Project; una futura matriz de roles determinará quién configura y revisa. No se crean roles ni permisos nuevos en HU30.
+
 ### HU48-HU55 — registradas 2026-09-14, `PROPOSED` (no `APROBADO` — se formaliza la historia, no se aprueba todavía su implementación)
 
 Capacidades que se discutieron como necesarias (en handoffs del usuario o en
 hallazgos de auditoría propios) pero nunca tuvieron número de historia — el
 usuario pidió cerrar ese hueco antes de planear implementación. Compartido
-conceptualmente con `tjc-be-rag-core-api`/`tjc-be-test-execution-sandbox`
-igual que el resto de este backlog; **pendiente de homologar en sus copias**.
-Detalle completo por historia en `harness/reports/console-backlog-formalization.md`.
+conceptualmente con `tjc-fe-rag-developer-console`/`tjc-be-test-execution-sandbox`
+igual que el resto de este backlog. Formalizadas originalmente en
+`tjc-fe-rag-developer-console`; espejadas aquí para evitar drift. Detalle
+completo por historia en `harness/reports/console-backlog-formalization.md`
+(repositorio Console).
 
 | HU | Épica | Hito | Prioridad | Nombre | Descripción |
 |---|---|---|---|---|---|
@@ -104,6 +113,19 @@ Detalle completo por historia en `harness/reports/console-backlog-formalization.
 | HU53 | EP10 | H | P1 | Mostrar el historial de transiciones de estado de un AnalysisRun | Como usuario autorizado, quiero ver el historial cronológico de transiciones de estado de un `AnalysisRun`, para entender cómo llegó a su estado actual sin adivinar a partir de 3 timestamps sueltos. |
 | HU54 | EP08 | H | P1 | Extender Context Explorer con contexto funcional y de tests existentes | Como usuario autorizado, quiero que el árbol de contexto de un Run muestre también el conocimiento funcional y la evidencia de tests existentes que alimentaron el Context Builder, no solo candidatos RAG, para auditar el contexto completo detrás de una generación. |
 | HU55 | EP10 | H | P1 | Listar Analysis Runs cross-proyecto para el Workspace Overview | Como usuario autorizado, quiero un listado de Analysis Runs que abarque todos mis proyectos, para ver de un vistazo qué necesita mi atención sin entrar proyecto por proyecto. |
+
+2026-09-15: los 4 contratos que Core debía definir para desbloquear a
+Console quedaron definidos y hoy están consolidados en **INTEROP-2.2** (`spec/contracts/interoperability-contract.md`
+§6.5, §6.10, §6.11) y `spec/contracts/system-contract.md`, cada bloque
+marcado explícitamente "Definido, pendiente de implementación": HU48
+(`CreateExperimentRequest` reapunta a `analysisRunId`+símbolo en vez de
+`TestTarget`), HU51 (`409 FUNCTIONAL_KNOWLEDGE_CONFLICT` +
+`conflictResolution` en `SubmitFunctionalAnswerRequest`), HU53
+(`AnalysisRunDetailResponse.history`) y HU55
+(`GET /analysis-runs` sin `projectId`, scope = todos los Projects del
+usuario autenticado). Ninguno de los 4 está implementado todavía — solo
+el contrato HTTP. Ver mensaje de Console del 2026-09-14 y su reporte para
+el detalle original.
 
 - **P0:** necesario para materializar la nueva arquitectura de tesis.
 - **P1:** necesario para la operación end-to-end de SDD 2.0.

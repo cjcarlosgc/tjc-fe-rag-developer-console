@@ -1,6 +1,6 @@
 # demo-mode — Especificación
 
-> **Adaptación SDD 2.1:** los nuevos escenarios mock usan INTEROP-2.1 y el modelo Project/RepositoryBinding/PR/HEAD/AnalysisRun. El recorrido GitHub login/import anterior se conserva únicamente como legacy hasta HU44. `INTEROP-2.1` retira ZIP/generación manual como ruta de producto real (no como mock: los mocks de indexación, generación, artifacts e historial pueden seguir existiendo para desarrollo/experimentos, ver `harness/reports/console-interop-2.1-sync.md`), pero ya no deben presentarse como el flujo principal del producto.
+> **Adaptación SDD 2.2:** los escenarios mock usan INTEROP-2.2 y el modelo Project/RepositoryBinding/PR/HEAD/AnalysisRun. El recorrido GitHub login/import está retirado. Los componentes de UI y estado que eran reutilizables se aplican únicamente al flujo PR-driven; no se conserva un mock de producto separado para ZIP, generación manual, artefactos o historial manual.
 
 **Estado:** aprobado.  
 **Historias:** soporte transversal para demostración de HU01-HU20, HU24, HU26-HU29
@@ -21,8 +21,8 @@ Permitir una demostración navegable end-to-end aunque RAG Core todavía no haya
   reintento manual de un target inválido/fallido (HU24) de forma coherente entre pantallas.
 - El escenario incluye trazas RAG y del agente conformes a `INTEROP-2.1`, incluidos candidatos descartados, intentos anteriores, snippets acotados y archivos descubiertos paginados. El endpoint de trazas run-scoped (HU27 sobre `test-runs`) quedó retirado junto con la generación manual; solo sobrevive el de trazas por `experiments`.
 - `VITE_AUTH_MODE=mock` proporciona una identidad demostrativa estable solo cuando la fuente de datos también es mock/local. La UI de correo puede recorrerse sin contactar Supabase.
-- La trayectoria GitHub vigente parte de una GitHub App instalada y un repository binding mock; muestra PR/HEAD, AnalysisRun y companion PR. La importación ligada al login queda superseded.
-- Toda superficie GitHub mock mantiene visible `DEMO · GITHUB SIMULADO`. La creación de PR modifica únicamente estado efímero en memoria: no ejecuta OAuth, no almacena tokens, no hace requests y no produce efectos externos.
+- La trayectoria GitHub mock sigue INTEROP-2.2: discovery de repositorios, validación `AUTHORIZED|NOT_AUTHORIZED`, ramas y RepositoryBinding; muestra PR/HEAD, AnalysisRun y companion PR.
+- Toda superficie GitHub mock mantiene visible `DEMO · GITHUB SIMULADO`. No ejecuta OAuth ni almacena tokens; representa el provider token únicamente como precondición de sesión y no produce efectos externos.
 - HU21/HU22 (progreso en tiempo real por WebSocket) no forman parte del mock: el
   modo mock no abre transporte de ningún tipo (HTTP ni WebSocket) y su polling ya
   simula el avance sin necesitar el complemento en tiempo real.

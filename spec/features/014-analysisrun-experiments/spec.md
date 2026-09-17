@@ -1,6 +1,6 @@
 # 014 — Experimentos ligados a AnalysisRun
 
-**Estado:** HU48 con contrato **definido** (INTEROP-2.1 §6.5, 2026-09-15;
+**Estado:** HU48 con contrato **definido** (INTEROP-2.2 §6.5, 2026-09-15;
 Core todavía no implementó el controller) — mock-first implementado en
 Console contra esa forma, adapter live pendiente. HU49 sigue `PROPOSED` (sin
 contrato propio, depende de HU48) — **implementada en Console como capa

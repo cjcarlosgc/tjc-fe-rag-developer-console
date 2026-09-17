@@ -1,8 +1,8 @@
 # 013 — Control plane PR-driven
 
-**Estado:** APROBADO (HU30, HU32, HU35-HU40, HU44-HU45). HU51/HU53/HU55 tienen contrato **definido** desde 2026-09-15 (INTEROP-2.1, pendiente de implementación en Core) — mock-first normal, ya no especulativo. HU50/HU52 siguen `PROPOSED` (sin contrato). Ver sección propia abajo.
+**Estado:** APROBADO (HU30, HU32, HU35-HU40, HU44-HU45). HU51/HU53/HU55 tienen contrato **definido** y consolidado en INTEROP-2.2, pendiente de implementación en Core — mock-first normal, ya no especulativo. HU50/HU52 siguen `PROPOSED` (sin contrato). Ver sección propia abajo.
 **Story IDs:** HU30, HU32, HU35-HU40, HU44-HU45, HU50, HU51, HU52, HU53, HU55
-**Contrato:** SYSTEM-2.1 / INTEROP-2.1
+**Contrato:** SYSTEM-2.2 / INTEROP-2.2
 
 ## Objetivo
 
@@ -15,17 +15,17 @@ Representar el ciclo de un repositorio vinculado y sus `AnalysisRun` por PR/HEAD
 - Focus Mode es una página dedicada, no un modal. Presenta una sola pregunta adaptativa, evidencia visual acotada, opción `No lo sé` y retorno seguro mediante `returnTo`.
 - `No lo sé` equivale a `UNKNOWN` y nunca se presenta como conocimiento funcional persistido.
 - Las propuestas se revisan antes de publicar. La UI muestra freshness y nunca promete escritura directa, auto-merge o autorepair.
-- El login permite correo/contraseña y GitHub OAuth mediante Supabase Auth. La conexión de una GitHub App es un flujo separado.
+- El login permite correo/contraseña y GitHub OAuth mediante Supabase Auth. El provider token GitHub efímero permite discovery de repositorios, mientras la conexión y automatización de GitHub App siguen siendo un flujo separado y validado por Core.
 
 ## Mock-first
 
-La primera entrega usa adapters `mock` con fixtures que respetan INTEROP-2.1 y una etiqueta visible de demo. `mock` y `live` permanecen separados y la UI no simula efectos externos como reales.
+La entrega de repository binding usa adapters `mock` con fixtures que respetan INTEROP-2.2 y una etiqueta visible de demo. El modal lista repositorios visibles, valida `AUTHORIZED|NOT_AUTHORIZED`, ofrece la URL de configuración que entrega Core, permite revalidar, lista ramas y crea/desconecta un binding mock. `mock` y `live` permanecen separados: tras reconciliar mocks con el contrato final no se activa live sin aprobación humana explícita.
 
 Debe cubrir nueve escenarios navegables: success, action required, behavioral mismatch, correction/new HEAD, existing tests sufficient, baseline failed, technical generation failure, no relevant changes y publication/freshness.
 
 ## Seguridad
 
-El navegador solo consume Core para dominio. Nunca recibe secretos de GitHub App, `SANDBOX_SERVICE_TOKEN`, URLs firmadas internas ni reglas para verificar webhooks. Ownership y roles se reflejan desde el servidor.
+El navegador solo consume Core para dominio. Nunca recibe secretos de GitHub App, `SANDBOX_SERVICE_TOKEN`, URLs firmadas internas ni reglas para verificar webhooks. El provider token OAuth no se muestra, registra ni persiste fuera de la sesión; solo se usa como header de discovery. Ownership y roles se reflejan desde el servidor.
 
 ## Fuera de alcance de T-001
 

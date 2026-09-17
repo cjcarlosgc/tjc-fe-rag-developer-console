@@ -1,6 +1,6 @@
 # 014 — Tareas
 
-HU48: contrato publicado por Core 2026-09-15 (INTEROP-2.1 §6.5) y mock-first
+HU48: contrato publicado por Core 2026-09-15 y consolidado en INTEROP-2.2 §6.5; mock-first
 implementado en Console (`feature/T-001`). HU49 sigue `PROPOSED`, sin
 contrato propio — implementada como capa especulativa sobre el mock-first de
 HU48 (ver `plan.md` y sección propia abajo).

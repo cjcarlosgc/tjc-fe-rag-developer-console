@@ -4,6 +4,8 @@ Todos los cambios notables de la línea base SDD se registran aquí. El contenid
 
 ## [Unreleased]
 
+- **SYSTEM-2.2 / INTEROP-2.2 (2026-09-17, solo especificación):** HU29/HU30 reemplazan el onboarding GitHub installation-centric por discovery user-centric con provider token OAuth efímero y validación/operación GitHub-App-centric. El mock-first debe reconciliar sus types, fixtures y errores con el contrato sin activar integración live hasta aprobación humana explícita. No se modifica `app/`.
+
 - **T-001 / SDD 2.0 / SYSTEM-2.0 / INTEROP-2.0 (2026-09-13, solo especificación):** se adopta el control plane PR-driven mock-first con Projects, Runs, Action Required, Focus Mode, Checks y publicación revisada; se separan GitHub OAuth y GitHub App, se re-baselina el backlog y se marca la demo GitHub anterior como superseded. No se modifica `app/`.
 
 - **SDD 1.16 / SYSTEM-1.6 / INTEROP-1.6 (2026-09-11, solo especificación):** se consolida RAG Test Studio y la dirección Black Glass para toda la consola; se agregan HU27/HU28 para explorar trazas RAG y trayectoria observable del agente, y HU29 para autenticación por correo con Supabase Auth y scoping por propietario. HU26 incorpora una demo GitHub navegable, siempre rotulada como simulada y sin requests ni efectos externos; `DEC-GH-001` continúa PENDING solo para OAuth, repositorios y PR reales. Se añaden contratos UI, accesibilidad, motion/reduced-motion y adapters mock previstos; no se modifica código de aplicación.
