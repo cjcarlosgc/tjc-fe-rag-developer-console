@@ -8,6 +8,8 @@ const DEMO_TOKEN = 'mock-session-token'
 /** HU29 ampliado: identidad separada para distinguir el login por GitHub del de correo/contraseña en la demo. */
 const DEMO_GITHUB_USER = { id: 'user_demo_github', email: 'demo@rag-test-studio.local' }
 const DEMO_GITHUB_TOKEN = 'mock-github-session-token'
+/** HU30: provider token GitHub demo, nunca real — separado del `accessToken` de la sesión de la Console. */
+const DEMO_GITHUB_PROVIDER_TOKEN = 'mock-github-provider-token'
 const latency = () => new Promise<void>((resolve) => setTimeout(resolve, import.meta.env.MODE === 'test' ? 0 : 180))
 
 function readStoredSession(): AuthSession | null {
@@ -26,15 +28,24 @@ export const mockAuthAdapter: AuthAdapter = {
   async signInWithPassword(email, password) {
     await latency()
     if (!email.trim() || password.length < 6) throw new Error(invalidCredentialsMessage)
-    const session: AuthSession = { user: DEMO_USER, accessToken: DEMO_TOKEN }
+    const session: AuthSession = { user: DEMO_USER, accessToken: DEMO_TOKEN, githubProviderToken: null }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(session))
     return session
   },
   async signInWithGitHub() {
     await latency()
-    const session: AuthSession = { user: DEMO_GITHUB_USER, accessToken: DEMO_GITHUB_TOKEN }
+    const session: AuthSession = { user: DEMO_GITHUB_USER, accessToken: DEMO_GITHUB_TOKEN, githubProviderToken: DEMO_GITHUB_PROVIDER_TOKEN }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(session))
     return session
+  },
+  /** HU30: vincula GitHub a una sesión existente (típicamente de correo) sin cambiar `user`/`accessToken`. */
+  async linkGitHub() {
+    await latency()
+    const current = readStoredSession()
+    if (!current) throw new Error('No hay una sesión activa para vincular GitHub.')
+    const next: AuthSession = { ...current, githubProviderToken: DEMO_GITHUB_PROVIDER_TOKEN }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+    return next
   },
   async signOut() {
     await latency()

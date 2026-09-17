@@ -2,13 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const signInWithPassword = vi.fn()
 const signInWithOAuth = vi.fn()
+const linkIdentity = vi.fn()
 const getSession = vi.fn()
 const signOut = vi.fn()
 const resetPasswordForEmail = vi.fn()
 const onAuthStateChange = vi.fn()
 
 vi.mock('@supabase/supabase-js', () => ({
-  createClient: () => ({ auth: { signInWithPassword, signInWithOAuth, getSession, signOut, resetPasswordForEmail, onAuthStateChange } }),
+  createClient: () => ({ auth: { signInWithPassword, signInWithOAuth, linkIdentity, getSession, signOut, resetPasswordForEmail, onAuthStateChange } }),
 }))
 
 /**
@@ -20,6 +21,7 @@ import { supabaseAuthAdapter } from './supabaseAuthAdapter'
 beforeEach(() => {
   signInWithPassword.mockReset()
   signInWithOAuth.mockReset()
+  linkIdentity.mockReset()
   getSession.mockReset()
   signOut.mockReset()
   resetPasswordForEmail.mockReset()
@@ -29,7 +31,12 @@ beforeEach(() => {
 describe('supabaseAuthAdapter (no probado en vivo)', () => {
   it('mapea una sesión válida del SDK a AuthSession', async () => {
     getSession.mockResolvedValue({ data: { session: { access_token: 'jwt-abc', user: { id: 'u1', email: 'real@empresa.com' } } } })
-    expect(await supabaseAuthAdapter.getSession()).toEqual({ accessToken: 'jwt-abc', user: { id: 'u1', email: 'real@empresa.com' } })
+    expect(await supabaseAuthAdapter.getSession()).toEqual({ accessToken: 'jwt-abc', user: { id: 'u1', email: 'real@empresa.com' }, githubProviderToken: null })
+  })
+
+  it('HU30: mapea provider_token a githubProviderToken cuando el SDK lo trae', async () => {
+    getSession.mockResolvedValue({ data: { session: { access_token: 'jwt-abc', provider_token: 'gho_demo', user: { id: 'u1', email: 'real@empresa.com' } } } })
+    expect(await supabaseAuthAdapter.getSession()).toEqual({ accessToken: 'jwt-abc', user: { id: 'u1', email: 'real@empresa.com' }, githubProviderToken: 'gho_demo' })
   })
 
   it('getSession sin sesión activa devuelve null', async () => {
@@ -48,17 +55,30 @@ describe('supabaseAuthAdapter (no probado en vivo)', () => {
     expect(session.accessToken).toBe('jwt-xyz')
   })
 
-  it('HU29 ampliado: signInWithGitHub delega en signInWithOAuth y devuelve la sesión ya establecida', async () => {
+  it('HU29 ampliado: signInWithGitHub delega en signInWithOAuth con scope repo y devuelve la sesión ya establecida', async () => {
     signInWithOAuth.mockResolvedValue({ data: {}, error: null })
     getSession.mockResolvedValue({ data: { session: { access_token: 'jwt-gh', user: { id: 'u3', email: 'real@empresa.com' } } } })
     const session = await supabaseAuthAdapter.signInWithGitHub()
-    expect(signInWithOAuth).toHaveBeenCalledWith({ provider: 'github' })
+    expect(signInWithOAuth).toHaveBeenCalledWith({ provider: 'github', options: { scopes: 'repo' } })
     expect(session.accessToken).toBe('jwt-gh')
   })
 
   it('signInWithGitHub ante error de OAuth nunca expone el detalle de Supabase', async () => {
     signInWithOAuth.mockResolvedValue({ data: {}, error: { message: 'access_denied' } })
     await expect(supabaseAuthAdapter.signInWithGitHub()).rejects.toThrow('No pudimos verificar tus credenciales. Revisa el correo y la contraseña.')
+  })
+
+  it('HU30: linkGitHub delega en linkIdentity con scope repo y devuelve la sesión vinculada', async () => {
+    linkIdentity.mockResolvedValue({ data: {}, error: null })
+    getSession.mockResolvedValue({ data: { session: { access_token: 'jwt-email', provider_token: 'gho_linked', user: { id: 'u4', email: 'real@empresa.com' } } } })
+    const session = await supabaseAuthAdapter.linkGitHub()
+    expect(linkIdentity).toHaveBeenCalledWith({ provider: 'github', options: { scopes: 'repo' } })
+    expect(session.githubProviderToken).toBe('gho_linked')
+  })
+
+  it('linkGitHub ante error nunca expone el detalle de Supabase', async () => {
+    linkIdentity.mockResolvedValue({ data: {}, error: { message: 'identity_already_exists' } })
+    await expect(supabaseAuthAdapter.linkGitHub()).rejects.toThrow('No pudimos verificar tus credenciales. Revisa el correo y la contraseña.')
   })
 
   it('onAuthStateChange devuelve una función de desuscripción', () => {

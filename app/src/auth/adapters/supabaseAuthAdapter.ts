@@ -23,7 +23,11 @@ function getClient(): SupabaseClient {
 
 function toSession(session: Session | null): AuthSession | null {
   if (!session) return null
-  return { accessToken: session.access_token, user: { id: session.user.id, email: session.user.email ?? '' } }
+  return {
+    accessToken: session.access_token,
+    user: { id: session.user.id, email: session.user.email ?? '' },
+    githubProviderToken: session.provider_token ?? null,
+  }
 }
 
 export const supabaseAuthAdapter: AuthAdapter = {
@@ -37,9 +41,27 @@ export const supabaseAuthAdapter: AuthAdapter = {
     if (error || !session) throw new Error(invalidCredentialsMessage)
     return session
   },
-  /** HU29 ampliado: `signInWithOAuth` redirige el navegador a GitHub; la sesión llega después vía `onAuthStateChange`, no en este retorno. */
+  /**
+   * HU29 ampliado / HU30 (INTEROP-2.2 §6.8): `signInWithOAuth` redirige el navegador a GitHub; la
+   * sesión llega después vía `onAuthStateChange`, no en este retorno. Pide scope `repo` para que
+   * el `provider_token` resultante sirva luego para discovery de repositorios.
+   */
   async signInWithGitHub() {
-    const { error } = await getClient().auth.signInWithOAuth({ provider: 'github' })
+    const { error } = await getClient().auth.signInWithOAuth({ provider: 'github', options: { scopes: 'repo' } })
+    if (error) throw new Error(invalidCredentialsMessage)
+    const { data } = await getClient().auth.getSession()
+    const session = toSession(data.session)
+    if (!session) throw new Error(invalidCredentialsMessage)
+    return session
+  },
+  /**
+   * HU30 (no probado en vivo): `linkIdentity` vincula GitHub scope `repo` a la sesión de correo
+   * existente sin crear otro usuario de plataforma, a diferencia de `signInWithOAuth`. Igual que
+   * `signInWithGitHub`, redirige el navegador; la sesión vinculada llega después vía
+   * `onAuthStateChange`.
+   */
+  async linkGitHub() {
+    const { error } = await getClient().auth.linkIdentity({ provider: 'github', options: { scopes: 'repo' } })
     if (error) throw new Error(invalidCredentialsMessage)
     const { data } = await getClient().auth.getSession()
     const session = toSession(data.session)
