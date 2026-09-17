@@ -17,9 +17,17 @@ HU48 (ver `plan.md` y sección propia abajo).
       `ACTION_REQUIRED`).
 - [ ] Core implementa el controller real — Console rechaza en modo live con
       `PendingContractError` hasta entonces.
-- [ ] Selector de símbolo cuando el Run tiene más de uno elegible (la demo
-      actual toma el primero automáticamente).
-- [ ] Replay ("Run again"/"New comparison") sobre el mismo `AnalysisRun`.
+- [x] Selector de símbolo cuando el Run tiene más de uno elegible (2026-09-17):
+      `findEligibleSymbols` en `run-comparison/types.ts` devuelve todos los
+      candidatos; con exactamente uno, `RunComparisonPage` sigue arrancando
+      sola (comportamiento previo intacto); con más de uno, muestra un
+      `<select>` y requiere elegir antes de iniciar.
+- [x] Replay ("Run again"/"New comparison") sobre el mismo `AnalysisRun`
+      (2026-09-17): `listRunComparisons`/`mockListRunComparisons`
+      (`GET /analysis-runs/{id}/experiments`, §6.5) listan todos los trials
+      ya lanzados; cada uno sondea su propio progreso de forma independiente
+      (`TrialCard`), sin perder los anteriores. Botón "Repetir comparación
+      (Replay)" reutiliza el símbolo seleccionado para lanzar un nuevo trial.
 
 ## HU49 — Capture next PR
 

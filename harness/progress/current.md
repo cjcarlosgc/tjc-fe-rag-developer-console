@@ -1,5 +1,30 @@
 # Progreso actual
 
+**HU48 cierra el selector de símbolo múltiple y Replay (2026-09-17).** Tras
+cerrar HU30, se preguntó al usuario con qué seguir y eligió completar los 2
+ítems pendientes de HU48 en `tasks.md` (sin bloqueo de contrato, ya dentro
+del alcance aprobado). `findEligibleSymbols` en `run-comparison/types.ts`
+devuelve todos los símbolos elegibles de un Run (antes solo el primero);
+`RunComparisonPage` muestra un selector cuando hay más de uno y sigue
+arrancando sola cuando hay exactamente uno (sin regresión). Nuevo
+`listRunComparisons`/`mockListRunComparisons` (§6.5
+`GET /analysis-runs/{id}/experiments`) lista todos los trials de un Run;
+botón "Repetir comparación (Replay)" lanza uno nuevo sin perder los
+anteriores, cada uno con su propio progreso vía una `TrialCard`
+independiente. Durante la verificación manual se corrigió un detalle:
+`TrialCard` usaba `initialData` en vez de `placeholderData` para la snapshot
+inicial del trial — el patrón correcto para no interferir con el fetch/
+polling normal de React Query. Verificación: `tsc -b --noEmit`/lint/build
+limpios, 302 pruebas en verde (+4), recorrido manual en navegador confirmó
+el selector y que Replay agrega trials sin perder los anteriores; el avance
+automático de progreso no pudo verse completo en vivo porque la pestaña
+controlada por la extensión reporta `visibilityState: hidden` y
+`refetchInterval` de React Query no refresca en segundo plano por defecto
+(limitación del entorno de automatización, no del código — la progresión
+completa sí está cubierta por la suite de tests). Ver
+`harness/reports/HU48-symbol-selector-replay.md`. `activeWorkItem` vuelve a
+`null`.
+
 **HU30 se reconcilia con el binding user-centric de INTEROP-2.2 (2026-09-17).**
 Core subió SYSTEM-2.2/INTEROP-2.2 (solo especificación): reemplaza el
 onboarding "installation-centric" por uno "user-centric" — discovery de

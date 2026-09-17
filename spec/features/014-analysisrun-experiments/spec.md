@@ -33,10 +33,14 @@ descarta HU19, se reorienta su forma de entrada.
 **Implementado en Console (mock-first, `feature/T-001`):** `run-comparison/`
 (`types.ts`/`api.ts`/`RunComparisonPage.tsx`), entrada desde
 `AnalysisRunDetailPage` cuando hay un símbolo `DIRECTLY_CHANGED`
-`METHOD`/`FUNCTION` elegible. Simplificación de demo respecto al flujo
-completo descrito abajo: arranca automáticamente al entrar (sin selector de
-`trial`/"Replay" todavía) y usa el primer símbolo elegible del Run, no una
-lista de símbolos — cubre la regla de `ACTION_REQUIRED` del handoff.
+`METHOD`/`FUNCTION` elegible. Con exactamente un símbolo elegible, arranca
+automáticamente al entrar (comportamiento original, sin cambios); con más de
+uno, muestra un selector y requiere elegir antes de iniciar — cubre la regla
+de `ACTION_REQUIRED` del handoff (símbolo obligatorio, no ambiguo). Selector
+de símbolo y Replay (2026-09-17): `listRunComparisons` (§6.5,
+`GET /analysis-runs/{id}/experiments`) lista todos los trials ya lanzados
+sobre el Run; el botón "Repetir comparación (Replay)" lanza uno nuevo sin
+perder los anteriores, cada uno con su propio progreso independiente.
 
 Flujo objetivo (contrato, no todo implementado en la demo): `AnalysisRun`
 existente → acción "Run comparison" → se crea un
