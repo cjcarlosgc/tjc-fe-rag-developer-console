@@ -9,6 +9,13 @@ import { AuthProvider } from '../auth/AuthProvider'
 import { setAuthModeForTests } from '../auth/authMode'
 import { IntegrationsPage } from './IntegrationsPage'
 
+const SESSION_KEY = 'rag-console.mock-session'
+const EMAIL_USER = { id: 'user_demo_local', email: 'demo@rag-test-studio.local' }
+
+function seedEmailSession(githubProviderToken: string | null) {
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ user: EMAIL_USER, accessToken: 'mock-session-token', githubProviderToken }))
+}
+
 beforeEach(() => {
   localStorage.clear()
   setAuthModeForTests('mock')
@@ -30,6 +37,7 @@ function renderIntegrations(projectId: string) {
 }
 
 test('HU30: muestra el binding ENABLED y permite desconectar', async () => {
+  seedEmailSession('mock-github-provider-token')
   const user = userEvent.setup()
   renderIntegrations('prj_checkout_demo')
 
@@ -38,36 +46,77 @@ test('HU30: muestra el binding ENABLED y permite desconectar', async () => {
 
   await user.click(screen.getByRole('button', { name: 'Desconectar' }))
 
-  expect(await screen.findByText('Sin repositorio vinculado')).toBeInTheDocument()
+  expect(await screen.findByLabelText('Buscar repositorio')).toBeInTheDocument()
 })
 
-test('HU30: sin binding, el flujo de 2 pasos reconecta el repositorio elegido en el selector', async () => {
+test('HU30: sin GitHub vinculado, el CTA conecta la sesión y habilita el descubrimiento', async () => {
+  seedEmailSession(null)
   const user = userEvent.setup()
   renderIntegrations('prj_billing_demo')
   await user.click(await screen.findByRole('button', { name: 'Desconectar' }))
-  await screen.findByText('Sin repositorio vinculado')
 
-  await user.click(screen.getByRole('button', { name: 'Conectar GitHub App' }))
-  expect(await screen.findByText('Instalación simulada iniciada')).toBeInTheDocument()
+  expect(await screen.findByText('Conecta tu cuenta de GitHub')).toBeInTheDocument()
+  expect(screen.queryByLabelText('Buscar repositorio')).not.toBeInTheDocument()
 
-  await user.selectOptions(screen.getByLabelText('Repositorio a autorizar'), 'acme/billing-engine')
-  await user.click(screen.getByRole('button', { name: 'Simular instalación completada' }))
-  expect(await screen.findByText('billing-engine', { selector: '.repo-name' })).toBeInTheDocument()
-  expect(screen.getByText('ENABLED')).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Conectar GitHub' }))
+  expect(await screen.findByLabelText('Buscar repositorio')).toBeInTheDocument()
 })
 
-test('el selector de repositorio ofrece más de un repo candidato y respeta la elección', async () => {
+test('HU30: camino feliz — repo AUTHORIZED de una, elige rama real y crea el binding', async () => {
+  seedEmailSession('mock-github-provider-token')
   const user = userEvent.setup()
   renderIntegrations('prj_billing_demo')
   await user.click(await screen.findByRole('button', { name: 'Desconectar' }))
-  await screen.findByText('Sin repositorio vinculado')
-  await user.click(screen.getByRole('button', { name: 'Conectar GitHub App' }))
-  await screen.findByText('Instalación simulada iniciada')
+  await screen.findByLabelText('Buscar repositorio')
 
-  const picker = screen.getByLabelText('Repositorio a autorizar') as HTMLSelectElement
-  expect(Array.from(picker.options).map((option) => option.textContent)).toEqual(['acme/checkout-service', 'acme/billing-engine', 'acme/notifications-service'])
+  await user.type(screen.getByLabelText('Buscar repositorio'), 'notifications')
+  await user.click(await screen.findByRole('button', { name: /notifications-service/ }))
 
-  await user.selectOptions(picker, 'acme/notifications-service')
-  await user.click(screen.getByRole('button', { name: 'Simular instalación completada' }))
+  expect(await screen.findByText('Acceso autorizado a acme/notifications-service')).toBeInTheDocument()
+  const branchSelect = await screen.findByLabelText('Integration branch') as HTMLSelectElement
+  expect(Array.from(branchSelect.options).map((option) => option.value)).toEqual(expect.arrayContaining(['main', 'develop', 'feature/webhooks-v2']))
+
+  await user.selectOptions(branchSelect, 'develop')
+  await user.click(screen.getByRole('button', { name: 'Vincular repositorio' }))
+
   expect(await screen.findByText('notifications-service', { selector: '.repo-name' })).toBeInTheDocument()
+  expect(screen.getByText('ENABLED')).toBeInTheDocument()
+  expect(screen.getByText('develop')).toBeInTheDocument()
+})
+
+test('HU30: repo NOT_AUTHORIZED muestra CTA de configuración y "Revalidar" la autoriza', async () => {
+  seedEmailSession('mock-github-provider-token')
+  const user = userEvent.setup()
+  renderIntegrations('prj_billing_demo')
+  await user.click(await screen.findByRole('button', { name: 'Desconectar' }))
+  await screen.findByLabelText('Buscar repositorio')
+
+  await user.type(screen.getByLabelText('Buscar repositorio'), 'playground')
+  await user.click(await screen.findByRole('button', { name: /integration-playground/ }))
+
+  expect(await screen.findByText(/no tiene acceso a demo-user\/integration-playground/)).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Configurar acceso en GitHub →' }).getAttribute('href')).toMatch(/github\.com/)
+  expect(screen.queryByLabelText('Integration branch')).not.toBeInTheDocument()
+
+  await user.click(screen.getByRole('button', { name: 'Revalidar' }))
+  expect(await screen.findByText('Acceso autorizado a demo-user/integration-playground')).toBeInTheDocument()
+
+  const branchSelect = await screen.findByLabelText('Integration branch') as HTMLSelectElement
+  await user.selectOptions(branchSelect, 'main')
+  await user.click(screen.getByRole('button', { name: 'Vincular repositorio' }))
+  expect(await screen.findByText('integration-playground', { selector: '.repo-name' })).toBeInTheDocument()
+})
+
+test('permite elegir otro repositorio antes de confirmar el binding', async () => {
+  seedEmailSession('mock-github-provider-token')
+  const user = userEvent.setup()
+  renderIntegrations('prj_billing_demo')
+  await user.click(await screen.findByRole('button', { name: 'Desconectar' }))
+  await screen.findByLabelText('Buscar repositorio')
+
+  await user.click(await screen.findByRole('button', { name: /notifications-service/ }))
+  await screen.findByText('Acceso autorizado a acme/notifications-service')
+
+  await user.click(screen.getByRole('button', { name: 'Elegir otro repositorio' }))
+  expect(await screen.findByLabelText('Buscar repositorio')).toBeInTheDocument()
 })
