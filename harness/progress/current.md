@@ -1,5 +1,32 @@
 # Progreso actual
 
+**HU30 se reconcilia con el binding user-centric de INTEROP-2.2 (2026-09-17).**
+Core subió SYSTEM-2.2/INTEROP-2.2 (solo especificación): reemplaza el
+onboarding "installation-centric" por uno "user-centric" — discovery de
+repositorios vía provider token OAuth, verificación de acceso de la GitHub
+App a un repo concreto (`AUTHORIZED`/`NOT_AUTHORIZED` con CTA de
+configuración/revalidación), ramas reales y creación del binding sin
+`installationId` (Core lo resuelve). A pedido del usuario se comiteó primero
+el sync de spec/contratos (`971b997`, doc-only) y luego se planeó
+(`EnterPlanMode`/`ExitPlanMode`, aprobado) antes de tocar código. Se
+reconstruyó `control-plane/{types,api,queries}.ts`, `demoRepositories.ts` y
+`api/mockBackend.ts` contra la nueva forma, y se agregó a `AuthSession` un
+`githubProviderToken` + `linkGitHub()` (vincula GitHub a una sesión de correo
+sin cambiar de usuario, HU29) porque el flujo de discovery no tenía sentido
+sin eso. `IntegrationsPage` pasa de un flujo de 2 pasos a uno de 4
+(conectar GitHub → descubrir → verificar acceso → elegir rama y vincular).
+Sigue **sin activar live** — las 4 rutas nuevas rechazan con
+`PendingContractError` hasta aprobación humana explícita, como pedía
+`tasks.md`. Verificación: `tsc -b --noEmit`/lint/build limpios, 298 pruebas
+en verde (+16), recorrido manual en navegador confirmado esta vez (camino
+feliz y camino NOT_AUTHORIZED→revalidar) sin errores de consola. Ver
+`harness/reports/HU30-github-app-centric-binding.md`. Se detectó y corrigió
+un hallazgo de proceso: `tsc --noEmit` sin `-b` no verificaba nada en este
+repo por la config de referencias — usar `tsc -b --noEmit` de ahora en
+adelante para chequeos intermedios (`pnpm build` ya usaba `-b` internamente,
+así que cortes anteriores cerrados con `pnpm build` no están afectados).
+`activeWorkItem` vuelve a `null`.
+
 **HU52 y HU49 cierran el corte HU48–HU55 (2026-09-16).** A pedido del
 usuario de retomar la sesión pausada ("continua la implementacion"), se
 implementaron las 2 historias que quedaban pendientes del corte anterior,

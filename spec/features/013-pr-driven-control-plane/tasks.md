@@ -9,10 +9,17 @@
 
 ## Implementación posterior — requiere selección humana
 
-- [ ] HU30: repository binding mock-first user-centric — listado de repositorios
-      por provider token, validación App, CTA/revalidación, ramas reales simuladas,
-      binding sin `installationId` y desconexión. Reconciliar con INTEROP-2.2 sin
-      activar live hasta aprobación humana explícita.
+- [x] HU30: repository binding mock-first user-centric — reconciliado contra
+      INTEROP-2.2 §6.8 (2026-09-17). Discovery (`GET /integrations/github/repositories`,
+      gated en la UI por `authSession.githubProviderToken`, nuevo en `AuthSession`),
+      verificación de acceso de la App (`AUTHORIZED`/`NOT_AUTHORIZED` con CTA de
+      configuración + "Revalidar" — `repo_playground` necesita 2 verificaciones,
+      demuestra el ciclo), ramas reales simuladas por repo, y creación del binding
+      sin `installationId` (`CreateRepositoryBindingRequest`, Core lo resuelve).
+      Auth gana `linkGitHub()` (vincula GitHub a una sesión de correo sin cambiar de
+      usuario, HU29). Sigue sin activar live — las 4 rutas nuevas rechazan con
+      `PendingContractError` hasta aprobación humana explícita. Ver
+      `harness/reports/HU30-github-app-centric-binding.md`.
 - [x] HU32: Analysis Runs por PR/HEAD y obsolescencia — mock-first, 9 escenarios
       de `spec.md`. Ver `harness/reports/HU30-HU32-HU39-HU40-control-plane-mock.md`.
 - [x] HU32 (parcial, live): `getAnalysisRun`/`listAnalysisRuns` conectados a los
@@ -57,8 +64,8 @@ sin contrato) — HU50/HU52 siguen sin contrato.
       `console-analysisrun-live-adapters.md`).
 
 El mock-first anterior queda completo salvo lo explícitamente Core-side (HU35/36) y
-P4 (HU44/45). HU30 se reabre para el binding user-centric de INTEROP-2.2. Adapters
-live: Analysis Runs y listado de `ProjectVersion` ya conectados contra Core real
-(ver arriba); el binding, Checks/propuestas/publicación, Action Required,
-Functional Knowledge y context-traces siguen sin live. El binding no se conecta a
-Core hasta recibir aprobación humana explícita después de su reconciliación mock.
+P4 (HU44/45). HU30 ya está reconciliado contra el binding user-centric de
+INTEROP-2.2 (ver arriba). Adapters live: Analysis Runs y listado de `ProjectVersion`
+ya conectados contra Core real; el binding, Checks/propuestas/publicación, Action
+Required, Functional Knowledge y context-traces siguen sin live. El binding no se
+conecta a Core hasta recibir aprobación humana explícita.
