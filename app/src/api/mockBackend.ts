@@ -2,7 +2,7 @@ import type { ActionRequiredListPage, FunctionalAnswerAcceptedResponse, Function
 import type { ArtifactViewModel } from '../artifacts/types'
 import type { AgentTrajectoryStep, ContextTraceDetail, ContextTracePage, ContextTraceSummary, DiscoveredFilePage, ExperimentContextTraceFilters, RagCandidateNode, RagContextTraceDetail, RunContextTraceFilters, SourceExcerpt } from '../context-explorer/types'
 import type { ExperimentAccepted, ExperimentOperation, ExperimentResultViewModel } from '../experiments/types'
-import type { RunComparisonAccepted, RunComparisonOperation } from '../run-comparison/types'
+import type { RunComparisonAccepted, RunComparisonListPage, RunComparisonOperation } from '../run-comparison/types'
 import type { CaptureNextPrState } from '../run-comparison/speculative/captureNextPr'
 import type { ContextProvenance } from '../context-explorer/speculative/contextProvenance'
 import type { PriorCoverageLevel } from '../control-plane/speculative/priorCoverage'
@@ -1015,6 +1015,15 @@ export async function mockGetRunComparison(comparisonId: string): Promise<RunCom
   else state.operation = { ...state.operation, status: 'COMPLETED', progress: 100 }
   const snapshot = clone(state.operation)
   return snapshot.status === 'COMPLETED' ? snapshot : { ...snapshot, result: undefined }
+}
+
+/** HU48: `GET /analysis-runs/{analysisRunId}/experiments`. Lectura pura (no avanza `polls`, a diferencia de `mockGetRunComparison`) — permite listar todos los trials de un Run sin interferir con el polling individual de cada uno. */
+export async function mockListRunComparisons(analysisRunId: string): Promise<RunComparisonListPage> {
+  await latency()
+  const items = Array.from(runComparisons.values())
+    .filter((state) => state.operation.analysisRunId === analysisRunId)
+    .map((state) => state.operation.status === 'COMPLETED' ? state.operation : { ...state.operation, result: undefined })
+  return { items: clone(items), nextCursor: null }
 }
 
 function defaultCaptureNextPrState(projectId: string): CaptureNextPrState {

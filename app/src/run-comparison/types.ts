@@ -30,7 +30,18 @@ export interface RunComparisonOperation {
   result?: ExperimentResultViewModel
 }
 
-/** Único símbolo elegible por contrato: `DIRECTLY_CHANGED` y de tipo `METHOD`/`FUNCTION`. */
+/** `GET /analysis-runs/{analysisRunId}/experiments?cursor&limit` -> `Page<ExperimentStatusResponse>` (§6.5). Cada trial ("Replay"/"New comparison") sobre el mismo Run queda listado acá. */
+export interface RunComparisonListPage {
+  items: RunComparisonOperation[]
+  nextCursor: string | null
+}
+
+/** Símbolos elegibles por contrato: `DIRECTLY_CHANGED` y de tipo `METHOD`/`FUNCTION`. Puede haber más de uno en un changeset grande. */
+export function findEligibleSymbols(symbols: AnalysisSymbolResponse[]): AnalysisSymbolResponse[] {
+  return symbols.filter((symbol) => symbol.changeKind === 'DIRECTLY_CHANGED' && (symbol.kind === 'METHOD' || symbol.kind === 'FUNCTION'))
+}
+
+/** Primer símbolo elegible, usado donde solo importa si existe alguno (p.ej. habilitar el CTA "Run comparison" en `AnalysisRunDetailPage`). */
 export function findEligibleSymbol(symbols: AnalysisSymbolResponse[]): AnalysisSymbolResponse | null {
-  return symbols.find((symbol) => symbol.changeKind === 'DIRECTLY_CHANGED' && (symbol.kind === 'METHOD' || symbol.kind === 'FUNCTION')) ?? null
+  return findEligibleSymbols(symbols)[0] ?? null
 }
