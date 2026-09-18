@@ -1,5 +1,31 @@
 # Progreso actual
 
+**HU30 activa adapters live contra Core real + fix de carrera en auth (2026-09-18).**
+El usuario pidió empezar a integrar contra el backend real. Se confirmó que
+Core ya tiene un backend desplegado en Render con HU30 implementado de
+verdad (DTOs verificados leyendo su código fuente, coinciden exacto con los
+tipos de Console) y un proyecto Supabase real compartido que Console nunca
+había cableado. Con permiso explícito se conectó `.env` local a ambos y se
+probó login GitHub OAuth real en el navegador (clic manual del usuario, el
+botón no respondía a automatización). Se activaron los 6 adapters live de
+repository binding (antes `PendingContractError` a propósito hasta esta
+aprobación). Durante la prueba se encontró y corrigió un bug real de
+Console: `AuthProvider` sincronizaba el Bearer en un `useEffect([session])`
+que corre después de los efectos de rutas hijas montadas por `RequireAuth`
+en el mismo commit — la primera consulta tras login salía sin token, Core
+respondía 401 y la Console deslogueaba sola. Se descartó una hipótesis
+cruzada de Core (comillas en el header) con logs temporales; la causa real
+fue solo la carrera de efectos. Corregido sincronizando durante el render.
+Verificado end-to-end contra producción: login real, discovery real de
+repos (paso que ni Core había probado), y el usuario conectó
+`cjcarlosgc/tjc-fe-ts-repo-test` de verdad — confirmado leyendo directo de
+la base de datos de Core (`installationId` resuelto server-side, nunca
+enviado por el navegador). `tsc -b --noEmit`/lint/build limpios, 308
+pruebas en verde (sin cambios de conteo, solo se reescribió el describe
+live de HU30). Ver
+`harness/reports/HU30-live-adapters-and-auth-race-fix.md`. `activeWorkItem`
+vuelve a `null`.
+
 **HU48 cierra el selector de símbolo múltiple y Replay (2026-09-17).** Tras
 cerrar HU30, se preguntó al usuario con qué seguir y eligió completar los 2
 ítems pendientes de HU48 en `tasks.md` (sin bloqueo de contrato, ya dentro

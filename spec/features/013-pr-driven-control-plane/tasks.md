@@ -17,9 +17,18 @@
       demuestra el ciclo), ramas reales simuladas por repo, y creación del binding
       sin `installationId` (`CreateRepositoryBindingRequest`, Core lo resuelve).
       Auth gana `linkGitHub()` (vincula GitHub a una sesión de correo sin cambiar de
-      usuario, HU29). Sigue sin activar live — las 4 rutas nuevas rechazan con
-      `PendingContractError` hasta aprobación humana explícita. Ver
-      `harness/reports/HU30-github-app-centric-binding.md`.
+      usuario, HU29). Ver `harness/reports/HU30-github-app-centric-binding.md`.
+- [x] HU30 (live, 2026-09-18): activados los 6 adapters live contra Core real
+      (Render+Supabase+GitHub), con aprobación humana explícita tras verificar en
+      vivo que Core ya lo implementó (handoff cross-repo). Verificado end-to-end:
+      login GitHub real, discovery de repos reales (paso que ni Core había probado
+      todavía). Durante la prueba se encontró y corrigió un bug real de Console
+      (no de Core): `AuthProvider` sincronizaba el Bearer de `apiRequest` en un
+      `useEffect([session])`, que corre después de los efectos de rutas hijas
+      recién montadas por `RequireAuth` en el mismo commit — la primera consulta
+      tras login salía sin token, Core respondía 401 y la Console deslogueaba
+      sola. Corregido sincronizando durante el render. Ver
+      `harness/reports/HU30-live-adapters-and-auth-race-fix.md`.
 - [x] HU32: Analysis Runs por PR/HEAD y obsolescencia — mock-first, 9 escenarios
       de `spec.md`. Ver `harness/reports/HU30-HU32-HU39-HU40-control-plane-mock.md`.
 - [x] HU32 (parcial, live): `getAnalysisRun`/`listAnalysisRuns` conectados a los
