@@ -47,9 +47,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => { active = false; unsubscribe() }
   }, [blocked])
 
-  useEffect(() => {
-    setAuthTokenProvider(() => session?.accessToken ?? null)
-  }, [session])
+  /**
+   * Sincroniza el proveedor de Bearer para `apiRequest` durante el render, no en un `useEffect`:
+   * React ejecuta los efectos de hijos antes que los de padres dentro del mismo commit, así que un
+   * `useEffect([session])` acá corre DESPUÉS del efecto de montaje de una ruta hija recién habilitada
+   * por `RequireAuth` (p.ej. la primera vez que `status` pasa a `authenticated`) — esa ruta podía
+   * disparar su primera consulta sin token todavía, forzando un 401 -> logout automático espurio.
+   * Esta asignación es una simple actualización de un valor externo (no afecta lo que se renderiza),
+   * por lo que es segura de ejecutar en el cuerpo del componente, incluida la doble invocación de
+   * StrictMode en desarrollo.
+   */
+  setAuthTokenProvider(() => session?.accessToken ?? null)
 
   useEffect(() => {
     setUnauthorizedHandler(() => {
