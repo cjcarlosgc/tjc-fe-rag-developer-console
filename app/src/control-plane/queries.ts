@@ -30,11 +30,11 @@ export function useRepositoryBinding(projectId: string) {
   })
 }
 
-export function useGitHubUserRepositories(enabled: boolean) {
+export function useGitHubUserRepositories(githubProviderToken: string | null) {
   return useQuery({
     queryKey: controlPlaneKeys.githubRepositories(),
-    queryFn: () => listGitHubUserRepositories(),
-    enabled,
+    queryFn: () => listGitHubUserRepositories(githubProviderToken as string),
+    enabled: Boolean(githubProviderToken),
   })
 }
 

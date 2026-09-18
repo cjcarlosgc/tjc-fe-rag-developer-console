@@ -27,7 +27,7 @@ describe('control-plane api (mock) — HU30 repository binding user-centric (INT
   })
 
   it('lista los repositorios descubiertos del usuario', async () => {
-    const page = await listGitHubUserRepositories()
+    const page = await listGitHubUserRepositories('gho_demo_token')
     expect(page.items.map((repo) => repo.repositoryName)).toEqual(expect.arrayContaining(['acme/checkout-service', 'acme/billing-engine', 'acme/notifications-service']))
     expect(page.nextCursor).toBeNull()
   })
@@ -180,20 +180,72 @@ describe('control-plane api (mock) — HU39/HU40 propuestas y companion PR', () 
 describe('control-plane api (live) — lo que Core todavía no implementa (sin controller real)', () => {
   beforeEach(() => setDataSourceForTests('live'))
 
-  it('binding y propuestas siguen sin ruta: rechazan con PendingContractError', async () => {
-    await expect(getRepositoryBinding('prj_checkout_demo')).rejects.toThrow(/todavía no publicó/)
+  it('propuestas de prueba siguen sin ruta: rechaza con PendingContractError', async () => {
     await expect(listTestProposals('arun_checkout_pr45')).rejects.toThrow(/todavía no publicó/)
-  })
-
-  it('HU30 user-centric: discovery, verify-app-access, ramas y creación de binding rechazan con PendingContractError', async () => {
-    await expect(listGitHubUserRepositories()).rejects.toThrow(/todavía no publicó/)
-    await expect(verifyGitHubAppAccess({ repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service' })).rejects.toThrow(/todavía no publicó/)
-    await expect(listGitHubRepositoryBranches('acme', 'checkout-service')).rejects.toThrow(/todavía no publicó/)
-    await expect(createRepositoryBinding('prj_checkout_demo', { repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service', integrationBranch: 'main' })).rejects.toThrow(/todavía no publicó/)
   })
 
   it('HU55: el listado global de Analysis Runs (sin projectId) tiene contrato definido pero Core no lo implementó — PendingContractError', async () => {
     await expect(listAnalysisRuns()).rejects.toThrow(/todavía no lo implementó/)
+  })
+})
+
+describe('control-plane api (live) — HU30 repository binding, Core ya lo implementó (Render+Supabase+GitHub reales, handoff 2026-09-17)', () => {
+  beforeEach(() => setDataSourceForTests('live'))
+
+  it('getRepositoryBinding traduce 404 REPOSITORY_BINDING_NOT_FOUND a null', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ code: 'REPOSITORY_BINDING_NOT_FOUND', message: 'x' }), { status: 404 }))
+    await expect(getRepositoryBinding('prj_real')).resolves.toBeNull()
+  })
+
+  it('getRepositoryBinding pide GET /projects/{projectId}/integrations/github y devuelve el binding', async () => {
+    const binding = { projectId: 'prj_real', installationId: 'inst_1', repositoryId: 'repo_1', repositoryName: 'acme/repo', integrationBranch: 'main', status: 'ENABLED', createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z' }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(binding), { status: 200 }))
+    await expect(getRepositoryBinding('prj_real')).resolves.toEqual(binding)
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/projects/prj_real/integrations/github'), expect.anything())
+  })
+
+  it('listGitHubUserRepositories pide GET /integrations/github/repositories con X-GitHub-Provider-Token', async () => {
+    const page = { items: [], nextCursor: null }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(page), { status: 200 }))
+    await expect(listGitHubUserRepositories('gho_demo_token')).resolves.toEqual(page)
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/integrations/github/repositories'),
+      expect.objectContaining({ headers: expect.objectContaining({ 'X-GitHub-Provider-Token': 'gho_demo_token' }) }),
+    )
+  })
+
+  it('verifyGitHubAppAccess pide POST .../verify-app-access con repositoryId/repositoryName', async () => {
+    const access = { repositoryId: 'repo_1', repositoryName: 'acme/repo', status: 'AUTHORIZED', installationId: 'inst_1', app: { displayName: 'App', configureUrl: 'https://x' } }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(access), { status: 200 }))
+    await expect(verifyGitHubAppAccess({ repositoryId: 'repo_1', repositoryName: 'acme/repo' })).resolves.toEqual(access)
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/integrations/github/repositories/verify-app-access'),
+      expect.objectContaining({ method: 'POST', body: JSON.stringify({ repositoryId: 'repo_1', repositoryName: 'acme/repo' }) }),
+    )
+  })
+
+  it('listGitHubRepositoryBranches pide GET .../{owner}/{repo}/branches', async () => {
+    const branches = { items: [{ name: 'main', protected: true }] }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(branches), { status: 200 }))
+    await expect(listGitHubRepositoryBranches('acme', 'repo')).resolves.toEqual(branches)
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/integrations/github/repositories/acme/repo/branches'), expect.anything())
+  })
+
+  it('createRepositoryBinding pide POST /projects/{projectId}/integrations/github', async () => {
+    const binding = { projectId: 'prj_real', installationId: 'inst_1', repositoryId: 'repo_1', repositoryName: 'acme/repo', integrationBranch: 'main', status: 'ENABLED', createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z' }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(binding), { status: 201 }))
+    const input = { repositoryId: 'repo_1', repositoryName: 'acme/repo', integrationBranch: 'main' }
+    await expect(createRepositoryBinding('prj_real', input)).resolves.toEqual(binding)
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/projects/prj_real/integrations/github'),
+      expect.objectContaining({ method: 'POST', body: JSON.stringify(input) }),
+    )
+  })
+
+  it('disconnectRepository pide DELETE y no falla al parsear una respuesta 204 sin cuerpo', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 204 }))
+    await expect(disconnectRepository('prj_real')).resolves.toBeUndefined()
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/projects/prj_real/integrations/github'), expect.objectContaining({ method: 'DELETE' }))
   })
 })
 

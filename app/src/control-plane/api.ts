@@ -1,4 +1,4 @@
-import { apiRequest } from '../api/client'
+import { ApiError, apiRequest } from '../api/client'
 import { getDataSource, PendingContractError } from '../api/dataSource'
 import {
   mockCreateRepositoryBinding,
@@ -31,39 +31,45 @@ import type {
 
 // HU30 — repository binding / GitHub App, user-centric (INTEROP-2.2 §6.8). RAG Core todavía no publica estas rutas.
 
-export function getRepositoryBinding(projectId: string): Promise<ProjectRepositoryBindingResponse | null> {
+/** `GET /projects/{projectId}/integrations/github` responde `404 REPOSITORY_BINDING_NOT_FOUND` cuando el proyecto nunca se vinculó — se traduce a `null`, igual que el mock. */
+export async function getRepositoryBinding(projectId: string): Promise<ProjectRepositoryBindingResponse | null> {
   if (getDataSource() === 'mock') return mockGetRepositoryBinding(projectId)
-  return Promise.reject(new PendingContractError('el repository binding de un proyecto'))
+  try {
+    return await apiRequest<ProjectRepositoryBindingResponse>(`/projects/${encodeURIComponent(projectId)}/integrations/github`)
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null
+    throw error
+  }
 }
 
 /**
- * `GET /integrations/github/repositories` exige `X-GitHub-Provider-Token` según el contrato, pero
- * el mock no tiene un servidor real que lo valide — es la UI (`IntegrationsPage`) quien decide si
- * llamar esta función según `authSession.githubProviderToken`, en vez de duplicar esa validación acá.
+ * `GET /integrations/github/repositories` exige `X-GitHub-Provider-Token` (INTEROP-2.2 §6.8) — lo
+ * provee la sesión de GitHub OAuth del usuario (`authSession.githubProviderToken`), nunca se
+ * persiste ni se reenvía a otro lado.
  */
-export function listGitHubUserRepositories(): Promise<GitHubUserRepositoryPage> {
+export function listGitHubUserRepositories(githubProviderToken: string): Promise<GitHubUserRepositoryPage> {
   if (getDataSource() === 'mock') return mockListGitHubUserRepositories()
-  return Promise.reject(new PendingContractError('el descubrimiento de repositorios GitHub del usuario'))
+  return apiRequest<GitHubUserRepositoryPage>('/integrations/github/repositories', { headers: { 'X-GitHub-Provider-Token': githubProviderToken } })
 }
 
 export function verifyGitHubAppAccess(input: VerifyGitHubAppAccessRequest): Promise<GitHubAppAccessResponse> {
   if (getDataSource() === 'mock') return mockVerifyGitHubAppAccess(input)
-  return Promise.reject(new PendingContractError('la verificación de acceso de la GitHub App a un repositorio'))
+  return apiRequest<GitHubAppAccessResponse>('/integrations/github/repositories/verify-app-access', { method: 'POST', body: JSON.stringify(input) })
 }
 
 export function listGitHubRepositoryBranches(owner: string, repo: string): Promise<GitHubRepositoryBranchesResponse> {
   if (getDataSource() === 'mock') return mockListGitHubRepositoryBranches(owner, repo)
-  return Promise.reject(new PendingContractError('el listado de ramas de un repositorio GitHub'))
+  return apiRequest<GitHubRepositoryBranchesResponse>(`/integrations/github/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches`)
 }
 
 export function createRepositoryBinding(projectId: string, input: CreateRepositoryBindingRequest): Promise<ProjectRepositoryBindingResponse> {
   if (getDataSource() === 'mock') return mockCreateRepositoryBinding(projectId, input)
-  return Promise.reject(new PendingContractError('la creación del repository binding user-centric'))
+  return apiRequest<ProjectRepositoryBindingResponse>(`/projects/${encodeURIComponent(projectId)}/integrations/github`, { method: 'POST', body: JSON.stringify(input) })
 }
 
 export function disconnectRepository(projectId: string): Promise<void> {
   if (getDataSource() === 'mock') return mockDisconnectRepository(projectId)
-  return Promise.reject(new PendingContractError('desconectar el repository binding'))
+  return apiRequest<void>(`/projects/${encodeURIComponent(projectId)}/integrations/github`, { method: 'DELETE' })
 }
 
 // HU32 — Analysis Runs por PR/HEAD (INTEROP-2.1 §6.10).

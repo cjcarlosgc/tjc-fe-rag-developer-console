@@ -23,7 +23,7 @@ export function IntegrationsPage() {
   const bindingQuery = useRepositoryBinding(projectId)
   const disconnect = useDisconnectRepository(projectId)
   const hasGitHub = Boolean(authSession?.githubProviderToken)
-  const reposQuery = useGitHubUserRepositories(hasGitHub)
+  const reposQuery = useGitHubUserRepositories(authSession?.githubProviderToken ?? null)
   const verifyAccess = useVerifyGitHubAppAccess()
   const createBinding = useCreateRepositoryBinding(projectId)
 
