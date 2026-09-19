@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ApiError } from '../api/client'
 import { resetMockBackend } from '../api/mockBackend'
 import { setDataSourceForTests } from '../api/dataSource'
 import { getAnalysisRun, listTestProposals } from '../control-plane/api'
@@ -147,22 +148,52 @@ describe('action-required api (mock) — HU35/HU36 Functional Knowledge', () => 
   })
 })
 
-describe('action-required api (live, INTEROP-2.0 aún no publicado)', () => {
+describe('action-required api (live) — HU35-38, Core ya lo implementó (INTEROP-2.2 §6.11, handoff 2026-09-19)', () => {
   beforeEach(() => setDataSourceForTests('live'))
 
-  it('listActionRequired rechaza con PendingContractError', async () => {
-    await expect(listActionRequired()).rejects.toThrow(/todavía no publicó/)
+  it('listActionRequired pide GET /action-required con projectId opcional en la query', async () => {
+    const page = { items: [], nextCursor: null }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(page), { status: 200 }))
+    await expect(listActionRequired('prj_real')).resolves.toEqual(page)
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/\/action-required\?projectId=prj_real$/), expect.anything())
   })
 
-  it('getContextQuestionSet rechaza con PendingContractError', async () => {
-    await expect(getContextQuestionSet('arun_checkout_pr42')).rejects.toThrow(/todavía no publicó/)
+  it('listActionRequired sin projectId no manda query', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ items: [], nextCursor: null }), { status: 200 }))
+    await listActionRequired()
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/\/action-required$/), expect.anything())
   })
 
-  it('submitFunctionalAnswer rechaza con PendingContractError', async () => {
-    await expect(submitFunctionalAnswer('arun_checkout_pr42', 'fq_checkout_pr42_1', { choice: 'YES', answer: null })).rejects.toThrow(/todavía no publicó/)
+  it('getContextQuestionSet pide GET /analysis-runs/{id}/context-questions', async () => {
+    const set = { analysisRunId: 'arun_real', currentQuestion: null, functionalBehaviorValidated: true }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(set), { status: 200 }))
+    await expect(getContextQuestionSet('arun_real')).resolves.toEqual(set)
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/analysis-runs/arun_real/context-questions'), expect.anything())
   })
 
-  it('listFunctionalKnowledge rechaza con PendingContractError', async () => {
-    await expect(listFunctionalKnowledge('prj_checkout_demo')).rejects.toThrow(/todavía no publicó/)
+  it('submitFunctionalAnswer omite `answer` cuando es null (el DTO real no acepta esa clave)', async () => {
+    const accepted = { status: 'PENDING', pollAfterMs: 500, analysisRunId: 'arun_real', questionId: 'fq_1', continuationAttemptId: null, knowledgeId: null }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(accepted), { status: 202 }))
+    await expect(submitFunctionalAnswer('arun_real', 'fq_1', { choice: 'YES', answer: null })).resolves.toEqual(accepted)
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/analysis-runs/arun_real/context-questions/fq_1/answers'),
+      expect.objectContaining({ method: 'POST', body: JSON.stringify({ choice: 'YES' }) }),
+    )
+  })
+
+  it('submitFunctionalAnswer: un 409 FUNCTIONAL_KNOWLEDGE_CONFLICT llega como ApiError con details', async () => {
+    const conflict = { conflictId: 'fq_1', analysisRunId: 'arun_real', questionId: 'fq_1', conflictingKnowledge: { id: 'fk_1' }, proposedNormalizedRule: 'x' }
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ code: 'FUNCTIONAL_KNOWLEDGE_CONFLICT', message: 'x', details: conflict }), { status: 409 }))
+    const error = await submitFunctionalAnswer('arun_real', 'fq_1', { choice: 'YES', answer: 'sí' }).catch((e: unknown) => e)
+    expect(error).toBeInstanceOf(ApiError)
+    expect((error as ApiError).code).toBe('FUNCTIONAL_KNOWLEDGE_CONFLICT')
+    expect((error as ApiError).details).toEqual(conflict)
+  })
+
+  it('listFunctionalKnowledge pide GET /projects/{id}/functional-knowledge con status opcional', async () => {
+    const page = { items: [], nextCursor: null }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(page), { status: 200 }))
+    await expect(listFunctionalKnowledge('prj_real', 'ACTIVE')).resolves.toEqual(page)
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/\/projects\/prj_real\/functional-knowledge\?status=ACTIVE$/), expect.anything())
   })
 })

@@ -15,6 +15,8 @@ import type { Project } from './types'
 
 afterEach(() => setDataSourceForTests(null))
 
+const EMPTY_ACTION_REQUIRED_PAGE = JSON.stringify({ items: [], nextCursor: null })
+
 test('lista proyectos live con el contrato Page<ProjectResponse>', async () => {
   const page = {
     items: [
@@ -22,7 +24,11 @@ test('lista proyectos live con el contrato Page<ProjectResponse>', async () => {
     ],
     nextCursor: null,
   }
-  const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(page), { status: 200 }))
+  const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+    const url = String(input)
+    if (url.includes('/action-required')) return new Response(EMPTY_ACTION_REQUIRED_PAGE, { status: 200 })
+    return new Response(JSON.stringify(page), { status: 200 })
+  })
   renderApp(<ProjectsPage />)
 
   expect(await screen.findByRole('heading', { name: 'live-project' })).toBeInTheDocument()
@@ -34,6 +40,7 @@ test('ofrece "Cargar más" cuando el listado live trae nextCursor', async () => 
   const secondPage = { items: [{ id: 'p-2', name: 'second-project', currentVersionId: null, createdAt: '2026-09-01', updatedAt: '2026-09-01' }], nextCursor: null }
   vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
     const url = String(input)
+    if (url.includes('/action-required')) return new Response(EMPTY_ACTION_REQUIRED_PAGE, { status: 200 })
     return new Response(JSON.stringify(url.includes('cursor=p-1') ? secondPage : firstPage), { status: 200 })
   })
   const user = userEvent.setup()

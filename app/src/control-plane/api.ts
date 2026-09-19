@@ -95,19 +95,24 @@ export function getAnalysisRun(analysisRunId: string): Promise<AnalysisRunDetail
   return apiRequest<AnalysisRunDetailResponse>(`/analysis-runs/${encodeURIComponent(analysisRunId)}`)
 }
 
-// HU39/HU40 — Checks, propuestas y companion PR (INTEROP-2.0 §6.12).
+// HU39/HU40 — Checks, propuestas y companion PR (INTEROP-2.2 §6.12, implementado y desplegado en Core).
 
 export function listTestProposals(analysisRunId: string): Promise<GeneratedTestProposalSetResponse> {
   if (getDataSource() === 'mock') return mockListTestProposals(analysisRunId)
-  return Promise.reject(new PendingContractError('las propuestas de prueba de un Run'))
+  return apiRequest<GeneratedTestProposalSetResponse>(`/analysis-runs/${encodeURIComponent(analysisRunId)}/test-proposals`)
 }
 
+/** Solo propuestas `AVAILABLE` de un Run `SUCCESS` y vigente — Core valida esto server-side y rechaza si no. */
 export function createTestPublication(analysisRunId: string, input: CreateTestPublicationRequest): Promise<TestPublicationAcceptedResponse> {
   if (getDataSource() === 'mock') return mockCreateTestPublication(analysisRunId, input)
-  return Promise.reject(new PendingContractError('la publicación de tests vía companion PR'))
+  return apiRequest<TestPublicationAcceptedResponse>(`/analysis-runs/${encodeURIComponent(analysisRunId)}/test-publications`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  })
 }
 
+/** `STALE` significa que el HEAD del PR cambió entre pedir publicar y que corriera el job — hay que re-listar `test-proposals` contra el Run vigente. */
 export function getTestPublication(publicationId: string): Promise<TestPublicationResponse> {
   if (getDataSource() === 'mock') return mockGetTestPublication(publicationId)
-  return Promise.reject(new PendingContractError('el estado de una publicación de tests'))
+  return apiRequest<TestPublicationResponse>(`/test-publications/${encodeURIComponent(publicationId)}`)
 }

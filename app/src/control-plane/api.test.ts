@@ -180,12 +180,37 @@ describe('control-plane api (mock) — HU39/HU40 propuestas y companion PR', () 
 describe('control-plane api (live) — lo que Core todavía no implementa (sin controller real)', () => {
   beforeEach(() => setDataSourceForTests('live'))
 
-  it('propuestas de prueba siguen sin ruta: rechaza con PendingContractError', async () => {
-    await expect(listTestProposals('arun_checkout_pr45')).rejects.toThrow(/todavía no publicó/)
-  })
-
   it('HU55: el listado global de Analysis Runs (sin projectId) tiene contrato definido pero Core no lo implementó — PendingContractError', async () => {
     await expect(listAnalysisRuns()).rejects.toThrow(/todavía no lo implementó/)
+  })
+})
+
+describe('control-plane api (live) — HU39/HU40 test-proposals y companion PR, Core ya lo implementó (INTEROP-2.2 §6.12, handoff 2026-09-19)', () => {
+  beforeEach(() => setDataSourceForTests('live'))
+
+  it('listTestProposals pide GET /analysis-runs/{id}/test-proposals', async () => {
+    const set = { analysisRunId: 'arun_real', headSha: 'abc123', items: [] }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(set), { status: 200 }))
+    await expect(listTestProposals('arun_real')).resolves.toEqual(set)
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/analysis-runs/arun_real/test-proposals'), expect.anything())
+  })
+
+  it('createTestPublication pide POST /analysis-runs/{id}/test-publications con proposalIds', async () => {
+    const accepted = { status: 'PENDING', pollAfterMs: 500, publicationId: 'pub_1', analysisRunId: 'arun_real' }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(accepted), { status: 202 }))
+    const input = { proposalIds: ['prop_1', 'prop_2'] }
+    await expect(createTestPublication('arun_real', input)).resolves.toEqual(accepted)
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/analysis-runs/arun_real/test-publications'),
+      expect.objectContaining({ method: 'POST', body: JSON.stringify(input) }),
+    )
+  })
+
+  it('getTestPublication pide GET /test-publications/{id}', async () => {
+    const publication = { id: 'pub_1', analysisRunId: 'arun_real', sourceHeadSha: 'abc123', status: 'PUBLISHED', branchName: 'x', companionPullRequestNumber: 2, companionPullRequestUrl: 'https://x', failureMessage: null, createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z' }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(publication), { status: 200 }))
+    await expect(getTestPublication('pub_1')).resolves.toEqual(publication)
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/test-publications/pub_1'), expect.anything())
   })
 })
 
