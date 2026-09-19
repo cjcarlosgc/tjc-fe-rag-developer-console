@@ -23,11 +23,21 @@ vinculada: el webhook de Core (HU31, ya implementado) creó un
 del repo real. Se encontró y reportó a Core (no es bug de Console) un
 `GITHUB_APP_WEBHOOK_SECRET` desincronizado entre GitHub y Render que
 causaba `401 INVALID_WEBHOOK_SIGNATURE` en la primera entrega del webhook;
-corregido regenerando el secreto en ambos lados. El Run real quedó en
-`PROCESSING` (análisis LLM en curso) al cierre de esta sesión — queda
-pendiente confirmar visualmente Action Required/companion PR de punta a
-punta una vez termine (la extensión Claude in Chrome se desconectó otra
-vez, mismo problema intermitente ya documentado). Ver
+corregido regenerando el secreto en ambos lados. Ese primer Run quedó
+atascado en `PROCESSING` para siempre por otro hallazgo cruzado: el dyno de
+Render (plan free) se durmió por inactividad mientras el job corría en
+memoria, y al despertar (cold start sin rastro del job) el trabajo se
+perdió sin marcar el Run como fallido — reportado a Core, no hay
+recuperación de Runs huérfanos al reiniciar. Con el servicio ya despierto,
+un push nuevo (PR#3) sí completó de punta a punta:
+`NO_ADDITIONAL_TESTS_REQUIRED` (coherente con un diff de 1 línea), **el
+Check nativo apareció por primera vez en GitHub (HU39)**, y el usuario hizo
+click en él y llegó al detalle correcto en Console — confirma que
+`details_url` y el adapter live de `getAnalysisRun` funcionan juntos sin
+ajustes. Las 4 superficies del handoff quedan validadas en producción real
+en su tramo "sin Action Required"; el tramo con pregunta funcional pendiente
+y companion PR real sigue sin probarse (depende de un PR que dispare esos
+caminos). Ver
 `harness/reports/HU35-HU36-HU39-HU40-live-adapters.md`. `activeWorkItem`
 vuelve a `null`.
 

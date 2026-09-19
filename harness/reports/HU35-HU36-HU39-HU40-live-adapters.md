@@ -72,19 +72,38 @@ y Render que causaba `401 INVALID_WEBHOOK_SIGNATURE` en la primera entrega;
 tras regenerar el secreto en ambos lados y hacer "Redeliver", el webhook se
 procesó con éxito.
 
-El Run quedó en `PROCESSING` real (análisis LLM en curso) al cierre de esta
-sesión — pendiente de confirmar visualmente Action Required/companion PR
-end-to-end una vez termine, porque la extensión Claude in Chrome se
-desconectó (mismo problema intermitente ya documentado en sesiones
-anteriores).
+**Hallazgo intermedio — Render free tier duerme jobs en progreso:** el
+primer Run real (`arun` sobre PR#2) quedó atascado en `PROCESSING`
+indefinidamente. Diagnosticado con los logs de Render: el dyno (plan free)
+se durmió por inactividad mientras el job de análisis corría en memoria: al
+despertar (cold start visible en los logs, sin ningún rastro del job
+interrumpido) el trabajo se perdió sin dejar rastro ni marcar el Run como
+fallido. Reportado a Core como hallazgo cruzado (no es bug de Console): no
+hay recuperación de Runs huérfanos en `PROCESSING` al reiniciar; sugerido
+evitar el sleep mientras haya jobs activos, un plan sin sleep, o detectar y
+reintentar/fallar Runs `PROCESSING` sin actividad reciente al arrancar.
+
+**Cierre exitoso end-to-end:** con el servicio ya despierto, un nuevo push
+al PR (PR#3) generó un `AnalysisRun` que sí completó de punta a punta:
+`NO_ADDITIONAL_TESTS_REQUIRED` (coherente — el diff real era de 1 línea en 1
+archivo, sin símbolos que requirieran cobertura nueva). El Check nativo en
+GitHub (HU39) apareció en la PR real por primera vez; el usuario hizo click
+en él y llegó al detalle correcto en Console, confirmando que el
+`details_url` que arma Core y el adapter live de `getAnalysisRun` activado
+hoy funcionan juntos sin ajustes. Con esto, las 4 superficies del handoff
+(Functional Knowledge/Action Required, test-proposals, Checks nativos y
+companion PR) quedan confirmadas en producción real al menos en su tramo
+"Run sin Action Required" — el tramo con pregunta funcional pendiente y
+companion PR real sigue sin probarse (depende de un PR que sí dispare esos
+caminos).
 
 ## Fuera de alcance / pendiente
 
 - No se probó todavía el flujo completo de responder una pregunta funcional
-  en vivo (depende de que el Run real llegue a `ACTION_REQUIRED`), ni la
-  publicación de un companion PR real (depende de que llegue a `SUCCESS`
-  con propuestas `AVAILABLE`). Ninguno de estos 4 flujos tenía smoke test
-  end-to-end real del lado de Core tampoco, según su propio handoff — esta
-  sería la primera validación de punta a punta para ambos repos.
+  en vivo (depende de un PR real que dispare `ACTION_REQUIRED`), ni la
+  publicación de un companion PR real (depende de un Run `SUCCESS` con
+  propuestas `AVAILABLE`). Ninguno de estos 2 caminos tenía smoke test
+  end-to-end real del lado de Core tampoco, según su propio handoff — sigue
+  pendiente la primera validación de punta a punta para ambos.
 - HU44/45 (retiro legacy, colaboración) sigue como la única tarea
   genuinamente pendiente del lado de Console, sin bloqueo de Core.
