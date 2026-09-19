@@ -33,17 +33,26 @@
       de `spec.md`. Ver `harness/reports/HU30-HU32-HU39-HU40-control-plane-mock.md`.
 - [x] HU32 (parcial, live): `getAnalysisRun`/`listAnalysisRuns` conectados a los
       controllers reales de Core (`GET /analysis-runs/{id}`,
-      `GET /projects/{projectId}/analysis-runs`). Repository binding (HU30) y
-      Checks/propuestas/publicación (HU39/HU40) siguen sin controller en Core —
-      continúan `PendingContractError`. Ver
-      `harness/reports/console-analysisrun-live-adapters.md`.
-- [ ] HU35-HU36: persistencia de Functional Knowledge y continuación real del Run (Core).
+      `GET /projects/{projectId}/analysis-runs`). Ver
+      `harness/reports/console-analysisrun-live-adapters.md`. Repository
+      binding (HU30) y Checks/propuestas/publicación (HU39/HU40) también
+      quedaron activados live después (ver entradas propias abajo).
+- [x] HU35-HU36 (live, 2026-09-19): persistencia real de Functional Knowledge
+      y continuación real del Run — Core lo implementó y desplegó. Activados
+      `listActionRequired`/`getContextQuestionSet`/`submitFunctionalAnswer`/
+      `listFunctionalKnowledge` contra Core real, DTOs verificados byte a
+      byte contra su código fuente. Ver
+      `harness/reports/HU35-HU36-HU39-HU40-live-adapters.md`.
 - [x] HU37-HU38: Focus Mode, bandeja Action Required y deep-link `returnTo` — mock-first,
       dos escenarios (action required, corrección/HEAD nuevo). Ver
       `harness/reports/HU37-HU38-focus-mode-action-required.md`.
-- [x] HU39-HU40: Checks (representados en el detalle de Run), review, freshness y
-      publicación por companion PR — mock-first. Ver
-      `harness/reports/HU30-HU32-HU39-HU40-control-plane-mock.md`.
+- [x] HU39-HU40 (live, 2026-09-19): Checks (Core publica el Check directamente
+      en GitHub, sin API nueva para Console — confirmado que el `details_url`
+      ya apunta a la ruta correcta de Console), review, freshness y
+      publicación por companion PR. Activados `listTestProposals`/
+      `createTestPublication`/`getTestPublication` contra Core real. Ver
+      `harness/reports/HU35-HU36-HU39-HU40-live-adapters.md` y, para el
+      mock-first original, `harness/reports/HU30-HU32-HU39-HU40-control-plane-mock.md`.
 - [ ] HU44-HU45: retiro legacy y colaboración.
 
 ## Propuestas registradas 2026-09-14 (HU50-53, HU55)

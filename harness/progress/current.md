@@ -1,5 +1,36 @@
 # Progreso actual
 
+**HU35/36/39/40 activan adapters live contra Core real (2026-09-18/19).**
+Handoff de Core: esas 4 historias quedaron implementadas y desplegadas
+(Functional Knowledge/Action Required real, companion PR; Checks los
+publica Core directo en GitHub sin API nueva para Console — se confirmó
+que el `details_url` ya apunta a la ruta correcta del router). Verificado
+DTO por DTO contra el código fuente real de `tjc-be-rag-core-api` antes de
+tocar nada, mismo patrón que HU30. Se activaron 7 funciones
+(`listActionRequired`/`getContextQuestionSet`/`submitFunctionalAnswer`/
+`listFunctionalKnowledge` en `action-required/api.ts`,
+`listTestProposals`/`createTestPublication`/`getTestPublication` en
+`control-plane/api.ts`), reemplazando `PendingContractError` por llamadas
+reales. Se encontró y corrigió una regresión propia: dos tests de
+`ProjectsPage.test.tsx` mockeaban `fetch` sin discriminar por URL, y al
+activar `listActionRequired` en vivo esa petición recibía la forma
+equivocada (`Page<Project>` en vez de `Page<FunctionalQuestionResponse>`),
+crasheando `ActionRequiredPreview` sin error boundary. Corregido.
+`tsc -b --noEmit`/lint/build limpios, 312 pruebas en verde (+8). Probado
+en vivo con un PR real (`cjcarlosgc/tjc-fe-ts-repo-test#1`) hacia la rama
+vinculada: el webhook de Core (HU31, ya implementado) creó un
+`AnalysisRun` real visible en la Console, con símbolos reales detectados
+del repo real. Se encontró y reportó a Core (no es bug de Console) un
+`GITHUB_APP_WEBHOOK_SECRET` desincronizado entre GitHub y Render que
+causaba `401 INVALID_WEBHOOK_SIGNATURE` en la primera entrega del webhook;
+corregido regenerando el secreto en ambos lados. El Run real quedó en
+`PROCESSING` (análisis LLM en curso) al cierre de esta sesión — queda
+pendiente confirmar visualmente Action Required/companion PR de punta a
+punta una vez termine (la extensión Claude in Chrome se desconectó otra
+vez, mismo problema intermitente ya documentado). Ver
+`harness/reports/HU35-HU36-HU39-HU40-live-adapters.md`. `activeWorkItem`
+vuelve a `null`.
+
 **HU30 activa adapters live contra Core real + fix de carrera en auth (2026-09-18).**
 El usuario pidió empezar a integrar contra el backend real. Se confirmó que
 Core ya tiene un backend desplegado en Render con HU30 implementado de
