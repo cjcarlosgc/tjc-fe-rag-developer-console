@@ -5,7 +5,7 @@
 - [x] failure detail.
 - [x] partial/fatal states.
 - [x] Adapter mock de resultados terminales.
-- [x] Adapter HTTP para `GET /test-runs/{runId}/results` según `INTEROP-1.5`. Verificado contra RAG Core local real, incluyendo `failureMessage` a nivel de run cuando falla antes de resolver targets.
+- [x] Adapter HTTP para `GET /test-runs/{runId}/results` según `INTEROP-2.1`. Verificado contra RAG Core local real, incluyendo `failureMessage` a nivel de run cuando falla antes de resolver targets.
 
 ## Calidad
 

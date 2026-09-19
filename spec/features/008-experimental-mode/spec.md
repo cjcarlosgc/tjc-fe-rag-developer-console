@@ -1,5 +1,18 @@
 # 008-experimental-mode — Especificación
 
+> **Adaptación SDD 2.1:** el experimento `RAG` vs `GENERALIST_AGENT` (HU19) se
+> conserva explícitamente. Pero `POST /experiments` (`CreateExperimentRequest.
+> targetId`) queda sin ruta vigente para crear experimentos nuevos: `targetId`
+> referenciaba un `TestTarget` producido por la indexación ZIP, ahora retirada
+> (`INTEROP-2.1` §6.2/§6.5). Reapuntar la unidad experimental a un
+> `AnalysisRun` existente queda registrado como **HU48 (P1)**/**HU49 (P4)**
+> en `spec/features/014-analysisrun-experiments/` — `PROPOSED`, no bloquea el
+> trabajo P0 en curso. El selector de target manual de esta spec queda
+> `DROP/ADAPT` cuando HU48 se implemente (ver clasificación completa en
+> `harness/reports/console-experiments-analysisrun-classification.md`); hasta
+> entonces el modo mock de esta spec sigue funcionando igual. Ver también
+> `harness/reports/console-interop-2.1-sync.md`.
+
 **Estado:** aprobado para SDD 1.0 salvo elementos marcados PENDING/PROPOSED.  
 **Historias:** HU19
 
@@ -24,7 +37,7 @@ Ofrecer una sección de evaluación experimental con una única acción RAG vs a
 
 ### Puertas de decisión y disponibilidad
 
-- `DEC-EXP-002` está APROBADO en RAG Core: HU19 ya no está bloqueada por decisión. Las herramientas, límites y paridad pertenecen al backend; el frontend solo consume el contrato experimental de `INTEROP-1.5` y no reproduce esa lógica.
+- `DEC-EXP-002` está APROBADO en RAG Core: HU19 ya no está bloqueada por decisión. Las herramientas, límites y paridad pertenecen al backend; el frontend solo consume el contrato experimental de `INTEROP-2.1` y no reproduce esa lógica.
 - RAG Core ya implementa las rutas aprobadas; el adapter live del frontend sigue pendiente de implementación. El demo permanece claramente simulado hasta reemplazarlo.
 - `DEC-MET-001` mantiene mutation score/StrykerJS PENDING después del núcleo de Sprint 2; solo bloquea una futura implementación de esa métrica.
 

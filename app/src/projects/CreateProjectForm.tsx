@@ -20,24 +20,26 @@ export function CreateProjectForm({ onCreated }: Props) {
     <form className="create-form" onSubmit={submit}>
       <div className="field">
         <label htmlFor="project-name">Nombre del proyecto</label>
-        <input
-          id="project-name"
-          name="name"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          placeholder="p. ej. checkout-service"
-          autoComplete="off"
-          maxLength={200}
-          required
-        />
+        <div className="field-row">
+          <input
+            id="project-name"
+            name="name"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="p. ej. checkout-service"
+            autoComplete="off"
+            maxLength={200}
+            required
+          />
+          <button className="button primary" disabled={!trimmedName || createMutation.isPending}>
+            {createMutation.isPending ? 'Creando…' : 'Crear proyecto'}
+          </button>
+        </div>
         <span className="field-hint">Usa un nombre reconocible para tu repositorio.</span>
       </div>
       {createMutation.isError && (
         <p className="inline-error" role="alert">{createMutation.error.message}</p>
       )}
-      <button className="button primary" disabled={!trimmedName || createMutation.isPending}>
-        {createMutation.isPending ? 'Creando…' : 'Crear proyecto'}
-      </button>
     </form>
   )
 }

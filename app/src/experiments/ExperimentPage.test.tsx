@@ -1,8 +1,9 @@
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, test, vi } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
 import { renderApp } from '../test/render'
+import { getCaptureNextPrState } from '../run-comparison/speculative/captureNextPr'
 import { ExperimentPage } from './ExperimentPage'
 
 test('ejecuta y presenta una comparación simulada sin red', async () => {
@@ -17,6 +18,35 @@ test('ejecuta y presenta una comparación simulada sin red', async () => {
   expect(await screen.findByText('Huella de retrieval', {}, { timeout: 2000 })).toBeInTheDocument()
   expect(screen.getByText('Laboratorio simulado')).toBeInTheDocument()
   expect(fetchMock).not.toHaveBeenCalled()
+})
+
+test('HU49 (propuesta): arma, simula la llegada del PR y navega a la comparación, quedando OFF de nuevo', async () => {
+  setDataSourceForTests('mock')
+  const user = userEvent.setup()
+  renderApp(<ExperimentPage />, { initialEntry: '/projects/prj_checkout_demo/experimental', routePath: '/projects/:projectId/experimental' })
+
+  expect(await screen.findByText('Capture next PR')).toBeInTheDocument()
+  await user.click(await screen.findByRole('button', { name: 'Armar captura' }))
+  expect(await screen.findByText('Esperando el próximo PR elegible…')).toBeInTheDocument()
+
+  await user.click(await screen.findByRole('button', { name: 'Simular llegada del PR (demo)' }))
+
+  await waitFor(async () => {
+    await expect(getCaptureNextPrState('prj_checkout_demo')).resolves.toMatchObject({ status: 'OFF' })
+  })
+  expect(screen.queryByRole('heading', { name: 'RAG vs Agente generalista', level: 1 })).not.toBeInTheDocument()
+})
+
+test('HU49 (propuesta): cancelar vuelve al estado inicial sin capturar nada', async () => {
+  setDataSourceForTests('mock')
+  const user = userEvent.setup()
+  renderApp(<ExperimentPage />, { initialEntry: '/projects/prj_checkout_demo/experimental', routePath: '/projects/:projectId/experimental' })
+
+  await user.click(await screen.findByRole('button', { name: 'Armar captura' }))
+  expect(await screen.findByRole('button', { name: 'Cancelar' })).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Cancelar' }))
+
+  expect(await screen.findByRole('button', { name: 'Armar captura' })).toBeInTheDocument()
 })
 
 test('HU19 (live): envía el target real, sondea y presenta el resultado real', async () => {

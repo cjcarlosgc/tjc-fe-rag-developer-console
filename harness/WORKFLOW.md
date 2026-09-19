@@ -12,7 +12,7 @@
 2. **SPEC_VERIFIED:** el analyst confirma que spec/plan/tasks son coherentes, que dependencias existen, que la puerta de decisiones fue evaluada y que no quedan decisiones pendientes que bloqueen el alcance.
 3. **AWAITING_APPROVAL:** esperar aprobación humana del alcance cuando el cambio altere comportamiento, contratos o arquitectura.
 4. **IN_PROGRESS:** implementer desarrolla únicamente el alcance aprobado dentro de `app/`.
-5. **IN_REVIEW:** reviewer verifica contrato, pruebas, errores, seguridad, observabilidad y no ampliación de alcance.
+5. **IN_REVIEW:** reviewer verifica contrato, pruebas, errores, seguridad, observabilidad y no ampliación de alcance. Cuando el work item tiene alcance de interfaz, el design-reviewer (`harness/roles/design-reviewer.md`) además compara la implementación contra el proyecto Stitch de referencia vía el servidor MCP `stitch`, por historia y antes de que esa historia pase a `DONE`.
 6. **DONE:** lint/test/build pasan, evidencia se registra en `harness/reports/`, tareas aplicables quedan cerradas y `activeWorkItem` vuelve a `null`.
 
 ## Puerta de decisiones
@@ -44,4 +44,4 @@ La política canónica está en `spec/constitution/delivery-workflow.md`.
 3. Completar la revisión de cada work item antes de `DONE`.
 4. Al cerrar el sprint, el reviewer revisa el rango acumulado que se pretende publicar y registra el resultado en `harness/reports/sprint-<N>-review.md`; una entrega extraordinaria usa `harness/reports/delivery-<scope>-review.md`.
 5. Solo un veredicto `APPROVED`, con lint/test/build aplicables en verde y sin cambios posteriores al commit revisado, habilita el push. Se admite después un único commit `docs(review)` que solo incorpore esos reportes, previa comprobación del reviewer; cualquier otra diferencia exige nueva revisión completa.
-6. Commit y push continúan requiriendo solicitud humana explícita. Un push extraordinario antes de cerrar el sprint requiere la misma revisión previa.
+6. El agente commitea por su cuenta al cerrar cada corte lógico y verificable durante `IN_PROGRESS`/`IN_REVIEW` (no una solicitud por commit); nunca hace `push` sin solicitud humana explícita en esa sesión. Un push extraordinario antes de cerrar el sprint requiere la misma revisión previa.

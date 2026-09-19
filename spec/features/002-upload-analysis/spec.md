@@ -1,5 +1,16 @@
 # 002-upload-analysis — Especificación
 
+> **Retirado por SDD 2.1:** la carga ZIP (`POST /projects/index`) queda retirada como
+> ruta de producto en Core (`INTEROP-2.1` §6.2, ver `CHANGELOG.md` de
+> `tjc-be-rag-core-api`); no existe backend que la acepte, ni siquiera como
+> compatibilidad legacy. El formulario/UI de esta spec (`analysis/UploadVersion.tsx`,
+> alcanzable vía `LegacyToolsPage`) queda como código histórico sin ruta de backend
+> real detrás — no se elimina de este repositorio, pero no orienta el producto
+> vigente. Las lecturas de `ProjectVersion` que describe el resto de esta spec
+> sí sobreviven, solo cambia su origen (snapshot por commit SHA vía
+> `RepositoryBinding`, HU33/34, pendiente de implementación en Core). Ver
+> `harness/reports/console-interop-2.1-sync.md`.
+
 **Estado:** aprobado para SDD 1.0 salvo elementos marcados PENDING/PROPOSED.  
 **Historias:** HU02, HU03, HU04, HU05, HU07
 
