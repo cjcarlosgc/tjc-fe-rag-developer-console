@@ -4,6 +4,8 @@ Todos los cambios notables de la línea base SDD se registran aquí. El contenid
 
 ## [Unreleased]
 
+- **T-002 / SYSTEM-2.3 / INTEROP-2.3 (2026-09-20):** HU30/HU56/HU57. Desconectar es una pausa reversible (`DISABLED`, conserva binding, Runs y Functional Knowledge); se agrega Reactivar (`POST .../integrations/github/enable`, también desde `REVOKED` si la App recupera acceso) y eliminación lógica de Project (`DELETE /projects/{id}`) que libera el binding. Vincular un repositorio ya vinculado a otro Project responde `409 REPOSITORY_ALREADY_BOUND` (antes `500`). Console sincroniza los espejos desde Core (`CS-20260920-002`/`003`), activa los adapters live y alinea el mock y la UI (estados Activo/Pausado/Revocado, confirmación de eliminar, accesibilidad de foco y anuncios). HU56/HU57 siguen `PROPOSED` en el backlog hasta aprobación humana; validación live contra Core desplegado pendiente.
+
 - **SYSTEM-2.2 / INTEROP-2.2 (2026-09-17, solo especificación):** HU29/HU30 reemplazan el onboarding GitHub installation-centric por discovery user-centric con provider token OAuth efímero y validación/operación GitHub-App-centric. El mock-first debe reconciliar sus types, fixtures y errores con el contrato sin activar integración live hasta aprobación humana explícita. No se modifica `app/`.
 
 - **T-001 / SDD 2.0 / SYSTEM-2.0 / INTEROP-2.0 (2026-09-13, solo especificación):** se adopta el control plane PR-driven mock-first con Projects, Runs, Action Required, Focus Mode, Checks y publicación revisada; se separan GitHub OAuth y GitHub App, se re-baselina el backlog y se marca la demo GitHub anterior como superseded. No se modifica `app/`.

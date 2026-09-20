@@ -23,6 +23,7 @@ import type {
   GeneratedTestProposalResponse,
   GeneratedTestProposalSetResponse,
   GitHubAppAccessResponse,
+  GitHubUserRepositoryResponse,
   GitHubRepositoryBranchResponse,
   GitHubRepositoryBranchesResponse,
   GitHubUserRepositoryPage,
@@ -55,6 +56,8 @@ interface MockRunState {
 interface MockExperimentState {
   operation: ExperimentOperation
   polls: number
+  /** Para ocultar el experimento cuando su Project se borra (HU56). */
+  projectId: string
 }
 
 interface MockContextTraceState {
@@ -74,6 +77,8 @@ interface MockActionRequiredRunState {
 }
 
 const projects = new Map<string, Project>()
+/** HU56 (INTEROP-2.3 §6.1, implementado en Core — CS-20260920-003): Projects con borrado lógico. Se conservan sus datos internos (Runs, versions, Functional Knowledge) pero dejan de ser visibles por cualquier lectura del mock. */
+const deletedProjects = new Map<string, Project>()
 const versions = new Map<string, MockVersionState>()
 const runs = new Map<string, MockRunState>()
 const artifacts = new Map<string, ArtifactViewModel[]>()
@@ -85,7 +90,7 @@ const contextTraces = new Map<string, MockContextTraceState>()
 const analysisRunContextTraceId: Record<string, string> = { arun_checkout_pr45: 'trace_rag_order_total' }
 const actionRequiredRuns = new Map<string, MockActionRequiredRunState>()
 const repositoryBindings = new Map<string, ProjectRepositoryBindingResponse | null>()
-/** HU30 user-centric (INTEROP-2.2 §6.8): intentos de verificación de acceso de la App por repo, para simular NOT_AUTHORIZED->revalidar->AUTHORIZED. */
+/** HU30 user-centric (INTEROP-2.3 §6.8): intentos de verificación de acceso de la App por repo, para simular NOT_AUTHORIZED->revalidar->AUTHORIZED. */
 const githubAppAccessVerifications = new Map<string, number>()
 const analysisRuns = new Map<string, AnalysisRunDetailResponse>()
 const testProposals = new Map<string, GeneratedTestProposalResponse[]>()
@@ -99,6 +104,27 @@ let sequence = 2000
 const clone = <T>(value: T): T => structuredClone(value)
 const nowIso = () => new Date().toISOString()
 const latency = () => new Promise<void>((resolve) => setTimeout(resolve, import.meta.env.MODE === 'test' ? 0 : 180))
+
+function isProjectDeleted(projectId: string): boolean {
+  return deletedProjects.has(projectId)
+}
+
+/** Un Run de un Project borrado deja de existir para la API (listados, detalle, Action Required), aunque el mock lo conserve internamente. */
+function findVisibleRun(analysisRunId: string): AnalysisRunDetailResponse | undefined {
+  const run = analysisRuns.get(analysisRunId)
+  return run && !isProjectDeleted(run.projectId) ? run : undefined
+}
+
+/** Un Run existente de un Project borrado se comporta como inexistente; un id desconocido conserva el comportamiento propio de cada lectura. */
+function hideRunOfDeletedProject(analysisRunId: string): void {
+  const run = analysisRuns.get(analysisRunId)
+  if (run && isProjectDeleted(run.projectId)) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+}
+
+function findVisibleActionRequiredRun(analysisRunId: string): MockActionRequiredRunState | undefined {
+  const state = actionRequiredRuns.get(analysisRunId)
+  return state && !isProjectDeleted(state.projectId) ? state : undefined
+}
 
 function notFound(message: string, code: string): never {
   throw new ApiError(message, 404, 'demo-correlation-id', code)
@@ -626,6 +652,7 @@ function seedFunctionalKnowledge(): void {
 
 export function resetMockBackend(): void {
   projects.clear()
+  deletedProjects.clear()
   versions.clear()
   runs.clear()
   artifacts.clear()
@@ -975,7 +1002,7 @@ export async function mockStartExperiment(projectId: string, targetId: string): 
   const label = target?.methodName ?? target?.symbolName ?? targetId
   sequence += 1
   const experimentId = `exp_demo_${sequence}`
-  experiments.set(experimentId, { polls: 0, operation: { id: experimentId, status: 'PENDING', progress: 0, result: experimentResult(label) } })
+  experiments.set(experimentId, { projectId, polls: 0, operation: { id: experimentId, status: 'PENDING', progress: 0, result: experimentResult(label) } })
   if (project.currentVersionId) seedExperimentContextTraces(experimentId, project.currentVersionId, targetId, target?.filePath ?? 'src/domain/OrderService.ts', target?.methodName ?? target?.symbolName ?? null)
   return { experimentId, status: 'PENDING', pollAfterMs: 460 }
 }
@@ -983,7 +1010,7 @@ export async function mockStartExperiment(projectId: string, targetId: string): 
 export async function mockGetExperiment(experimentId: string): Promise<ExperimentOperation> {
   await latency()
   const state = experiments.get(experimentId)
-  if (!state) notFound(`No existe el experimento demo "${experimentId}".`, 'INVALID_REQUEST')
+  if (!state || isProjectDeleted(state.projectId)) notFound(`No existe el experimento demo "${experimentId}".`, 'INVALID_REQUEST')
   state.polls += 1
   if (state.polls === 1) state.operation = { ...state.operation, status: 'RUNNING', progress: 34 }
   else if (state.polls === 2) state.operation = { ...state.operation, status: 'RUNNING', progress: 72 }
@@ -994,7 +1021,7 @@ export async function mockGetExperiment(experimentId: string): Promise<Experimen
 /** INTEROP-2.1 §6.5 (HU48, definido/no implementado). Reusa `experimentResult` (misma fabricación de métricas que HU19); solo cambia la identidad (`analysisRunId`+símbolo en vez de `projectId`/`targetId`). */
 export async function mockStartRunComparison(analysisRunId: string, symbol: AnalysisSymbolResponse): Promise<RunComparisonAccepted> {
   await latency()
-  const run = analysisRuns.get(analysisRunId)
+  const run = findVisibleRun(analysisRunId)
   if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   if (run.status === 'ACTION_REQUIRED') throw new ApiError('Este Run todavía necesita contexto funcional antes de compararse — resuelve las preguntas pendientes primero.', 409, 'demo-correlation-id', 'RUN_NOT_ELIGIBLE')
   if (symbol.changeKind !== 'DIRECTLY_CHANGED' || (symbol.kind !== 'METHOD' && symbol.kind !== 'FUNCTION')) throw new ApiError(`"${symbol.qualifiedName}" no es un símbolo METHOD/FUNCTION con cambio directo — no es una unidad experimental válida.`, 422, 'demo-correlation-id', 'UNSUPPORTED_SYMBOL_KIND')
@@ -1008,7 +1035,7 @@ export async function mockStartRunComparison(analysisRunId: string, symbol: Anal
 export async function mockGetRunComparison(comparisonId: string): Promise<RunComparisonOperation> {
   await latency()
   const state = runComparisons.get(comparisonId)
-  if (!state) notFound(`No existe la comparación demo "${comparisonId}".`, 'INVALID_REQUEST')
+  if (!state || isProjectDeleted(state.operation.projectId)) notFound(`No existe la comparación demo "${comparisonId}".`, 'INVALID_REQUEST')
   state.polls += 1
   if (state.polls === 1) state.operation = { ...state.operation, status: 'RUNNING', progress: 34 }
   else if (state.polls === 2) state.operation = { ...state.operation, status: 'RUNNING', progress: 72 }
@@ -1020,6 +1047,7 @@ export async function mockGetRunComparison(comparisonId: string): Promise<RunCom
 /** HU48: `GET /analysis-runs/{analysisRunId}/experiments`. Lectura pura (no avanza `polls`, a diferencia de `mockGetRunComparison`) — permite listar todos los trials de un Run sin interferir con el polling individual de cada uno. */
 export async function mockListRunComparisons(analysisRunId: string): Promise<RunComparisonListPage> {
   await latency()
+  hideRunOfDeletedProject(analysisRunId)
   const items = Array.from(runComparisons.values())
     .filter((state) => state.operation.analysisRunId === analysisRunId)
     .map((state) => state.operation.status === 'COMPLETED' ? state.operation : { ...state.operation, result: undefined })
@@ -1137,6 +1165,7 @@ export async function mockGetContextTrace(traceId: string): Promise<ContextTrace
 /** Demo-only: no hay forma de contrato para "contexto de un AnalysisRun" todavía (§6.7 sigue legacy). */
 export async function mockGetAnalysisRunContextTrace(analysisRunId: string): Promise<RagContextTraceDetail | null> {
   await latency()
+  hideRunOfDeletedProject(analysisRunId)
   const traceId = analysisRunContextTraceId[analysisRunId]
   const state = traceId ? contextTraces.get(traceId) : undefined
   if (!state || state.detail.kind !== 'RAG') return null
@@ -1146,7 +1175,7 @@ export async function mockGetAnalysisRunContextTrace(analysisRunId: string): Pro
 /** PROPUESTA — HU54, ver context-explorer/speculative/contextProvenance.ts. */
 export async function mockGetContextProvenance(analysisRunId: string): Promise<ContextProvenance> {
   await latency()
-  const run = analysisRuns.get(analysisRunId)
+  const run = findVisibleRun(analysisRunId)
   if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   const symbolNames = new Set(run.symbols.map((symbol) => symbol.qualifiedName))
   const functionalKnowledgeRefs = Array.from(functionalKnowledge.values())
@@ -1181,6 +1210,7 @@ function currentActionRequiredQuestion(state: MockActionRequiredRunState): Funct
 export async function mockListActionRequired(projectId?: string): Promise<ActionRequiredListPage> {
   await latency()
   const items = Array.from(actionRequiredRuns.values())
+    .filter((state) => !isProjectDeleted(state.projectId))
     .filter((state) => !projectId || state.projectId === projectId)
     .map(currentActionRequiredQuestion)
     .filter((question): question is FunctionalQuestionResponse => question !== null)
@@ -1191,7 +1221,7 @@ export async function mockListActionRequired(projectId?: string): Promise<Action
 /** HU37: `GET /analysis-runs/{analysisRunId}/context-questions`. */
 export async function mockGetContextQuestionSet(analysisRunId: string): Promise<FunctionalQuestionSetResponse> {
   await latency()
-  const state = actionRequiredRuns.get(analysisRunId)
+  const state = findVisibleActionRequiredRun(analysisRunId)
   if (!state) notFound(`No existe el Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   const currentQuestion = currentActionRequiredQuestion(state)
   const functionalBehaviorValidated = currentQuestion === null && state.questions.every((question) => question.status === 'ANSWERED')
@@ -1206,7 +1236,7 @@ function findConflictingKnowledge(projectId: string, targetRef: string): Functio
 /** HU37: `POST /analysis-runs/{analysisRunId}/context-questions/{questionId}/answers`. `headChanged` simula que un HEAD nuevo llegó mientras se respondía: la pregunta queda `OBSOLETE`, no `ANSWERED`, y el Run no se reanuda (`continuationAttemptId: null`). */
 export async function mockSubmitFunctionalAnswer(analysisRunId: string, questionId: string, input: SubmitFunctionalAnswerRequest): Promise<FunctionalAnswerAcceptedResponse> {
   await latency()
-  const state = actionRequiredRuns.get(analysisRunId)
+  const state = findVisibleActionRequiredRun(analysisRunId)
   if (!state) notFound(`No existe el Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   const question = state.questions.find((item) => item.id === questionId)
   if (!question) notFound(`No existe la pregunta demo "${questionId}".`, 'QUESTION_NOT_FOUND')
@@ -1251,7 +1281,7 @@ export async function mockSubmitFunctionalAnswer(analysisRunId: string, question
 
   /** Caso "respuesta revela inconsistencia": la regla que fija la respuesta contradice el comportamiento observado en Sandbox. */
   if (analysisRunId === 'arun_billing_pr24') {
-    const run = analysisRuns.get(analysisRunId)
+    const run = findVisibleRun(analysisRunId)
     if (run) {
       run.status = 'BEHAVIORAL_MISMATCH'
       run.functionalBehaviorValidated = true
@@ -1273,7 +1303,7 @@ function requireProject(projectId: string): Project {
   return project
 }
 
-/** HU30: `GET /projects/{projectId}/integrations/github`. `null` cuando el proyecto nunca se vinculó o fue desconectado. */
+/** HU30: `GET /projects/{projectId}/integrations/github`. `null` cuando el proyecto nunca se vinculó (Core: 404 `REPOSITORY_BINDING_NOT_FOUND`); un binding desconectado se devuelve con status `DISABLED`. Un Project borrado responde 404 `PROJECT_NOT_FOUND` (vía `requireProject`). */
 export async function mockGetRepositoryBinding(projectId: string): Promise<ProjectRepositoryBindingResponse | null> {
   await latency()
   requireProject(projectId)
@@ -1299,13 +1329,8 @@ export async function mockListGitHubUserRepositories(): Promise<GitHubUserReposi
   return { items: clone(DEMO_GITHUB_REPOSITORIES), nextCursor: null }
 }
 
-/** HU30: `POST /integrations/github/repositories/verify-app-access`. `repo_playground` exige 2 llamadas para pasar a `AUTHORIZED` (demuestra el CTA de configuración + "Revalidar"); el resto de repos conocidos ya está `AUTHORIZED` desde la primera. */
-export async function mockVerifyGitHubAppAccess(input: VerifyGitHubAppAccessRequest): Promise<GitHubAppAccessResponse> {
-  await latency()
-  const repo = DEMO_GITHUB_REPOSITORIES.find((item) => item.repositoryId === input.repositoryId)
-  if (!repo) notFound(`No existe el repositorio demo "${input.repositoryId}".`, 'GITHUB_REPOSITORY_NOT_FOUND')
-  githubAppAccessVerifications.set(input.repositoryId, (githubAppAccessVerifications.get(input.repositoryId) ?? 0) + 1)
-  const authorized = isGitHubAppAuthorized(input.repositoryId)
+function toGitHubAppAccessResponse(repo: GitHubUserRepositoryResponse): GitHubAppAccessResponse {
+  const authorized = isGitHubAppAuthorized(repo.repositoryId)
   return {
     repositoryId: repo.repositoryId,
     repositoryName: repo.repositoryName,
@@ -1313,6 +1338,26 @@ export async function mockVerifyGitHubAppAccess(input: VerifyGitHubAppAccessRequ
     installationId: authorized ? `inst_demo_${repo.repositoryId}` : null,
     app: { displayName: 'RAG Test Studio (demo)', configureUrl: `https://github.com/apps/rag-test-studio-demo/installations/select_target?repository=${encodeURIComponent(repo.repositoryName)}` },
   }
+}
+
+function findDemoRepository(repositoryId: string): GitHubUserRepositoryResponse {
+  const repo = DEMO_GITHUB_REPOSITORIES.find((item) => item.repositoryId === repositoryId)
+  if (!repo) notFound(`No existe el repositorio demo "${repositoryId}".`, 'GITHUB_REPOSITORY_NOT_FOUND')
+  return repo
+}
+
+/** HU30: `POST /integrations/github/repositories/verify-app-access`. `repo_playground` exige 2 llamadas para pasar a `AUTHORIZED` (demuestra el CTA de configuración + "Revalidar"); el resto de repos conocidos ya está `AUTHORIZED` desde la primera. */
+export async function mockVerifyGitHubAppAccess(input: VerifyGitHubAppAccessRequest): Promise<GitHubAppAccessResponse> {
+  await latency()
+  const repo = findDemoRepository(input.repositoryId)
+  githubAppAccessVerifications.set(input.repositoryId, (githubAppAccessVerifications.get(input.repositoryId) ?? 0) + 1)
+  return toGitHubAppAccessResponse(repo)
+}
+
+/** Igual que `mockVerifyGitHubAppAccess` pero sin contar como una verificación: la UI lo usa para leer el estado y la URL de configuración de la App sin alterar el contador que determina `AUTHORIZED` (así Reactivar sigue siendo determinista). */
+export async function mockPeekGitHubAppAccess(input: VerifyGitHubAppAccessRequest): Promise<GitHubAppAccessResponse> {
+  await latency()
+  return toGitHubAppAccessResponse(findDemoRepository(input.repositoryId))
 }
 
 /** HU30: `GET /integrations/github/repositories/{owner}/{repo}/branches`. Simula 403 si la App todavía no tiene acceso — "las ramas se consultan con el installation access token". */
@@ -1325,13 +1370,14 @@ export async function mockListGitHubRepositoryBranches(owner: string, repo: stri
   return { items: clone(DEMO_BRANCHES_BY_REPOSITORY[found.repositoryId] ?? [{ name: found.defaultBranch, protected: true }]) }
 }
 
-/** HU30: `POST /projects/{projectId}/integrations/github`. `installationId` no viaja desde el navegador: Core lo resuelve — acá se reconstruye a partir del estado de verificación ya guardado. */
+/** HU30: `POST /projects/{projectId}/integrations/github`. `installationId` no viaja desde el navegador: Core lo resuelve — acá se reconstruye a partir del estado de verificación ya guardado. Orden de errores de INTEROP-2.3 §6.8 (HU57): 404 proyecto, 409 binding propio (cualquier status), 403 acceso de la App, 409 repo ya vinculado a otro Project, 404 rama. Mock-only, NO modelado: el paso `404 GITHUB_REPOSITORY_NOT_FOUND` de Core (repositoryId enviado discordante con el real de GitHub, entre el 403 y el 409 REPOSITORY_ALREADY_BOUND); su mapeo de UI se cubre con respuestas `fetch` simuladas. */
 export async function mockCreateRepositoryBinding(projectId: string, input: CreateRepositoryBindingRequest): Promise<ProjectRepositoryBindingResponse> {
   await latency()
   requireProject(projectId)
-  const existing = repositoryBindings.get(projectId)
-  if (existing && existing.status === 'ENABLED') throw new ApiError('Este proyecto ya tiene un repositorio vinculado.', 409, 'demo-correlation-id', 'REPOSITORY_BINDING_ALREADY_EXISTS')
+  if (repositoryBindings.get(projectId)) throw new ApiError('Este proyecto ya tiene un repositorio vinculado.', 409, 'demo-correlation-id', 'REPOSITORY_BINDING_ALREADY_EXISTS')
   if (!isGitHubAppAuthorized(input.repositoryId)) throw new ApiError(`La GitHub App no tiene acceso a "${input.repositoryName}" todavía.`, 403, 'demo-correlation-id', 'GITHUB_APP_ACCESS_REQUIRED')
+  const boundElsewhere = Array.from(repositoryBindings.values()).some((other) => other && other.projectId !== projectId && other.repositoryId === input.repositoryId)
+  if (boundElsewhere) throw new ApiError('Este repositorio ya está vinculado a otro proyecto.', 409, 'demo-correlation-id', 'REPOSITORY_ALREADY_BOUND')
   const branches = DEMO_BRANCHES_BY_REPOSITORY[input.repositoryId] ?? []
   if (!branches.some((branch) => branch.name === input.integrationBranch)) notFound(`La rama "${input.integrationBranch}" no existe en "${input.repositoryName}".`, 'INTEGRATION_BRANCH_NOT_FOUND')
   const createdAt = nowIso()
@@ -1349,11 +1395,55 @@ export async function mockCreateRepositoryBinding(projectId: string, input: Crea
   return clone(binding)
 }
 
-/** HU30: `DELETE /projects/{projectId}/integrations/github`. Simplificación de demo: limpia el binding en vez de marcarlo `DISABLED` — deja de aceptar eventos nuevos y no borra los Runs/fixtures ya creados. */
+/** HU30/HU57: `DELETE /projects/{projectId}/integrations/github`. Como Core: pausa reversible — el binding queda `DISABLED` (fila y `repositoryId` se conservan), deja de aceptar eventos nuevos y no borra Runs ni Functional Knowledge. Sobre `REVOKED` no cambia nada; sin binding 404 `REPOSITORY_BINDING_NOT_FOUND` (INTEROP-2.3 §6.8). */
 export async function mockDisconnectRepository(projectId: string): Promise<void> {
   await latency()
   requireProject(projectId)
-  repositoryBindings.set(projectId, null)
+  const binding = repositoryBindings.get(projectId)
+  if (!binding) notFound(`El proyecto demo "${projectId}" no tiene un repositorio vinculado.`, 'REPOSITORY_BINDING_NOT_FOUND')
+  if (binding.status === 'REVOKED') return
+  repositoryBindings.set(projectId, { ...binding, status: 'DISABLED', updatedAt: nowIso() })
+}
+
+/**
+ * HU57 (INTEROP-2.3 §6.8, implementado en Core — CS-20260920-003): `POST /projects/{projectId}/integrations/github/enable`. Mock-only, NO modelado: el refresco de `installationId` que Core hace al revalidar. Idempotente si ya está `ENABLED`; `DISABLED` y `REVOKED` pasan a `ENABLED`, pero
+ * `REVOKED` solo si la revalidación confirma que la App recuperó acceso (si no, 403 y el estado no cambia).
+ */
+export async function mockEnableRepository(projectId: string): Promise<ProjectRepositoryBindingResponse> {
+  await latency()
+  requireProject(projectId)
+  const binding = repositoryBindings.get(projectId)
+  if (!binding) notFound(`El proyecto demo "${projectId}" no tiene un repositorio vinculado.`, 'REPOSITORY_BINDING_NOT_FOUND')
+  if (binding.status === 'ENABLED') return clone(binding)
+  if (!isGitHubAppAuthorized(binding.repositoryId)) throw new ApiError(`La GitHub App no tiene acceso a "${binding.repositoryName}" todavía.`, 403, 'demo-correlation-id', 'GITHUB_APP_ACCESS_REQUIRED')
+  const enabled: ProjectRepositoryBindingResponse = { ...binding, status: 'ENABLED', updatedAt: nowIso() }
+  repositoryBindings.set(projectId, enabled)
+  return clone(enabled)
+}
+
+/**
+ * Helper SOLO para tests/demo, no contractual (ninguna ruta de INTEROP-2.3 lo expone): simula que la GitHub App perdió acceso al repositorio (webhook de instalación borrada/suspendida en Core) — no
+ * hay ruta pública para esto. El binding pasa a `REVOKED` y se olvida la verificación previa de acceso: `repo_playground` vuelve a
+ * `NOT_AUTHORIZED` hasta revalidar; el resto de repos demo siempre están `AUTHORIZED`, así que reactivarlos funciona.
+ */
+export function mockSimulateAppAccessLoss(projectId: string): void {
+  const binding = repositoryBindings.get(projectId)
+  if (!binding) return
+  repositoryBindings.set(projectId, { ...binding, status: 'REVOKED', updatedAt: nowIso() })
+  githubAppAccessVerifications.delete(binding.repositoryId)
+}
+
+/**
+ * HU56 (INTEROP-2.3 §6.1, implementado en Core — CS-20260920-003): `DELETE /projects/{projectId}` — borrado lógico. El Project sale de las lecturas
+ * (lista, detalle, Runs, Action Required), su binding se elimina y el `repositoryId` queda libre; los datos internos se
+ * conservan. Repetir el DELETE responde 404 `PROJECT_NOT_FOUND` como en Core.
+ */
+export async function mockDeleteProject(projectId: string): Promise<void> {
+  await latency()
+  const project = requireProject(projectId)
+  projects.delete(projectId)
+  deletedProjects.set(projectId, project)
+  repositoryBindings.delete(projectId)
 }
 
 function toAnalysisRunSummary(run: AnalysisRunDetailResponse): AnalysisRunSummaryResponse {
@@ -1365,6 +1455,7 @@ function toAnalysisRunSummary(run: AnalysisRunDetailResponse): AnalysisRunSummar
 export async function mockListAnalysisRuns(projectId: string | undefined, status: AnalysisRunStatus | undefined): Promise<AnalysisRunListPage> {
   await latency()
   const items = Array.from(analysisRuns.values())
+    .filter((run) => !isProjectDeleted(run.projectId))
     .filter((run) => !projectId || run.projectId === projectId)
     .filter((run) => !status || run.status === status)
     .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
@@ -1397,7 +1488,7 @@ function deriveRunHistory(run: AnalysisRunDetailResponse): AnalysisRunTransition
 /** HU32: `GET /analysis-runs/{analysisRunId}`. */
 export async function mockGetAnalysisRun(analysisRunId: string): Promise<AnalysisRunDetailResponse> {
   await latency()
-  const run = analysisRuns.get(analysisRunId)
+  const run = findVisibleRun(analysisRunId)
   if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   return { ...clone(run), history: deriveRunHistory(run) }
 }
@@ -1418,7 +1509,7 @@ function fallbackPriorCoverage(qualifiedName: string): PriorCoverageLevel {
 /** PROPUESTA — HU50. `AnalysisRunDetailResponse` no expone esto hoy; se deriva localmente por símbolo. */
 export async function mockGetPriorCoverage(analysisRunId: string): Promise<Record<string, PriorCoverageLevel>> {
   await latency()
-  const run = analysisRuns.get(analysisRunId)
+  const run = findVisibleRun(analysisRunId)
   if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   const result: Record<string, PriorCoverageLevel> = {}
   for (const symbol of run.symbols) result[symbol.qualifiedName] = PRIOR_COVERAGE_FIXTURES[symbol.qualifiedName] ?? fallbackPriorCoverage(symbol.qualifiedName)
@@ -1428,7 +1519,7 @@ export async function mockGetPriorCoverage(analysisRunId: string): Promise<Recor
 /** HU40: `GET /analysis-runs/{analysisRunId}/test-proposals`. */
 export async function mockListTestProposals(analysisRunId: string): Promise<GeneratedTestProposalSetResponse> {
   await latency()
-  const run = analysisRuns.get(analysisRunId)
+  const run = findVisibleRun(analysisRunId)
   if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   const items = testProposals.get(analysisRunId) ?? []
   return clone({ analysisRunId, headSha: run.pullRequest.headSha, items })
@@ -1437,7 +1528,7 @@ export async function mockListTestProposals(analysisRunId: string): Promise<Gene
 /** HU40: `POST /analysis-runs/{analysisRunId}/test-publications`. Simplificación de demo: publica de inmediato (`PUBLISHED`) en vez de simular un job asíncrono adicional — el companion PR mock ya está listo en la primera consulta de `mockGetTestPublication`. */
 export async function mockCreateTestPublication(analysisRunId: string, input: CreateTestPublicationRequest): Promise<TestPublicationAcceptedResponse> {
   await latency()
-  const run = analysisRuns.get(analysisRunId)
+  const run = findVisibleRun(analysisRunId)
   if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   if (run.status !== 'SUCCESS') throw new ApiError('Solo un Run SUCCESS admite publicación.', 409, 'demo-correlation-id', 'RUN_NOT_PUBLISHABLE')
   const proposals = testProposals.get(analysisRunId) ?? []
@@ -1470,6 +1561,7 @@ export async function mockGetTestPublication(publicationId: string): Promise<Tes
   await latency()
   const publication = testPublications.get(publicationId)
   if (!publication) notFound(`No existe la publicación demo "${publicationId}".`, 'PUBLICATION_NOT_FOUND')
+  hideRunOfDeletedProject(publication.analysisRunId)
   return clone(publication)
 }
 
@@ -1493,6 +1585,7 @@ export async function mockGetRuleUsage(knowledgeId: string): Promise<AnalysisRun
   await latency()
   const knowledge = functionalKnowledge.get(knowledgeId)
   if (!knowledge) notFound(`No existe la regla de Functional Knowledge demo "${knowledgeId}".`, 'FUNCTIONAL_KNOWLEDGE_NOT_FOUND')
+  requireProject(knowledge.projectId)
   if (!knowledge.targetRef) return []
   const items = Array.from(analysisRuns.values())
     .filter((run) => run.projectId === knowledge.projectId)

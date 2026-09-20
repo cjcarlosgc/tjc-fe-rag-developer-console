@@ -4,6 +4,7 @@ import {
   mockCreateRepositoryBinding,
   mockCreateTestPublication,
   mockDisconnectRepository,
+  mockEnableRepository,
   mockGetAnalysisRun,
   mockGetRepositoryBinding,
   mockGetTestPublication,
@@ -11,6 +12,7 @@ import {
   mockListGitHubRepositoryBranches,
   mockListGitHubUserRepositories,
   mockListTestProposals,
+  mockPeekGitHubAppAccess,
   mockVerifyGitHubAppAccess,
 } from '../api/mockBackend'
 import type {
@@ -29,21 +31,24 @@ import type {
   VerifyGitHubAppAccessRequest,
 } from './types'
 
-// HU30 — repository binding / GitHub App, user-centric (INTEROP-2.2 §6.8). RAG Core todavía no publica estas rutas.
+// HU30 — repository binding / GitHub App, user-centric (INTEROP-2.3 §6.8).
 
-/** `GET /projects/{projectId}/integrations/github` responde `404 REPOSITORY_BINDING_NOT_FOUND` cuando el proyecto nunca se vinculó — se traduce a `null`, igual que el mock. */
+/**
+ * `GET /projects/{projectId}/integrations/github` responde `404 REPOSITORY_BINDING_NOT_FOUND` cuando el proyecto nunca se vinculó — se traduce a `null`, igual que el mock.
+ * Cualquier otro 404 (p. ej. `PROJECT_NOT_FOUND` de un Project borrado) se propaga: no es "sin binding". Un binding desconectado llega como `DISABLED`, no como `null`.
+ */
 export async function getRepositoryBinding(projectId: string): Promise<ProjectRepositoryBindingResponse | null> {
   if (getDataSource() === 'mock') return mockGetRepositoryBinding(projectId)
   try {
     return await apiRequest<ProjectRepositoryBindingResponse>(`/projects/${encodeURIComponent(projectId)}/integrations/github`)
   } catch (error) {
-    if (error instanceof ApiError && error.status === 404) return null
+    if (error instanceof ApiError && error.status === 404 && error.code === 'REPOSITORY_BINDING_NOT_FOUND') return null
     throw error
   }
 }
 
 /**
- * `GET /integrations/github/repositories` exige `X-GitHub-Provider-Token` (INTEROP-2.2 §6.8) — lo
+ * `GET /integrations/github/repositories` exige `X-GitHub-Provider-Token` (INTEROP-2.3 §6.8) — lo
  * provee la sesión de GitHub OAuth del usuario (`authSession.githubProviderToken`), nunca se
  * persiste ni se reenvía a otro lado.
  */
@@ -55,6 +60,15 @@ export function listGitHubUserRepositories(githubProviderToken: string): Promise
 export function verifyGitHubAppAccess(input: VerifyGitHubAppAccessRequest): Promise<GitHubAppAccessResponse> {
   if (getDataSource() === 'mock') return mockVerifyGitHubAppAccess(input)
   return apiRequest<GitHubAppAccessResponse>('/integrations/github/repositories/verify-app-access', { method: 'POST', body: JSON.stringify(input) })
+}
+
+/**
+ * Lectura del estado de acceso de la App (y su `configureUrl`) a un repositorio ya vinculado. En live es la misma ruta `verify-app-access`;
+ * en mock no cuenta como una verificación (a diferencia de `verifyGitHubAppAccess`), para no alterar el resultado determinista de Reactivar.
+ */
+export function getGitHubAppAccess(input: VerifyGitHubAppAccessRequest): Promise<GitHubAppAccessResponse> {
+  if (getDataSource() === 'mock') return mockPeekGitHubAppAccess(input)
+  return verifyGitHubAppAccess(input)
 }
 
 export function listGitHubRepositoryBranches(owner: string, repo: string): Promise<GitHubRepositoryBranchesResponse> {
@@ -70,6 +84,16 @@ export function createRepositoryBinding(projectId: string, input: CreateReposito
 export function disconnectRepository(projectId: string): Promise<void> {
   if (getDataSource() === 'mock') return mockDisconnectRepository(projectId)
   return apiRequest<void>(`/projects/${encodeURIComponent(projectId)}/integrations/github`, { method: 'DELETE' })
+}
+
+/**
+ * HU57 (INTEROP-2.3 §6.8, implementado en Core — CS-20260920-003): `POST /projects/{projectId}/integrations/github/enable` — reactiva un
+ * binding `DISABLED` (y `REVOKED` si Core revalida que la App recuperó acceso; si no, 403 `GITHUB_APP_ACCESS_REQUIRED` y el estado no cambia).
+ * Idempotente y sin cuerpo: el contrato no define uno.
+ */
+export function enableRepository(projectId: string): Promise<ProjectRepositoryBindingResponse> {
+  if (getDataSource() === 'mock') return mockEnableRepository(projectId)
+  return apiRequest<ProjectRepositoryBindingResponse>(`/projects/${encodeURIComponent(projectId)}/integrations/github/enable`, { method: 'POST' })
 }
 
 // HU32 — Analysis Runs por PR/HEAD (INTEROP-2.1 §6.10).

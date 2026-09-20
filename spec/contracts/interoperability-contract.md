@@ -1,8 +1,8 @@
 # Contrato universal de interoperabilidad
 
-**Versión:** INTEROP-2.2
-**Compatible con:** SYSTEM-2.2
-**Fecha de corte:** 2026-09-17
+**Versión:** INTEROP-2.3
+**Compatible con:** SYSTEM-2.3
+**Fecha de corte:** 2026-09-20
 **Estado:** APROBADO salvo decisiones externas referenciadas explícitamente
 **Propietario canónico:** `tjc-be-rag-core-api/spec/contracts/interoperability-contract.md`
 
@@ -11,7 +11,7 @@ Este documento define el vocabulario y los contratos HTTP compartidos por Develo
 ## 1. Compatibilidad y autoridad
 
 - Las rutas manuales de carga ZIP y generación por modos (`METHOD|CLASS|PROJECT`) anteriores a SDD 2.0 quedan retiradas; no existe compatibilidad legacy paralela. El único disparador de análisis es PR-driven (`AnalysisRun`).
-- `INTEROP-2.2` es la versión documental vigente. Hereda de `INTEROP-2.1` el lifecycle PR/HEAD, los estados de AnalysisRun y los perfiles PHP; sustituye el onboarding installation-centric por discovery OAuth user-centric y autorización GitHub-App-centric del repository binding (§6.8).
+- `INTEROP-2.3` es la versión documental vigente. Hereda de `INTEROP-2.1` el lifecycle PR/HEAD, los estados de AnalysisRun y los perfiles PHP, y de `INTEROP-2.2` el discovery OAuth user-centric y la autorización GitHub-App-centric del repository binding (§6.8). Es aditivo (sin cambios incompatibles): agrega `DELETE /projects/{projectId}` (§6.1), `POST /projects/{projectId}/integrations/github/enable` y el error `REPOSITORY_ALREADY_BOUND` (§6.8) — HU56/HU57, solicitados por Console (`CS-20260920-001`) e implementados en Core.
 - 2026-09-15: se define contrato (sin implementar) para 4 capacidades formalizadas como historia en `spec/backlog.md` (HU48-HU55, registradas originalmente por Console) que estaban bloqueadas por falta de contrato: `CreateExperimentRequest` reapunta a `AnalysisRun`/símbolo (§6.5, HU48), historial de transiciones de `AnalysisRun` (§6.10, HU53), listado de Analysis Runs cross-proyecto (§6.10, HU55) y detección de conflicto de Functional Knowledge (§6.11, HU51). Cada bloque queda marcado **Definido, pendiente de implementación**.
 - Los consumidores deben ignorar campos de respuesta desconocidos, pero los servidores rechazan campos de request no declarados.
 - Los DTO HTTP son explícitos y no exponen entidades ORM, tipos del SDK de Supabase ni modelos internos del LLM.
@@ -104,6 +104,7 @@ El navegador consume solamente RAG Core.
 - `POST /projects` → `201 ProjectResponse`.
 - `GET /projects/{projectId}` → `200 ProjectResponse`.
 - `GET /projects?cursor&limit` → `200 Page<ProjectResponse>`.
+- `DELETE /projects/{projectId}` → `204` (HU56).
 
 ```ts
 interface HealthResponse {
@@ -123,6 +124,8 @@ interface ProjectResponse {
   updatedAt: IsoDateTime
 }
 ```
+
+`DELETE /projects/{projectId}` es un borrado lógico sin endpoint de restauración. Un Project inexistente, ajeno o ya borrado responde `404 PROJECT_NOT_FOUND` (no se distingue entre los tres). En una única transacción Core lo marca borrado, elimina su `RepositoryBinding` (libera el `repositoryId` para otro Project) y cancela u obsoleta sus `AnalysisRun` y jobs en curso. Runs, versiones y Functional Knowledge se conservan como evidencia pero dejan de ser visibles: desde ese momento `GET /projects`, `GET /projects/{projectId}`, el binding, los Runs (incluido `GET /analysis-runs`), Functional Knowledge, preguntas, publicaciones, versiones, targets y experimentos de ese Project se comportan como inexistentes (`404 PROJECT_NOT_FOUND` en rutas con `projectId`; ausentes de los listados). Los jobs no procesan ni publican Runs de un Project borrado, ni de uno cuyo binding pertenezca a otro Project.
 
 ### 6.2 ProjectVersion e indexación
 
@@ -461,6 +464,7 @@ Repository discovery is user-centric; repository automation is GitHub-App-centri
 - `GET /integrations/github/repositories/{owner}/{repo}/branches` -> `200 GitHubRepositoryBranchesResponse`.
 - `POST /projects/{projectId}/integrations/github` -> `201 ProjectRepositoryBindingResponse`.
 - `GET /projects/{projectId}/integrations/github` -> `200 ProjectRepositoryBindingResponse`.
+- `POST /projects/{projectId}/integrations/github/enable` -> `200 ProjectRepositoryBindingResponse` (HU57).
 - `DELETE /projects/{projectId}/integrations/github` -> `204`.
 
 ```ts
@@ -510,9 +514,13 @@ interface ProjectRepositoryBindingResponse {
 }
 ```
 
-Core valida `repositoryId` y `repositoryName` contra GitHub antes de devolver autorización o persistir. `installationId` es evidencia resuelta por Core: no se acepta desde el navegador y es `null` cuando el resultado es `NOT_AUTHORIZED`. Las ramas se consultan con el installation access token, por lo que un repositorio sin acceso devuelve `403 GITHUB_APP_ACCESS_REQUIRED`. La creación exige que `integrationBranch` exista; no hay default. `NOT_AUTHORIZED` no es un error HTTP. Desconectar deja de aceptar eventos nuevos, no borra Runs ni Functional Knowledge.
+Core valida `repositoryId` y `repositoryName` contra GitHub antes de persistir (`POST .../integrations/github`). `verify-app-access` devuelve `repositoryId` y `repositoryName` tal como se enviaron; la validación autoritativa del id ocurre en `POST .../integrations/github`. `installationId` es evidencia resuelta por Core: no se acepta desde el navegador y es `null` cuando el resultado es `NOT_AUTHORIZED`. Las ramas se consultan con el installation access token, por lo que un repositorio sin acceso devuelve `403 GITHUB_APP_ACCESS_REQUIRED`. La creación exige que `integrationBranch` exista; no hay default. `NOT_AUTHORIZED` no es un error HTTP. Desconectar (`DELETE .../integrations/github`) deja el binding `DISABLED`: es una pausa reversible que conserva la fila y su `repositoryId`, deja de aceptar eventos nuevos y no borra Runs ni Functional Knowledge. Sobre un binding `REVOKED` responde `204` sin cambiar el estado (nunca lo degrada a `DISABLED`); sobre uno ya `DISABLED`, `204`. `installation.suspend` solo pausa bindings `ENABLED`; no altera `REVOKED` ni `DISABLED`.
 
-Errores de dominio: `GITHUB_ACCOUNT_REQUIRED` (401), `GITHUB_USER_TOKEN_INVALID` (401), `GITHUB_APP_ACCESS_REQUIRED` (403), `GITHUB_REPOSITORY_NOT_FOUND` (404), `INTEGRATION_BRANCH_NOT_FOUND` (404), `REPOSITORY_BINDING_ALREADY_EXISTS` (409) y `REPOSITORY_BINDING_NOT_FOUND` (404). No se exponen mensajes crudos de GitHub.
+Reglas de `POST .../integrations/github` (HU57), en este orden de validación: `404 PROJECT_NOT_FOUND`, `409 REPOSITORY_BINDING_ALREADY_EXISTS` (el Project ya tiene binding), `403 GITHUB_APP_ACCESS_REQUIRED`, `404 GITHUB_REPOSITORY_NOT_FOUND`, `409 REPOSITORY_ALREADY_BOUND`, `404 INTEGRATION_BRANCH_NOT_FOUND`. Core resuelve el `repositoryId` real contra GitHub y no confía en el enviado por el cliente. Si GitHub no encuentra el repositorio, o su `repositoryId` real no coincide con el enviado para `repositoryName`, responde `404 GITHUB_REPOSITORY_NOT_FOUND` sin persistir. Esta validación ocurre después de comprobar el acceso de la App y antes de comprobar si otro Project ya usa el repositorio. `REPOSITORY_ALREADY_BOUND` significa que otro Project ya usa ese repositorio; su mensaje es genérico y no revela el Project ni el usuario ajeno. Una violación de unicidad concurrente se traduce al `409` correspondiente, nunca a `500`.
+
+Reglas de `POST .../integrations/github/enable` (HU57): pasa `DISABLED` a `ENABLED` y es idempotente (un binding ya `ENABLED` responde `200` con el mismo cuerpo, sin revalidar). Antes de reactivar Core revalida el acceso de la App (installation resuelta por Core) y refresca `installationId`; sin acceso responde `403 GITHUB_APP_ACCESS_REQUIRED` y el estado no cambia. Un binding `REVOKED` también se reactiva por esta ruta si la revalidación confirma que la App recuperó acceso al repositorio (así un Project sale de `REVOKED` sin borrarse); si no hay acceso, `403 GITHUB_APP_ACCESS_REQUIRED` y sigue `REVOKED`. Sin Project propio (inexistente, ajeno o borrado): `404 PROJECT_NOT_FOUND`; sin binding: `404 REPOSITORY_BINDING_NOT_FOUND`.
+
+Errores de dominio: `GITHUB_ACCOUNT_REQUIRED` (401), `GITHUB_USER_TOKEN_INVALID` (401), `GITHUB_APP_ACCESS_REQUIRED` (403), `GITHUB_REPOSITORY_NOT_FOUND` (404), `INTEGRATION_BRANCH_NOT_FOUND` (404), `REPOSITORY_BINDING_ALREADY_EXISTS` (409), `REPOSITORY_ALREADY_BOUND` (409) y `REPOSITORY_BINDING_NOT_FOUND` (404). No se exponen mensajes crudos de GitHub.
 
 ### 6.9 Webhooks GitHub y normalización PR
 
@@ -711,7 +719,7 @@ interface FunctionalKnowledgeConflictResponse {
 }
 ```
 
-**HU51, definido, pendiente de implementación.** Antes de persistir la regla que produciría una respuesta, Core evalúa si contradice una `FunctionalKnowledge` `ACTIVE` en scope compatible (mismo Project, scope igual o contenedor). Si detecta contradicción y la request no trae `conflictResolution`, responde `409 FUNCTIONAL_KNOWLEDGE_CONFLICT` con `details: FunctionalKnowledgeConflictResponse` (§4) y no persiste ni avanza el Run — Focus Mode muestra la regla existente junto a la propuesta para que el usuario decida antes de contaminar el conocimiento. Un reenvío con `conflictResolution.action: 'SUPERSEDE'` persiste la nueva regla `ACTIVE` y pasa la existente a `SUPERSEDED` (`supersedesId` la referencia); `'KEEP_EXISTING'` registra la respuesta como evidencia de la pregunta (`knowledgeId: null`) sin tocar la regla vigente. `conflictId` es de un solo uso y expira si el HEAD cambia, igual que una pregunta `OBSOLETE`.
+**HU51, implementado (2026-09-18).** Antes de persistir la regla que produciría una respuesta, Core evalúa si ya existe una `FunctionalKnowledge` `ACTIVE` para el mismo scope+símbolo exacto (match exacto por ahora; jerarquía PROJECT⊃MODULE⊃CLASS y contradicción semántica vía LLM quedan pendientes, ver `harness/state.json`). Si detecta una regla existente y la request no trae `conflictResolution`, responde `409 FUNCTIONAL_KNOWLEDGE_CONFLICT` con `details: FunctionalKnowledgeConflictResponse` (§4) y no persiste ni avanza el Run — Focus Mode muestra la regla existente junto a la propuesta para que el usuario decida antes de contaminar el conocimiento. Un reenvío con `conflictResolution.action: 'SUPERSEDE'` persiste la nueva regla `ACTIVE` y pasa la existente a `SUPERSEDED` (`supersedesId` la referencia); `'KEEP_EXISTING'` registra la respuesta como evidencia de la pregunta (`knowledgeId: null`) sin tocar la regla vigente. `conflictId` reutiliza el `questionId` (de un solo uso, expira si el HEAD cambia igual que una pregunta `OBSOLETE`).
 
 `UNKNOWN` puede cerrar una pregunta pero devuelve `knowledgeId=null` y nunca crea conocimiento autoritativo. Si el HEAD cambió, la pregunta queda `OBSOLETE`, no se reanuda el Run viejo y cualquier regla potencial se reevalúa contra el Run actual. La siguiente pregunta es adaptativa y reemplaza visualmente a la anterior; no se expone un total fijo.
 
@@ -760,6 +768,8 @@ interface TestPublicationResponse {
 ```
 
 La solicitud exige Run `SUCCESS`, proposals `AVAILABLE`, usuario autorizado y HEAD vigente. Core vuelve a comprobar freshness al ejecutar el job. Publica desde el HEAD validado a una rama `rag-tests/pr-<number>-<short-sha>` y abre companion PR hacia la feature branch original; no auto-mergea ni reabre un companion PR cerrado. `BEHAVIORAL_MISMATCH` conserva propuestas `HELD`. La conclusión del GitHub Check pertenece al `headSha` del Run y su `details_url` apunta a `/projects/{projectId}/runs/{analysisRunId}`; la merge policy pertenece al repositorio.
+
+**§6.12 implementado por completo (2026-09-18, HU39/HU40).** `GET .../test-proposals` (corte Validation), Checks nativos por HEAD (HU39, `checks/`) y `POST .../test-publications`/`GET /test-publications/{id}` (HU40, `publications/`) ya están construidos. `GeneratedTestProposal.status` usa `AVAILABLE`/`HELD`/`PUBLISHED`; `STALE` está reservado en el enum pero todavía no se activa automáticamente para propuestas (solo la `TestPublication` misma queda `STALE` cuando el freshness check al ejecutar el job de publicación detecta que el HEAD real del PR ya no coincide con `sourceHeadSha` — no hay un barrido que marque `STALE` cualquier propuesta `AVAILABLE` cuando llega un HEAD nuevo). `HELD` cubre tanto `BEHAVIORAL_MISMATCH` como `TECHNICAL_GENERATION_FAILURE` sin distinguirlos en el campo `status` (sí en `AnalysisRun.status` y en `failureSummary`, campo interno no expuesto por este endpoint). El companion PR nunca reabre uno cerrado (`findPullRequestByHead` detecta el estado y la publicación termina `FAILED` en ese caso) y reutiliza un PR abierto existente si el job se reintenta sobre la misma rama. Errores de dominio de HU40 (no estaban listados explícitamente en el contrato, se definieron al implementar): `TEST_PUBLICATION_NOT_FOUND` (404), `TEST_PUBLICATION_INVALID_RUN_STATUS` (409, Run no `SUCCESS` o no vigente), `TEST_PUBLICATION_PROPOSAL_NOT_AVAILABLE` (422, algún `proposalId` no existe para ese Run o no está `AVAILABLE`).
 
 ## 7. Contrato RAG Core ↔ Test Execution Sandbox
 

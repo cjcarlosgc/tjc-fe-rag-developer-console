@@ -29,6 +29,8 @@ h2 { font-size: 19px; }
 .button.primary { color: #100626; background: var(--accent); }
 .button.secondary { color: #eae7f7; border-color: var(--border-subtle); background: #0f0f14; }
 .button.secondary:hover:not(:disabled) { border-color: var(--border); }
+.button.danger { color: #ffb4c0; border-color: rgba(244,63,94,.45); background: rgba(244,63,94,.12); }
+.button.danger:hover:not(:disabled) { border-color: var(--danger); }
 .button:disabled { opacity: .52; cursor: not-allowed; }
 .panel, .feedback, .empty-state { border: 1px solid var(--border-subtle); border-radius: 12px; background: var(--surface-1); padding: 28px; }
 .create-panel { margin-bottom: 28px; }
@@ -43,6 +45,9 @@ h2 { font-size: 19px; }
 .field textarea:focus-visible { border-color: var(--accent); }
 .field-hint { color: var(--muted); font-size: 12px; }
 .inline-error { color: #ffb4c0 !important; font-size: 14px; }
+.correlation-ref { color: var(--muted); font-size: 12px; }
+.danger-zone { margin-top: 14px; border-color: rgba(244,63,94,.28); }
+.danger-zone .run-actions, .integration-panel .run-actions { gap: 10px; align-items: center; }
 .feedback { display: flex; align-items: center; gap: 12px; color: var(--muted); }
 .error-state { display: block; border-color: rgba(244,63,94,.35); }
 .error-state p { color: #ffb4c0; margin: 8px 0 18px; }
@@ -227,7 +232,7 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .wide { width: 100%; }
 .rag-note { color: #8984a4; font-size: 11px; text-align: center; margin: 12px 0 0; }
 .run-progress { position: relative; display: grid; grid-template-columns: 1fr auto; min-height: 220px; overflow: hidden; border: 1px solid var(--border-subtle); background: var(--surface-1); padding: 32px; }
-.run-actions { display: flex; justify-content: flex-end; margin-top: 18px; }
+.run-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; margin-top: 18px; }
 .run-progress::before { content: ""; position: absolute; inset: 0; opacity: .1; background-image: linear-gradient(rgba(201,180,250,.4) 1px, transparent 1px), linear-gradient(90deg, rgba(201,180,250,.4) 1px, transparent 1px); background-size: 28px 28px; mask-image: linear-gradient(90deg, #000, transparent 65%); }
 .run-progress-copy, .run-dial, .target-pulse { position: relative; }
 .run-progress-copy .orbital-icon { position: absolute; top: 0; right: 0; }

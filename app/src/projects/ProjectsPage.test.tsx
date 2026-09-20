@@ -1,15 +1,15 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, useLocation } from 'react-router-dom'
 import { afterEach, expect, test, vi } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
-import { resetMockBackend } from '../api/mockBackend'
+import { mockCreateProject, resetMockBackend } from '../api/mockBackend'
 import { disconnectRepository } from '../control-plane/api'
 import { controlPlaneKeys } from '../control-plane/queries'
 import type { ProjectRepositoryBindingResponse } from '../control-plane/types'
 import { renderApp } from '../test/render'
-import { createProject } from './api'
+import { createProject, deleteProject } from './api'
 import { ProjectOverviewCard, ProjectsPage } from './ProjectsPage'
 import type { Project } from './types'
 
@@ -166,13 +166,35 @@ test('la tarjeta de un proyecto conectado muestra binding, Active PRs, Action Re
 test('un proyecto sin binding muestra NOT CONNECTED y enlaza a integrations/github', async () => {
   setDataSourceForTests('mock')
   resetMockBackend()
-  await disconnectRepository('prj_checkout_demo')
+  const project = await mockCreateProject({ name: 'sin-binding' })
   renderApp(<ProjectsPage />)
 
   const badge = await screen.findByText('NOT CONNECTED')
   const link = badge.closest('a')
-  expect(link).toHaveAttribute('href', '/projects/prj_checkout_demo/integrations/github')
-  expect(within(link as HTMLElement).getByRole('heading', { name: 'checkout-service' })).toBeInTheDocument()
+  expect(link).toHaveAttribute('href', `/projects/${project.id}/integrations/github`)
+  expect(within(link as HTMLElement).getByRole('heading', { name: 'sin-binding' })).toBeInTheDocument()
+})
+
+test('un proyecto desconectado (DISABLED tras Desconectar) sigue visible como Pausado y no como NOT CONNECTED', async () => {
+  setDataSourceForTests('mock')
+  resetMockBackend()
+  await disconnectRepository('prj_checkout_demo')
+  renderApp(<ProjectsPage />)
+
+  const badge = await screen.findByText('Pausado')
+  expect(badge.closest('a')).toHaveAttribute('href', '/projects/prj_checkout_demo/integrations/github')
+  expect(within(badge.closest('a') as HTMLElement).getByRole('heading', { name: 'checkout-service' })).toBeInTheDocument()
+  expect(screen.queryByText('NOT CONNECTED')).not.toBeInTheDocument()
+})
+
+test('un proyecto eliminado deja de aparecer en la lista', async () => {
+  setDataSourceForTests('mock')
+  resetMockBackend()
+  await deleteProject('prj_checkout_demo')
+  renderApp(<ProjectsPage />)
+
+  expect(await screen.findByRole('heading', { name: 'billing-engine' })).toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: 'checkout-service' })).not.toBeInTheDocument()
 })
 
 test('"Actividad reciente" enlaza cada Run a su Analysis Run Detail', async () => {
@@ -198,14 +220,62 @@ function renderCardWithBinding(project: Project, binding: ProjectRepositoryBindi
   )
 }
 
-test('DISCONNECTED: un binding DISABLED muestra el aviso y enlaza a revisar la integración', () => {
+function renderCardForStatus(status: ProjectRepositoryBindingResponse['status']) {
   const project: Project = { id: 'prj_x', name: 'revoked-service', currentVersionId: null, createdAt: '2026-09-01', updatedAt: '2026-09-01' }
   const binding: ProjectRepositoryBindingResponse = {
     projectId: 'prj_x', installationId: 'inst_x', repositoryId: 'repo_x', repositoryName: 'acme/revoked-service',
-    integrationBranch: 'develop', status: 'DISABLED', createdAt: '2026-09-01T00:00:00.000Z', updatedAt: '2026-09-01T00:00:00.000Z',
+    integrationBranch: 'develop', status, createdAt: '2026-09-01T00:00:00.000Z', updatedAt: '2026-09-01T00:00:00.000Z',
   }
-  renderCardWithBinding(project, binding)
+  return renderCardWithBinding(project, binding)
+}
 
-  expect(screen.getByText('DISCONNECTED')).toBeInTheDocument()
+test('Pausado: un binding DISABLED muestra el aviso de pausa y enlaza a revisar la integración', () => {
+  renderCardForStatus('DISABLED')
+
+  expect(screen.getByText('Pausado')).toBeInTheDocument()
+  expect(screen.getByText(/pausado. No se procesarán nuevos Pull Requests hasta reactivarlo/)).toBeInTheDocument()
   expect(screen.getByRole('link', { name: /Revisar integración/ })).toHaveAttribute('href', '/projects/prj_x/integrations/github')
+})
+
+test('Revocado: un binding REVOKED se distingue de Pausado y explica la pérdida de acceso de la App', () => {
+  renderCardForStatus('REVOKED')
+
+  expect(screen.getByText('Revocado')).toHaveClass('status-danger')
+  expect(screen.queryByText('Pausado')).not.toBeInTheDocument()
+  expect(screen.getByText(/La GitHub App perdió acceso al repositorio/)).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: /Revisar integración/ })).toHaveAttribute('href', '/projects/prj_x/integrations/github')
+})
+
+function LocationStateProbe() {
+  const location = useLocation()
+  return <output data-testid="location-state">{JSON.stringify(location.state)}</output>
+}
+
+test('el aviso «Proyecto eliminado» llega por el state de navegación, se anuncia con role="status", mueve el foco al h1 y no persiste', async () => {
+  setDataSourceForTests('mock')
+  resetMockBackend()
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  render(
+    <QueryClientProvider client={client}>
+      <MemoryRouter initialEntries={[{ pathname: '/', state: { deletedProjectName: 'demo-eliminado' } }]}>
+        <ProjectsPage />
+        <LocationStateProbe />
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+
+  const notice = await screen.findByText('Proyecto «demo-eliminado» eliminado')
+  expect(notice).toHaveAttribute('role', 'status')
+  expect(screen.getByRole('heading', { name: 'Proyectos', level: 1 })).toHaveFocus()
+  // El state se limpia (history.state sobrevive a una recarga): el aviso no se repite al volver a montar la lista.
+  await waitFor(() => expect(screen.getByTestId('location-state')).toHaveTextContent('null'))
+})
+
+test('sin state de navegación no aparece ningún aviso de eliminación', async () => {
+  setDataSourceForTests('mock')
+  resetMockBackend()
+  renderApp(<ProjectsPage />)
+
+  await screen.findByRole('heading', { name: 'billing-engine' })
+  expect(screen.queryByText(/eliminado/)).not.toBeInTheDocument()
 })

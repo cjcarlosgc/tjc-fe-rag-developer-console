@@ -6,6 +6,7 @@ import { AuthContext } from './authContext'
 import { isMockAuth } from './authMode'
 import { mockAuthAdapter } from './adapters/mockAuthAdapter'
 import { supabaseAuthAdapter } from './adapters/supabaseAuthAdapter'
+import { clearOAuthCallbackError, readOAuthCallbackError } from './oauthCallbackError'
 import type { AuthSession, AuthStatus } from './types'
 
 function activeAdapter() {
@@ -20,6 +21,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const blocked = isMockAuth() && !isMockDataSource()
   const [session, setSession] = useState<AuthSession | null>(null)
   const [status, setStatus] = useState<AuthStatus>('loading')
+  const [oauthError, setOAuthError] = useState<string | null>(readOAuthCallbackError)
+
+  useEffect(() => {
+    clearOAuthCallbackError()
+  }, [])
+
+  const dismissOAuthError = useCallback(() => setOAuthError(null), [])
 
   useEffect(() => {
     if (blocked) return
@@ -93,8 +101,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const requestPasswordReset = useCallback((email: string) => activeAdapter().resetPasswordForEmail(email), [])
 
   const value = useMemo(
-    () => ({ status, session, signIn, signInWithGitHub, linkGitHub, signOut, requestPasswordReset }),
-    [status, session, signIn, signInWithGitHub, linkGitHub, signOut, requestPasswordReset],
+    () => ({ status, session, signIn, signInWithGitHub, linkGitHub, oauthError, dismissOAuthError, signOut, requestPasswordReset }),
+    [status, session, signIn, signInWithGitHub, linkGitHub, oauthError, dismissOAuthError, signOut, requestPasswordReset],
   )
 
   if (blocked) {

@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useActionRequiredList } from '../action-required/queries'
 import type { FunctionalQuestionResponse } from '../action-required/types'
 import { isMockDataSource } from '../api/dataSource'
@@ -19,6 +19,12 @@ const ACTION_REQUIRED_PREVIEW_LIMIT = 3
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
 const EMPTY_RUNS: AnalysisRunSummaryResponse[] = []
 const EMPTY_ACTION_REQUIRED: FunctionalQuestionResponse[] = []
+
+/** Nombre del proyecto recién eliminado, pasado por el `state` de navegación de react-router (HU56): un aviso de una sola vez, nunca persistido. */
+function deletedProjectNameFrom(state: unknown): string | null {
+  const name = (state as { deletedProjectName?: unknown } | null)?.deletedProjectName
+  return typeof name === 'string' ? name : null
+}
 
 function ConnectRepositoryPanel({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate()
@@ -106,14 +112,15 @@ export function ProjectOverviewCard({ project, runsForProject, actionRequiredCou
   }
 
   if (binding.status !== 'ENABLED') {
+    const revoked = binding.status === 'REVOKED'
     return (
       <Link className="project-card" to={`/projects/${project.id}/integrations/github`}>
         <div>
           <span className="project-icon">{project.name.slice(0, 2).toUpperCase()}</span>
           <h2>{project.name}</h2>
-          <span className="status-badge status-warn">DISCONNECTED</span>
+          <span className={`status-badge ${revoked ? 'status-danger' : 'status-warn'}`}>{revoked ? 'Revocado' : 'Pausado'}</span>
         </div>
-        <p>El vínculo con GitHub está deshabilitado. No se procesarán nuevos Pull Requests.</p>
+        <p>{revoked ? 'La GitHub App perdió acceso al repositorio. No se procesarán nuevos Pull Requests hasta reactivar el vínculo.' : 'El vínculo con GitHub está pausado. No se procesarán nuevos Pull Requests hasta reactivarlo.'}</p>
         <span className="card-link">Revisar integración →</span>
       </Link>
     )
@@ -155,6 +162,17 @@ export function ProjectsPage() {
   const [query, setQuery] = useState('')
   const [showConnectPanel, setShowConnectPanel] = useState(false)
   const [now] = useState(() => Date.now())
+  const location = useLocation()
+  const navigate = useNavigate()
+  const headingRef = useRef<HTMLHeadingElement>(null)
+  const [deletedProjectName] = useState(() => deletedProjectNameFrom(location.state))
+
+  // Tras eliminar un proyecto se llega aquí: el foco va al h1 y el `state` se limpia, porque `history.state` sobrevive a una recarga y el aviso no debe repetirse.
+  useEffect(() => {
+    if (!deletedProjectNameFrom(location.state)) return
+    headingRef.current?.focus()
+    navigate(`${location.pathname}${location.search}`, { replace: true, state: null })
+  }, [location, navigate])
 
   const projects = useMemo(() => projectsQuery.data?.pages.flatMap((page) => page.items) ?? [], [projectsQuery.data])
   const filteredProjects = useMemo(
@@ -185,11 +203,13 @@ export function ProjectsPage() {
       <div className="page-heading">
         <div>
           <p className="eyebrow">Workspace / Overview</p>
-          <h1>Proyectos</h1>
+          <h1 ref={headingRef} tabIndex={-1}>Proyectos</h1>
           <p>Supervisa tus repositorios conectados, Pull Requests y análisis que requieren atención.</p>
         </div>
         <button type="button" className="button primary" onClick={() => setShowConnectPanel((value) => !value)}>+ Conectar repositorio</button>
       </div>
+
+      {deletedProjectName && <p className="panel success-note" role="status">Proyecto «{deletedProjectName}» eliminado</p>}
 
       {showConnectPanel && <ConnectRepositoryPanel onClose={() => setShowConnectPanel(false)} />}
 

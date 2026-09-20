@@ -3,13 +3,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const signInWithPassword = vi.fn()
 const signInWithOAuth = vi.fn()
 const linkIdentity = vi.fn()
+const getUserIdentities = vi.fn()
 const getSession = vi.fn()
 const signOut = vi.fn()
 const resetPasswordForEmail = vi.fn()
 const onAuthStateChange = vi.fn()
 
 vi.mock('@supabase/supabase-js', () => ({
-  createClient: () => ({ auth: { signInWithPassword, signInWithOAuth, linkIdentity, getSession, signOut, resetPasswordForEmail, onAuthStateChange } }),
+  createClient: () => ({ auth: { signInWithPassword, signInWithOAuth, linkIdentity, getUserIdentities, getSession, signOut, resetPasswordForEmail, onAuthStateChange } }),
 }))
 
 /**
@@ -22,6 +23,8 @@ beforeEach(() => {
   signInWithPassword.mockReset()
   signInWithOAuth.mockReset()
   linkIdentity.mockReset()
+  getUserIdentities.mockReset()
+  getUserIdentities.mockResolvedValue({ data: { identities: [{ provider: 'email' }] }, error: null })
   getSession.mockReset()
   signOut.mockReset()
   resetPasswordForEmail.mockReset()
@@ -76,9 +79,19 @@ describe('supabaseAuthAdapter (no probado en vivo)', () => {
     expect(session.githubProviderToken).toBe('gho_linked')
   })
 
+  it('linkGitHub reautoriza con signInWithOAuth si GitHub ya está vinculado al usuario actual, sin llamar a linkIdentity', async () => {
+    getUserIdentities.mockResolvedValue({ data: { identities: [{ provider: 'email' }, { provider: 'github' }] }, error: null })
+    signInWithOAuth.mockResolvedValue({ data: {}, error: null })
+    getSession.mockResolvedValue({ data: { session: { access_token: 'jwt-email', provider_token: 'gho_fresh', user: { id: 'u4', email: 'real@empresa.com' } } } })
+    const session = await supabaseAuthAdapter.linkGitHub()
+    expect(signInWithOAuth).toHaveBeenCalledWith({ provider: 'github', options: { scopes: 'repo' } })
+    expect(linkIdentity).not.toHaveBeenCalled()
+    expect(session.githubProviderToken).toBe('gho_fresh')
+  })
+
   it('linkGitHub ante error nunca expone el detalle de Supabase', async () => {
     linkIdentity.mockResolvedValue({ data: {}, error: { message: 'identity_already_exists' } })
-    await expect(supabaseAuthAdapter.linkGitHub()).rejects.toThrow('No pudimos verificar tus credenciales. Revisa el correo y la contraseña.')
+    await expect(supabaseAuthAdapter.linkGitHub()).rejects.toThrow('No pudimos conectar tu cuenta de GitHub. Inténtalo de nuevo.')
   })
 
   it('onAuthStateChange devuelve una función de desuscripción', () => {

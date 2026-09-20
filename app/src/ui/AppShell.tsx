@@ -7,7 +7,7 @@ import { useAuth } from '../auth/useAuth'
 export function AppShell() {
   const mockData = isMockDataSource()
   const mockAuth = isMockAuth()
-  const { session, signOut } = useAuth()
+  const { session, signOut, oauthError, dismissOAuthError } = useAuth()
   const actionRequiredQuery = useActionRequiredList()
   const actionRequiredCount = actionRequiredQuery.data?.items.length ?? 0
   return (
@@ -30,7 +30,14 @@ export function AppShell() {
           </div>}
         </div>
       </header>
-      <main className="content"><Outlet /></main>
+      <main className="content">
+        {oauthError && <div className="feedback error-state" role="alert">
+          <strong>No se pudo conectar GitHub</strong>
+          <p>{oauthError}</p>
+          <button className="button secondary" type="button" onClick={dismissOAuthError}>Cerrar</button>
+        </div>}
+        <Outlet />
+      </main>
     </div>
   )
 }
