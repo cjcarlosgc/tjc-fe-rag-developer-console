@@ -1,11 +1,16 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { listActionRequired } from '../action-required/api'
+import { setAuthTokenProvider } from '../api/client'
 import { setDataSourceForTests } from '../api/dataSource'
-import { resetMockBackend } from '../api/mockBackend'
+import { mockCreateProject, mockDeleteProject, mockGetAnalysisRunContextTrace, mockGetExperiment, mockGetRuleUsage, mockListRunComparisons, mockSimulateAppAccessLoss, mockStartExperiment, mockStartRunComparison, mockGetRunComparison, resetMockBackend } from '../api/mockBackend'
+import { deleteProject, getProject, listProjects } from '../projects/api'
 import {
   createRepositoryBinding,
   createTestPublication,
   disconnectRepository,
+  enableRepository,
   getAnalysisRun,
+  getGitHubAppAccess,
   getRepositoryBinding,
   getTestPublication,
   listAnalysisRuns,
@@ -20,7 +25,7 @@ beforeEach(() => {
   resetMockBackend()
 })
 
-describe('control-plane api (mock) — HU30 repository binding user-centric (INTEROP-2.2 §6.8)', () => {
+describe('control-plane api (mock) — HU30 repository binding user-centric (INTEROP-2.3 §6.8)', () => {
   it('devuelve el binding ENABLED de un proyecto vinculado', async () => {
     const binding = await getRepositoryBinding('prj_checkout_demo')
     expect(binding).toMatchObject({ repositoryName: 'acme/checkout-service', integrationBranch: 'develop', status: 'ENABLED' })
@@ -56,14 +61,32 @@ describe('control-plane api (mock) — HU30 repository binding user-centric (INT
     expect(branches.items.map((branch) => branch.name)).toEqual(expect.arrayContaining(['main', 'develop']))
   })
 
-  it('desconectar limpia el binding y luego se puede recrear contra el flujo nuevo', async () => {
+  it('desconectar deja el binding en DISABLED (no lo borra) y conserva repositorio y rama', async () => {
     await disconnectRepository('prj_checkout_demo')
-    expect(await getRepositoryBinding('prj_checkout_demo')).toBeNull()
+    expect(await getRepositoryBinding('prj_checkout_demo')).toMatchObject({ repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service', integrationBranch: 'develop', status: 'DISABLED' })
+  })
 
-    await verifyGitHubAppAccess({ repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service' })
-    const binding = await createRepositoryBinding('prj_checkout_demo', { repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service', integrationBranch: 'develop' })
-    expect(binding).toMatchObject({ repositoryName: 'acme/checkout-service', status: 'ENABLED', integrationBranch: 'develop' })
-    expect(await getRepositoryBinding('prj_checkout_demo')).toMatchObject({ status: 'ENABLED' })
+  it('desconectar conserva los Runs del proyecto', async () => {
+    const before = await listAnalysisRuns('prj_checkout_demo')
+    await disconnectRepository('prj_checkout_demo')
+    expect((await listAnalysisRuns('prj_checkout_demo')).items).toHaveLength(before.items.length)
+  })
+
+  it('desconectar un proyecto sin binding responde 404 REPOSITORY_BINDING_NOT_FOUND, como Core', async () => {
+    const project = await mockCreateProject({ name: 'sin-binding' })
+    await expect(disconnectRepository(project.id)).rejects.toMatchObject({ status: 404, code: 'REPOSITORY_BINDING_NOT_FOUND' })
+  })
+
+  it('un proyecto que nunca se vinculó no tiene binding (null)', async () => {
+    const project = await mockCreateProject({ name: 'sin-binding' })
+    expect(await getRepositoryBinding(project.id)).toBeNull()
+  })
+
+  it('un binding DISABLED no se puede recrear: 409 REPOSITORY_BINDING_ALREADY_EXISTS en cualquier status', async () => {
+    await disconnectRepository('prj_checkout_demo')
+    await verifyGitHubAppAccess({ repositoryId: 'repo_notifications', repositoryName: 'acme/notifications-service' })
+    await expect(createRepositoryBinding('prj_checkout_demo', { repositoryId: 'repo_notifications', repositoryName: 'acme/notifications-service', integrationBranch: 'main' }))
+      .rejects.toMatchObject({ status: 409, code: 'REPOSITORY_BINDING_ALREADY_EXISTS' })
   })
 
   it('crear binding con el proyecto ya vinculado rechaza con 409', async () => {
@@ -71,10 +94,145 @@ describe('control-plane api (mock) — HU30 repository binding user-centric (INT
     await expect(createRepositoryBinding('prj_checkout_demo', { repositoryId: 'repo_notifications', repositoryName: 'acme/notifications-service', integrationBranch: 'main' })).rejects.toThrow(/ya tiene un repositorio vinculado/)
   })
 
-  it('crear binding con una rama inexistente rechaza con 404', async () => {
-    await disconnectRepository('prj_checkout_demo')
+  it('vincular un repo ya vinculado a otro Project rechaza con 409 REPOSITORY_ALREADY_BOUND', async () => {
+    const project = await mockCreateProject({ name: 'sin-binding' })
     await verifyGitHubAppAccess({ repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service' })
-    await expect(createRepositoryBinding('prj_checkout_demo', { repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service', integrationBranch: 'no-existe' })).rejects.toThrow(/no existe/)
+    await expect(createRepositoryBinding(project.id, { repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service', integrationBranch: 'develop' }))
+      .rejects.toMatchObject({ status: 409, code: 'REPOSITORY_ALREADY_BOUND' })
+  })
+
+  it('un repo con binding DISABLED de otro Project sigue ocupado (desconectar no libera el repositorio)', async () => {
+    await disconnectRepository('prj_checkout_demo')
+    const project = await mockCreateProject({ name: 'sin-binding' })
+    await verifyGitHubAppAccess({ repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service' })
+    await expect(createRepositoryBinding(project.id, { repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service', integrationBranch: 'develop' }))
+      .rejects.toMatchObject({ code: 'REPOSITORY_ALREADY_BOUND' })
+  })
+
+  it('crear binding con una rama inexistente rechaza con 404', async () => {
+    const project = await mockCreateProject({ name: 'sin-binding' })
+    await verifyGitHubAppAccess({ repositoryId: 'repo_notifications', repositoryName: 'acme/notifications-service' })
+    await expect(createRepositoryBinding(project.id, { repositoryId: 'repo_notifications', repositoryName: 'acme/notifications-service', integrationBranch: 'no-existe' })).rejects.toThrow(/no existe/)
+  })
+
+  it('crear binding en un proyecto sin binding funciona contra el flujo nuevo', async () => {
+    const project = await mockCreateProject({ name: 'sin-binding' })
+    await verifyGitHubAppAccess({ repositoryId: 'repo_notifications', repositoryName: 'acme/notifications-service' })
+    const binding = await createRepositoryBinding(project.id, { repositoryId: 'repo_notifications', repositoryName: 'acme/notifications-service', integrationBranch: 'develop' })
+    expect(binding).toMatchObject({ repositoryName: 'acme/notifications-service', status: 'ENABLED', integrationBranch: 'develop' })
+    expect(await getRepositoryBinding(project.id)).toMatchObject({ status: 'ENABLED' })
+  })
+
+  describe('enableRepository (HU57, INTEROP-2.3)', () => {
+    it('DISABLED pasa a ENABLED', async () => {
+      await disconnectRepository('prj_checkout_demo')
+      expect(await enableRepository('prj_checkout_demo')).toMatchObject({ status: 'ENABLED', repositoryId: 'repo_checkout' })
+      expect(await getRepositoryBinding('prj_checkout_demo')).toMatchObject({ status: 'ENABLED' })
+    })
+
+    it('es idempotente si ya está ENABLED', async () => {
+      const first = await getRepositoryBinding('prj_checkout_demo')
+      expect(await enableRepository('prj_checkout_demo')).toEqual(first)
+    })
+
+    it('REVOKED pasa a ENABLED si la App recuperó acceso al repositorio', async () => {
+      mockSimulateAppAccessLoss('prj_checkout_demo')
+      expect(await getRepositoryBinding('prj_checkout_demo')).toMatchObject({ status: 'REVOKED' })
+      expect(await enableRepository('prj_checkout_demo')).toMatchObject({ status: 'ENABLED' })
+    })
+
+    it('REVOKED sin acceso de la App responde 403 GITHUB_APP_ACCESS_REQUIRED y no cambia el estado; tras revalidar reactiva', async () => {
+      const project = await mockCreateProject({ name: 'sin-binding' })
+      await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' })
+      await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' })
+      await createRepositoryBinding(project.id, { repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground', integrationBranch: 'main' })
+      mockSimulateAppAccessLoss(project.id)
+
+      await expect(enableRepository(project.id)).rejects.toMatchObject({ status: 403, code: 'GITHUB_APP_ACCESS_REQUIRED' })
+      expect(await getRepositoryBinding(project.id)).toMatchObject({ status: 'REVOKED' })
+
+      await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' })
+      await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' })
+      expect(await enableRepository(project.id)).toMatchObject({ status: 'ENABLED' })
+    })
+
+    it('desconectar sobre REVOKED no cambia el estado', async () => {
+      mockSimulateAppAccessLoss('prj_checkout_demo')
+      await disconnectRepository('prj_checkout_demo')
+      expect(await getRepositoryBinding('prj_checkout_demo')).toMatchObject({ status: 'REVOKED' })
+    })
+
+    it('leer el acceso de la App con getGitHubAppAccess no cuenta como verificación (Reactivar sigue determinista)', async () => {
+      const input = { repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' }
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        expect(await getGitHubAppAccess(input)).toMatchObject({ status: 'NOT_AUTHORIZED', app: { configureUrl: expect.stringContaining('github.com') } })
+      }
+      // En cambio `verifyGitHubAppAccess` sí cuenta: la segunda verificación autoriza.
+      await verifyGitHubAppAccess(input)
+      expect(await verifyGitHubAppAccess(input)).toMatchObject({ status: 'AUTHORIZED' })
+    })
+
+    it('un proyecto sin binding responde 404 REPOSITORY_BINDING_NOT_FOUND', async () => {
+      const project = await mockCreateProject({ name: 'sin-binding' })
+      await expect(enableRepository(project.id)).rejects.toMatchObject({ status: 404, code: 'REPOSITORY_BINDING_NOT_FOUND' })
+    })
+
+    it('un proyecto inexistente responde 404 PROJECT_NOT_FOUND', async () => {
+      await expect(enableRepository('prj_no_existe')).rejects.toMatchObject({ status: 404, code: 'PROJECT_NOT_FOUND' })
+    })
+  })
+
+  describe('deleteProject (HU56, INTEROP-2.3)', () => {
+    it('oculta el Project, sus Runs y su Action Required; conserva los del resto', async () => {
+      await deleteProject('prj_checkout_demo')
+
+      await expect(getProject('prj_checkout_demo')).rejects.toMatchObject({ status: 404, code: 'PROJECT_NOT_FOUND' })
+      expect((await listProjects()).items.map((project) => project.id)).not.toContain('prj_checkout_demo')
+      expect((await listAnalysisRuns()).items.some((run) => run.projectId === 'prj_checkout_demo')).toBe(false)
+      expect((await listAnalysisRuns()).items.some((run) => run.projectId === 'prj_billing_demo')).toBe(true)
+      expect((await listActionRequired()).items.some((question) => question.projectId === 'prj_checkout_demo')).toBe(false)
+      await expect(getAnalysisRun('arun_checkout_pr45')).rejects.toMatchObject({ status: 404, code: 'ANALYSIS_RUN_NOT_FOUND' })
+    })
+
+    it('getRepositoryBinding de un Project borrado no se enmascara como "sin binding": 404 PROJECT_NOT_FOUND', async () => {
+      await deleteProject('prj_checkout_demo')
+      await expect(getRepositoryBinding('prj_checkout_demo')).rejects.toMatchObject({ status: 404, code: 'PROJECT_NOT_FOUND' })
+    })
+
+    it('las lecturas por id de publicaciones, comparaciones, experimentos, trazas y uso de reglas también lo tratan como inexistente', async () => {
+      const set = await listTestProposals('arun_checkout_pr45')
+      const accepted = await createTestPublication('arun_checkout_pr45', { proposalIds: set.items.map((item) => item.id) })
+      const symbol = { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' } as const
+      const comparison = await mockStartRunComparison('arun_checkout_pr45', symbol)
+      const experiment = await mockStartExperiment('prj_checkout_demo', 'ver-target')
+      expect(await getTestPublication(accepted.publicationId)).toMatchObject({ id: accepted.publicationId })
+      expect(await mockGetAnalysisRunContextTrace('arun_checkout_pr45')).not.toBeNull()
+      expect((await mockGetRuleUsage('fk_coupon_expiry')).length).toBeGreaterThan(0)
+
+      await deleteProject('prj_checkout_demo')
+
+      await expect(getTestPublication(accepted.publicationId)).rejects.toMatchObject({ status: 404, code: 'ANALYSIS_RUN_NOT_FOUND' })
+      await expect(mockListRunComparisons('arun_checkout_pr45')).rejects.toMatchObject({ status: 404 })
+      await expect(mockGetRunComparison(comparison.comparisonId)).rejects.toMatchObject({ status: 404 })
+      await expect(mockGetExperiment(experiment.experimentId)).rejects.toMatchObject({ status: 404 })
+      await expect(mockGetAnalysisRunContextTrace('arun_checkout_pr45')).rejects.toMatchObject({ status: 404, code: 'ANALYSIS_RUN_NOT_FOUND' })
+      await expect(mockGetRuleUsage('fk_coupon_expiry')).rejects.toMatchObject({ status: 404, code: 'PROJECT_NOT_FOUND' })
+      // Los del resto de proyectos siguen visibles.
+      await expect(mockGetRuleUsage('fk_discount_engine')).resolves.toEqual([])
+    })
+
+    it('libera el repositorio: otro Project puede vincularlo', async () => {
+      await deleteProject('prj_checkout_demo')
+      const project = await mockCreateProject({ name: 'sin-binding' })
+      await verifyGitHubAppAccess({ repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service' })
+      expect(await createRepositoryBinding(project.id, { repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service', integrationBranch: 'develop' })).toMatchObject({ status: 'ENABLED' })
+    })
+
+    it('el segundo DELETE del mock responde 404 PROJECT_NOT_FOUND, pero deleteProject trata ese reintento como éxito', async () => {
+      await deleteProject('prj_checkout_demo')
+      await expect(mockDeleteProject('prj_checkout_demo')).rejects.toMatchObject({ status: 404, code: 'PROJECT_NOT_FOUND' })
+      await expect(deleteProject('prj_checkout_demo')).resolves.toBeUndefined()
+    })
   })
 })
 
@@ -220,6 +378,89 @@ describe('control-plane api (live) — HU30 repository binding, Core ya lo imple
   it('getRepositoryBinding traduce 404 REPOSITORY_BINDING_NOT_FOUND a null', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ code: 'REPOSITORY_BINDING_NOT_FOUND', message: 'x' }), { status: 404 }))
     await expect(getRepositoryBinding('prj_real')).resolves.toBeNull()
+  })
+
+  it('getRepositoryBinding NO enmascara otros 404: PROJECT_NOT_FOUND se propaga', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ code: 'PROJECT_NOT_FOUND', message: 'x' }), { status: 404 }))
+    await expect(getRepositoryBinding('prj_real')).rejects.toMatchObject({ status: 404, code: 'PROJECT_NOT_FOUND' })
+  })
+
+  it('getRepositoryBinding devuelve un binding DISABLED tal cual (Core lo deja vivo al desconectar)', async () => {
+    const binding = { projectId: 'prj_real', installationId: 'inst_1', repositoryId: 'repo_1', repositoryName: 'acme/repo', integrationBranch: 'main', status: 'DISABLED', createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z' }
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(binding), { status: 200 }))
+    await expect(getRepositoryBinding('prj_real')).resolves.toMatchObject({ status: 'DISABLED' })
+  })
+
+  it('getRepositoryBinding distingue 404 REPOSITORY_BINDING_NOT_FOUND (Project vivo sin binding: null) de 404 PROJECT_NOT_FOUND (se propaga)', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ code: 'REPOSITORY_BINDING_NOT_FOUND', message: 'x' }), { status: 404 }))
+    await expect(getRepositoryBinding('prj_real')).resolves.toBeNull()
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ code: 'PROJECT_NOT_FOUND', message: 'x' }), { status: 404 }))
+    await expect(getRepositoryBinding('prj_real')).rejects.toMatchObject({ status: 404, code: 'PROJECT_NOT_FOUND' })
+  })
+
+  it('createRepositoryBinding propaga 404 GITHUB_REPOSITORY_NOT_FOUND y 409 REPOSITORY_ALREADY_BOUND con su código', async () => {
+    const input = { repositoryId: 'repo_1', repositoryName: 'acme/repo', integrationBranch: 'main' }
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ code: 'GITHUB_REPOSITORY_NOT_FOUND', message: 'x', correlationId: 'corr-1' }), { status: 404 }))
+    await expect(createRepositoryBinding('prj_real', input)).rejects.toMatchObject({ status: 404, code: 'GITHUB_REPOSITORY_NOT_FOUND', correlationId: 'corr-1' })
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ code: 'REPOSITORY_ALREADY_BOUND', message: 'x' }), { status: 409 }))
+    await expect(createRepositoryBinding('prj_real', input)).rejects.toMatchObject({ status: 409, code: 'REPOSITORY_ALREADY_BOUND' })
+  })
+
+  describe('enableRepository (HU57, INTEROP-2.3 implementado en Core)', () => {
+    afterEach(() => setAuthTokenProvider(null))
+
+    it('pide POST /projects/{projectId}/integrations/github/enable sin cuerpo, con Authorization, y devuelve el binding 200', async () => {
+      setAuthTokenProvider(() => 'token-123')
+      const binding = { projectId: 'prj real', installationId: 'inst_2', repositoryId: 'repo_1', repositoryName: 'acme/repo', integrationBranch: 'main', status: 'ENABLED', createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-02T00:00:00.000Z' }
+      const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(binding), { status: 200 }))
+
+      await expect(enableRepository('prj real')).resolves.toEqual(binding)
+
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+      const [url, init] = fetchMock.mock.calls[0]
+      expect(String(url)).toMatch(/\/projects\/prj%20real\/integrations\/github\/enable$/)
+      expect(init).toMatchObject({ method: 'POST', headers: expect.objectContaining({ Authorization: 'Bearer token-123' }) })
+      expect(init?.body).toBeUndefined()
+    })
+
+    it.each([
+      [403, 'GITHUB_APP_ACCESS_REQUIRED'],
+      [404, 'PROJECT_NOT_FOUND'],
+      [404, 'REPOSITORY_BINDING_NOT_FOUND'],
+    ])('propaga %i %s con su código', async (status, code) => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ code, message: 'x', correlationId: 'corr-9' }), { status }))
+      await expect(enableRepository('prj_real')).rejects.toMatchObject({ status, code, correlationId: 'corr-9' })
+    })
+  })
+
+  describe('deleteProject (HU56, INTEROP-2.3 implementado en Core)', () => {
+    afterEach(() => setAuthTokenProvider(null))
+
+    it('pide DELETE /projects/{projectId} con Authorization y resuelve con el 204 sin cuerpo', async () => {
+      setAuthTokenProvider(() => 'token-123')
+      const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 204 }))
+
+      await expect(deleteProject('prj_real')).resolves.toBeUndefined()
+
+      const [url, init] = fetchMock.mock.calls[0]
+      expect(String(url)).toMatch(/\/projects\/prj_real$/)
+      expect(init).toMatchObject({ method: 'DELETE', headers: expect.objectContaining({ Authorization: 'Bearer token-123' }) })
+    })
+
+    it('un 404 PROJECT_NOT_FOUND (reintento sobre un Project ya borrado) se trata como éxito', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ code: 'PROJECT_NOT_FOUND', message: 'x' }), { status: 404 }))
+      await expect(deleteProject('prj_real')).resolves.toBeUndefined()
+    })
+
+    it('otros errores no se tragan: 404 con otro código y 500 se propagan', async () => {
+      const fetchMock = vi.spyOn(globalThis, 'fetch')
+      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ code: 'OTHER_NOT_FOUND', message: 'x' }), { status: 404 }))
+      await expect(deleteProject('prj_real')).rejects.toMatchObject({ status: 404, code: 'OTHER_NOT_FOUND' })
+      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ code: 'INTERNAL_ERROR', message: 'x' }), { status: 500 }))
+      await expect(deleteProject('prj_real')).rejects.toMatchObject({ status: 500 })
+    })
   })
 
   it('getRepositoryBinding pide GET /projects/{projectId}/integrations/github y devuelve el binding', async () => {
