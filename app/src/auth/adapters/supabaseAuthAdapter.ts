@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Session, SupabaseClient } from '@supabase/supabase-js'
-import { invalidCredentialsMessage } from '../errors'
+import { githubConnectionErrorMessage, invalidCredentialsMessage } from '../errors'
 import type { AuthAdapter, AuthSession } from '../types'
 
 /**
@@ -55,14 +55,23 @@ export const supabaseAuthAdapter: AuthAdapter = {
     return session
   },
   /**
-   * HU30 (no probado en vivo): `linkIdentity` vincula GitHub scope `repo` a la sesión de correo
-   * existente sin crear otro usuario de plataforma, a diferencia de `signInWithOAuth`. Igual que
-   * `signInWithGitHub`, redirige el navegador; la sesión vinculada llega después vía
-   * `onAuthStateChange`.
+   * HU30: `linkIdentity` vincula GitHub scope `repo` a la sesión de correo existente sin crear otro
+   * usuario de plataforma, a diferencia de `signInWithOAuth`. Igual que `signInWithGitHub`, redirige
+   * el navegador; la sesión vinculada llega después vía `onAuthStateChange`.
+   *
+   * Supabase no guarda ni refresca `provider_token`, así que en una sesión restaurada llega `null`
+   * aunque GitHub ya esté vinculado, y `linkIdentity` fallaría con `identity_already_exists` (el
+   * error llega en la URL de retorno, ver `oauthCallbackError`). `getUserIdentities` lista solo las
+   * identidades del usuario actual: si GitHub está ahí, reautorizar con `signInWithOAuth` vuelve al
+   * mismo usuario y renueva el token; solo se vincula cuando todavía no lo está.
    */
   async linkGitHub() {
-    const { error } = await getClient().auth.linkIdentity({ provider: 'github', options: { scopes: 'repo' } })
-    if (error) throw new Error(invalidCredentialsMessage)
+    const auth = getClient().auth
+    const { data: identityData } = await auth.getUserIdentities()
+    const alreadyLinked = identityData?.identities.some((identity) => identity.provider === 'github') ?? false
+    const credentials = { provider: 'github', options: { scopes: 'repo' } } as const
+    const { error } = alreadyLinked ? await auth.signInWithOAuth(credentials) : await auth.linkIdentity(credentials)
+    if (error) throw new Error(githubConnectionErrorMessage)
     const { data } = await getClient().auth.getSession()
     const session = toSession(data.session)
     if (!session) throw new Error(invalidCredentialsMessage)

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { isMockDataSource } from '../api/dataSource'
+import { authErrorMessage } from '../auth/errors'
 import { useAuth } from '../auth/useAuth'
 import { useProject } from '../projects/queries'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
@@ -28,6 +29,7 @@ export function IntegrationsPage() {
   const createBinding = useCreateRepositoryBinding(projectId)
 
   const [linkPending, setLinkPending] = useState(false)
+  const [linkError, setLinkError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [selectedRepo, setSelectedRepo] = useState<GitHubUserRepositoryResponse | null>(null)
   const [accessResult, setAccessResult] = useState<GitHubAppAccessResponse | null>(null)
@@ -92,11 +94,15 @@ export function IntegrationsPage() {
           disabled={linkPending}
           onClick={() => {
             setLinkPending(true)
-            linkGitHub().finally(() => setLinkPending(false))
+            setLinkError(null)
+            linkGitHub()
+              .catch((error: unknown) => setLinkError(authErrorMessage(error)))
+              .finally(() => setLinkPending(false))
           }}
         >
           {linkPending ? 'Conectando…' : 'Conectar GitHub'}
         </button>
+        {linkError && <p className="empty-inline-note" role="alert">{linkError}</p>}
       </div>
     ) : (
       <div className="panel integration-panel">
