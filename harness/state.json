@@ -11,6 +11,79 @@
     "DECISION_REQUIRED",
     "DONE"
   ],
-  "activeWorkItem": null,
-  "lastUpdatedAt": "2026-09-20T03:50:00-05:00"
+  "activeWorkItem": {
+    "id": "T-003-console-github-login",
+    "workItemType": "PRODUCT",
+    "storyIds": [
+      "HU62"
+    ],
+    "sprint": "Future",
+    "status": "SELECTED",
+    "specPaths": [
+      "spec/features/012-authentication",
+      "spec/contracts/system-contract.md",
+      "spec/contracts/interoperability-contract.md"
+    ],
+    "transversalPaths": [],
+    "approved": false,
+    "decisionGate": {
+      "checked": false,
+      "blockingDecisionIds": [],
+      "nonBlockingDecisionIds": [],
+      "checkedAt": null
+    },
+    "execution": {
+      "leaderAgent": "leader",
+      "analysisAgent": "sdd-analyst",
+      "implementationAgent": "implementer",
+      "uxReviewAgent": "ux-reviewer",
+      "contractReviewAgent": "contract-reviewer",
+      "reviewAgent": "reviewer",
+      "handoffs": [],
+      "reviewCycles": 0,
+      "maxReviewCycles": 2
+    },
+    "gates": {
+      "sddVerified": "NOT_RUN",
+      "implementationCompleted": "NOT_RUN",
+      "uxReviewed": "NOT_RUN",
+      "contractReviewed": "NOT_RUN",
+      "canonicalContractSynced": "PASSED",
+      "contractSyncPublished": "NOT_RUN",
+      "independentReviewPassed": "NOT_RUN",
+      "technicalChecksPassed": "NOT_RUN",
+      "interopSyncChecked": "NOT_RUN",
+      "noMocksPresentedAsLive": "NOT_RUN",
+      "noBlockingDecisions": "NOT_RUN",
+      "retryLimitRespected": "NOT_RUN"
+    },
+    "coordination": {
+      "uiImpact": true,
+      "contractImpact": true,
+      "pullCheckpoints": [
+        {
+          "checkpoint": "start",
+          "workItem": "T-003-console-github-login",
+          "relevantPendingSyncIds": [
+            "CS-20260921-001"
+          ],
+          "checkedAt": "2026-09-21T07:30:00.000Z",
+          "note": "CS-20260921-001 evaluado y ACKNOWLEDGED al abrir el work item"
+        }
+      ],
+      "publishedSyncIds": [],
+      "pendingRelevantSyncIds": [],
+      "knownIncompatibilities": []
+    },
+    "evidence": [
+      "Usuario confirma DEC-ORG-001 (login solo GitHub) como decisión final el 2026-09-21",
+      "Espejos SYSTEM-2.4/INTEROP-2.4 copiados byte a byte desde Core; backlog HU58-HU64 alineado (nota HU56/57 conservada)",
+      "Corte 1 = login solo GitHub (HU62): debe publicarse ANTES del bundle A de Core; workspaces/roles (HU58-HU61, HU63, HU64) esperan el CONTRACT_SYNC del bundle B",
+      "contractSyncPublished pendiente: al publicar la Console solo-GitHub hay que emitir un CONTRACT_SYNC hacia core, porque su bundle A espera esa publicación"
+    ],
+    "createdAt": "2026-09-21T02:30:00-05:00",
+    "updatedAt": "2026-09-21T02:30:00-05:00",
+    "blockedReason": null
+  },
+  "lastUpdatedAt": "2026-09-21T02:30:00-05:00"
 }
