@@ -1,7 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom'
 import { LoginPage } from './auth/LoginPage'
-import { RequestAccessPage } from './auth/RequestAccessPage'
-import { RequestPasswordResetPage } from './auth/RequestPasswordResetPage'
 import { RequireAuth } from './auth/RequireAuth'
 import { AppShell } from './ui/AppShell'
 import { ProjectDetailPage } from './projects/ProjectDetailPage'
@@ -26,8 +24,6 @@ import { RunComparisonPage } from './run-comparison/RunComparisonPage'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
-  { path: '/reset-password', element: <RequestPasswordResetPage /> },
-  { path: '/request-access', element: <RequestAccessPage /> },
   {
     element: <RequireAuth />,
     children: [

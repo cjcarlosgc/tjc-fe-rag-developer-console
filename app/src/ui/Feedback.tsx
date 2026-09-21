@@ -4,13 +4,15 @@ import { Spinner } from './Loaders'
 interface ErrorStateProps {
   message: string
   onRetry: () => void
+  /** Referencia para soporte: solo existe en errores que vinieron de Core (o del mock). */
+  correlationId?: string
 }
 
-export function ErrorState({ message, onRetry }: ErrorStateProps) {
+export function ErrorState({ message, onRetry, correlationId }: ErrorStateProps) {
   return (
     <div className="feedback error-state" role="alert">
       <strong>No pudimos cargar esta información</strong>
-      <p>{message}</p>
+      <p>{message}{correlationId && <> <span className="correlation-ref">Referencia: <code>{correlationId}</code></span></>}</p>
       <button className="button secondary" type="button" onClick={onRetry}>Reintentar</button>
     </div>
   )

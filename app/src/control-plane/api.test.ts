@@ -109,6 +109,52 @@ describe('control-plane api (mock) — HU30 repository binding user-centric (INT
       .rejects.toMatchObject({ code: 'REPOSITORY_ALREADY_BOUND' })
   })
 
+  describe('HU64: orden de validación de POST binding en el mock (INTEROP-2.4 §6.8)', () => {
+    it('repositoryId inexistente o discordante con el nombre responde el mismo 404 GITHUB_REPOSITORY_NOT_FOUND', async () => {
+      const project = await mockCreateProject({ name: 'sin-binding' })
+      await expect(createRepositoryBinding(project.id, { repositoryId: 'repo_falso', repositoryName: 'acme/notifications-service', integrationBranch: 'main' }))
+        .rejects.toMatchObject({ status: 404, code: 'GITHUB_REPOSITORY_NOT_FOUND' })
+      await expect(createRepositoryBinding(project.id, { repositoryId: 'repo_notifications', repositoryName: 'acme/otro-nombre', integrationBranch: 'main' }))
+        .rejects.toMatchObject({ status: 404, code: 'GITHUB_REPOSITORY_NOT_FOUND' })
+    })
+
+    it('un repo de propietario ajeno responde 400 REPOSITORY_OUTSIDE_WORKSPACE', async () => {
+      const project = await mockCreateProject({ name: 'sin-binding' })
+      await expect(createRepositoryBinding(project.id, { repositoryId: 'repo_external_tools', repositoryName: 'external-org/shared-tools', integrationBranch: 'main' }))
+        .rejects.toMatchObject({ status: 400, code: 'REPOSITORY_OUTSIDE_WORKSPACE' })
+    })
+
+    it('un repo con permiso solo de lectura responde 403 REPOSITORY_PERMISSION_INSUFFICIENT', async () => {
+      const project = await mockCreateProject({ name: 'sin-binding' })
+      await expect(createRepositoryBinding(project.id, { repositoryId: 'repo_legacy_docs', repositoryName: 'acme/legacy-docs', integrationBranch: 'main' }))
+        .rejects.toMatchObject({ status: 403, code: 'REPOSITORY_PERMISSION_INSUFFICIENT' })
+    })
+
+    it('el orden es 404 proyecto → 409 binding propio → 403 App → 404 repo → 400 ajeno → 403 permiso → 409 ya vinculado → 404 rama', async () => {
+      const project = await mockCreateProject({ name: 'sin-binding' })
+      // 403 App antes que 404 repo: repo_playground sin autorizar pero con id/nombre válidos.
+      await expect(createRepositoryBinding(project.id, { repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground', integrationBranch: 'main' }))
+        .rejects.toMatchObject({ code: 'GITHUB_APP_ACCESS_REQUIRED' })
+      // 400 ajeno antes que 403 permiso y que 404 rama (la rama 'no-existe' no llega a evaluarse).
+      await expect(createRepositoryBinding(project.id, { repositoryId: 'repo_external_tools', repositoryName: 'external-org/shared-tools', integrationBranch: 'no-existe' }))
+        .rejects.toMatchObject({ code: 'REPOSITORY_OUTSIDE_WORKSPACE' })
+      // 403 permiso antes que 409 ya vinculado y que 404 rama.
+      await expect(createRepositoryBinding(project.id, { repositoryId: 'repo_legacy_docs', repositoryName: 'acme/legacy-docs', integrationBranch: 'no-existe' }))
+        .rejects.toMatchObject({ code: 'REPOSITORY_PERMISSION_INSUFFICIENT' })
+      // 404 repo antes que 409 ya vinculado (repo_checkout está vinculado a otro Project pero el nombre no coincide).
+      await expect(createRepositoryBinding(project.id, { repositoryId: 'repo_checkout', repositoryName: 'acme/otro', integrationBranch: 'develop' }))
+        .rejects.toMatchObject({ code: 'GITHUB_REPOSITORY_NOT_FOUND' })
+      // 409 ya vinculado antes que 404 rama.
+      await expect(createRepositoryBinding(project.id, { repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service', integrationBranch: 'no-existe' }))
+        .rejects.toMatchObject({ code: 'REPOSITORY_ALREADY_BOUND' })
+      // 404 proyecto y 409 binding propio siguen primero.
+      await expect(createRepositoryBinding('prj_inexistente', { repositoryId: 'repo_falso', repositoryName: 'x/y', integrationBranch: 'main' }))
+        .rejects.toMatchObject({ code: 'PROJECT_NOT_FOUND' })
+      await expect(createRepositoryBinding('prj_checkout_demo', { repositoryId: 'repo_falso', repositoryName: 'x/y', integrationBranch: 'main' }))
+        .rejects.toMatchObject({ code: 'REPOSITORY_BINDING_ALREADY_EXISTS' })
+    })
+  })
+
   it('crear binding con una rama inexistente rechaza con 404', async () => {
     const project = await mockCreateProject({ name: 'sin-binding' })
     await verifyGitHubAppAccess({ repositoryId: 'repo_notifications', repositoryName: 'acme/notifications-service' })

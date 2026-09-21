@@ -1,3 +1,5 @@
+import { useRef } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Link, Outlet } from 'react-router-dom'
 import { useActionRequiredList } from '../action-required/queries'
 import { isMockDataSource } from '../api/dataSource'
@@ -7,7 +9,15 @@ import { useAuth } from '../auth/useAuth'
 export function AppShell() {
   const mockData = isMockDataSource()
   const mockAuth = isMockAuth()
-  const { session, signOut, oauthError, dismissOAuthError } = useAuth()
+  const { session, signOut, oauthError, dismissOAuthError, sessionNotice, dismissSessionNotice } = useAuth()
+  const queryClient = useQueryClient()
+  const mainRef = useRef<HTMLElement>(null)
+  // El banner desaparece al pulsar sus botones: el foco pasa a `main` para no perderse en <body>.
+  function closeIdentityNotice(retry: boolean) {
+    dismissSessionNotice()
+    if (retry) void queryClient.invalidateQueries()
+    mainRef.current?.focus()
+  }
   const actionRequiredQuery = useActionRequiredList()
   const actionRequiredCount = actionRequiredQuery.data?.items.length ?? 0
   return (
@@ -30,11 +40,19 @@ export function AppShell() {
           </div>}
         </div>
       </header>
-      <main className="content">
+      <main className="content" ref={mainRef} tabIndex={-1}>
         {oauthError && <div className="feedback error-state" role="alert">
           <strong>No se pudo conectar GitHub</strong>
           <p>{oauthError}</p>
           <button className="button secondary" type="button" onClick={dismissOAuthError}>Cerrar</button>
+        </div>}
+        {sessionNotice?.kind === 'identity-unavailable' && <div className="feedback error-state" role="alert">
+          <strong>Identidad no disponible</strong>
+          <p>{sessionNotice.message}</p>
+          <div className="run-actions">
+            <button className="button primary" type="button" onClick={() => closeIdentityNotice(true)}>Reintentar</button>
+            <button className="button secondary" type="button" onClick={() => closeIdentityNotice(false)}>Cerrar</button>
+          </div>
         </div>}
         <Outlet />
       </main>

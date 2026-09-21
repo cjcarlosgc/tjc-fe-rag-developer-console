@@ -1,21 +1,22 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
 import { mockCreateProject, mockSimulateAppAccessLoss, resetMockBackend } from '../api/mockBackend'
 import { AuthProvider } from '../auth/AuthProvider'
+import { mockAuthAdapter } from '../auth/adapters/mockAuthAdapter'
 import { setAuthModeForTests } from '../auth/authMode'
 import { deleteProject } from '../projects/api'
 import { createRepositoryBinding, disconnectRepository, verifyGitHubAppAccess } from './api'
 import { IntegrationsPage } from './IntegrationsPage'
 
 const SESSION_KEY = 'rag-console.mock-session'
-const EMAIL_USER = { id: 'user_demo_local', email: 'demo@rag-test-studio.local' }
+const DEMO_USER = { id: 'user_demo_github', email: 'demo@rag-test-studio.local' }
 
-function seedEmailSession(githubProviderToken: string | null) {
-  localStorage.setItem(SESSION_KEY, JSON.stringify({ user: EMAIL_USER, accessToken: 'mock-session-token', githubProviderToken }))
+function seedSession(githubProviderToken: string | null) {
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ user: DEMO_USER, accessToken: 'mock-github-session-token', githubProviderToken }))
 }
 
 afterEach(() => vi.restoreAllMocks())
@@ -47,7 +48,7 @@ function renderIntegrations(projectId: string) {
 }
 
 test('HU30: muestra el binding ENABLED y permite desconectar', async () => {
-  seedEmailSession('mock-github-provider-token')
+  seedSession('mock-github-provider-token')
   const user = userEvent.setup()
   renderIntegrations('prj_checkout_demo')
 
@@ -70,7 +71,7 @@ test('HU30: muestra el binding ENABLED y permite desconectar', async () => {
 })
 
 test('HU57: Reactivar devuelve un binding DISABLED a ENABLED y lo marca como DEMO', async () => {
-  seedEmailSession('mock-github-provider-token')
+  seedSession('mock-github-provider-token')
   const user = userEvent.setup()
   await disconnectRepository('prj_checkout_demo')
   renderIntegrations('prj_checkout_demo')
@@ -87,7 +88,7 @@ test('HU57: Reactivar devuelve un binding DISABLED a ENABLED y lo marca como DEM
 })
 
 test('HU57: un binding REVOKED explica la pérdida de acceso y Reactivar revalida', async () => {
-  seedEmailSession('mock-github-provider-token')
+  seedSession('mock-github-provider-token')
   const user = userEvent.setup()
   mockSimulateAppAccessLoss('prj_checkout_demo')
   renderIntegrations('prj_checkout_demo')
@@ -102,7 +103,7 @@ test('HU57: un binding REVOKED explica la pérdida de acceso y Reactivar revalid
 })
 
 test('HU57: reactivar un REVOKED sin acceso de la App muestra el error con correlationId y el enlace para configurar la App', async () => {
-  seedEmailSession('mock-github-provider-token')
+  seedSession('mock-github-provider-token')
   const user = userEvent.setup()
   const projectId = await createUnboundProject()
   await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' })
@@ -121,7 +122,7 @@ test('HU57: reactivar un REVOKED sin acceso de la App muestra el error con corre
 })
 
 test('HU56: un proyecto eliminado muestra "El proyecto ya no existe" con enlace a Proyectos y sin Reintentar', async () => {
-  seedEmailSession('mock-github-provider-token')
+  seedSession('mock-github-provider-token')
   await deleteProject('prj_checkout_demo')
   renderIntegrations('prj_checkout_demo')
 
@@ -131,7 +132,7 @@ test('HU56: un proyecto eliminado muestra "El proyecto ya no existe" con enlace 
 })
 
 test('un fallo al desconectar muestra el error con role="alert" y correlationId', async () => {
-  seedEmailSession('mock-github-provider-token')
+  seedSession('mock-github-provider-token')
   const user = userEvent.setup()
   renderIntegrations('prj_checkout_demo')
   await screen.findByText('Activo')
@@ -146,20 +147,65 @@ test('un fallo al desconectar muestra el error con role="alert" y correlationId'
   expect(alert).not.toHaveTextContent('stack interno')
 })
 
-test('HU30: sin GitHub vinculado, el CTA conecta la sesión y habilita el descubrimiento', async () => {
-  seedEmailSession(null)
+test('HU62: sin acceso GitHub en la sesión, «Renovar acceso a GitHub» lo restablece y habilita el descubrimiento (sin «Conectar GitHub»)', async () => {
+  seedSession(null)
   const user = userEvent.setup()
   renderIntegrations(await createUnboundProject())
 
-  expect(await screen.findByText('Conecta tu cuenta de GitHub')).toBeInTheDocument()
+  expect(await screen.findByText('Renueva tu acceso a GitHub')).toBeInTheDocument()
   expect(screen.queryByLabelText('Buscar repositorio')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Conectar GitHub' })).not.toBeInTheDocument()
 
-  await user.click(screen.getByRole('button', { name: 'Conectar GitHub' }))
+  await user.click(screen.getByRole('button', { name: 'Renovar acceso a GitHub' }))
   expect(await screen.findByLabelText('Buscar repositorio')).toBeInTheDocument()
 })
 
+test('HU62: «Renovar acceso a GitHub» vuelve a la ruta actual (redirectTo) y queda en «Renovando…» mientras el navegador redirige', async () => {
+  seedSession(null)
+  const user = userEvent.setup()
+  const signIn = vi.spyOn(mockAuthAdapter, 'signInWithGitHub').mockResolvedValue(null)
+  const projectId = await createUnboundProject()
+  renderIntegrations(projectId)
+
+  await user.click(await screen.findByRole('button', { name: 'Renovar acceso a GitHub' }))
+
+  expect(signIn).toHaveBeenCalledWith(`/projects/${projectId}/integrations/github`)
+  expect(screen.getByRole('button', { name: 'Renovando…' })).toBeDisabled()
+})
+
+test('HU62: si renovar el acceso falla, muestra el error con el patrón de error, no filtra el detalle y ofrece «Reintentar»', async () => {
+  seedSession(null)
+  const user = userEvent.setup()
+  const signIn = vi.spyOn(mockAuthAdapter, 'signInWithGitHub').mockRejectedValueOnce(new Error('No pudimos completar el acceso con GitHub. Inténtalo de nuevo.'))
+  renderIntegrations(await createUnboundProject())
+
+  await user.click(await screen.findByRole('button', { name: 'Renovar acceso a GitHub' }))
+
+  const alert = await screen.findByRole('alert')
+  expect(alert).toHaveClass('inline-error')
+  expect(alert).toHaveTextContent('No pudimos completar el acceso con GitHub')
+  expect(screen.getByRole('button', { name: 'Renovar acceso a GitHub' })).toBeEnabled()
+
+  signIn.mockRestore()
+  await user.click(screen.getByRole('button', { name: 'Reintentar' }))
+  expect(await screen.findByLabelText('Buscar repositorio')).toBeInTheDocument()
+})
+
+test('HU62: tras un pageshow persistido (Atrás desde GitHub, bfcache) «Renovando…» vuelve a «Renovar acceso a GitHub»', async () => {
+  seedSession(null)
+  const user = userEvent.setup()
+  vi.spyOn(mockAuthAdapter, 'signInWithGitHub').mockResolvedValue(null)
+  renderIntegrations(await createUnboundProject())
+
+  await user.click(await screen.findByRole('button', { name: 'Renovar acceso a GitHub' }))
+  expect(await screen.findByRole('button', { name: 'Renovando…' })).toBeDisabled()
+
+  act(() => { window.dispatchEvent(Object.assign(new Event('pageshow'), { persisted: true })) })
+  expect(screen.getByRole('button', { name: 'Renovar acceso a GitHub' })).toBeEnabled()
+})
+
 test('HU30: camino feliz — repo AUTHORIZED de una, elige rama real y crea el binding', async () => {
-  seedEmailSession('mock-github-provider-token')
+  seedSession('mock-github-provider-token')
   const user = userEvent.setup()
   renderIntegrations(await createUnboundProject())
   await screen.findByLabelText('Buscar repositorio')
@@ -180,7 +226,7 @@ test('HU30: camino feliz — repo AUTHORIZED de una, elige rama real y crea el b
 })
 
 test('HU30: repo NOT_AUTHORIZED muestra CTA de configuración y "Revalidar" la autoriza', async () => {
-  seedEmailSession('mock-github-provider-token')
+  seedSession('mock-github-provider-token')
   const user = userEvent.setup()
   renderIntegrations(await createUnboundProject())
   await screen.findByLabelText('Buscar repositorio')
@@ -202,7 +248,7 @@ test('HU30: repo NOT_AUTHORIZED muestra CTA de configuración y "Revalidar" la a
 })
 
 test('permite elegir otro repositorio antes de confirmar el binding', async () => {
-  seedEmailSession('mock-github-provider-token')
+  seedSession('mock-github-provider-token')
   const user = userEvent.setup()
   renderIntegrations(await createUnboundProject())
   await screen.findByLabelText('Buscar repositorio')
@@ -215,7 +261,7 @@ test('permite elegir otro repositorio antes de confirmar el binding', async () =
 })
 
 test('409 REPOSITORY_ALREADY_BOUND muestra el mensaje de dominio, conserva repo y rama y no bloquea el botón', async () => {
-  seedEmailSession('mock-github-provider-token')
+  seedSession('mock-github-provider-token')
   const user = userEvent.setup()
   renderIntegrations(await createUnboundProject())
   await screen.findByLabelText('Buscar repositorio')
@@ -240,7 +286,7 @@ test('409 REPOSITORY_ALREADY_BOUND muestra el mensaje de dominio, conserva repo 
 })
 
 test('409 REPOSITORY_BINDING_ALREADY_EXISTS relee el binding y la pantalla muestra el binding real en vez de seguir ofreciendo vincular', async () => {
-  seedEmailSession('mock-github-provider-token')
+  seedSession('mock-github-provider-token')
   const user = userEvent.setup()
   const projectId = await createUnboundProject()
   renderIntegrations(projectId)
@@ -259,7 +305,7 @@ test('409 REPOSITORY_BINDING_ALREADY_EXISTS relee el binding y la pantalla muest
 })
 
 test('403 GITHUB_APP_ACCESS_REQUIRED al vincular revalida y muestra el enlace para configurar la App, sin perder el repo elegido', async () => {
-  seedEmailSession('mock-github-provider-token')
+  seedSession('mock-github-provider-token')
   const user = userEvent.setup()
   // Otro Project deja `repo_playground` autorizado para que la UI lo vea `AUTHORIZED`, y luego pierde acceso (la verificación se olvida).
   const other = await createUnboundProject()
@@ -286,7 +332,7 @@ test('403 GITHUB_APP_ACCESS_REQUIRED al vincular revalida y muestra el enlace pa
 })
 
 test('un 409 de un repositorio A no reaparece al elegir otro repositorio B', async () => {
-  seedEmailSession('mock-github-provider-token')
+  seedSession('mock-github-provider-token')
   const user = userEvent.setup()
   renderIntegrations(await createUnboundProject())
   await screen.findByLabelText('Buscar repositorio')
@@ -304,8 +350,39 @@ test('un 409 de un repositorio A no reaparece al elegir otro repositorio B', asy
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })
 
+test('HU64: los repos con permiso solo de lectura se muestran como no vinculables, con texto que lo explica', async () => {
+  seedSession('mock-github-provider-token')
+  const user = userEvent.setup()
+  renderIntegrations(await createUnboundProject())
+  await screen.findByLabelText('Buscar repositorio')
+
+  const readOnly = await screen.findByRole('button', { name: /legacy-docs/ })
+  expect(readOnly).toBeDisabled()
+  expect(readOnly).toHaveTextContent('No vinculable')
+  expect(readOnly).toHaveAccessibleDescription(/Necesitas permiso maintain, write o admin/)
+  // Un repo con permiso suficiente sigue siendo elegible.
+  expect(screen.getByRole('button', { name: /notifications-service/ })).toBeEnabled()
+
+  await user.click(readOnly)
+  expect(screen.queryByText(/Verificando acceso de la App/)).not.toBeInTheDocument()
+})
+
+test('HU64: un repo de propietario ajeno responde 400 REPOSITORY_OUTSIDE_WORKSPACE y se muestra su mensaje, sin bloquear el botón', async () => {
+  seedSession('mock-github-provider-token')
+  const user = userEvent.setup()
+  renderIntegrations(await createUnboundProject())
+  await screen.findByLabelText('Buscar repositorio')
+
+  await user.click(await screen.findByRole('button', { name: /shared-tools/ }))
+  await user.selectOptions(await screen.findByLabelText('Integration branch'), 'main')
+  await user.click(screen.getByRole('button', { name: 'Vincular repositorio' }))
+
+  expect(await screen.findByRole('alert')).toHaveTextContent('Este repositorio no pertenece a tu cuenta; en un proyecto personal solo puedes vincular repositorios propios.')
+  expect(screen.getByRole('button', { name: 'Vincular repositorio' })).toBeEnabled()
+})
+
 test('un 5xx al vincular muestra un mensaje genérico con correlationId', async () => {
-  seedEmailSession('mock-github-provider-token')
+  seedSession('mock-github-provider-token')
   const user = userEvent.setup()
   renderIntegrations(await createUnboundProject())
   await screen.findByLabelText('Buscar repositorio')
