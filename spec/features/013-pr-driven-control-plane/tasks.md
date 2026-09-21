@@ -16,8 +16,9 @@
       configuración + "Revalidar" — `repo_playground` necesita 2 verificaciones,
       demuestra el ciclo), ramas reales simuladas por repo, y creación del binding
       sin `installationId` (`CreateRepositoryBindingRequest`, Core lo resuelve).
-      Auth gana `linkGitHub()` (vincula GitHub a una sesión de correo sin cambiar de
-      usuario, HU29). Ver `harness/reports/HU30-github-app-centric-binding.md`.
+      Auth ganó `linkGitHub()` (vincula GitHub a una sesión de correo sin cambiar de
+      usuario, HU29); HU62 (`T-003-console-github-login`) lo retira: el login es solo
+      GitHub y la Integrations page ofrece «Renovar acceso a GitHub» (`signInWithOAuth`). Ver `harness/reports/HU30-github-app-centric-binding.md`.
 - [x] HU30 (live, 2026-09-18): activados los 6 adapters live contra Core real
       (Render+Supabase+GitHub), con aprobación humana explícita tras verificar en
       vivo que Core ya lo implementó (handoff cross-repo). Verificado end-to-end:
