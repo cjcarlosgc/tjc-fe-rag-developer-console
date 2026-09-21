@@ -1,7 +1,7 @@
 # T-003 — Console: login solo con GitHub (HU62) y preparación para SYSTEM-2.4/INTEROP-2.4
 
 Repository: `tjc-fe-rag-developer-console`
-Branch: `feature/T-002` (sin push de este trabajo)
+Branch: `feature/T-002`
 Work item: `T-003-console-github-login` (PRODUCT, HU62)
 Contrato: SYSTEM-2.4 / INTEROP-2.4 (canónicos en Core; espejos copiados byte a byte)
 
@@ -19,7 +19,7 @@ Contrato: SYSTEM-2.4 / INTEROP-2.4 (canónicos en Core; espejos copiados byte a 
 | --- | --- | --- |
 | `CS-20260921-001` | Core → Console (contrato 2.4, orden de despliegue, DEC-ORG) | `ACKNOWLEDGED` |
 | `CS-20260921-002` | Core → Console (bundle A implementado, aún no desplegado) | `ACKNOWLEDGED` |
-| `CS-20260921-003` | Console → Core (Console solo-GitHub publicada) | **pendiente de emitir** al publicar la Console |
+| `CS-20260921-003` | Console → Core (Console solo-GitHub liberada para publicación) | `PENDING` en el outbox de Console; emitido a pedido del usuario, que publica la Console |
 
 ## Cortes
 
@@ -55,3 +55,7 @@ Comandos ejecutados por el leader desde `app/` tras el último cambio:
 - **Usuarios existentes solo con correo:** Core responde `401 GITHUB_IDENTITY_REQUIRED` permanente; Core no define migración. Si entran con una cuenta de GitHub nueva obtienen otro `sub` y no ven sus Projects; requiere comunicación o decisión de producto.
 - **Seguimiento UX/técnico (baja, aceptado):** foco al cerrar el banner de error de OAuth; rótulo DEMO de `/login` oculto bajo 680 px (`.environment` con `display:none`); `renewAccessPanel` anidado dentro de un panel; copy de Reactivar sin indicar dónde eliminar el proyecto; `renewSocketAuth` fija el token leyendo el estado en render (casi seguro sin efecto por ser asíncrono; blindar con `sessionRef`); un `401` tardío de un token previo puede cerrar una sesión nueva; banner 503 sin auto-limpieza; el mock de `enable` no modela 404/400 de REVOKED; el mock de verify/branches no modela permiso ni propietario ajeno; smoke test contra socket.io real de la renovación de token.
 - **Push y despliegue:** no realizados. Requieren solicitud explícita y revisión consolidada de sprint.
+
+## Cierre
+
+Work item `DONE` el 2026-09-21. El usuario configuró las Redirect URLs de Supabase, publica la Console y borrará el usuario de prueba `smoke-test@tjc.dev`. Verificado por lectura en la base compartida: 3 usuarios (solo `smoke-test` sin GitHub, sin proyectos), 0 proyectos, 0 bindings, 0 identidades y las migraciones 20260921* ya aplicadas. Core debe desplegar el bundle A solo tras confirmar el despliegue de esta Console.
