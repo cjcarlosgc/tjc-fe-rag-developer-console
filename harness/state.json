@@ -18,19 +18,19 @@
       "HU62"
     ],
     "sprint": "Future",
-    "status": "SELECTED",
+    "status": "IN_REVIEW",
     "specPaths": [
       "spec/features/012-authentication",
       "spec/contracts/system-contract.md",
       "spec/contracts/interoperability-contract.md"
     ],
     "transversalPaths": [],
-    "approved": false,
+    "approved": true,
     "decisionGate": {
-      "checked": false,
+      "checked": true,
       "blockingDecisionIds": [],
       "nonBlockingDecisionIds": [],
-      "checkedAt": null
+      "checkedAt": "2026-09-21T03:10:00-05:00"
     },
     "execution": {
       "leaderAgent": "leader",
@@ -39,23 +39,197 @@
       "uxReviewAgent": "ux-reviewer",
       "contractReviewAgent": "contract-reviewer",
       "reviewAgent": "reviewer",
-      "handoffs": [],
-      "reviewCycles": 0,
+      "handoffs": [
+        {
+          "agent": "sdd-analyst",
+          "status": "DECISION_REQUIRED",
+          "findings": [
+            "Sin DEC-* que bloquee: DEC-ORG-001/002 APROBADO (Blocks NONE); DEC-MET-001, DEC-INF-001, DEC-VAL-001, DEC-EXP-FK-001 no alcanzan",
+            "client.ts trata todo 401 como logout: GITHUB_IDENTITY_REQUIRED causaría un bucle prohibido por INTEROP-2.4 §6.13",
+            "supabaseAuthAdapter.signInWithGitHub no pasa redirectTo (se pierde returnTo) y lanza error de credenciales tras iniciar la redirección",
+            "oauthError solo visible en AppShell, no en /login",
+            "IntegrationsPage 'Conectar GitHub'/linkGitHub sobra con login solo GitHub",
+            "RequestAccessPage simula un envío que no existe",
+            "spec Console desactualizada (012-authentication, 013, demo-mode, backlog HU29)",
+            "Core define solo 401 para usuarios de solo correo, sin migración"
+          ],
+          "blockers": [
+            "Q1 usuarios existentes solo con correo",
+            "Q3 socket auth.token en corte 1 o aparte",
+            "Q4 renombrar Conectar GitHub a Renovar acceso a GitHub y retirar linkGitHub",
+            "Q5 eliminar /request-access y /reset-password"
+          ],
+          "filesAffected": [
+            "app/src/auth/*",
+            "app/src/api/client.ts",
+            "app/src/control-plane/IntegrationsPage.tsx",
+            "spec/features/012-authentication/*",
+            "spec/backlog.md"
+          ],
+          "evidence": [
+            "informe sdd-analyst con archivo:línea y criterios de aceptación; cortes C0 docs, C1 login, C2 errores de sesión, C3 Integrations, C4 socket opcional"
+          ],
+          "recommendedNextStep": "Resolver Q1-Q5 con el usuario y pasar a AWAITING_APPROVAL"
+        },
+        {
+          "agent": "implementer",
+          "status": "APPROVED",
+          "findings": [
+            "C0-C4 implementados: login solo GitHub, errores de sesión 401/503, Integrations Renovar acceso, socket con auth.token y connect_error",
+            "Extras declarados: safeReturnTo en auth/returnTo.ts, setAuthErrorHandler, banner Identidad no disponible, limpieza de CSS muerto"
+          ],
+          "blockers": [],
+          "filesAffected": [
+            "app/src/auth/*",
+            "app/src/api/client.ts",
+            "app/src/api/socket.ts",
+            "app/src/control-plane/IntegrationsPage.tsx",
+            "app/src/ui/AppShell.tsx",
+            "spec/features/012-authentication/*"
+          ],
+          "evidence": [
+            "Leader reejecutó gates: tsc OK, eslint OK, vitest 68 archivos/401 tests OK, build OK"
+          ],
+          "recommendedNextStep": "Corte C5 por CS-20260921-002 y revisiones en paralelo"
+        },
+        {
+          "agent": "reviewer",
+          "status": "CHANGES_REQUESTED",
+          "findings": [
+            "MEDIA: socket singleton sobrevive a logout/cambio de usuario (socket.ts:58, AuthProvider.tsx:109); confirmado por el leader (AuthProvider no importa socket.ts)",
+            "BAJA-MEDIA: supabase signOut no lanza y el adapter ignora {error}; con fallo de red la sesión persiste",
+            "BAJA: botón queda 'Conectando…' tras Atrás (bfcache) en LoginPage y IntegrationsPage",
+            "BAJA: 401 tardío puede cerrar una sesión nueva (sospecha)",
+            "Gates ejecutados por el reviewer OK (69 archivos/422 tests)"
+          ],
+          "blockers": [],
+          "filesAffected": [
+            "app/src/api/socket.ts",
+            "app/src/auth/AuthProvider.tsx",
+            "app/src/auth/adapters/supabaseAuthAdapter.ts",
+            "app/src/auth/LoginPage.tsx",
+            "app/src/control-plane/IntegrationsPage.tsx"
+          ],
+          "evidence": [
+            "lectura de diff completo y gates"
+          ],
+          "recommendedNextStep": "Ciclo 1 de correcciones"
+        },
+        {
+          "agent": "ux-reviewer",
+          "status": "CHANGES_REQUESTED",
+          "findings": [
+            "H1 media: githubIdentityRequiredMessage no explica causa ni siguiente paso",
+            "H2 media: sin gestión de foco tras Reintentar/Cerrar del banner ni en el aviso terminal de /login",
+            "H3 media: error de Renovar acceso sin patrón ErrorNote",
+            "H4 baja-media: errores de carga muestran error.message crudo",
+            "H8 baja: /login sin rótulo DEMO cuando isMockAuth",
+            "H5-H7, H9-H13 bajas/sospechas: seguimiento"
+          ],
+          "blockers": [],
+          "filesAffected": [
+            "app/src/auth/LoginPage.tsx",
+            "app/src/auth/errors.ts",
+            "app/src/ui/AppShell.tsx",
+            "app/src/control-plane/IntegrationsPage.tsx"
+          ],
+          "evidence": [
+            "lectura de código y tests; contraste AA confirmado; sin rastros de correo/contraseña"
+          ],
+          "recommendedNextStep": "Corregir H1-H3 y decidir H4/H8"
+        },
+        {
+          "agent": "contract-reviewer",
+          "status": "APPROVED",
+          "findings": [
+            "Puntos a-h de CS-20260921-002 cumplidos; espejos idénticos a Core; orden del mock == INTEROP-2.4 §6.8; sin workspaceId/workspace/role",
+            "M1: socket no se reinicia con signOut/cambio de token (Core relee handshake.auth.token por mensaje)",
+            "M2: todo 401 cierra sesión, incluidos GITHUB_ACCOUNT_REQUIRED y GITHUB_USER_TOKEN_INVALID del discovery; deberían llevar a Renovar acceso",
+            "B1: mensaje de enable sobre REVOKED engañoso; B2/B3 menores",
+            "Texto propuesto de CS-20260921-003 (publicar solo tras liberar la Console)"
+          ],
+          "blockers": [],
+          "filesAffected": [
+            "app/src/api/socket.ts",
+            "app/src/auth/AuthProvider.tsx",
+            "app/src/control-plane/errors.ts"
+          ],
+          "evidence": [
+            "cmp espejos; lectura de gateway/guard de Core"
+          ],
+          "recommendedNextStep": "Corregir M1 y decidir M2 antes de publicar"
+        },
+        {
+          "agent": "reviewer",
+          "status": "APPROVED",
+          "findings": [
+            "Ciclo 1 cerrado (socket vs sesión, signOut con scope, bfcache); renewSocketAuth validado (misma instancia, sin duplicar listeners; tests con io mockeado)",
+            "Bajas abiertas: renewAccessPanel anidado, 401 tardío con token previo, banner 503 sin auto-limpieza"
+          ],
+          "blockers": [],
+          "filesAffected": [
+            "app/src/api/socket.ts",
+            "app/src/auth/AuthProvider.tsx"
+          ],
+          "evidence": [
+            "tsc, eslint, vitest 69 archivos/460 tests"
+          ],
+          "recommendedNextStep": "Cerrar"
+        },
+        {
+          "agent": "ux-reviewer",
+          "status": "APPROVED",
+          "findings": [
+            "H1-H4, H11 cerrados; H2/H8 parciales",
+            "N1: Cerrar del banner oauthError no mueve el foco; N2: rótulo DEMO de /login oculto bajo 680px; N3 panel anidado; N4 copy de Reactivar sin indicar dónde eliminar"
+          ],
+          "blockers": [],
+          "filesAffected": [
+            "app/src/ui/AppShell.tsx",
+            "app/src/auth/LoginPage.tsx",
+            "app/src/styles.css"
+          ],
+          "evidence": [
+            "lectura de código y tests con toHaveFocus"
+          ],
+          "recommendedNextStep": "N1 y N2 recomendables; el resto seguimiento"
+        },
+        {
+          "agent": "contract-reviewer",
+          "status": "APPROVED",
+          "findings": [
+            "M1, M2, B1 cerrados; espejos idénticos a Core; sin workspaceId; renewSocketAuth compatible con Core y socket.io-client 4.8.3",
+            "N1 baja sospecha: renewSocketAuth antes de setSession, token provider se fija en render",
+            "Core emite solo estos 401 con code: AUTH_REQUIRED, INVALID_ACCESS_TOKEN, GITHUB_IDENTITY_REQUIRED, GITHUB_ACCOUNT_REQUIRED, GITHUB_USER_TOKEN_INVALID, INVALID_WEBHOOK_SIGNATURE"
+          ],
+          "blockers": [],
+          "filesAffected": [
+            "app/src/api/socket.ts",
+            "app/src/auth/AuthProvider.tsx",
+            "app/src/control-plane/errors.ts"
+          ],
+          "evidence": [
+            "cmp espejos; lectura de socket.io-client y Core"
+          ],
+          "recommendedNextStep": "Publicar Console primero; luego CS-20260921-003 hacia Core"
+        }
+      ],
+      "reviewCycles": 1,
       "maxReviewCycles": 2
     },
     "gates": {
-      "sddVerified": "NOT_RUN",
-      "implementationCompleted": "NOT_RUN",
-      "uxReviewed": "NOT_RUN",
-      "contractReviewed": "NOT_RUN",
+      "sddVerified": "PASSED",
+      "implementationCompleted": "PASSED",
+      "uxReviewed": "PASSED",
+      "contractReviewed": "PASSED",
       "canonicalContractSynced": "PASSED",
       "contractSyncPublished": "NOT_RUN",
-      "independentReviewPassed": "NOT_RUN",
-      "technicalChecksPassed": "NOT_RUN",
-      "interopSyncChecked": "NOT_RUN",
-      "noMocksPresentedAsLive": "NOT_RUN",
-      "noBlockingDecisions": "NOT_RUN",
-      "retryLimitRespected": "NOT_RUN"
+      "independentReviewPassed": "PASSED",
+      "technicalChecksPassed": "PASSED",
+      "interopSyncChecked": "PASSED",
+      "noMocksPresentedAsLive": "PASSED",
+      "noBlockingDecisions": "PASSED",
+      "retryLimitRespected": "PASSED"
     },
     "coordination": {
       "uiImpact": true,
@@ -69,6 +243,27 @@
           ],
           "checkedAt": "2026-09-21T07:30:00.000Z",
           "note": "CS-20260921-001 evaluado y ACKNOWLEDGED al abrir el work item"
+        },
+        {
+          "checkpoint": "implementation-delivery",
+          "workItem": "T-003-console-github-login",
+          "relevantPendingSyncIds": [
+            "CS-20260921-002"
+          ],
+          "checkedAt": "2026-09-21T14:58:46.000Z",
+          "note": "CS-20260921-002 (Core: bundle A implementado) evaluado y ACKNOWLEDGED; sus adaptaciones se agregan como corte C5"
+        },
+        {
+          "checkpoint": "implementation-delivery",
+          "workItem": "T-003-console-github-login",
+          "relevantPendingSyncIds": [],
+          "checkedAt": "2026-09-21T15:10:00.000Z"
+        },
+        {
+          "checkpoint": "before-review",
+          "workItem": "T-003-console-github-login",
+          "relevantPendingSyncIds": [],
+          "checkedAt": "2026-09-21T15:21:16.131Z"
         }
       ],
       "publishedSyncIds": [],
@@ -79,11 +274,17 @@
       "Usuario confirma DEC-ORG-001 (login solo GitHub) como decisión final el 2026-09-21",
       "Espejos SYSTEM-2.4/INTEROP-2.4 copiados byte a byte desde Core; backlog HU58-HU64 alineado (nota HU56/57 conservada)",
       "Corte 1 = login solo GitHub (HU62): debe publicarse ANTES del bundle A de Core; workspaces/roles (HU58-HU61, HU63, HU64) esperan el CONTRACT_SYNC del bundle B",
-      "contractSyncPublished pendiente: al publicar la Console solo-GitHub hay que emitir un CONTRACT_SYNC hacia core, porque su bundle A espera esa publicación"
+      "contractSyncPublished pendiente: al publicar la Console solo-GitHub hay que emitir un CONTRACT_SYNC hacia core, porque su bundle A espera esa publicación",
+      "Usuario respondió (2026-09-21): Q1 mensaje terminal claro sin bucle; Q3 INCLUIR auth.token y connect_error del socket en este work item; Q4 renombrar Conectar GitHub a Renovar acceso a GitHub y retirar linkGitHub; Q5 eliminar /reset-password y /request-access",
+      "Pendiente humano (Q2): agregar a la allowlist de Redirect URLs de Supabase los orígenes de la Console para que redirectTo con returnTo funcione; sin ello Supabase vuelve al Site URL",
+      "CS-20260921-002 (Core implementó bundle A; aún no desplegado) ACKNOWLEDGED; requiere C5: mensajes 503 GITHUB_VERIFICATION_UNAVAILABLE, 400 REPOSITORY_OUTSIDE_WORKSPACE, 403 REPOSITORY_PERMISSION_INSUFFICIENT, marcar repos read/triage como no vinculables y alinear mock",
+      "Fan-in ciclo 1: reviewer CHANGES_REQUESTED, ux-reviewer CHANGES_REQUESTED, contract-reviewer APPROVED con M1/M2; corrección al implementer",
+      "Gates reejecutados por el leader tras el ciclo 1: tsc -b, eslint, vitest 69 archivos/460 tests, vite build en verde",
+      "Abierto a propósito: contractSyncPublished exige emitir CS-20260921-003 hacia Core SOLO cuando la Console solo-GitHub esté publicada (Core espera esa publicación para desplegar el bundle A)"
     ],
     "createdAt": "2026-09-21T02:30:00-05:00",
-    "updatedAt": "2026-09-21T02:30:00-05:00",
+    "updatedAt": "2026-09-21T12:10:00-05:00",
     "blockedReason": null
   },
-  "lastUpdatedAt": "2026-09-21T02:30:00-05:00"
+  "lastUpdatedAt": "2026-09-21T12:10:00-05:00"
 }
