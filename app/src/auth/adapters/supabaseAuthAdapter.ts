@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Session, SupabaseClient } from '@supabase/supabase-js'
-import { githubConnectionErrorMessage, invalidCredentialsMessage } from '../errors'
+import { githubLoginErrorMessage, githubSignOutErrorMessage } from '../errors'
+import { safeReturnTo } from '../returnTo'
 import type { AuthAdapter, AuthSession } from '../types'
 
 /**
@@ -35,53 +36,26 @@ export const supabaseAuthAdapter: AuthAdapter = {
     const { data } = await getClient().auth.getSession()
     return toSession(data.session)
   },
-  async signInWithPassword(email, password) {
-    const { data, error } = await getClient().auth.signInWithPassword({ email, password })
-    const session = toSession(data.session)
-    if (error || !session) throw new Error(invalidCredentialsMessage)
-    return session
-  },
   /**
-   * HU29 ampliado / HU30 (INTEROP-2.2 §6.8): `signInWithOAuth` redirige el navegador a GitHub; la
-   * sesión llega después vía `onAuthStateChange`, no en este retorno. Pide scope `repo` para que
-   * el `provider_token` resultante sirva luego para discovery de repositorios.
+   * HU62 (DEC-ORG-001) / HU30 (INTEROP-2.2 §6.8): GitHub es el único método de acceso. `signInWithOAuth`
+   * redirige el navegador a GitHub; la sesión llega después vía `onAuthStateChange`, no en este retorno
+   * (por eso devuelve `null` y no lanza tras iniciar la redirección). Pide scope `repo` para que el
+   * `provider_token` resultante sirva luego para discovery de repositorios. `redirectTo` vuelve a la ruta
+   * interna validada (origin + `safeReturnTo`), nunca a un destino externo.
    */
-  async signInWithGitHub() {
-    const { error } = await getClient().auth.signInWithOAuth({ provider: 'github', options: { scopes: 'repo' } })
-    if (error) throw new Error(invalidCredentialsMessage)
-    const { data } = await getClient().auth.getSession()
-    const session = toSession(data.session)
-    if (!session) throw new Error(invalidCredentialsMessage)
-    return session
+  async signInWithGitHub(returnTo) {
+    const path = safeReturnTo(returnTo ?? null) ?? '/'
+    const { error } = await getClient().auth.signInWithOAuth({
+      provider: 'github',
+      options: { scopes: 'repo', redirectTo: `${window.location.origin}${path}` },
+    })
+    if (error) throw new Error(githubLoginErrorMessage)
+    return null
   },
-  /**
-   * HU30: `linkIdentity` vincula GitHub scope `repo` a la sesión de correo existente sin crear otro
-   * usuario de plataforma, a diferencia de `signInWithOAuth`. Igual que `signInWithGitHub`, redirige
-   * el navegador; la sesión vinculada llega después vía `onAuthStateChange`.
-   *
-   * Supabase no guarda ni refresca `provider_token`, así que en una sesión restaurada llega `null`
-   * aunque GitHub ya esté vinculado, y `linkIdentity` fallaría con `identity_already_exists` (el
-   * error llega en la URL de retorno, ver `oauthCallbackError`). `getUserIdentities` lista solo las
-   * identidades del usuario actual: si GitHub está ahí, reautorizar con `signInWithOAuth` vuelve al
-   * mismo usuario y renueva el token; solo se vincula cuando todavía no lo está.
-   */
-  async linkGitHub() {
-    const auth = getClient().auth
-    const { data: identityData } = await auth.getUserIdentities()
-    const alreadyLinked = identityData?.identities.some((identity) => identity.provider === 'github') ?? false
-    const credentials = { provider: 'github', options: { scopes: 'repo' } } as const
-    const { error } = alreadyLinked ? await auth.signInWithOAuth(credentials) : await auth.linkIdentity(credentials)
-    if (error) throw new Error(githubConnectionErrorMessage)
-    const { data } = await getClient().auth.getSession()
-    const session = toSession(data.session)
-    if (!session) throw new Error(invalidCredentialsMessage)
-    return session
-  },
-  async signOut() {
-    await getClient().auth.signOut()
-  },
-  async resetPasswordForEmail(email) {
-    await getClient().auth.resetPasswordForEmail(email)
+  /** `supabase.auth.signOut` no lanza: devuelve `{ error }`, que aquí se propaga sin exponer su detalle. */
+  async signOut(scope = 'global') {
+    const { error } = await getClient().auth.signOut({ scope })
+    if (error) throw new Error(githubSignOutErrorMessage)
   },
   onAuthStateChange(callback) {
     const { data } = getClient().auth.onAuthStateChange((_event, session) => callback(toSession(session)))

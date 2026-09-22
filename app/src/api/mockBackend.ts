@@ -10,7 +10,8 @@ import type { GenerationAccepted, GenerationConfiguration } from '../generation/
 import type { InventoryTargetViewModel, TestInventoryResponse } from '../inventory/types'
 import type { AnalysisHistoryItem, AnalysisOperation, AnalysisResult, CreateProjectInput, Project, UploadAccepted } from '../projects/types'
 import type { GenerationMode, RunViewModel, TargetRetryAccepted, TargetRunViewModel, TestRunHistoryPage, TestRunSummary } from '../runs/types'
-import { DEMO_GITHUB_REPOSITORIES } from '../control-plane/demoRepositories'
+import { DEMO_FOREIGN_OWNER_LOGINS, DEMO_GITHUB_REPOSITORIES } from '../control-plane/demoRepositories'
+import { canBindRepository } from '../control-plane/repositoryPermissions'
 import type {
   AnalysisRunDetailResponse,
   AnalysisRunListPage,
@@ -1316,6 +1317,8 @@ const DEMO_BRANCHES_BY_REPOSITORY: Record<string, GitHubRepositoryBranchResponse
   repo_billing: [{ name: 'main', protected: true }, { name: 'develop', protected: false }],
   repo_notifications: [{ name: 'main', protected: true }, { name: 'develop', protected: false }, { name: 'feature/webhooks-v2', protected: false }],
   repo_playground: [{ name: 'main', protected: false }],
+  repo_legacy_docs: [{ name: 'main', protected: true }],
+  repo_external_tools: [{ name: 'main', protected: true }],
 }
 
 function isGitHubAppAuthorized(repositoryId: string): boolean {
@@ -1370,12 +1373,23 @@ export async function mockListGitHubRepositoryBranches(owner: string, repo: stri
   return { items: clone(DEMO_BRANCHES_BY_REPOSITORY[found.repositoryId] ?? [{ name: found.defaultBranch, protected: true }]) }
 }
 
-/** HU30: `POST /projects/{projectId}/integrations/github`. `installationId` no viaja desde el navegador: Core lo resuelve — acá se reconstruye a partir del estado de verificación ya guardado. Orden de errores de INTEROP-2.3 §6.8 (HU57): 404 proyecto, 409 binding propio (cualquier status), 403 acceso de la App, 409 repo ya vinculado a otro Project, 404 rama. Mock-only, NO modelado: el paso `404 GITHUB_REPOSITORY_NOT_FOUND` de Core (repositoryId enviado discordante con el real de GitHub, entre el 403 y el 409 REPOSITORY_ALREADY_BOUND); su mapeo de UI se cubre con respuestas `fetch` simuladas. */
+/**
+ * HU30/HU64: `POST /projects/{projectId}/integrations/github`. `installationId` no viaja desde el navegador: Core lo resuelve — acá se reconstruye a partir del estado de verificación ya guardado.
+ * Orden de errores de INTEROP-2.4 §6.8: 404 proyecto, 409 binding propio (cualquier status), 403 acceso de la App, 404 `GITHUB_REPOSITORY_NOT_FOUND` (repositoryId inexistente o discordante con el nombre),
+ * 400 `REPOSITORY_OUTSIDE_WORKSPACE`, 403 `REPOSITORY_PERMISSION_INSUFFICIENT` (solo pull), 409 repo ya vinculado a otro Project, 404 rama.
+ * Mock-only, NO modelado: `503 GITHUB_VERIFICATION_UNAVAILABLE` (su mapeo de UI se cubre con respuestas `fetch` simuladas), `403 PROJECT_ROLE_INSUFFICIENT` (roles, fuera de alcance) y la noción real de "cuenta propia":
+ * el mock solo trata como ajenos los propietarios de `DEMO_FOREIGN_OWNER_LOGINS`. Los demás pasos usan fixtures DEMO y no consultan GitHub.
+ */
 export async function mockCreateRepositoryBinding(projectId: string, input: CreateRepositoryBindingRequest): Promise<ProjectRepositoryBindingResponse> {
   await latency()
   requireProject(projectId)
   if (repositoryBindings.get(projectId)) throw new ApiError('Este proyecto ya tiene un repositorio vinculado.', 409, 'demo-correlation-id', 'REPOSITORY_BINDING_ALREADY_EXISTS')
   if (!isGitHubAppAuthorized(input.repositoryId)) throw new ApiError(`La GitHub App no tiene acceso a "${input.repositoryName}" todavía.`, 403, 'demo-correlation-id', 'GITHUB_APP_ACCESS_REQUIRED')
+  // Un id falso, uno discordante con el nombre y un repositorio sin visibilidad responden lo mismo (un solo 404, sin distinguir motivos).
+  const repository = DEMO_GITHUB_REPOSITORIES.find((item) => item.repositoryId === input.repositoryId && item.repositoryName === input.repositoryName)
+  if (!repository) notFound('No encontramos ese repositorio o no tienes permiso sobre él.', 'GITHUB_REPOSITORY_NOT_FOUND')
+  if (DEMO_FOREIGN_OWNER_LOGINS.has(repository.owner.login)) throw new ApiError('El repositorio no pertenece a tu cuenta.', 400, 'demo-correlation-id', 'REPOSITORY_OUTSIDE_WORKSPACE')
+  if (!canBindRepository(repository)) throw new ApiError('Necesitas permiso maintain, write o admin sobre el repositorio.', 403, 'demo-correlation-id', 'REPOSITORY_PERMISSION_INSUFFICIENT')
   const boundElsewhere = Array.from(repositoryBindings.values()).some((other) => other && other.projectId !== projectId && other.repositoryId === input.repositoryId)
   if (boundElsewhere) throw new ApiError('Este repositorio ya está vinculado a otro proyecto.', 409, 'demo-correlation-id', 'REPOSITORY_ALREADY_BOUND')
   const branches = DEMO_BRANCHES_BY_REPOSITORY[input.repositoryId] ?? []

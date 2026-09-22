@@ -1,16 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const signInWithPassword = vi.fn()
 const signInWithOAuth = vi.fn()
-const linkIdentity = vi.fn()
-const getUserIdentities = vi.fn()
 const getSession = vi.fn()
 const signOut = vi.fn()
-const resetPasswordForEmail = vi.fn()
 const onAuthStateChange = vi.fn()
 
 vi.mock('@supabase/supabase-js', () => ({
-  createClient: () => ({ auth: { signInWithPassword, signInWithOAuth, linkIdentity, getUserIdentities, getSession, signOut, resetPasswordForEmail, onAuthStateChange } }),
+  createClient: () => ({ auth: { signInWithOAuth, getSession, signOut, onAuthStateChange } }),
 }))
 
 /**
@@ -20,14 +16,9 @@ vi.mock('@supabase/supabase-js', () => ({
 import { supabaseAuthAdapter } from './supabaseAuthAdapter'
 
 beforeEach(() => {
-  signInWithPassword.mockReset()
   signInWithOAuth.mockReset()
-  linkIdentity.mockReset()
-  getUserIdentities.mockReset()
-  getUserIdentities.mockResolvedValue({ data: { identities: [{ provider: 'email' }] }, error: null })
   getSession.mockReset()
   signOut.mockReset()
-  resetPasswordForEmail.mockReset()
   onAuthStateChange.mockReset()
 })
 
@@ -47,51 +38,50 @@ describe('supabaseAuthAdapter (no probado en vivo)', () => {
     expect(await supabaseAuthAdapter.getSession()).toBeNull()
   })
 
-  it('signInWithPassword ante error nunca expone el detalle de Supabase (mensaje genérico)', async () => {
-    signInWithPassword.mockResolvedValue({ data: { session: null }, error: { message: 'Invalid login credentials' } })
-    await expect(supabaseAuthAdapter.signInWithPassword('a@b.com', 'wrong')).rejects.toThrow('No pudimos verificar tus credenciales. Revisa el correo y la contraseña.')
-  })
-
-  it('signInWithPassword exitoso devuelve la sesión mapeada', async () => {
-    signInWithPassword.mockResolvedValue({ data: { session: { access_token: 'jwt-xyz', user: { id: 'u2', email: 'real@empresa.com' } } }, error: null })
-    const session = await supabaseAuthAdapter.signInWithPassword('real@empresa.com', 'secret1')
-    expect(session.accessToken).toBe('jwt-xyz')
-  })
-
-  it('HU29 ampliado: signInWithGitHub delega en signInWithOAuth con scope repo y devuelve la sesión ya establecida', async () => {
+  it('HU62: signInWithGitHub inicia OAuth con scope repo y redirectTo a la ruta interna, y devuelve null (la sesión llega por onAuthStateChange)', async () => {
     signInWithOAuth.mockResolvedValue({ data: {}, error: null })
-    getSession.mockResolvedValue({ data: { session: { access_token: 'jwt-gh', user: { id: 'u3', email: 'real@empresa.com' } } } })
-    const session = await supabaseAuthAdapter.signInWithGitHub()
-    expect(signInWithOAuth).toHaveBeenCalledWith({ provider: 'github', options: { scopes: 'repo' } })
-    expect(session.accessToken).toBe('jwt-gh')
+    const result = await supabaseAuthAdapter.signInWithGitHub('/projects/prj_1/integrations/github?tab=x')
+    expect(signInWithOAuth).toHaveBeenCalledWith({
+      provider: 'github',
+      options: { scopes: 'repo', redirectTo: `${window.location.origin}/projects/prj_1/integrations/github?tab=x` },
+    })
+    expect(result).toBeNull()
+    expect(getSession).not.toHaveBeenCalled()
+  })
+
+  it('signInWithGitHub sin destino, o con uno externo, vuelve a la raíz del origen (sin open-redirect)', async () => {
+    signInWithOAuth.mockResolvedValue({ data: {}, error: null })
+    await supabaseAuthAdapter.signInWithGitHub()
+    await supabaseAuthAdapter.signInWithGitHub('//evil.example/phish')
+    await supabaseAuthAdapter.signInWithGitHub('https://evil.example')
+    for (const [call] of signInWithOAuth.mock.calls) {
+      expect(call.options.redirectTo).toBe(`${window.location.origin}/`)
+    }
   })
 
   it('signInWithGitHub ante error de OAuth nunca expone el detalle de Supabase', async () => {
     signInWithOAuth.mockResolvedValue({ data: {}, error: { message: 'access_denied' } })
-    await expect(supabaseAuthAdapter.signInWithGitHub()).rejects.toThrow('No pudimos verificar tus credenciales. Revisa el correo y la contraseña.')
+    await expect(supabaseAuthAdapter.signInWithGitHub()).rejects.toThrow('No pudimos completar el acceso con GitHub. Inténtalo de nuevo.')
   })
 
-  it('HU30: linkGitHub delega en linkIdentity con scope repo y devuelve la sesión vinculada', async () => {
-    linkIdentity.mockResolvedValue({ data: {}, error: null })
-    getSession.mockResolvedValue({ data: { session: { access_token: 'jwt-email', provider_token: 'gho_linked', user: { id: 'u4', email: 'real@empresa.com' } } } })
-    const session = await supabaseAuthAdapter.linkGitHub()
-    expect(linkIdentity).toHaveBeenCalledWith({ provider: 'github', options: { scopes: 'repo' } })
-    expect(session.githubProviderToken).toBe('gho_linked')
+  it('HU62: no expone login por correo, vinculación de GitHub ni recuperación de contraseña', () => {
+    expect(supabaseAuthAdapter).not.toHaveProperty('signInWithPassword')
+    expect(supabaseAuthAdapter).not.toHaveProperty('linkGitHub')
+    expect(supabaseAuthAdapter).not.toHaveProperty('resetPasswordForEmail')
   })
 
-  it('linkGitHub reautoriza con signInWithOAuth si GitHub ya está vinculado al usuario actual, sin llamar a linkIdentity', async () => {
-    getUserIdentities.mockResolvedValue({ data: { identities: [{ provider: 'email' }, { provider: 'github' }] }, error: null })
-    signInWithOAuth.mockResolvedValue({ data: {}, error: null })
-    getSession.mockResolvedValue({ data: { session: { access_token: 'jwt-email', provider_token: 'gho_fresh', user: { id: 'u4', email: 'real@empresa.com' } } } })
-    const session = await supabaseAuthAdapter.linkGitHub()
-    expect(signInWithOAuth).toHaveBeenCalledWith({ provider: 'github', options: { scopes: 'repo' } })
-    expect(linkIdentity).not.toHaveBeenCalled()
-    expect(session.githubProviderToken).toBe('gho_fresh')
+  it('signOut usa alcance global por defecto y `local` cuando se pide', async () => {
+    signOut.mockResolvedValue({ error: null })
+    await supabaseAuthAdapter.signOut()
+    await supabaseAuthAdapter.signOut('local')
+    expect(signOut).toHaveBeenNthCalledWith(1, { scope: 'global' })
+    expect(signOut).toHaveBeenNthCalledWith(2, { scope: 'local' })
   })
 
-  it('linkGitHub ante error nunca expone el detalle de Supabase', async () => {
-    linkIdentity.mockResolvedValue({ data: {}, error: { message: 'identity_already_exists' } })
-    await expect(supabaseAuthAdapter.linkGitHub()).rejects.toThrow('No pudimos conectar tu cuenta de GitHub. Inténtalo de nuevo.')
+  it('signOut lanza (sin detalle del proveedor) cuando Supabase devuelve error, porque el SDK no lanza por sí mismo', async () => {
+    signOut.mockResolvedValue({ error: { message: 'secret provider detail' } })
+    await expect(supabaseAuthAdapter.signOut('local')).rejects.toThrow('No pudimos cerrar la sesión en el servidor')
+    await expect(supabaseAuthAdapter.signOut('local')).rejects.not.toThrow(/secret provider detail/)
   })
 
   it('onAuthStateChange devuelve una función de desuscripción', () => {

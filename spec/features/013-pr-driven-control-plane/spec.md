@@ -15,7 +15,7 @@ Representar el ciclo de un repositorio vinculado y sus `AnalysisRun` por PR/HEAD
 - Focus Mode es una página dedicada, no un modal. Presenta una sola pregunta adaptativa, evidencia visual acotada, opción `No lo sé` y retorno seguro mediante `returnTo`.
 - `No lo sé` equivale a `UNKNOWN` y nunca se presenta como conocimiento funcional persistido.
 - Las propuestas se revisan antes de publicar. La UI muestra freshness y nunca promete escritura directa, auto-merge o autorepair.
-- El login permite correo/contraseña y GitHub OAuth mediante Supabase Auth. El provider token GitHub efímero permite discovery de repositorios, mientras la conexión y automatización de GitHub App siguen siendo un flujo separado y validado por Core.
+- El login es solo GitHub OAuth mediante Supabase Auth (HU62, `DEC-ORG-001`; el correo y la contraseña se retiraron). El provider token GitHub efímero permite discovery de repositorios, mientras la conexión y automatización de GitHub App siguen siendo un flujo separado y validado por Core.
 
 ## Mock-first
 

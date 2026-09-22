@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { isMockDataSource } from '../api/dataSource'
 import { authErrorMessage } from '../auth/errors'
@@ -9,10 +9,11 @@ import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorNote, ErrorState, LoadingState, ProjectNotFoundState } from '../ui/Feedback'
 import { ProjectTabs } from '../ui/ProjectTabs'
 import { RepoChip } from '../ui/RepoChip'
-import { bindingErrorMessage, errorCorrelationId, isProjectNotFound } from './errors'
+import { bindingErrorMessage, errorCorrelationId, isGitHubAccessRenewalRequired, isProjectNotFound, isVerificationUnavailable, reactivateErrorMessage } from './errors'
 import { useCreateRepositoryBinding, useDisconnectRepository, useEnableRepository, useGitHubAppAccessInfo, useGitHubRepositoryBranches, useGitHubUserRepositories, useRepositoryBinding, useVerifyGitHubAppAccess } from './queries'
+import { canBindRepository } from './repositoryPermissions'
 import { BINDING_STATUS_BADGES } from './status'
-import type { GitHubAppAccessResponse, GitHubUserRepositoryResponse } from './types'
+import type { CreateRepositoryBindingRequest, GitHubAppAccessResponse, GitHubUserRepositoryResponse } from './types'
 
 /**
  * HU30 — repository binding user-centric (INTEROP-2.3 §6.8). La instalación real de la GitHub App
@@ -22,7 +23,8 @@ import type { GitHubAppAccessResponse, GitHubUserRepositoryResponse } from './ty
 export function IntegrationsPage() {
   const { projectId = '' } = useParams()
   const mock = isMockDataSource()
-  const { session: authSession, linkGitHub } = useAuth()
+  const { session: authSession, signInWithGitHub } = useAuth()
+  const location = useLocation()
   const projectQuery = useProject(projectId)
   const bindingQuery = useRepositoryBinding(projectId)
   const disconnect = useDisconnectRepository(projectId)
@@ -34,8 +36,14 @@ export function IntegrationsPage() {
   // Resultado de Desconectar/Reactivar para lectores de pantalla (aria-live polite): el botón cambia o desaparece al cambiar el estado.
   const [announcement, setAnnouncement] = useState('')
 
-  const [linkPending, setLinkPending] = useState(false)
-  const [linkError, setLinkError] = useState<string | null>(null)
+  const [renewPending, setRenewPending] = useState(false)
+  const [renewError, setRenewError] = useState<string | null>(null)
+  // Volver con Atrás desde GitHub restaura la página desde bfcache con el estado congelado: sin esto «Renovando…» quedaría para siempre.
+  useEffect(() => {
+    const onPageShow = (event: PageTransitionEvent) => { if (event.persisted) setRenewPending(false) }
+    window.addEventListener('pageshow', onPageShow)
+    return () => window.removeEventListener('pageshow', onPageShow)
+  }, [])
   const [search, setSearch] = useState('')
   const [selectedRepo, setSelectedRepo] = useState<GitHubUserRepositoryResponse | null>(null)
   const [accessResult, setAccessResult] = useState<GitHubAppAccessResponse | null>(null)
@@ -60,7 +68,7 @@ export function IntegrationsPage() {
 
   if (isProjectNotFound(bindingQuery.error) || isProjectNotFound(projectQuery.error)) return <ProjectNotFoundState />
   if (bindingQuery.isPending || projectQuery.isPending) return <LoadingState label="Cargando integración…" />
-  if (bindingQuery.isError) return <ErrorState message={bindingQuery.error.message} onRetry={() => void bindingQuery.refetch()} />
+  if (bindingQuery.isError) return <ErrorState message={bindingErrorMessage(bindingQuery.error)} correlationId={errorCorrelationId(bindingQuery.error)} onRetry={() => void bindingQuery.refetch()} />
 
   const binding = bindingQuery.data
 
@@ -93,11 +101,43 @@ export function IntegrationsPage() {
     })
   }
 
+  /** POST del binding. La App perdió (o nunca tuvo) acceso: se revalida para mostrar el CTA de configuración que el mensaje promete; la selección se conserva. */
+  function submitBinding(input: CreateRepositoryBindingRequest) {
+    createBinding.mutate(input, { onError: (error) => { if (error instanceof ApiError && error.code === 'GITHUB_APP_ACCESS_REQUIRED') verifySelectedRepoAccess() } })
+  }
+
   function resetFlow() {
     createBinding.reset()
     setSelectedRepo(null)
     setAccessResult(null)
     setIntegrationBranch('')
+  }
+
+  /** HU62: única vía para obtener de nuevo el token OAuth de GitHub (`signInWithOAuth`, no hay linking). Vuelve a esta misma ruta. */
+  function renewGitHubAccess() {
+    setRenewPending(true)
+    setRenewError(null)
+    // `redirectTo` en supabase, navegación en cliente en mock (no hay redirección).
+    signInWithGitHub(`${location.pathname}${location.search}`)
+      // Sin sesión inmediata el navegador ya está yendo a GitHub: el botón queda deshabilitado hasta salir de la página.
+      .then((signedIn) => { if (signedIn) setRenewPending(false) })
+      .catch((error: unknown) => {
+        setRenewError(authErrorMessage(error))
+        setRenewPending(false)
+      })
+  }
+
+  function renewAccessPanel(description: string) {
+    return <div className="panel integration-panel">
+      <div className="empty-inline"><strong>Renueva tu acceso a GitHub</strong><p>{description}</p></div>
+      <button type="button" className="button primary" disabled={renewPending} onClick={renewGitHubAccess}>
+        {renewPending ? 'Renovando…' : 'Renovar acceso a GitHub'}
+      </button>
+      {renewError && <>
+        <ErrorNote message={renewError} />
+        <button type="button" className="button secondary" disabled={renewPending} onClick={renewGitHubAccess}>Reintentar</button>
+      </>}
+    </div>
   }
 
   const filteredRepos = (reposQuery.data?.items ?? []).filter((repo) => repo.repositoryName.toLowerCase().includes(search.trim().toLowerCase()))
@@ -152,7 +192,7 @@ export function IntegrationsPage() {
                 {enable.isPending ? 'Reactivando…' : 'Reactivar'}
               </button>
             </div>
-            {enable.isError && <ErrorNote message={bindingErrorMessage(enable.error)} correlationId={errorCorrelationId(enable.error)} />}
+            {enable.isError && <ErrorNote message={reactivateErrorMessage(enable.error)} correlationId={errorCorrelationId(enable.error)} />}
             {appAccessInfo.data?.status === 'NOT_AUTHORIZED' && (
               <p className="empty-inline-note"><a href={appAccessInfo.data.app.configureUrl} target="_blank" rel="noreferrer">Configurar acceso de la GitHub App →</a></p>
             )}
@@ -160,24 +200,7 @@ export function IntegrationsPage() {
         )}
       </div>
     ) : !hasGitHub ? (
-      <div className="panel integration-panel">
-        <div className="empty-inline"><strong>Conecta tu cuenta de GitHub</strong><p>Necesitamos tu identidad de GitHub para descubrir los repositorios que puedes vincular. Esto no autoriza automatización todavía — eso lo decide la GitHub App en el siguiente paso.</p></div>
-        <button
-          type="button"
-          className="button primary"
-          disabled={linkPending}
-          onClick={() => {
-            setLinkPending(true)
-            setLinkError(null)
-            linkGitHub()
-              .catch((error: unknown) => setLinkError(authErrorMessage(error)))
-              .finally(() => setLinkPending(false))
-          }}
-        >
-          {linkPending ? 'Conectando…' : 'Conectar GitHub'}
-        </button>
-        {linkError && <p className="empty-inline-note" role="alert">{linkError}</p>}
-      </div>
+      renewAccessPanel('Para descubrir los repositorios que puedes vincular necesitamos el acceso de GitHub de tu sesión. Supabase no lo conserva cuando la sesión se recarga o restaura, por eso hay que renovarlo. Esto no autoriza automatización todavía — eso lo decide la GitHub App en el siguiente paso.')
     ) : (
       <div className="panel integration-panel">
         {!selectedRepo && (
@@ -187,20 +210,26 @@ export function IntegrationsPage() {
               <input id="repo-search" type="text" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="owner/repo" />
             </div>
             {reposQuery.isPending && <LoadingState label="Descubriendo repositorios…" />}
-            {reposQuery.isError && <ErrorState message={reposQuery.error.message} onRetry={() => void reposQuery.refetch()} />}
+            {reposQuery.isError && (isGitHubAccessRenewalRequired(reposQuery.error)
+              ? renewAccessPanel(bindingErrorMessage(reposQuery.error))
+              : <ErrorState message={bindingErrorMessage(reposQuery.error)} correlationId={errorCorrelationId(reposQuery.error)} onRetry={() => void reposQuery.refetch()} />)}
             {reposQuery.data && (
               filteredRepos.length === 0 ? (
                 <p className="empty-inline-note">Sin repositorios visibles que coincidan con la búsqueda.</p>
               ) : (
                 <ul className="action-required-list">
-                  {filteredRepos.map((repo) => (
-                    <li key={repo.repositoryId}>
-                      <button type="button" className="button secondary repo-picker-item" onClick={() => selectRepo(repo)}>
+                  {filteredRepos.map((repo) => {
+                    // HU64: read/triage no permiten vincular. Se explica con texto (no solo color); el rechazo autoritativo sigue siendo el POST.
+                    const bindable = canBindRepository(repo)
+                    return <li key={repo.repositoryId}>
+                      <button type="button" className="button secondary repo-picker-item" disabled={!bindable} aria-describedby={bindable ? undefined : `repo-permission-${repo.repositoryId}`} onClick={() => selectRepo(repo)}>
                         <RepoChip repositoryName={repo.repositoryName} />
                         <span className="status-badge status-muted">{repo.private ? 'Privado' : 'Público'}</span>
+                        {!bindable && <span className="status-badge status-warn">No vinculable</span>}
                       </button>
+                      {!bindable && <p id={`repo-permission-${repo.repositoryId}`} className="empty-inline-note">Necesitas permiso maintain, write o admin sobre este repositorio para vincularlo; con tu permiso actual (solo lectura o triage) no es posible.</p>}
                     </li>
-                  ))}
+                  })}
                 </ul>
               )
             )}
@@ -208,6 +237,14 @@ export function IntegrationsPage() {
         )}
 
         {selectedRepo && !accessResult && verifyAccess.isPending && <LoadingState label={`Verificando acceso de la App a ${selectedRepo.repositoryName}…`} />}
+
+        {selectedRepo && !accessResult && verifyAccess.isError && <>
+          <ErrorNote message={bindingErrorMessage(verifyAccess.error)} correlationId={errorCorrelationId(verifyAccess.error)} />
+          <div className="run-actions">
+            <button type="button" className="button secondary" onClick={resetFlow}>Elegir otro repositorio</button>
+            {isVerificationUnavailable(verifyAccess.error) && <button type="button" className="button primary" onClick={verifySelectedRepoAccess}>Reintentar</button>}
+          </div>
+        </>}
 
         {selectedRepo && accessResult?.status === 'NOT_AUTHORIZED' && (
           <div className="panel contract-note" role="status">
@@ -227,7 +264,10 @@ export function IntegrationsPage() {
             <div>
               <strong>Acceso autorizado a {selectedRepo.repositoryName}</strong>
               {branchesQuery.isPending && <p>Cargando ramas…</p>}
-              {branchesQuery.isError && <p className="inline-error" role="alert">{branchesQuery.error.message}</p>}
+              {branchesQuery.isError && <>
+                <ErrorNote message={bindingErrorMessage(branchesQuery.error)} correlationId={errorCorrelationId(branchesQuery.error)} />
+                {isVerificationUnavailable(branchesQuery.error) && <button type="button" className="button secondary" onClick={() => void branchesQuery.refetch()}>Reintentar</button>}
+              </>}
               {branchesQuery.data && (
                 <div className="field">
                   <label htmlFor="integration-branch">Integration branch</label>
@@ -244,11 +284,7 @@ export function IntegrationsPage() {
                 type="button"
                 className="button primary"
                 disabled={!integrationBranch || createBinding.isPending}
-                onClick={() => createBinding.mutate(
-                  { repositoryId: selectedRepo.repositoryId, repositoryName: selectedRepo.repositoryName, integrationBranch },
-                  // La App perdió (o nunca tuvo) acceso: se revalida para mostrar el CTA de configuración que el mensaje promete. La selección se conserva.
-                  { onError: (error) => { if (error instanceof ApiError && error.code === 'GITHUB_APP_ACCESS_REQUIRED') verifySelectedRepoAccess() } },
-                )}
+                onClick={() => submitBinding({ repositoryId: selectedRepo.repositoryId, repositoryName: selectedRepo.repositoryName, integrationBranch })}
               >
                 {createBinding.isPending ? 'Vinculando…' : 'Vincular repositorio'}
               </button>
@@ -257,7 +293,12 @@ export function IntegrationsPage() {
         )}
 
         {/* Fuera de los bloques por estado de acceso: tras un 403 la revalidación cambia de AUTHORIZED a NOT_AUTHORIZED y el error no debe perderse. */}
-        {selectedRepo && createBinding.isError && <ErrorNote message={bindingErrorMessage(createBinding.error)} correlationId={errorCorrelationId(createBinding.error)} />}
+        {selectedRepo && createBinding.isError && <>
+          <ErrorNote message={bindingErrorMessage(createBinding.error)} correlationId={errorCorrelationId(createBinding.error)} />
+          {isVerificationUnavailable(createBinding.error) && createBinding.variables && (
+            <button type="button" className="button secondary" disabled={createBinding.isPending} onClick={() => submitBinding(createBinding.variables)}>Reintentar</button>
+          )}
+        </>}
       </div>
     )}
   </section>

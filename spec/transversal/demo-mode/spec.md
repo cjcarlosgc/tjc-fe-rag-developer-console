@@ -20,7 +20,7 @@ Permitir una demostración navegable end-to-end aunque RAG Core todavía no haya
   agente generalista, historial de generaciones por ProjectVersion (HU20) y
   reintento manual de un target inválido/fallido (HU24) de forma coherente entre pantallas.
 - El escenario incluye trazas RAG y del agente conformes a `INTEROP-2.1`, incluidos candidatos descartados, intentos anteriores, snippets acotados y archivos descubiertos paginados. El endpoint de trazas run-scoped (HU27 sobre `test-runs`) quedó retirado junto con la generación manual; solo sobrevive el de trazas por `experiments`.
-- `VITE_AUTH_MODE=mock` proporciona una identidad demostrativa estable solo cuando la fuente de datos también es mock/local. La UI de correo puede recorrerse sin contactar Supabase.
+- `VITE_AUTH_MODE=mock` proporciona una identidad demostrativa GitHub estable solo cuando la fuente de datos también es mock/local. El CTA «Continuar con GitHub» puede recorrerse sin contactar Supabase ni GitHub; no hay UI de correo/contraseña (HU62). El mock no simula `GITHUB_IDENTITY_REQUIRED` ni `IDENTITY_UNAVAILABLE` como si fueran Core.
 - La trayectoria GitHub mock sigue INTEROP-2.2: discovery de repositorios, validación `AUTHORIZED|NOT_AUTHORIZED`, ramas y RepositoryBinding; muestra PR/HEAD, AnalysisRun y companion PR.
 - Toda superficie GitHub mock mantiene visible `DEMO · GITHUB SIMULADO`. No ejecuta OAuth ni almacena tokens; representa el provider token únicamente como precondición de sesión y no produce efectos externos.
 - HU21/HU22 (progreso en tiempo real por WebSocket) no forman parte del mock: el
