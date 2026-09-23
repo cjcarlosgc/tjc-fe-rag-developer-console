@@ -11,6 +11,82 @@
     "DECISION_REQUIRED",
     "DONE"
   ],
-  "activeWorkItem": null,
-  "lastUpdatedAt": "2026-09-21T19:05:00-05:00"
+  "activeWorkItem": {
+    "id": "T-004-console-workspaces",
+    "workItemType": "PRODUCT",
+    "storyIds": ["HU55", "HU58", "HU59", "HU60", "HU63", "HU64"],
+    "sprint": "Sprint 4",
+    "status": "DONE",
+    "specPaths": [
+      "spec/features/014-organizations-access/spec.md",
+      "spec/features/014-organizations-access/plan.md",
+      "spec/features/014-organizations-access/tasks.md"
+    ],
+    "transversalPaths": [
+      "spec/transversal/api-client",
+      "spec/transversal/async-state",
+      "spec/transversal/demo-mode",
+      "spec/transversal/errors-notifications",
+      "spec/transversal/accessibility"
+    ],
+    "approved": true,
+    "decisionGate": {
+      "checked": true,
+      "blockingDecisionIds": [],
+      "nonBlockingDecisionIds": ["DEC-ORG-001", "DEC-ORG-002"],
+      "checkedAt": "2026-09-23T06:05:00Z"
+    },
+    "execution": {
+      "leaderAgent": "leader",
+      "analysisAgent": null,
+      "implementationAgent": "leader",
+      "uxReviewAgent": "ux-reviewer",
+      "contractReviewAgent": "contract-reviewer",
+      "reviewAgent": "reviewer",
+      "handoffs": [],
+      "reviewCycles": 1,
+      "maxReviewCycles": 2
+    },
+    "gates": {
+      "sddVerified": "PASSED",
+      "implementationCompleted": "PASSED",
+      "uxReviewed": "PASSED",
+      "contractReviewed": "PASSED",
+      "canonicalContractSynced": "PASSED",
+      "contractSyncPublished": "PASSED",
+      "independentReviewPassed": "PASSED",
+      "technicalChecksPassed": "PASSED",
+      "interopSyncChecked": "PASSED",
+      "noMocksPresentedAsLive": "PASSED",
+      "noBlockingDecisions": "PASSED",
+      "retryLimitRespected": "PASSED"
+    },
+    "coordination": {
+      "uiImpact": true,
+      "contractImpact": true,
+      "pullCheckpoints": [
+        {"checkpoint": "start", "workItem": "T-004-console-workspaces", "relevantPendingSyncIds": [], "checkedAt": "2026-09-23T06:04:46.473Z"},
+        {"checkpoint": "implementation-delivery", "workItem": "T-004-console-workspaces", "relevantPendingSyncIds": [], "checkedAt": "2026-09-23T05:58:46.656Z"},
+        {"checkpoint": "before-review", "workItem": "T-004-console-workspaces", "relevantPendingSyncIds": [], "checkedAt": "2026-09-23T06:42:03.842Z"},
+        {"checkpoint": "before-review", "workItem": "T-004-console-workspaces", "relevantPendingSyncIds": [], "checkedAt": "2026-09-23T07:32:32.866Z"},
+        {"checkpoint": "before-review", "workItem": "T-004-console-workspaces", "relevantPendingSyncIds": [], "checkedAt": "2026-09-23T07:49:47.526Z"},
+        {"checkpoint": "before-done", "workItem": "T-004-console-workspaces", "relevantPendingSyncIds": [], "checkedAt": "2026-09-23T07:54:00.315Z"}
+      ],
+      "publishedSyncIds": [],
+      "pendingRelevantSyncIds": [],
+      "knownIncompatibilities": []
+    },
+    "evidence": [
+      "CS-20260921-003 importado y ACKNOWLEDGED; checkpoints start, implementation-delivery, before-review y before-done sin eventos PENDING relevantes.",
+      "SYSTEM-2.4 e INTEROP-2.4 coinciden byte por byte con Core (hashes SHA-256: 3240d21a3e153b26f79551c19de8781cc3a1da642ebbda278e4adfdb8a6d73c0 y 3135e94dfa24001ec291d18721b41c5e9d270322fe75844e5e715eed6efe163f); sourceRevision 56301b5 existe en el checkout Core.",
+      "npm test pasó completo: 474/474; npm run lint, npm run build, git diff --check y validate-harness.mjs pasan. Build reporta únicamente el warning de chunk >500 kB.",
+      "Smoke manual local en modo mock (560 px): workspace personal y organización observability-lab con rol Reader, proyecto/actividad scoped, flujo visible y navegación inicial por teclado; el modo demo está rotulado y no llamó servicios reales. No se afirma auditoría integral WCAG.",
+      "UX PASS: estados async, tarjetas, mensajes y prueba de carga/error parcial; code review PASS del caso de métricas y navegación, contract review PASS de visibilidad/target/discovery. Suite focalizada ProjectsPage: 22/22.",
+      "contractSyncPublished PASSED: no hubo delta de contrato backend que publicar; Bundle B entrante está ACKNOWLEDGED y before-review/before-done reportan 0 syncs PENDING relevantes."
+    ],
+    "createdAt": "2026-09-23T06:05:00Z",
+    "updatedAt": "2026-09-23T07:54:00Z",
+    "blockedReason": null
+  },
+  "lastUpdatedAt": "2026-09-23T07:54:00Z"
 }

@@ -16,7 +16,7 @@ test('recorre el flujo demo completo sin requests HTTP', async () => {
   resetMockBackend()
   const fetchMock = vi.spyOn(globalThis, 'fetch')
 
-  expect((await listProjects()).items.map((project) => project.name)).toContain('checkout-service')
+  expect((await listProjects('1000001')).items.map((project) => project.name)).toContain('checkout-service')
   const project = await createProject({ name: 'demo-on-stage' })
   const acceptedVersion = await uploadProjectVersion(project.id, new File(['source'], 'demo.zip', { type: 'application/zip' }))
 
@@ -65,7 +65,7 @@ test('resuelve los cinco modos de generación del Sprint 2', async () => {
   setDataSourceForTests('mock')
   resetMockBackend()
   const fetchMock = vi.spyOn(globalThis, 'fetch')
-  const projects = await listProjects()
+  const projects = await listProjects('1000001')
   const project = projects.items.find((item) => item.id === 'prj_checkout_demo')!
   const inventory = await getTestInventory(project.currentVersionId!)
   const targets = toInventoryTargets(inventory)

@@ -5,7 +5,7 @@ import { renderApp } from '../test/render'
 import { GenerationPage } from './GenerationPage'
 
 test('resuelve el target seleccionado y muestra un error accionable si Core rechaza la generación', async () => {
-  const project = { id: 'p-1', name: 'math', currentVersionId: 'v-1', createdAt: '2026-08-31T10:00:00.000Z', updatedAt: '2026-08-31T10:01:00.000Z' }
+  const project = { id: 'p-1', name: 'math', currentVersionId: 'v-1', workspace: { kind: 'PERSONAL', id: 'ws-1', login: 'demo-user' }, role: 'ADMIN', createdAt: '2026-08-31T10:00:00.000Z', updatedAt: '2026-08-31T10:01:00.000Z' }
   const inventory = {
     projectVersionId: 'v-1',
     detectedFramework: 'VITEST',
@@ -31,7 +31,7 @@ test('resuelve el target seleccionado y muestra un error accionable si Core rech
 })
 
 test('HU25 (generación live): envía Idempotency-Key en POST /test-runs y navega al run aceptado', async () => {
-  const project = { id: 'p-1', name: 'math', currentVersionId: 'v-1', createdAt: '2026-08-31T10:00:00.000Z', updatedAt: '2026-08-31T10:01:00.000Z' }
+  const project = { id: 'p-1', name: 'math', currentVersionId: 'v-1', workspace: { kind: 'PERSONAL', id: 'ws-1', login: 'demo-user' }, role: 'ADMIN', createdAt: '2026-08-31T10:00:00.000Z', updatedAt: '2026-08-31T10:01:00.000Z' }
   const inventory = {
     projectVersionId: 'v-1',
     detectedFramework: 'VITEST',

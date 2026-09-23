@@ -15,6 +15,8 @@ import { ANALYSIS_RUN_STATUS_LABELS, analysisRunStatusClass } from './status'
 import { getPriorCoverage, PRIOR_COVERAGE_LABELS } from './speculative/priorCoverage'
 import { findEligibleSymbol } from '../run-comparison/types'
 import type { AnalysisRunTransitionReason } from './types'
+import { useProject } from '../projects/queries'
+import { bindingErrorMessage, errorCorrelationId } from './errors'
 
 const FAILURE_STATUSES = new Set(['BASELINE_FAILED', 'TECHNICAL_GENERATION_FAILURE', 'INFRASTRUCTURE_FAILURE'])
 
@@ -31,7 +33,8 @@ const RUN_TRANSITION_REASON_LABELS: Record<AnalysisRunTransitionReason, string> 
 }
 const INFORMATIONAL_STATUSES = new Set(['NO_ADDITIONAL_TESTS_REQUIRED', 'NO_TEST_RELEVANT_CHANGES'])
 
-function PublishSection({ analysisRunId, targetBranch }: { analysisRunId: string; targetBranch: string }) {
+function PublishSection({ analysisRunId, projectId, targetBranch }: { analysisRunId: string; projectId: string; targetBranch: string }) {
+  const projectQuery = useProject(projectId)
   const proposalsQuery = useTestProposals(analysisRunId)
   const publishMutation = usePublishTests(analysisRunId)
   const [publicationId, setPublicationId] = useState<string | null>(null)
@@ -41,9 +44,11 @@ function PublishSection({ analysisRunId, targetBranch }: { analysisRunId: string
     enabled: Boolean(publicationId),
   })
 
-  if (proposalsQuery.isPending) return <LoadingState label="Cargando propuestas…" />
+  if (projectQuery.isPending || proposalsQuery.isPending) return <LoadingState label="Cargando propuestas…" />
+  if (projectQuery.isError) return <ErrorState message={bindingErrorMessage(projectQuery.error)} correlationId={errorCorrelationId(projectQuery.error)} onRetry={() => void projectQuery.refetch()} />
   if (proposalsQuery.isError) return <ErrorState message={proposalsQuery.error.message} onRetry={() => void proposalsQuery.refetch()} />
 
+  const canPublish = projectQuery.data.role === 'ADMIN' || projectQuery.data.role === 'MAINTAINER'
   const available = proposalsQuery.data.items.filter((item) => item.status === 'AVAILABLE')
   const published = proposalsQuery.data.items.filter((item) => item.status === 'PUBLISHED')
 
@@ -66,7 +71,7 @@ function PublishSection({ analysisRunId, targetBranch }: { analysisRunId: string
         </div>
       </div>
     )}
-    {available.length > 0 && (
+    {available.length > 0 && canPublish && (
       <div className="run-actions">
         <button
           type="button"
@@ -78,7 +83,8 @@ function PublishSection({ analysisRunId, targetBranch }: { analysisRunId: string
         </button>
       </div>
     )}
-    {publishMutation.isError && <p className="inline-error" role="alert">{publishMutation.error.message}</p>}
+    {available.length > 0 && !canPublish && <p className="empty-inline-note">Tu rol es de solo lectura. Un Maintainer o Admin puede publicar estas propuestas.</p>}
+    {publishMutation.isError && <p className="inline-error" role="alert">{bindingErrorMessage(publishMutation.error)}{errorCorrelationId(publishMutation.error) && <> · Correlation ID: <code>{errorCorrelationId(publishMutation.error)}</code></>}</p>}
   </div>
 }
 
@@ -231,9 +237,9 @@ export function AnalysisRunDetailPage() {
         <div><strong>Behavioral mismatch</strong><p>{run.resultSummary} Las propuestas quedan retenidas (<code>HELD</code>) y no se ofrecen para publicar.</p></div>
       </div>
     )}
-    {run.status === 'BEHAVIORAL_MISMATCH' && <PublishSection analysisRunId={run.id} targetBranch={run.pullRequest.headRef} />}
+    {run.status === 'BEHAVIORAL_MISMATCH' && <PublishSection analysisRunId={run.id} projectId={run.projectId} targetBranch={run.pullRequest.headRef} />}
 
-    {run.status === 'SUCCESS' && <PublishSection analysisRunId={run.id} targetBranch={run.pullRequest.headRef} />}
+    {run.status === 'SUCCESS' && <PublishSection analysisRunId={run.id} projectId={run.projectId} targetBranch={run.pullRequest.headRef} />}
 
     <ContextSection analysisRunId={run.id} />
   </section>

@@ -14,6 +14,7 @@ import {
   getRepositoryBinding,
   getTestPublication,
   listAnalysisRuns,
+  listAllAnalysisRuns,
   listGitHubRepositoryBranches,
   listGitHubUserRepositories,
   listTestProposals,
@@ -32,8 +33,8 @@ describe('control-plane api (mock) — HU30 repository binding user-centric (INT
   })
 
   it('lista los repositorios descubiertos del usuario', async () => {
-    const page = await listGitHubUserRepositories('gho_demo_token')
-    expect(page.items.map((repo) => repo.repositoryName)).toEqual(expect.arrayContaining(['acme/checkout-service', 'acme/billing-engine', 'acme/notifications-service']))
+    const page = await listGitHubUserRepositories('gho_demo_token', '2000001')
+    expect(page.items.map((repo) => repo.repositoryName)).toEqual(['rag-tesis-org/orders-api'])
     expect(page.nextCursor).toBeNull()
   })
 
@@ -43,16 +44,16 @@ describe('control-plane api (mock) — HU30 repository binding user-centric (INT
   })
 
   it('repo_playground: NOT_AUTHORIZED en la primera verificación, AUTHORIZED en la segunda (revalidar)', async () => {
-    const first = await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' })
+    const first = await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'acme/integration-playground' })
     expect(first).toMatchObject({ status: 'NOT_AUTHORIZED', installationId: null })
     expect(first.app.configureUrl).toContain('github.com')
 
-    const second = await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' })
+    const second = await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'acme/integration-playground' })
     expect(second).toMatchObject({ status: 'AUTHORIZED' })
   })
 
   it('las ramas de un repo sin acceso verificado rechazan con 403 GITHUB_APP_ACCESS_REQUIRED', async () => {
-    await expect(listGitHubRepositoryBranches('demo-user', 'integration-playground')).rejects.toThrow(/no tiene acceso/)
+    await expect(listGitHubRepositoryBranches('acme', 'integration-playground')).rejects.toThrow(/no tiene acceso/)
   })
 
   it('las ramas de un repo ya autorizado se listan normalmente', async () => {
@@ -133,7 +134,7 @@ describe('control-plane api (mock) — HU30 repository binding user-centric (INT
     it('el orden es 404 proyecto → 409 binding propio → 403 App → 404 repo → 400 ajeno → 403 permiso → 409 ya vinculado → 404 rama', async () => {
       const project = await mockCreateProject({ name: 'sin-binding' })
       // 403 App antes que 404 repo: repo_playground sin autorizar pero con id/nombre válidos.
-      await expect(createRepositoryBinding(project.id, { repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground', integrationBranch: 'main' }))
+      await expect(createRepositoryBinding(project.id, { repositoryId: 'repo_playground', repositoryName: 'acme/integration-playground', integrationBranch: 'main' }))
         .rejects.toMatchObject({ code: 'GITHUB_APP_ACCESS_REQUIRED' })
       // 400 ajeno antes que 403 permiso y que 404 rama (la rama 'no-existe' no llega a evaluarse).
       await expect(createRepositoryBinding(project.id, { repositoryId: 'repo_external_tools', repositoryName: 'external-org/shared-tools', integrationBranch: 'no-existe' }))
@@ -189,16 +190,16 @@ describe('control-plane api (mock) — HU30 repository binding user-centric (INT
 
     it('REVOKED sin acceso de la App responde 403 GITHUB_APP_ACCESS_REQUIRED y no cambia el estado; tras revalidar reactiva', async () => {
       const project = await mockCreateProject({ name: 'sin-binding' })
-      await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' })
-      await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' })
-      await createRepositoryBinding(project.id, { repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground', integrationBranch: 'main' })
+      await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'acme/integration-playground' })
+      await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'acme/integration-playground' })
+      await createRepositoryBinding(project.id, { repositoryId: 'repo_playground', repositoryName: 'acme/integration-playground', integrationBranch: 'main' })
       mockSimulateAppAccessLoss(project.id)
 
       await expect(enableRepository(project.id)).rejects.toMatchObject({ status: 403, code: 'GITHUB_APP_ACCESS_REQUIRED' })
       expect(await getRepositoryBinding(project.id)).toMatchObject({ status: 'REVOKED' })
 
-      await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' })
-      await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' })
+      await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'acme/integration-playground' })
+      await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'acme/integration-playground' })
       expect(await enableRepository(project.id)).toMatchObject({ status: 'ENABLED' })
     })
 
@@ -209,7 +210,7 @@ describe('control-plane api (mock) — HU30 repository binding user-centric (INT
     })
 
     it('leer el acceso de la App con getGitHubAppAccess no cuenta como verificación (Reactivar sigue determinista)', async () => {
-      const input = { repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' }
+      const input = { repositoryId: 'repo_playground', repositoryName: 'acme/integration-playground' }
       for (let attempt = 0; attempt < 3; attempt += 1) {
         expect(await getGitHubAppAccess(input)).toMatchObject({ status: 'NOT_AUTHORIZED', app: { configureUrl: expect.stringContaining('github.com') } })
       }
@@ -223,17 +224,41 @@ describe('control-plane api (mock) — HU30 repository binding user-centric (INT
       await expect(enableRepository(project.id)).rejects.toMatchObject({ status: 404, code: 'REPOSITORY_BINDING_NOT_FOUND' })
     })
 
-    it('un proyecto inexistente responde 404 PROJECT_NOT_FOUND', async () => {
-      await expect(enableRepository('prj_no_existe')).rejects.toMatchObject({ status: 404, code: 'PROJECT_NOT_FOUND' })
-    })
+  it('un proyecto inexistente responde 404 PROJECT_NOT_FOUND', async () => {
+    await expect(enableRepository('prj_no_existe')).rejects.toMatchObject({ status: 404, code: 'PROJECT_NOT_FOUND' })
   })
+
+  it('REVOKED oculta el Project de organización a Maintainer y bloquea reactivación sin visibilidad', async () => {
+    mockSimulateAppAccessLoss('prj_org_orders_demo')
+
+    expect((await listProjects('2000001')).items.some((item) => item.id === 'prj_org_orders_demo')).toBe(false)
+    await expect(getProject('prj_org_orders_demo')).rejects.toMatchObject({ status: 404, code: 'PROJECT_NOT_FOUND' })
+    await expect(enableRepository('prj_org_orders_demo')).rejects.toMatchObject({ status: 404, code: 'PROJECT_NOT_FOUND' })
+  })
+
+  it('Admin de Project puede ver y reactivar un binding REVOKED tras recuperar acceso', async () => {
+    mockSimulateAppAccessLoss('prj_checkout_demo')
+    expect(await getRepositoryBinding('prj_checkout_demo')).toMatchObject({ status: 'REVOKED' })
+    expect(await enableRepository('prj_checkout_demo')).toMatchObject({ status: 'ENABLED' })
+  })
+
+  it('GETs project-scoped de Action Required y Runs ocultan ids inexistentes con 404 PROJECT_NOT_FOUND', async () => {
+    await expect(listActionRequired('prj_missing')).rejects.toMatchObject({ status: 404, code: 'PROJECT_NOT_FOUND' })
+    await expect(listAnalysisRuns('prj_missing')).rejects.toMatchObject({ status: 404, code: 'PROJECT_NOT_FOUND' })
+  })
+
+  it('POST experiment devuelve 404 UNRESOLVABLE_TARGET si el target no pertenece al Project del body', async () => {
+    await expect(mockStartExperiment('prj_org_orders_demo', 'ver_checkout_7-method-total'))
+      .rejects.toMatchObject({ status: 404, code: 'UNRESOLVABLE_TARGET' })
+  })
+})
 
   describe('deleteProject (HU56, INTEROP-2.3)', () => {
     it('oculta el Project, sus Runs y su Action Required; conserva los del resto', async () => {
       await deleteProject('prj_checkout_demo')
 
       await expect(getProject('prj_checkout_demo')).rejects.toMatchObject({ status: 404, code: 'PROJECT_NOT_FOUND' })
-      expect((await listProjects()).items.map((project) => project.id)).not.toContain('prj_checkout_demo')
+      expect((await listProjects('1000001')).items.map((project) => project.id)).not.toContain('prj_checkout_demo')
       expect((await listAnalysisRuns()).items.some((run) => run.projectId === 'prj_checkout_demo')).toBe(false)
       expect((await listAnalysisRuns()).items.some((run) => run.projectId === 'prj_billing_demo')).toBe(true)
       expect((await listActionRequired()).items.some((question) => question.projectId === 'prj_checkout_demo')).toBe(false)
@@ -250,7 +275,7 @@ describe('control-plane api (mock) — HU30 repository binding user-centric (INT
       const accepted = await createTestPublication('arun_checkout_pr45', { proposalIds: set.items.map((item) => item.id) })
       const symbol = { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' } as const
       const comparison = await mockStartRunComparison('arun_checkout_pr45', symbol)
-      const experiment = await mockStartExperiment('prj_checkout_demo', 'ver-target')
+      const experiment = await mockStartExperiment('prj_checkout_demo', 'ver_checkout_7-method-total')
       expect(await getTestPublication(accepted.publicationId)).toMatchObject({ id: accepted.publicationId })
       expect(await mockGetAnalysisRunContextTrace('arun_checkout_pr45')).not.toBeNull()
       expect((await mockGetRuleUsage('fk_coupon_expiry')).length).toBeGreaterThan(0)
@@ -282,10 +307,10 @@ describe('control-plane api (mock) — HU30 repository binding user-centric (INT
   })
 })
 
-describe('control-plane api (mock) — HU32 Analysis Runs, los 14 escenarios', () => {
-  it('lista los 14 Analysis Runs (incluye el par obsoleto/nuevo HEAD de PR#17)', async () => {
+describe('control-plane api (mock) — HU32 Analysis Runs, los 16 escenarios', () => {
+  it('lista los 16 Analysis Runs (incluye los escenarios de organizaciones)', async () => {
     const page = await listAnalysisRuns()
-    expect(page.items).toHaveLength(14)
+    expect(page.items).toHaveLength(16)
   })
 
   it('filtra por proyecto y por status', async () => {
@@ -294,7 +319,7 @@ describe('control-plane api (mock) — HU32 Analysis Runs, los 14 escenarios', (
     expect(checkoutRuns.items).toHaveLength(7)
 
     const successRuns = await listAnalysisRuns(undefined, 'SUCCESS')
-    expect(successRuns.items.map((run) => run.id).sort()).toEqual(['arun_billing_pr17_2', 'arun_billing_pr23', 'arun_checkout_pr45', 'arun_checkout_pr49', 'arun_checkout_pr50'])
+    expect(successRuns.items.map((run) => run.id).sort()).toEqual(['arun_billing_pr17_2', 'arun_billing_pr23', 'arun_checkout_pr45', 'arun_checkout_pr49', 'arun_checkout_pr50', 'arun_org_orders_pr8'])
   })
 
   it('el par pr17/pr17_2 representa la corrección por HEAD nuevo', async () => {
@@ -381,11 +406,26 @@ describe('control-plane api (mock) — HU39/HU40 propuestas y companion PR', () 
   })
 })
 
-describe('control-plane api (live) — lo que Core todavía no implementa (sin controller real)', () => {
+describe('control-plane api (live) — listado global HU55 implementado en Core (bundle B)', () => {
   beforeEach(() => setDataSourceForTests('live'))
 
-  it('HU55: el listado global de Analysis Runs (sin projectId) tiene contrato definido pero Core no lo implementó — PendingContractError', async () => {
-    await expect(listAnalysisRuns()).rejects.toThrow(/todavía no lo implementó/)
+  it('HU55: el listado global pide GET /analysis-runs sin projectId', async () => {
+    const page = { items: [], nextCursor: null }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(page), { status: 200 }))
+    await expect(listAnalysisRuns()).resolves.toEqual(page)
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/\/analysis-runs$/), expect.anything())
+  })
+
+  it('HU55 agregado: recorre cursores opacos con limit=100 hasta la última página', async () => {
+    const firstPage = { items: [{ id: 'run-1', projectId: 'p-1' }], nextCursor: 'opaque-cursor' }
+    const secondPage = { items: [{ id: 'run-2', projectId: 'p-2' }], nextCursor: null }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      return new Response(JSON.stringify(String(input).includes('cursor=opaque-cursor') ? secondPage : firstPage), { status: 200 })
+    })
+    await expect(listAllAnalysisRuns()).resolves.toEqual([...firstPage.items, ...secondPage.items])
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(String(fetchMock.mock.calls[0][0])).toContain('limit=100')
+    expect(String(fetchMock.mock.calls[1][0])).toContain('cursor=opaque-cursor')
   })
 })
 
@@ -519,7 +559,7 @@ describe('control-plane api (live) — HU30 repository binding, Core ya lo imple
   it('listGitHubUserRepositories pide GET /integrations/github/repositories con X-GitHub-Provider-Token', async () => {
     const page = { items: [], nextCursor: null }
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(page), { status: 200 }))
-    await expect(listGitHubUserRepositories('gho_demo_token')).resolves.toEqual(page)
+    await expect(listGitHubUserRepositories('gho_demo_token', '2000001')).resolves.toEqual(page)
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining('/integrations/github/repositories'),
       expect.objectContaining({ headers: expect.objectContaining({ 'X-GitHub-Provider-Token': 'gho_demo_token' }) }),

@@ -35,15 +35,42 @@ export interface UploadAccepted {
   pollAfterMs: number
 }
 
+export type WorkspaceKind = 'PERSONAL' | 'ORGANIZATION'
+export type WorkspaceRole = 'ADMIN' | 'MEMBER'
+export type ProjectRole = 'ADMIN' | 'MAINTAINER' | 'READER'
+
+export interface WorkspaceRef {
+  kind: WorkspaceKind
+  id: string
+  login: string | null
+}
+
+export interface Workspace extends WorkspaceRef {
+  avatarUrl: string | null
+  role: WorkspaceRole
+}
+
+export interface WorkspaceListResponse {
+  items: Workspace[]
+}
+
+/** `ProjectResponse` de INTEROP-2.4. El rol es el del usuario actual en ese Project. */
 export interface Project {
   id: string
   name: string
   currentVersionId: string | null
+  workspace: WorkspaceRef
+  role: ProjectRole
   createdAt: string
   updatedAt: string
 }
 
 export interface CreateProjectInput {
+  name: string
+  workspaceId?: string
+}
+
+export interface UpdateProjectInput {
   name: string
 }
 

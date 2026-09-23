@@ -25,7 +25,7 @@ function authValue(githubProviderToken: string | null): AuthContextValue {
 }
 
 const binding = { projectId: 'prj_real', installationId: 'inst_1', repositoryId: 'repo_1', repositoryName: 'acme/repo', integrationBranch: 'main', status: 'DISABLED', createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z' }
-const project = { id: 'prj_real', name: 'proyecto-real', currentVersionId: null, createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z' }
+const project = { id: 'prj_real', name: 'proyecto-real', currentVersionId: null, workspace: { kind: 'PERSONAL', id: 'ws-1', login: 'dev' }, role: 'ADMIN', createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z' }
 const appAccess = { repositoryId: 'repo_1', repositoryName: 'acme/repo', status: 'NOT_AUTHORIZED', installationId: null, app: { displayName: 'RAG', configureUrl: 'https://github.com/apps/rag/installations/select_target' } }
 
 const repository = { repositoryId: 'repo_1', name: 'repo', repositoryName: 'acme/repo', owner: { login: 'acme', type: 'Organization', avatarUrl: null }, private: false, defaultBranch: 'main', permissions: { admin: false, maintain: true, push: true, pull: true } }
@@ -59,7 +59,7 @@ beforeEach(() => {
     const method = init?.method ?? 'GET'
     requests.push({ url, method })
     if (url.endsWith('/integrations/github/repositories/verify-app-access')) return coreVerifyAccess()
-    if (url.endsWith('/integrations/github/repositories')) return coreRepositories()
+    if (new URL(url, 'http://core.test').pathname.endsWith('/integrations/github/repositories')) return coreRepositories()
     if (url.endsWith('/integrations/github/repositories/acme/repo/branches')) return json({ items: [{ name: 'main', protected: true }] })
     if (url.endsWith('/projects/prj_real/integrations/github/enable')) return coreEnable()
     if (url.endsWith('/projects/prj_real/integrations/github')) return method === 'POST' ? coreCreateBinding() : method === 'DELETE' ? new Response(null, { status: 204 }) : coreBinding()

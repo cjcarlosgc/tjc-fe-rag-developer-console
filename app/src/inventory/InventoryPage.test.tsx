@@ -5,7 +5,7 @@ import { setDataSourceForTests } from '../api/dataSource'
 import { InventoryPage } from './InventoryPage'
 
 test('carga el inventario de la ProjectVersion actual y mapea su contrato', async () => {
-  const project = { id: 'p-1', name: 'checkout', currentVersionId: 'v-1', createdAt: '2026-08-31T10:00:00.000Z', updatedAt: '2026-08-31T10:01:00.000Z' }
+  const project = { id: 'p-1', name: 'checkout', currentVersionId: 'v-1', workspace: { kind: 'PERSONAL', id: 'ws-1', login: 'demo-user' }, role: 'ADMIN', createdAt: '2026-08-31T10:00:00.000Z', updatedAt: '2026-08-31T10:01:00.000Z' }
   const inventory = {
     projectVersionId: 'v-1',
     detectedFramework: 'VITEST',
@@ -32,7 +32,7 @@ test('carga el inventario de la ProjectVersion actual y mapea su contrato', asyn
 })
 
 test('no consulta inventario cuando el proyecto no tiene versión actual', async () => {
-  const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ id: 'p-1', name: 'empty', currentVersionId: null, createdAt: '2026-08-31', updatedAt: '2026-08-31' }), { status: 200 }))
+  const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ id: 'p-1', name: 'empty', currentVersionId: null, workspace: { kind: 'PERSONAL', id: 'ws-1', login: 'demo-user' }, role: 'ADMIN', createdAt: '2026-08-31', updatedAt: '2026-08-31' }), { status: 200 }))
 
   renderApp(<InventoryPage />, { initialEntry: '/projects/p-1/inventory', routePath: '/projects/:projectId/inventory' })
 

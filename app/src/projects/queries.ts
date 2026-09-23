@@ -2,27 +2,47 @@ import { useCallback } from 'react'
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { actionRequiredKeys } from '../action-required/queries'
 import { controlPlaneKeys } from '../control-plane/queries'
-import { createProject, deleteProject, getProject, listProjects } from './api'
+import { createProject, deleteProject, getProject, listAllProjects, listProjects, listWorkspaces, renameProject } from './api'
 
 export const projectKeys = {
   all: ['projects'] as const,
+  lists: ['projects', 'list'] as const,
+  list: (workspaceId: string | null) => ['projects', 'list', workspaceId] as const,
+  listsAll: ['projects', 'list-all'] as const,
+  listAll: (workspaceId: string | null) => ['projects', 'list-all', workspaceId] as const,
   detail: (id: string) => ['projects', id] as const,
+}
+
+export const workspaceKeys = { all: ['workspaces'] as const }
+
+export function useWorkspaces() {
+  return useQuery({ queryKey: workspaceKeys.all, queryFn: listWorkspaces, staleTime: 60_000 })
 }
 
 export function useProject(projectId: string) {
   return useQuery({
     queryKey: projectKeys.detail(projectId),
     queryFn: () => getProject(projectId),
+    enabled: Boolean(projectId),
   })
 }
 
-export function useProjects(enabled = true) {
+export function useProjects(workspaceId: string | null, enabled = true) {
   return useInfiniteQuery({
-    queryKey: projectKeys.all,
-    queryFn: ({ pageParam }) => listProjects(pageParam),
+    queryKey: projectKeys.list(workspaceId),
+    queryFn: ({ pageParam }) => listProjects(workspaceId!, pageParam),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-    enabled,
+    enabled: enabled && Boolean(workspaceId),
+  })
+}
+
+/** Todos los Projects visibles para filtrar y calcular KPIs sin depender de las tarjetas cargadas. */
+export function useAllProjects(workspaceId: string | null, enabled = true) {
+  return useQuery({
+    queryKey: projectKeys.listAll(workspaceId),
+    queryFn: () => listAllProjects(workspaceId!),
+    enabled: enabled && Boolean(workspaceId),
   })
 }
 
@@ -30,6 +50,17 @@ export function useCreateProject() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: createProject,
+    onSuccess: (project) => {
+      queryClient.setQueryData(projectKeys.detail(project.id), project)
+      void queryClient.invalidateQueries({ queryKey: projectKeys.all })
+    },
+  })
+}
+
+export function useRenameProject() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ projectId, input }: { projectId: string; input: { name: string } }) => renameProject(projectId, input),
     onSuccess: (project) => {
       queryClient.setQueryData(projectKeys.detail(project.id), project)
       void queryClient.invalidateQueries({ queryKey: projectKeys.all })
@@ -47,7 +78,9 @@ export function useDeleteProject() {
   return useMutation({
     mutationFn: deleteProject,
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: projectKeys.all, exact: true })
+      // No invalidar ['projects', projectId] mientras el detalle aún monta: provocaría un GET tras el DELETE y un 404 transitorio antes de navegar.
+      void queryClient.invalidateQueries({ queryKey: projectKeys.lists })
+      void queryClient.invalidateQueries({ queryKey: projectKeys.listsAll })
       void queryClient.invalidateQueries({ queryKey: ['control-plane', 'runs'], refetchType: 'none' })
       void queryClient.invalidateQueries({ queryKey: ['action-required', 'list'], refetchType: 'none' })
     },

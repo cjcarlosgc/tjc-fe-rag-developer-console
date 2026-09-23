@@ -56,7 +56,7 @@ describe('AppShell', () => {
 
   it('el link "Action Required" muestra un badge con el conteo de Runs pendientes', async () => {
     renderShell()
-    const badge = await screen.findByText('4', { selector: '.nav-badge' })
+    const badge = await screen.findByText('5', { selector: '.nav-badge' })
     expect(badge.closest('a')).toHaveTextContent('Action Required')
   })
 
