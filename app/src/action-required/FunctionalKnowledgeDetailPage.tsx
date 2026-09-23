@@ -31,7 +31,7 @@ export function FunctionalKnowledgeDetailPage() {
   const supersededBy = knowledgeQuery.data.items.find((entry) => entry.supersedesId === item.id)
 
   return <section>
-    <Breadcrumbs items={[{ label: 'Proyectos', to: '/' }, { label: projectQuery.data?.name ?? projectId, to: `/projects/${projectId}` }, { label: 'Functional Knowledge', to: `/projects/${projectId}/functional-knowledge` }, { label: item.targetRef ?? item.scope }]} />
+    <Breadcrumbs items={[{ label: 'Proyectos', to: projectQuery.data ? `/?workspaceId=${encodeURIComponent(projectQuery.data.workspace.id)}` : '/' }, { label: projectQuery.data?.name ?? projectId, to: projectQuery.data ? `/projects/${projectId}?workspaceId=${encodeURIComponent(projectQuery.data.workspace.id)}` : `/projects/${projectId}` }, { label: 'Functional Knowledge', to: `/projects/${projectId}/functional-knowledge${projectQuery.data ? `?workspaceId=${encodeURIComponent(projectQuery.data.workspace.id)}` : ''}` }, { label: item.targetRef ?? item.scope }]} />
     <div className="page-heading">
       <div>
         <p className="eyebrow">Functional Knowledge</p>

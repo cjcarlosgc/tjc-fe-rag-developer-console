@@ -16,12 +16,21 @@ const codeMessages: Record<string, string> = {
   GITHUB_VERIFICATION_UNAVAILABLE: 'No pudimos verificar el permiso en GitHub ahora; inténtalo de nuevo.',
   GITHUB_APP_ACCESS_REQUIRED: 'La GitHub App no tiene acceso al repositorio. Configura el acceso en GitHub y vuelve a intentarlo.',
   PROJECT_NOT_FOUND: 'El proyecto ya no existe.',
+  WORKSPACE_NOT_FOUND: 'Ese workspace ya no está disponible. Actualiza la lista de workspaces y vuelve a elegirlo.',
+  WORKSPACE_ADMIN_REQUIRED: 'Solo un owner activo de la organización puede crear Projects en ese workspace.',
 }
 
 const serverErrorMessage = 'RAG Core no pudo completar la operación. Inténtalo de nuevo en unos minutos.'
 
 export function bindingErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
+    if (error.code === 'PROJECT_ROLE_INSUFFICIENT') {
+      const details = error.details as { requiredRole?: unknown; currentRole?: unknown } | null
+      if (typeof details?.requiredRole === 'string' && typeof details.currentRole === 'string') {
+        return `Tu rol actual (${details.currentRole}) no alcanza para esta acción; se requiere ${details.requiredRole}.`
+      }
+      return 'Tu rol actual no permite esta acción en el Project.'
+    }
     if (error.code && codeMessages[error.code]) return codeMessages[error.code]
     if (error.status >= 500) return serverErrorMessage
   }

@@ -30,7 +30,10 @@ export function IntegrationsPage() {
   const disconnect = useDisconnectRepository(projectId)
   const enable = useEnableRepository(projectId)
   const hasGitHub = Boolean(authSession?.githubProviderToken)
-  const reposQuery = useGitHubUserRepositories(authSession?.githubProviderToken ?? null)
+  const project = projectQuery.data
+  const canManageBinding = project?.role === 'ADMIN' || project?.role === 'MAINTAINER'
+  const canReactivateBinding = canManageBinding && (bindingQuery.data?.status !== 'REVOKED' || project?.role === 'ADMIN')
+  const reposQuery = useGitHubUserRepositories(authSession?.githubProviderToken ?? null, project?.workspace ?? null)
   const verifyAccess = useVerifyGitHubAppAccess()
   const createBinding = useCreateRepositoryBinding(projectId)
   // Resultado de Desconectar/Reactivar para lectores de pantalla (aria-live polite): el botón cambia o desaparece al cambiar el estado.
@@ -51,7 +54,7 @@ export function IntegrationsPage() {
   const branchesQuery = useGitHubRepositoryBranches(accessResult?.status === 'AUTHORIZED' ? selectedRepo?.repositoryName ?? null : null)
   // El enlace a configurar la App se ofrece en REVOKED sin esperar a que Reactivar falle, y en DISABLED si Reactivar fue rechazado por falta de acceso.
   const enableNeedsAccess = enable.error instanceof ApiError && enable.error.code === 'GITHUB_APP_ACCESS_REQUIRED'
-  const bindingForAccess = bindingQuery.data && (bindingQuery.data.status === 'REVOKED' || enableNeedsAccess) ? bindingQuery.data : null
+  const bindingForAccess = canReactivateBinding && bindingQuery.data && (bindingQuery.data.status === 'REVOKED' || enableNeedsAccess) ? bindingQuery.data : null
   const appAccessInfo = useGitHubAppAccessInfo(bindingForAccess)
 
   // Foco tras Desconectar/Reactivar: el botón pulsado desaparece al cambiar el estado, así que el foco pasa al botón opuesto.
@@ -143,13 +146,13 @@ export function IntegrationsPage() {
   const filteredRepos = (reposQuery.data?.items ?? []).filter((repo) => repo.repositoryName.toLowerCase().includes(search.trim().toLowerCase()))
 
   return <section>
-    <Breadcrumbs items={[{ label: 'Proyectos', to: '/' }, { label: projectQuery.data?.name ?? projectId, to: `/projects/${projectId}` }, { label: 'Integrations / GitHub' }]} />
+    <Breadcrumbs items={[{ label: 'Proyectos', to: `/?workspaceId=${encodeURIComponent(project?.workspace.id ?? '')}` }, { label: project?.name ?? projectId, to: `/projects/${projectId}?workspaceId=${encodeURIComponent(project?.workspace.id ?? '')}` }, { label: 'Integrations / GitHub' }]} />
     <ProjectTabs projectId={projectId} />
     <div className="page-heading">
       <div>
-        <p className="eyebrow">Integrations / GitHub</p>
+        <p className="eyebrow">{project?.workspace.login ?? 'Cuenta personal'} · {project?.role} / Integrations</p>
         <h1>Repository binding</h1>
-        <p>Descubre un repositorio visible con tu cuenta de GitHub y vincúlalo para habilitar análisis PR-driven. La GitHub App es quien autoriza y automatiza el repositorio, no tu login.</p>
+        <p>Repositorios disponibles solo en {project?.workspace.login ?? 'tu cuenta personal'}. La GitHub App es quien autoriza y automatiza el repositorio, no tu login.</p>
       </div>
       {mock && <span className="demo-stamp">DEMO · DATOS SIMULADOS</span>}
     </div>
@@ -163,7 +166,7 @@ export function IntegrationsPage() {
           <div><dt>Estado</dt><dd><span className={`status-badge ${BINDING_STATUS_BADGES[binding.status].className}`}>{BINDING_STATUS_BADGES[binding.status].label}</span></dd></div>
         </dl>
         {binding.status === 'ENABLED' ? (
-          <>
+          canManageBinding ? <>
             <button ref={disconnectButtonRef} type="button" className="button secondary" disabled={disconnect.isPending} onClick={() => {
               setAnnouncement('')
               disconnect.mutate(undefined, {
@@ -178,7 +181,7 @@ export function IntegrationsPage() {
             </button>
             <p className="empty-inline-note">Desconectar pausa la recepción de eventos de PR; no borra Runs ni Functional Knowledge y puedes reactivarlo.</p>
             {disconnect.isError && <ErrorNote message={bindingErrorMessage(disconnect.error)} correlationId={errorCorrelationId(disconnect.error)} />}
-          </>
+          </> : <p className="empty-inline-note">Tu rol permite consultar el vínculo, pero no pausarlo. Un Maintainer o Admin puede cambiarlo.</p>
         ) : (
           <>
             {binding.status === 'REVOKED' ? (
@@ -186,19 +189,22 @@ export function IntegrationsPage() {
             ) : (
               <p className="empty-inline-note">La recepción de eventos de PR está pausada. Los Runs y el Functional Knowledge ya generados se conservan.</p>
             )}
-            <div className="run-actions">
+            {canReactivateBinding && <div className="run-actions">
               {mock && <span className="demo-stamp">DEMO · REACTIVAR SIMULADO</span>}
               <button ref={reactivateButtonRef} type="button" className="button primary" disabled={enable.isPending} onClick={reactivate}>
                 {enable.isPending ? 'Reactivando…' : 'Reactivar'}
               </button>
-            </div>
-            {enable.isError && <ErrorNote message={reactivateErrorMessage(enable.error)} correlationId={errorCorrelationId(enable.error)} />}
+            </div>}
+            {canReactivateBinding && enable.isError && <ErrorNote message={reactivateErrorMessage(enable.error)} correlationId={errorCorrelationId(enable.error)} />}
             {appAccessInfo.data?.status === 'NOT_AUTHORIZED' && (
               <p className="empty-inline-note"><a href={appAccessInfo.data.app.configureUrl} target="_blank" rel="noreferrer">Configurar acceso de la GitHub App →</a></p>
             )}
+            {!canReactivateBinding && <p className="empty-inline-note">{binding.status === 'REVOKED' ? 'Solo un Admin puede reactivar un binding revocado.' : 'Tu rol permite consultar el vínculo, pero no reactivarlo. Un Maintainer o Admin debe hacerlo.'}</p>}
           </>
         )}
       </div>
+    ) : !canManageBinding ? (
+      <div className="panel integration-panel"><div className="empty-inline"><strong>Sin repositorio vinculado</strong><p>El contrato oculta Projects de organización sin repositorio a roles que no sean Admin. Si tu rol fue actualizado recientemente, vuelve al Overview y refresca.</p></div></div>
     ) : !hasGitHub ? (
       renewAccessPanel('Para descubrir los repositorios que puedes vincular necesitamos el acceso de GitHub de tu sesión. Supabase no lo conserva cuando la sesión se recarga o restaura, por eso hay que renovarlo. Esto no autoriza automatización todavía — eso lo decide la GitHub App en el siguiente paso.')
     ) : (

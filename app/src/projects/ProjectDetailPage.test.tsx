@@ -34,16 +34,16 @@ test('la sub-nav del proyecto (ProjectTabs) enlaza a Runs/Functional Knowledge/I
 
   const nav = await screen.findByRole('navigation', { name: 'Secciones del proyecto' })
   expect(within(nav).getByRole('link', { name: 'Overview' })).toHaveAttribute('aria-current', 'page')
-  expect(within(nav).getByRole('link', { name: 'Runs' })).toHaveAttribute('href', '/analysis-runs?projectId=prj_checkout_demo')
-  expect(within(nav).getByRole('link', { name: 'Functional Knowledge' })).toHaveAttribute('href', '/projects/prj_checkout_demo/functional-knowledge')
-  expect(within(nav).getByRole('link', { name: 'Integrations' })).toHaveAttribute('href', '/projects/prj_checkout_demo/integrations/github')
+  expect(within(nav).getByRole('link', { name: 'Runs' })).toHaveAttribute('href', '/analysis-runs?projectId=prj_checkout_demo&workspaceId=1000001')
+  expect(within(nav).getByRole('link', { name: 'Functional Knowledge' })).toHaveAttribute('href', '/projects/prj_checkout_demo/functional-knowledge?workspaceId=1000001')
+  expect(within(nav).getByRole('link', { name: 'Integrations' })).toHaveAttribute('href', '/projects/prj_checkout_demo/integrations/github?workspaceId=1000001')
 })
 
 test('HU19: "Modo experimental" es visible como capacidad propia, no legacy', async () => {
   renderDetail('prj_checkout_demo')
 
   await screen.findByText('checkout-service', { selector: '.repo-name' })
-  expect(screen.getByRole('link', { name: /Modo experimental/ })).toHaveAttribute('href', '/projects/prj_checkout_demo/experimental')
+  expect(screen.getByRole('link', { name: /Modo experimental/ })).toHaveAttribute('href', '/projects/prj_checkout_demo/experimental?workspaceId=1000001')
 })
 
 test('el flujo ZIP no aparece en la página principal ni su link a herramientas legacy (oculto a pedido del usuario; la ruta sigue existiendo)', async () => {
@@ -61,7 +61,7 @@ test('HU30: un proyecto sin binding ofrece conectar GitHub', async () => {
   renderDetail(project.id)
 
   expect(await screen.findByText('Sin repositorio vinculado')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: /Conectar GitHub/ })).toHaveAttribute('href', `/projects/${project.id}/integrations/github`)
+  expect(screen.getByRole('link', { name: /Conectar GitHub/ })).toHaveAttribute('href', `/projects/${project.id}/integrations/github?workspaceId=1000001`)
 })
 
 test('HU57: un proyecto desconectado muestra el binding como Pausado, no como "sin repositorio"', async () => {

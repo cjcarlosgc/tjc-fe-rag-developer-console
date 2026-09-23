@@ -106,9 +106,9 @@ test('HU57: reactivar un REVOKED sin acceso de la App muestra el error con corre
   seedSession('mock-github-provider-token')
   const user = userEvent.setup()
   const projectId = await createUnboundProject()
-  await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' })
-  await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' })
-  await createRepositoryBinding(projectId, { repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground', integrationBranch: 'main' })
+  await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'acme/integration-playground' })
+  await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'acme/integration-playground' })
+  await createRepositoryBinding(projectId, { repositoryId: 'repo_playground', repositoryName: 'acme/integration-playground', integrationBranch: 'main' })
   mockSimulateAppAccessLoss(projectId)
   renderIntegrations(projectId)
 
@@ -234,12 +234,12 @@ test('HU30: repo NOT_AUTHORIZED muestra CTA de configuración y "Revalidar" la a
   await user.type(screen.getByLabelText('Buscar repositorio'), 'playground')
   await user.click(await screen.findByRole('button', { name: /integration-playground/ }))
 
-  expect(await screen.findByText(/no tiene acceso a demo-user\/integration-playground/)).toBeInTheDocument()
+  expect(await screen.findByText(/no tiene acceso a acme\/integration-playground/)).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Configurar acceso en GitHub →' }).getAttribute('href')).toMatch(/github\.com/)
   expect(screen.queryByLabelText('Integration branch')).not.toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'Revalidar' }))
-  expect(await screen.findByText('Acceso autorizado a demo-user/integration-playground')).toBeInTheDocument()
+  expect(await screen.findByText('Acceso autorizado a acme/integration-playground')).toBeInTheDocument()
 
   const branchSelect = await screen.findByLabelText('Integration branch') as HTMLSelectElement
   await user.selectOptions(branchSelect, 'main')
@@ -294,9 +294,9 @@ test('409 REPOSITORY_BINDING_ALREADY_EXISTS relee el binding y la pantalla muest
   await user.click(await screen.findByRole('button', { name: /notifications-service/ }))
   await user.selectOptions(await screen.findByLabelText('Integration branch'), 'develop')
   // Otro cliente vincula el proyecto entre que se abrió la pantalla y se confirmó.
-  await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' })
-  await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' })
-  await createRepositoryBinding(projectId, { repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground', integrationBranch: 'main' })
+  await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'acme/integration-playground' })
+  await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'acme/integration-playground' })
+  await createRepositoryBinding(projectId, { repositoryId: 'repo_playground', repositoryName: 'acme/integration-playground', integrationBranch: 'main' })
   await user.click(screen.getByRole('button', { name: 'Vincular repositorio' }))
 
   expect(await screen.findByText('integration-playground', { selector: '.repo-name' })).toBeInTheDocument()
@@ -309,9 +309,9 @@ test('403 GITHUB_APP_ACCESS_REQUIRED al vincular revalida y muestra el enlace pa
   const user = userEvent.setup()
   // Otro Project deja `repo_playground` autorizado para que la UI lo vea `AUTHORIZED`, y luego pierde acceso (la verificación se olvida).
   const other = await createUnboundProject()
-  await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' })
-  await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground' })
-  await createRepositoryBinding(other, { repositoryId: 'repo_playground', repositoryName: 'demo-user/integration-playground', integrationBranch: 'main' })
+  await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'acme/integration-playground' })
+  await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'acme/integration-playground' })
+  await createRepositoryBinding(other, { repositoryId: 'repo_playground', repositoryName: 'acme/integration-playground', integrationBranch: 'main' })
   renderIntegrations(await createUnboundProject())
   await screen.findByLabelText('Buscar repositorio')
   await user.click(await screen.findByRole('button', { name: /integration-playground/ }))
@@ -320,11 +320,11 @@ test('403 GITHUB_APP_ACCESS_REQUIRED al vincular revalida y muestra el enlace pa
 
   await user.click(screen.getByRole('button', { name: 'Vincular repositorio' }))
 
-  expect(await screen.findByText(/no tiene acceso a demo-user\/integration-playground/)).toBeInTheDocument()
+  expect(await screen.findByText(/no tiene acceso a acme\/integration-playground/)).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Configurar acceso en GitHub →' }).getAttribute('href')).toMatch(/github\.com/)
   // El error del 403 no se pierde al pasar a NOT_AUTHORIZED: sigue anunciado como alerta y el panel de acceso como estado.
   expect(screen.getByRole('alert')).toHaveTextContent('La GitHub App no tiene acceso al repositorio')
-  expect(screen.getAllByRole('status').some((node) => /no tiene acceso a demo-user\/integration-playground/.test(node.textContent ?? ''))).toBe(true)
+  expect(screen.getAllByRole('status').some((node) => /no tiene acceso a acme\/integration-playground/.test(node.textContent ?? ''))).toBe(true)
 
   // «Revalidar» es un intento nuevo: el error anterior se limpia.
   await user.click(screen.getByRole('button', { name: 'Revalidar' }))
@@ -367,18 +367,16 @@ test('HU64: los repos con permiso solo de lectura se muestran como no vinculable
   expect(screen.queryByText(/Verificando acceso de la App/)).not.toBeInTheDocument()
 })
 
-test('HU64: un repo de propietario ajeno responde 400 REPOSITORY_OUTSIDE_WORKSPACE y se muestra su mensaje, sin bloquear el botón', async () => {
+test('HU64: el discovery del workspace oculta un repo ajeno y el POST rechaza su id si se intenta vincular de todos modos', async () => {
   seedSession('mock-github-provider-token')
-  const user = userEvent.setup()
-  renderIntegrations(await createUnboundProject())
+  const projectId = await createUnboundProject()
+  renderIntegrations(projectId)
   await screen.findByLabelText('Buscar repositorio')
 
-  await user.click(await screen.findByRole('button', { name: /shared-tools/ }))
-  await user.selectOptions(await screen.findByLabelText('Integration branch'), 'main')
-  await user.click(screen.getByRole('button', { name: 'Vincular repositorio' }))
-
-  expect(await screen.findByRole('alert')).toHaveTextContent('Este repositorio no pertenece a tu cuenta; en un proyecto personal solo puedes vincular repositorios propios.')
-  expect(screen.getByRole('button', { name: 'Vincular repositorio' })).toBeEnabled()
+  expect(screen.queryByRole('button', { name: /shared-tools/ })).not.toBeInTheDocument()
+  await verifyGitHubAppAccess({ repositoryId: 'repo_external_tools', repositoryName: 'external-org/shared-tools' })
+  await expect(createRepositoryBinding(projectId, { repositoryId: 'repo_external_tools', repositoryName: 'external-org/shared-tools', integrationBranch: 'main' }))
+    .rejects.toMatchObject({ status: 400, code: 'REPOSITORY_OUTSIDE_WORKSPACE' })
 })
 
 test('un 5xx al vincular muestra un mensaje genérico con correlationId', async () => {

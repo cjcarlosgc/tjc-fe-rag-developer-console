@@ -5,6 +5,8 @@ import { isMockDataSource } from '../api/dataSource'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
 import { RepoChip } from '../ui/RepoChip'
+import { useProject } from '../projects/queries'
+import { bindingErrorMessage, errorCorrelationId } from '../control-plane/errors'
 import { useContextQuestionSet, useSubmitFunctionalAnswer } from './queries'
 import type { ConflictResolution, FunctionalAnswerChoice, FunctionalKnowledgeConflictResponse, VisualAidResponse } from './types'
 
@@ -35,13 +37,18 @@ export function FocusModePage() {
   const mock = isMockDataSource()
   const questionSetQuery = useContextQuestionSet(analysisRunId)
   const submitAnswer = useSubmitFunctionalAnswer(analysisRunId)
+  const currentQuestionId = questionSetQuery.data?.currentQuestion?.projectId ?? ''
+  const projectQuery = useProject(currentQuestionId)
   const [answerText, setAnswerText] = useState('')
   const [pendingAnswer, setPendingAnswer] = useState<{ questionId: string; choice: FunctionalAnswerChoice; answer: string | null } | null>(null)
 
   if (questionSetQuery.isPending) return <LoadingState label="Abriendo Focus Mode…" />
   if (questionSetQuery.isError) return <ErrorState message={questionSetQuery.error.message} onRetry={() => void questionSetQuery.refetch()} />
+  if (questionSetQuery.data.currentQuestion && projectQuery.isPending) return <LoadingState label="Comprobando tu rol en el Project…" />
+  if (questionSetQuery.data.currentQuestion && projectQuery.isError) return <ErrorState message={bindingErrorMessage(projectQuery.error)} correlationId={errorCorrelationId(projectQuery.error)} onRetry={() => void projectQuery.refetch()} />
 
   const { currentQuestion, functionalBehaviorValidated } = questionSetQuery.data
+  const canAnswer = !currentQuestion || projectQuery.data?.role === 'ADMIN' || projectQuery.data?.role === 'MAINTAINER'
   const conflict = submitAnswer.error instanceof ApiError && submitAnswer.error.code === 'FUNCTIONAL_KNOWLEDGE_CONFLICT'
     ? submitAnswer.error.details as FunctionalKnowledgeConflictResponse
     : null
@@ -93,6 +100,7 @@ export function FocusModePage() {
       <p className="focus-mode-rationale">{currentQuestion.rationale}</p>
       {currentQuestion.visualAid && <VisualAid aid={currentQuestion.visualAid} />}
 
+      {canAnswer ? <>
       <div className="answer-choices" role="group" aria-label="Respuesta">
         {(Object.keys(CHOICE_LABELS) as Exclude<FunctionalAnswerChoice, 'FREE_TEXT'>[]).map((choice) => (
           <button key={choice} type="button" className={`button ${choice === 'UNKNOWN' ? 'secondary' : 'primary'}`} disabled={submitAnswer.isPending} onClick={() => submit(choice)}>
@@ -124,7 +132,8 @@ export function FocusModePage() {
         </div>
       )}
 
-      {submitAnswer.isError && !conflict && <p className="inline-error" role="alert">{submitAnswer.error.message}</p>}
+      {submitAnswer.isError && !conflict && <p className="inline-error" role="alert">{bindingErrorMessage(submitAnswer.error)}{errorCorrelationId(submitAnswer.error) && <> · Correlation ID: <code>{errorCorrelationId(submitAnswer.error)}</code></>}</p>}
+      </> : <p className="empty-inline-note">Tu rol es de solo lectura. Un Maintainer o Admin puede responder esta pregunta funcional.</p>}
     </div>}
 
     <div className="run-actions"><Link className="button secondary button-link" to={returnTo}>Volver</Link></div>

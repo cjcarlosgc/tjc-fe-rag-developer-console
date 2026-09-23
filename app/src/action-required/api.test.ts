@@ -3,7 +3,7 @@ import { ApiError } from '../api/client'
 import { resetMockBackend } from '../api/mockBackend'
 import { setDataSourceForTests } from '../api/dataSource'
 import { getAnalysisRun, listTestProposals } from '../control-plane/api'
-import { getContextQuestionSet, listActionRequired, listFunctionalKnowledge, submitFunctionalAnswer } from './api'
+import { getContextQuestionSet, listActionRequired, listAllActionRequired, listFunctionalKnowledge, submitFunctionalAnswer } from './api'
 
 beforeEach(() => {
   setDataSourceForTests('mock')
@@ -13,7 +13,7 @@ beforeEach(() => {
 describe('action-required api (mock)', () => {
   it('HU38: lista la pregunta vigente por cada Run con contexto pendiente', async () => {
     const page = await listActionRequired()
-    expect(page.items.map((item) => item.analysisRunId)).toEqual(['arun_billing_pr17', 'arun_checkout_pr42', 'arun_billing_pr24', 'arun_checkout_pr52'])
+    expect(page.items.map((item) => item.analysisRunId)).toEqual(['arun_billing_pr17', 'arun_checkout_pr42', 'arun_billing_pr24', 'arun_org_metrics_pr15', 'arun_checkout_pr52'])
     expect(page.items.every((item) => item.status === 'PENDING')).toBe(true)
   })
 
@@ -162,6 +162,18 @@ describe('action-required api (live) — HU35-38, Core ya lo implementó (INTERO
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ items: [], nextCursor: null }), { status: 200 }))
     await listActionRequired()
     expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/\/action-required$/), expect.anything())
+  })
+
+  it('agregado recorre todas las páginas usando cursor opaco y limit máximo', async () => {
+    const firstPage = { items: [{ id: 'q-1', projectId: 'p-1' }], nextCursor: 'opaque-cursor' }
+    const secondPage = { items: [{ id: 'q-2', projectId: 'p-2' }], nextCursor: null }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      return new Response(JSON.stringify(String(input).includes('cursor=opaque-cursor') ? secondPage : firstPage), { status: 200 })
+    })
+    await expect(listAllActionRequired()).resolves.toEqual([...firstPage.items, ...secondPage.items])
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(String(fetchMock.mock.calls[0][0])).toContain('limit=100')
+    expect(String(fetchMock.mock.calls[1][0])).toContain('cursor=opaque-cursor')
   })
 
   it('getContextQuestionSet pide GET /analysis-runs/{id}/context-questions', async () => {

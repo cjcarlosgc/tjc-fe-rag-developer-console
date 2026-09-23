@@ -1,5 +1,5 @@
 import { ApiError, apiRequest } from '../api/client'
-import { getDataSource, PendingContractError } from '../api/dataSource'
+import { getDataSource } from '../api/dataSource'
 import {
   mockCreateRepositoryBinding,
   mockCreateTestPublication,
@@ -19,6 +19,7 @@ import type {
   AnalysisRunDetailResponse,
   AnalysisRunListPage,
   AnalysisRunStatus,
+  AnalysisRunSummaryResponse,
   CreateRepositoryBindingRequest,
   CreateTestPublicationRequest,
   GeneratedTestProposalSetResponse,
@@ -52,9 +53,10 @@ export async function getRepositoryBinding(projectId: string): Promise<ProjectRe
  * provee la sesión de GitHub OAuth del usuario (`authSession.githubProviderToken`), nunca se
  * persiste ni se reenvía a otro lado.
  */
-export function listGitHubUserRepositories(githubProviderToken: string): Promise<GitHubUserRepositoryPage> {
-  if (getDataSource() === 'mock') return mockListGitHubUserRepositories()
-  return apiRequest<GitHubUserRepositoryPage>('/integrations/github/repositories', { headers: { 'X-GitHub-Provider-Token': githubProviderToken } })
+export function listGitHubUserRepositories(githubProviderToken: string, workspaceId: string): Promise<GitHubUserRepositoryPage> {
+  if (getDataSource() === 'mock') return mockListGitHubUserRepositories(workspaceId)
+  const query = new URLSearchParams({ workspaceId })
+  return apiRequest<GitHubUserRepositoryPage>(`/integrations/github/repositories?${query.toString()}`, { headers: { 'X-GitHub-Provider-Token': githubProviderToken } })
 }
 
 export function verifyGitHubAppAccess(input: VerifyGitHubAppAccessRequest): Promise<GitHubAppAccessResponse> {
@@ -98,20 +100,36 @@ export function enableRepository(projectId: string): Promise<ProjectRepositoryBi
 
 // HU32 — Analysis Runs por PR/HEAD (INTEROP-2.1 §6.10).
 
+const AGGREGATE_PAGE_SIZE = 100
+
 /**
- * `GET /projects/{projectId}/analysis-runs?status&cursor&limit`. Core (verificado contra su
- * controller real) exige `projectId` en el path — no existe un listado global. La vista "todos
- * los Runs" de `RunsPage`/`ProjectsPage` no tiene ruta live: se rechaza con un mensaje propio en
- * vez de intentar simular una agregación cross-proyecto que el contrato nunca definió.
+ * `GET /projects/{projectId}/analysis-runs?status&cursor&limit` cuando se pide un Project,
+ * o `GET /analysis-runs?status&cursor&limit` para los Projects visibles del usuario (HU55).
  */
-export function listAnalysisRuns(projectId?: string, status?: AnalysisRunStatus, cursor?: string | null): Promise<AnalysisRunListPage> {
+export function listAnalysisRuns(projectId?: string, status?: AnalysisRunStatus, cursor?: string | null, limit?: number): Promise<AnalysisRunListPage> {
   if (getDataSource() === 'mock') return mockListAnalysisRuns(projectId, status)
-  if (!projectId) return Promise.reject(new PendingContractError('un listado global de Analysis Runs (HU55) — INTEROP-2.1 §6.10 ya define GET /analysis-runs, Core todavía no lo implementó'))
   const params = new URLSearchParams()
   if (status) params.set('status', status)
   if (cursor) params.set('cursor', cursor)
+  if (limit) params.set('limit', String(limit))
   const query = params.toString()
-  return apiRequest<AnalysisRunListPage>(`/projects/${encodeURIComponent(projectId)}/analysis-runs${query ? `?${query}` : ''}`)
+  const path = projectId ? `/projects/${encodeURIComponent(projectId)}/analysis-runs` : '/analysis-runs'
+  return apiRequest<AnalysisRunListPage>(`${path}${query ? `?${query}` : ''}`)
+}
+
+/** Consume todas las páginas del listado global para agregar actividad completa por workspace. */
+export async function listAllAnalysisRuns(): Promise<AnalysisRunSummaryResponse[]> {
+  const items: AnalysisRunSummaryResponse[] = []
+  const seenCursors = new Set<string>()
+  let cursor: string | null = null
+  do {
+    if (cursor && seenCursors.has(cursor)) throw new Error('La paginación de Analysis Runs no avanzó; vuelve a intentarlo.')
+    if (cursor) seenCursors.add(cursor)
+    const page = await listAnalysisRuns(undefined, undefined, cursor, AGGREGATE_PAGE_SIZE)
+    items.push(...page.items)
+    cursor = page.nextCursor
+  } while (cursor)
+  return items
 }
 
 export function getAnalysisRun(analysisRunId: string): Promise<AnalysisRunDetailResponse> {

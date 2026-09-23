@@ -6,10 +6,10 @@ Orden de lectura: `contracts/system-contract.md` -> `contracts/interoperability-
 
 ## Contratos entre servicios
 
-- [`contracts/system-contract.md`](contracts/system-contract.md): copia espejo `SYSTEM-2.2` del contrato común de los tres componentes; su propietario canónico es RAG Core.
-- [`contracts/interoperability-contract.md`](contracts/interoperability-contract.md): copia espejo `INTEROP-2.2` con rutas, DTOs, estados, errores y transporte universales.
+- [`contracts/system-contract.md`](contracts/system-contract.md): copia espejo `SYSTEM-2.4` del contrato común de los tres componentes; su propietario canónico es RAG Core.
+- [`contracts/interoperability-contract.md`](contracts/interoperability-contract.md): copia espejo `INTEROP-2.4` con rutas, DTOs, estados, errores y transporte universales.
 
-La demostración local usa por defecto la fuente `mock` definida en [`transversal/demo-mode/spec.md`](transversal/demo-mode/spec.md). Sus fixtures 2.0 no modifican el contrato real de RAG Core ni constituyen integración GitHub.
+La demostración local usa por defecto la fuente `mock` definida en [`transversal/demo-mode/spec.md`](transversal/demo-mode/spec.md). Sus fixtures siguen INTEROP-2.4, no modifican el contrato real de RAG Core ni constituyen integración GitHub.
 
 ## Versionado
 

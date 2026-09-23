@@ -8,7 +8,7 @@ import type { ContextProvenance } from '../context-explorer/speculative/contextP
 import type { PriorCoverageLevel } from '../control-plane/speculative/priorCoverage'
 import type { GenerationAccepted, GenerationConfiguration } from '../generation/types'
 import type { InventoryTargetViewModel, TestInventoryResponse } from '../inventory/types'
-import type { AnalysisHistoryItem, AnalysisOperation, AnalysisResult, CreateProjectInput, Project, UploadAccepted } from '../projects/types'
+import type { AnalysisHistoryItem, AnalysisOperation, AnalysisResult, CreateProjectInput, Project, ProjectRole, UpdateProjectInput, UploadAccepted, Workspace, WorkspaceListResponse } from '../projects/types'
 import type { GenerationMode, RunViewModel, TargetRetryAccepted, TargetRunViewModel, TestRunHistoryPage, TestRunSummary } from '../runs/types'
 import { DEMO_FOREIGN_OWNER_LOGINS, DEMO_GITHUB_REPOSITORIES } from '../control-plane/demoRepositories'
 import { canBindRepository } from '../control-plane/repositoryPermissions'
@@ -78,6 +78,12 @@ interface MockActionRequiredRunState {
 }
 
 const projects = new Map<string, Project>()
+const DEMO_WORKSPACES: Workspace[] = [
+  { kind: 'PERSONAL', id: '1000001', login: 'acme', avatarUrl: null, role: 'ADMIN' },
+  { kind: 'ORGANIZATION', id: '2000002', login: 'observability-lab', avatarUrl: null, role: 'MEMBER' },
+  { kind: 'ORGANIZATION', id: '2000001', login: 'rag-tesis-org', avatarUrl: null, role: 'MEMBER' },
+  { kind: 'ORGANIZATION', id: '2000003', login: 'team-sandbox', avatarUrl: null, role: 'ADMIN' },
+]
 /** HU56 (INTEROP-2.3 §6.1, implementado en Core — CS-20260920-003): Projects con borrado lógico. Se conservan sus datos internos (Runs, versions, Functional Knowledge) pero dejan de ser visibles por cualquier lectura del mock. */
 const deletedProjects = new Map<string, Project>()
 const versions = new Map<string, MockVersionState>()
@@ -268,10 +274,14 @@ function seedContextTraces(): void {
 
 function seed(): void {
   const completedAt = '2026-08-31T14:18:00.000Z'
-  const project: Project = { id: 'prj_checkout_demo', name: 'checkout-service', currentVersionId: 'ver_checkout_7', createdAt: '2026-08-24T09:30:00.000Z', updatedAt: completedAt }
-  const emptyProject: Project = { id: 'prj_billing_demo', name: 'billing-engine', currentVersionId: null, createdAt: '2026-08-30T16:45:00.000Z', updatedAt: '2026-08-30T16:45:00.000Z' }
+  const project: Project = { id: 'prj_checkout_demo', name: 'checkout-service', currentVersionId: 'ver_checkout_7', workspace: DEMO_WORKSPACES[0], role: 'ADMIN', createdAt: '2026-08-24T09:30:00.000Z', updatedAt: completedAt }
+  const emptyProject: Project = { id: 'prj_billing_demo', name: 'billing-engine', currentVersionId: null, workspace: DEMO_WORKSPACES[0], role: 'ADMIN', createdAt: '2026-08-30T16:45:00.000Z', updatedAt: '2026-08-30T16:45:00.000Z' }
+  const maintainerProject: Project = { id: 'prj_org_orders_demo', name: 'orders-api', currentVersionId: null, workspace: DEMO_WORKSPACES[2], role: 'MAINTAINER', createdAt: '2026-09-12T08:30:00.000Z', updatedAt: '2026-09-13T12:00:00.000Z' }
+  const readerProject: Project = { id: 'prj_org_metrics_demo', name: 'metrics-console', currentVersionId: null, workspace: DEMO_WORKSPACES[1], role: 'READER', createdAt: '2026-09-13T10:15:00.000Z', updatedAt: '2026-09-13T10:15:00.000Z' }
   projects.set(project.id, project)
   projects.set(emptyProject.id, emptyProject)
+  projects.set(maintainerProject.id, maintainerProject)
+  projects.set(readerProject.id, readerProject)
   versions.set('ver_checkout_7', {
     polls: 0,
     operation: { id: 'ver_checkout_7', projectId: project.id, status: 'COMPLETED', originalFileName: 'checkout-service-v7.zip', sizeBytes: 3_842_110, filesProcessed: 47, chunksCount: 186, failureReason: null, startedAt: '2026-08-31T14:17:12.000Z', completedAt, createdAt: '2026-08-31T14:17:10.000Z', updatedAt: completedAt },
@@ -414,6 +424,19 @@ function seedActionRequired(): void {
       },
     ],
   })
+  actionRequiredRuns.set('arun_org_metrics_pr15', {
+    analysisRunId: 'arun_org_metrics_pr15',
+    projectId: 'prj_org_metrics_demo',
+    headChanged: false,
+    questions: [{
+      id: 'fq_org_metrics_pr15_1', analysisRunId: 'arun_org_metrics_pr15', projectId: 'prj_org_metrics_demo',
+      repositoryName: 'observability-lab/metrics-console', pullRequestNumber: 15, headSha: '15f15f1',
+      target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'MetricsQuery.range', filePath: 'src/metrics/MetricsQuery.ts', changeKind: 'DIRECTLY_CHANGED' },
+      question: '¿Los límites de fecha se interpretan en UTC o en la zona horaria del usuario?',
+      rationale: 'El PR agrega filtros temporales sin definir la zona horaria que debe usar la consulta.',
+      status: 'PENDING', visualAid: null, createdAt: '2026-09-14T09:05:00.000Z',
+    }],
+  })
 }
 
 interface AnalysisRunSeed extends AnalysisRunDetailResponse {
@@ -424,6 +447,8 @@ interface AnalysisRunSeed extends AnalysisRunDetailResponse {
 function seedControlPlane(): void {
   repositoryBindings.set('prj_checkout_demo', { projectId: 'prj_checkout_demo', installationId: 'inst_checkout_1', repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service', integrationBranch: 'develop', status: 'ENABLED', createdAt: '2026-08-20T10:00:00.000Z', updatedAt: '2026-08-20T10:00:00.000Z' })
   repositoryBindings.set('prj_billing_demo', { projectId: 'prj_billing_demo', installationId: 'inst_billing_1', repositoryId: 'repo_billing', repositoryName: 'acme/billing-engine', integrationBranch: 'develop', status: 'ENABLED', createdAt: '2026-08-22T10:00:00.000Z', updatedAt: '2026-08-22T10:00:00.000Z' })
+  repositoryBindings.set('prj_org_orders_demo', { projectId: 'prj_org_orders_demo', installationId: 'inst_rag_orders', repositoryId: 'repo_rag_orders', repositoryName: 'rag-tesis-org/orders-api', integrationBranch: 'main', status: 'ENABLED', createdAt: '2026-09-12T08:30:00.000Z', updatedAt: '2026-09-12T08:30:00.000Z' })
+  repositoryBindings.set('prj_org_metrics_demo', { projectId: 'prj_org_metrics_demo', installationId: 'inst_observability_metrics', repositoryId: 'repo_observability_metrics', repositoryName: 'observability-lab/metrics-console', integrationBranch: 'main', status: 'ENABLED', createdAt: '2026-09-13T10:15:00.000Z', updatedAt: '2026-09-13T10:15:00.000Z' })
 
   function pr(repositoryId: string, repositoryName: string, number: number, title: string, headRef: string, headSha: string, actorLogin: string) {
     return { repositoryId, repositoryName, number, title, baseRef: 'develop', headRef, baseSha: 'c1c1c1c', headSha, draft: false, state: 'OPEN' as const, actorLogin }
@@ -601,6 +626,24 @@ function seedControlPlane(): void {
       symbols: [{ language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'InvoiceService.applyLateFee', filePath: 'src/domain/InvoiceService.ts', changeKind: 'DIRECTLY_CHANGED' }],
       functionalBehaviorValidated: false, resultSummary: null, detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr24',
     },
+    {
+      id: 'arun_org_orders_pr8', projectId: 'prj_org_orders_demo',
+      pullRequest: pr('repo_rag_orders', 'rag-tesis-org/orders-api', 8, 'Valida reintentos idempotentes de pedidos', 'feature/idempotent-orders', '8a8a8a8', 'demo-maintainer'),
+      status: 'SUCCESS', current: true, actionRequiredCount: 0, generatedTestsCount: 2,
+      createdAt: '2026-09-13T12:00:00.000Z', updatedAt: '2026-09-13T12:18:00.000Z', completedAt: '2026-09-13T12:18:00.000Z',
+      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: '6a6a6a6', changesetHeadSha: '8a8a8a8', indexDeltaBaseSha: '6a6a6a6',
+      symbols: [{ language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.submit', filePath: 'src/orders/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' }],
+      functionalBehaviorValidated: true, resultSummary: '2 pruebas generadas y validadas contra el HEAD vigente.', detailsUrl: '/projects/prj_org_orders_demo/runs/arun_org_orders_pr8',
+    },
+    {
+      id: 'arun_org_metrics_pr15', projectId: 'prj_org_metrics_demo',
+      pullRequest: pr('repo_observability_metrics', 'observability-lab/metrics-console', 15, 'Agrega filtros de rango temporal', 'feature/time-range-filter', '15f15f1', 'demo-reader'),
+      status: 'ACTION_REQUIRED', current: true, actionRequiredCount: 1, generatedTestsCount: 0,
+      createdAt: '2026-09-14T09:00:00.000Z', updatedAt: '2026-09-14T09:05:00.000Z', completedAt: null,
+      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: '5a5a5a5', changesetHeadSha: '15f15f1', indexDeltaBaseSha: '5a5a5a5',
+      symbols: [{ language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'MetricsQuery.range', filePath: 'src/metrics/MetricsQuery.ts', changeKind: 'DIRECTLY_CHANGED' }],
+      functionalBehaviorValidated: false, resultSummary: null, detailsUrl: '/projects/prj_org_metrics_demo/runs/arun_org_metrics_pr15',
+    },
   ]
 
   for (const { __proposals, ...run } of seeds) {
@@ -675,15 +718,43 @@ export function resetMockBackend(): void {
 
 resetMockBackend()
 
-export async function mockListProjects(): Promise<Project[]> {
+function findDemoWorkspace(workspaceId: string): Workspace {
+  const workspace = DEMO_WORKSPACES.find((item) => item.id === workspaceId)
+  if (!workspace) notFound('No encontramos ese workspace para la identidad demo. Actualiza la lista.', 'WORKSPACE_NOT_FOUND')
+  return workspace
+}
+
+/** Projects de organización sin binding o REVOKED solo son visibles al Admin, según INTEROP-2.4 §6.13. */
+function canSeeProject(project: Project): boolean {
+  if (project.workspace.kind === 'PERSONAL' || project.role === 'ADMIN') return true
+  const binding = repositoryBindings.get(project.id)
+  return Boolean(binding && binding.status !== 'REVOKED')
+}
+
+function requireProjectRole(projectId: string, requiredRole: ProjectRole): Project {
+  const project = requireProject(projectId)
+  const rank: Record<ProjectRole, number> = { READER: 0, MAINTAINER: 1, ADMIN: 2 }
+  if (rank[project.role] < rank[requiredRole]) {
+    throw new ApiError(`Tu rol ${project.role} no permite esta acción; se requiere ${requiredRole}.`, 403, 'demo-correlation-id', 'PROJECT_ROLE_INSUFFICIENT', { requiredRole, currentRole: project.role })
+  }
+  return project
+}
+
+export async function mockListWorkspaces(): Promise<WorkspaceListResponse> {
   await latency()
-  return Array.from(projects.values()).map(clone)
+  return { items: clone(DEMO_WORKSPACES) }
+}
+
+export async function mockListProjects(workspaceId: string): Promise<Project[]> {
+  await latency()
+  findDemoWorkspace(workspaceId)
+  return Array.from(projects.values()).filter((project) => project.workspace.id === workspaceId && canSeeProject(project)).map(clone)
 }
 
 export async function mockGetProject(projectId: string): Promise<Project> {
   await latency()
   const project = projects.get(projectId)
-  if (!project) notFound(`No existe el proyecto demo "${projectId}".`, 'PROJECT_NOT_FOUND')
+  if (!project || !canSeeProject(project)) notFound(`No existe el proyecto demo "${projectId}".`, 'PROJECT_NOT_FOUND')
   return clone(project)
 }
 
@@ -714,11 +785,23 @@ export async function mockListAnalysisHistory(projectId: string): Promise<Analys
 
 export async function mockCreateProject(input: CreateProjectInput): Promise<Project> {
   await latency()
+  const workspace = findDemoWorkspace(input.workspaceId ?? DEMO_WORKSPACES[0].id)
+  if (workspace.kind === 'ORGANIZATION' && workspace.role !== 'ADMIN') {
+    throw new ApiError('Solo un owner activo de la organización puede crear Projects en ese workspace.', 403, 'demo-correlation-id', 'WORKSPACE_ADMIN_REQUIRED')
+  }
   sequence += 1
   const createdAt = nowIso()
-  const project: Project = { id: `prj_demo_${sequence}`, name: input.name.trim(), currentVersionId: null, createdAt, updatedAt: createdAt }
+  const project: Project = { id: `prj_demo_${sequence}`, name: input.name.trim(), currentVersionId: null, workspace, role: 'ADMIN', createdAt, updatedAt: createdAt }
   projects.set(project.id, project)
   return clone(project)
+}
+
+export async function mockRenameProject(projectId: string, input: UpdateProjectInput): Promise<Project> {
+  await latency()
+  const project = requireProjectRole(projectId, 'ADMIN')
+  const updated: Project = { ...project, name: input.name.trim(), updatedAt: nowIso() }
+  projects.set(projectId, updated)
+  return clone(updated)
 }
 
 export async function mockUploadProjectVersion(projectId: string, file: File): Promise<UploadAccepted> {
@@ -996,10 +1079,10 @@ function seedExperimentContextTraces(experimentId: string, projectVersionId: str
 
 export async function mockStartExperiment(projectId: string, targetId: string): Promise<ExperimentAccepted> {
   await latency()
-  const project = projects.get(projectId)
-  if (!project) notFound(`No existe el proyecto demo "${projectId}".`, 'PROJECT_NOT_FOUND')
+  const project = requireProjectRole(projectId, 'MAINTAINER')
   const inventory = project.currentVersionId ? versions.get(project.currentVersionId)?.inventory : undefined
   const target = inventory?.targets.find((item) => item.id === targetId)
+  if (!target) notFound('El TestTarget no existe o no pertenece a este Project.', 'UNRESOLVABLE_TARGET')
   const label = target?.methodName ?? target?.symbolName ?? targetId
   sequence += 1
   const experimentId = `exp_demo_${sequence}`
@@ -1024,6 +1107,7 @@ export async function mockStartRunComparison(analysisRunId: string, symbol: Anal
   await latency()
   const run = findVisibleRun(analysisRunId)
   if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  requireProjectRole(run.projectId, 'MAINTAINER')
   if (run.status === 'ACTION_REQUIRED') throw new ApiError('Este Run todavía necesita contexto funcional antes de compararse — resuelve las preguntas pendientes primero.', 409, 'demo-correlation-id', 'RUN_NOT_ELIGIBLE')
   if (symbol.changeKind !== 'DIRECTLY_CHANGED' || (symbol.kind !== 'METHOD' && symbol.kind !== 'FUNCTION')) throw new ApiError(`"${symbol.qualifiedName}" no es un símbolo METHOD/FUNCTION con cambio directo — no es una unidad experimental válida.`, 422, 'demo-correlation-id', 'UNSUPPORTED_SYMBOL_KIND')
   sequence += 1
@@ -1210,8 +1294,9 @@ function currentActionRequiredQuestion(state: MockActionRequiredRunState): Funct
 /** HU38: `GET /action-required?projectId&cursor&limit` — una entrada por Run vigente con pregunta pendiente. */
 export async function mockListActionRequired(projectId?: string): Promise<ActionRequiredListPage> {
   await latency()
+  if (projectId) requireProjectRole(projectId, 'READER')
   const items = Array.from(actionRequiredRuns.values())
-    .filter((state) => !isProjectDeleted(state.projectId))
+    .filter((state) => !isProjectDeleted(state.projectId) && projects.has(state.projectId) && canSeeProject(projects.get(state.projectId)!))
     .filter((state) => !projectId || state.projectId === projectId)
     .map(currentActionRequiredQuestion)
     .filter((question): question is FunctionalQuestionResponse => question !== null)
@@ -1239,6 +1324,7 @@ export async function mockSubmitFunctionalAnswer(analysisRunId: string, question
   await latency()
   const state = findVisibleActionRequiredRun(analysisRunId)
   if (!state) notFound(`No existe el Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  requireProjectRole(state.projectId, 'MAINTAINER')
   const question = state.questions.find((item) => item.id === questionId)
   if (!question) notFound(`No existe la pregunta demo "${questionId}".`, 'QUESTION_NOT_FOUND')
   if (question.status !== 'PENDING') throw new ApiError('La pregunta demo ya no está pendiente.', 409, 'demo-correlation-id', 'QUESTION_NOT_PENDING')
@@ -1300,7 +1386,7 @@ export async function mockSubmitFunctionalAnswer(analysisRunId: string, question
 
 function requireProject(projectId: string): Project {
   const project = projects.get(projectId)
-  if (!project) notFound(`No existe el proyecto demo "${projectId}".`, 'PROJECT_NOT_FOUND')
+  if (!project || !canSeeProject(project)) notFound(`No existe el proyecto demo "${projectId}".`, 'PROJECT_NOT_FOUND')
   return project
 }
 
@@ -1319,6 +1405,9 @@ const DEMO_BRANCHES_BY_REPOSITORY: Record<string, GitHubRepositoryBranchResponse
   repo_playground: [{ name: 'main', protected: false }],
   repo_legacy_docs: [{ name: 'main', protected: true }],
   repo_external_tools: [{ name: 'main', protected: true }],
+  repo_rag_orders: [{ name: 'main', protected: true }, { name: 'develop', protected: false }],
+  repo_observability_metrics: [{ name: 'main', protected: true }, { name: 'release/1.4', protected: true }],
+  repo_team_sandbox: [{ name: 'main', protected: true }, { name: 'develop', protected: false }],
 }
 
 function isGitHubAppAuthorized(repositoryId: string): boolean {
@@ -1326,10 +1415,12 @@ function isGitHubAppAuthorized(repositoryId: string): boolean {
   return repositoryId !== 'repo_playground' || attempts >= 2
 }
 
-/** HU30: `GET /integrations/github/repositories`. No pagina de verdad (fixture pequeño): siempre `nextCursor: null`. */
-export async function mockListGitHubUserRepositories(): Promise<GitHubUserRepositoryPage> {
+/** HU64: `GET /integrations/github/repositories?workspaceId`. El fixture simula el filtro de workspace de Core. */
+export async function mockListGitHubUserRepositories(workspaceId: string): Promise<GitHubUserRepositoryPage> {
   await latency()
-  return { items: clone(DEMO_GITHUB_REPOSITORIES), nextCursor: null }
+  const workspace = DEMO_WORKSPACES.find((item) => item.id === workspaceId)
+  if (!workspace) notFound('El workspace demo ya no está disponible. Actualiza la lista.', 'WORKSPACE_NOT_FOUND')
+  return { items: clone(DEMO_GITHUB_REPOSITORIES.filter((repo) => repo.owner.login === workspace.login)), nextCursor: null }
 }
 
 function toGitHubAppAccessResponse(repo: GitHubUserRepositoryResponse): GitHubAppAccessResponse {
@@ -1377,18 +1468,17 @@ export async function mockListGitHubRepositoryBranches(owner: string, repo: stri
  * HU30/HU64: `POST /projects/{projectId}/integrations/github`. `installationId` no viaja desde el navegador: Core lo resuelve — acá se reconstruye a partir del estado de verificación ya guardado.
  * Orden de errores de INTEROP-2.4 §6.8: 404 proyecto, 409 binding propio (cualquier status), 403 acceso de la App, 404 `GITHUB_REPOSITORY_NOT_FOUND` (repositoryId inexistente o discordante con el nombre),
  * 400 `REPOSITORY_OUTSIDE_WORKSPACE`, 403 `REPOSITORY_PERMISSION_INSUFFICIENT` (solo pull), 409 repo ya vinculado a otro Project, 404 rama.
- * Mock-only, NO modelado: `503 GITHUB_VERIFICATION_UNAVAILABLE` (su mapeo de UI se cubre con respuestas `fetch` simuladas), `403 PROJECT_ROLE_INSUFFICIENT` (roles, fuera de alcance) y la noción real de "cuenta propia":
- * el mock solo trata como ajenos los propietarios de `DEMO_FOREIGN_OWNER_LOGINS`. Los demás pasos usan fixtures DEMO y no consultan GitHub.
+ * Los workspaces/roles también se verifican con fixtures locales, sin consultar GitHub.
  */
 export async function mockCreateRepositoryBinding(projectId: string, input: CreateRepositoryBindingRequest): Promise<ProjectRepositoryBindingResponse> {
   await latency()
-  requireProject(projectId)
+  const project = requireProjectRole(projectId, 'MAINTAINER')
   if (repositoryBindings.get(projectId)) throw new ApiError('Este proyecto ya tiene un repositorio vinculado.', 409, 'demo-correlation-id', 'REPOSITORY_BINDING_ALREADY_EXISTS')
   if (!isGitHubAppAuthorized(input.repositoryId)) throw new ApiError(`La GitHub App no tiene acceso a "${input.repositoryName}" todavía.`, 403, 'demo-correlation-id', 'GITHUB_APP_ACCESS_REQUIRED')
   // Un id falso, uno discordante con el nombre y un repositorio sin visibilidad responden lo mismo (un solo 404, sin distinguir motivos).
   const repository = DEMO_GITHUB_REPOSITORIES.find((item) => item.repositoryId === input.repositoryId && item.repositoryName === input.repositoryName)
   if (!repository) notFound('No encontramos ese repositorio o no tienes permiso sobre él.', 'GITHUB_REPOSITORY_NOT_FOUND')
-  if (DEMO_FOREIGN_OWNER_LOGINS.has(repository.owner.login)) throw new ApiError('El repositorio no pertenece a tu cuenta.', 400, 'demo-correlation-id', 'REPOSITORY_OUTSIDE_WORKSPACE')
+  if (repository.owner.login !== project.workspace.login || DEMO_FOREIGN_OWNER_LOGINS.has(repository.owner.login)) throw new ApiError('El repositorio no pertenece al workspace de este Project.', 400, 'demo-correlation-id', 'REPOSITORY_OUTSIDE_WORKSPACE')
   if (!canBindRepository(repository)) throw new ApiError('Necesitas permiso maintain, write o admin sobre el repositorio.', 403, 'demo-correlation-id', 'REPOSITORY_PERMISSION_INSUFFICIENT')
   const boundElsewhere = Array.from(repositoryBindings.values()).some((other) => other && other.projectId !== projectId && other.repositoryId === input.repositoryId)
   if (boundElsewhere) throw new ApiError('Este repositorio ya está vinculado a otro proyecto.', 409, 'demo-correlation-id', 'REPOSITORY_ALREADY_BOUND')
@@ -1412,7 +1502,7 @@ export async function mockCreateRepositoryBinding(projectId: string, input: Crea
 /** HU30/HU57: `DELETE /projects/{projectId}/integrations/github`. Como Core: pausa reversible — el binding queda `DISABLED` (fila y `repositoryId` se conservan), deja de aceptar eventos nuevos y no borra Runs ni Functional Knowledge. Sobre `REVOKED` no cambia nada; sin binding 404 `REPOSITORY_BINDING_NOT_FOUND` (INTEROP-2.3 §6.8). */
 export async function mockDisconnectRepository(projectId: string): Promise<void> {
   await latency()
-  requireProject(projectId)
+  requireProjectRole(projectId, 'MAINTAINER')
   const binding = repositoryBindings.get(projectId)
   if (!binding) notFound(`El proyecto demo "${projectId}" no tiene un repositorio vinculado.`, 'REPOSITORY_BINDING_NOT_FOUND')
   if (binding.status === 'REVOKED') return
@@ -1425,10 +1515,11 @@ export async function mockDisconnectRepository(projectId: string): Promise<void>
  */
 export async function mockEnableRepository(projectId: string): Promise<ProjectRepositoryBindingResponse> {
   await latency()
-  requireProject(projectId)
+  const project = requireProjectRole(projectId, 'MAINTAINER')
   const binding = repositoryBindings.get(projectId)
   if (!binding) notFound(`El proyecto demo "${projectId}" no tiene un repositorio vinculado.`, 'REPOSITORY_BINDING_NOT_FOUND')
   if (binding.status === 'ENABLED') return clone(binding)
+  if (binding.status === 'REVOKED' && project.role !== 'ADMIN') notFound(`No existe el proyecto demo "${projectId}".`, 'PROJECT_NOT_FOUND')
   if (!isGitHubAppAuthorized(binding.repositoryId)) throw new ApiError(`La GitHub App no tiene acceso a "${binding.repositoryName}" todavía.`, 403, 'demo-correlation-id', 'GITHUB_APP_ACCESS_REQUIRED')
   const enabled: ProjectRepositoryBindingResponse = { ...binding, status: 'ENABLED', updatedAt: nowIso() }
   repositoryBindings.set(projectId, enabled)
@@ -1454,7 +1545,7 @@ export function mockSimulateAppAccessLoss(projectId: string): void {
  */
 export async function mockDeleteProject(projectId: string): Promise<void> {
   await latency()
-  const project = requireProject(projectId)
+  const project = requireProjectRole(projectId, 'ADMIN')
   projects.delete(projectId)
   deletedProjects.set(projectId, project)
   repositoryBindings.delete(projectId)
@@ -1468,8 +1559,9 @@ function toAnalysisRunSummary(run: AnalysisRunDetailResponse): AnalysisRunSummar
 /** HU32: `GET /projects/{projectId}/analysis-runs?status&cursor&limit` (aquí `projectId` es opcional para ofrecer también un listado global). */
 export async function mockListAnalysisRuns(projectId: string | undefined, status: AnalysisRunStatus | undefined): Promise<AnalysisRunListPage> {
   await latency()
+  if (projectId) requireProjectRole(projectId, 'READER')
   const items = Array.from(analysisRuns.values())
-    .filter((run) => !isProjectDeleted(run.projectId))
+    .filter((run) => !isProjectDeleted(run.projectId) && projects.has(run.projectId) && canSeeProject(projects.get(run.projectId)!))
     .filter((run) => !projectId || run.projectId === projectId)
     .filter((run) => !status || run.status === status)
     .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
@@ -1544,6 +1636,7 @@ export async function mockCreateTestPublication(analysisRunId: string, input: Cr
   await latency()
   const run = findVisibleRun(analysisRunId)
   if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  requireProjectRole(run.projectId, 'MAINTAINER')
   if (run.status !== 'SUCCESS') throw new ApiError('Solo un Run SUCCESS admite publicación.', 409, 'demo-correlation-id', 'RUN_NOT_PUBLISHABLE')
   const proposals = testProposals.get(analysisRunId) ?? []
   const selected = proposals.filter((proposal) => input.proposalIds.includes(proposal.id))

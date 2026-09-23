@@ -50,7 +50,7 @@ test('HU49 (propuesta): cancelar vuelve al estado inicial sin capturar nada', as
 })
 
 test('HU19 (live): envía el target real, sondea y presenta el resultado real', async () => {
-  const project = { id: 'p-1', name: 'checkout', currentVersionId: 'v-1', createdAt: '2026-09-01', updatedAt: '2026-09-01' }
+  const project = { id: 'p-1', name: 'checkout', currentVersionId: 'v-1', workspace: { kind: 'PERSONAL', id: 'ws-1', login: 'demo-user' }, role: 'ADMIN', createdAt: '2026-09-01', updatedAt: '2026-09-01' }
   const inventory = {
     projectVersionId: 'v-1',
     detectedFramework: 'VITEST',

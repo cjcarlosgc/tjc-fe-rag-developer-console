@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { ApiError } from '../api/client'
+import type { WorkspaceRef } from '../projects/types'
 import {
   createRepositoryBinding,
   createTestPublication,
@@ -9,6 +10,7 @@ import {
   getGitHubAppAccess,
   getRepositoryBinding,
   listAnalysisRuns,
+  listAllAnalysisRuns,
   listGitHubRepositoryBranches,
   listGitHubUserRepositories,
   listTestProposals,
@@ -18,10 +20,11 @@ import type { AnalysisRunStatus, CreateRepositoryBindingRequest, CreateTestPubli
 
 export const controlPlaneKeys = {
   binding: (projectId: string) => ['control-plane', 'binding', projectId] as const,
-  githubRepositories: () => ['control-plane', 'github-repositories'] as const,
+  githubRepositories: (workspaceId: string) => ['control-plane', 'github-repositories', workspaceId] as const,
   githubAppAccess: (repositoryId: string) => ['control-plane', 'github-app-access', repositoryId] as const,
   githubBranches: (repositoryName: string) => ['control-plane', 'github-branches', repositoryName] as const,
   runs: (projectId?: string, status?: AnalysisRunStatus) => ['control-plane', 'runs', projectId ?? null, status ?? null] as const,
+  allRuns: ['control-plane', 'runs', 'all'] as const,
   run: (analysisRunId: string) => ['control-plane', 'run', analysisRunId] as const,
   proposals: (analysisRunId: string) => ['control-plane', 'proposals', analysisRunId] as const,
 }
@@ -34,11 +37,11 @@ export function useRepositoryBinding(projectId: string) {
   })
 }
 
-export function useGitHubUserRepositories(githubProviderToken: string | null) {
+export function useGitHubUserRepositories(githubProviderToken: string | null, workspace: WorkspaceRef | null) {
   return useQuery({
-    queryKey: controlPlaneKeys.githubRepositories(),
-    queryFn: () => listGitHubUserRepositories(githubProviderToken as string),
-    enabled: Boolean(githubProviderToken),
+    queryKey: controlPlaneKeys.githubRepositories(workspace?.id ?? ''),
+    queryFn: () => listGitHubUserRepositories(githubProviderToken as string, workspace!.id),
+    enabled: Boolean(githubProviderToken && workspace),
   })
 }
 
@@ -87,10 +90,20 @@ export function useCreateRepositoryBinding(projectId: string) {
   })
 }
 
-export function useAnalysisRuns(projectId?: string, status?: AnalysisRunStatus) {
+export function useAnalysisRuns(projectId?: string, status?: AnalysisRunStatus, enabled = true) {
   return useQuery({
     queryKey: controlPlaneKeys.runs(projectId, status),
     queryFn: () => listAnalysisRuns(projectId, status),
+    enabled,
+  })
+}
+
+/** Todos los Analysis Runs globales para aplicar el workspace sobre el listado completo. */
+export function useAllAnalysisRuns(enabled = true) {
+  return useQuery({
+    queryKey: controlPlaneKeys.allRuns,
+    queryFn: listAllAnalysisRuns,
+    enabled,
   })
 }
 

@@ -92,7 +92,7 @@ La prioridad se interpreta contra la arquitectura SDD 2.0: P0 materializa el nue
 - Soporte de GitHub Organizations (prioridad baja): discovery y binding de repositorios organizacionales, incluyendo políticas OAuth, aprobación administrativa cuando corresponda e instalación/restricción de la App. No forma parte del primer flujo end-to-end.
 - Colaboración multiusuario (HU45, prioridad baja/media): el `RepositoryBinding`, los AnalysisRuns, Functional Knowledge y evidencia pertenecen al Project; una futura matriz de roles determinará quién configura y revisa. No se crean roles ni permisos nuevos en HU30.
 
-### HU48-HU55 — registradas 2026-09-14, `PROPOSED` (no `APROBADO` — se formaliza la historia, no se aprueba todavía su implementación)
+### HU48-HU55 — registradas 2026-09-14 (`PROPOSED`, excepto HU55 aprobada por el usuario en T-003 el 2026-09-21)
 
 Capacidades que se discutieron como necesarias (en handoffs del usuario o en
 hallazgos de auditoría propios) pero nunca tuvieron número de historia — el
@@ -125,20 +125,12 @@ completo por historia en `harness/reports/console-backlog-formalization.md`
 
 HU56-HU57 — registradas 2026-09-20, `PROPOSED`: surgen de probar el binding contra Core real (`500` al vincular un repositorio ya usado por otro Project). Desconectar es una pausa reversible (`DISABLED`); eliminar un Project es lógico y libera el binding. Compartido conceptualmente con `tjc-be-rag-core-api`, que es la fuente canónica del contrato; Console solo publica la solicitud por `CONTRACT_SYNC`.
 
-HU58-HU64 — registradas y aprobadas para implementación el 2026-09-20 (`DEC-ORG-001` `APROBADO`). Salen de `DEC-ORG-001` (`spec/contracts/system-contract.md`): GitHub es la fuente de verdad de la autorización y el "equipo" es la organización; Core persiste solo el vínculo `userId -> githubUserId`, la organización del Project y un registro de acceso revocable por webhook. HU60 redefine el alcance de HU45 (los miembros y roles se gestionan en GitHub, no en Core) y HU63 hace que eliminar un Project (HU56) sea una acción solo de Admin. Las rutas, DTOs, errores y la matriz rol -> operación quedaron definidos en INTEROP-2.4 (§6.1, §6.8, §6.9, §6.13; pendientes de implementación) y el detalle de cortes en `spec/features/014-organizations-access/`; `HU62` ya está consolidada en `012-web-authentication` (login solo con GitHub) y su despliegue exige deshabilitar el correo en Supabase. Dependencias: HU62 -> HU58, HU63 y la parte de seguridad de HU64 (identidad GitHub); HU63 y HU58 -> HU59 y HU60 (workspace y `role` de `ProjectResponse`); HU60 -> la parte de roles de HU64 y HU61 (los registros de acceso que se revocan). HU64 se divide: su parte de propietario y permiso (corrección de seguridad) solo depende de HU62 y se publica primero, con HU62; el resto (HU58, HU63, HU59, HU60, HU61 y la parte de roles de HU64) se publica junto, porque conceder acceso sin poder revocarlo por evento no es aceptable. `DEC-ORG-002` (`APROBADO` 2026-09-20) cierra los casos borde: en una organización se exige siempre ser miembro activo además del permiso sobre el repositorio (un colaborador externo con `write` no accede; el `read` implícito de repositorios públicos no cuenta), los Projects personales no se comparten (solo se comparte mediante organizaciones; enmienda a `DEC-ORG-001`), un binding `REVOKED` deja el Project visible solo a los Admin y `verify-app-access`/`branches` exigen permiso `maintain`/`write`/`admin`.
+HU58-HU64 — registradas y aprobadas para implementación el 2026-09-20 (`DEC-ORG-001` `APROBADO`). Salen de `DEC-ORG-001` (`spec/contracts/system-contract.md`): GitHub es la fuente de verdad de la autorización y el "equipo" es la organización; Core persiste solo el vínculo `userId -> githubUserId`, la organización del Project y un registro de acceso revocable por webhook. HU60 redefine el alcance de HU45 (los miembros y roles se gestionan en GitHub, no en Core) y HU63 hace que eliminar un Project (HU56) sea una acción solo de Admin. Las rutas, DTOs, errores y la matriz rol -> operación están implementadas en Core e INTEROP-2.4 (§6.1, §6.8, §6.9, §6.13); Console implementa su adaptación en `spec/features/014-organizations-access/`. HU62 ya está consolidada en `012-authentication` (login solo con GitHub) y el despliegue del bundle B está registrado en Core. Dependencias: HU62 -> HU58, HU63 y la parte de seguridad de HU64 (identidad GitHub); HU63 y HU58 -> HU59 y HU60 (workspace y `role` de `ProjectResponse`); HU60 -> la parte de roles de HU64 y HU61 (los registros de acceso que se revocan). HU64 se divide: su parte de propietario y permiso (corrección de seguridad) se publicó con HU62 en el bundle A; el resto (HU58, HU63, HU59, HU60, HU61 y la parte de roles de HU64) se publicó junto en bundle B. `DEC-ORG-002` (`APROBADO` 2026-09-20) cierra los casos borde: en una organización se exige siempre ser miembro activo además del permiso sobre el repositorio (un colaborador externo con `write` no accede; el `read` implícito de repositorios públicos no cuenta), los Projects personales no se comparten (solo se comparte mediante organizaciones; enmienda a `DEC-ORG-001`), un binding `REVOKED` deja el Project visible solo a los Admin y `verify-app-access`/`branches` exigen permiso `maintain`/`write`/`admin`.
 
-2026-09-15: los 4 contratos que Core debía definir para desbloquear a
-Console quedaron definidos y hoy están consolidados en **INTEROP-2.2** (`spec/contracts/interoperability-contract.md`
-§6.5, §6.10, §6.11) y `spec/contracts/system-contract.md`, cada bloque
-marcado explícitamente "Definido, pendiente de implementación": HU48
-(`CreateExperimentRequest` reapunta a `analysisRunId`+símbolo en vez de
-`TestTarget`), HU51 (`409 FUNCTIONAL_KNOWLEDGE_CONFLICT` +
-`conflictResolution` en `SubmitFunctionalAnswerRequest`), HU53
-(`AnalysisRunDetailResponse.history`) y HU55
-(`GET /analysis-runs` sin `projectId`, scope = todos los Projects del
-usuario autenticado). Ninguno de los 4 está implementado todavía — solo
-el contrato HTTP. Ver mensaje de Console del 2026-09-14 y su reporte para
-el detalle original.
+2026-09-15: Core definió contratos para HU48, HU51, HU53 y HU55. El usuario
+aprobó HU55 para implementación dentro de T-003 (2026-09-21); Core la
+implementó en el bundle B y el adapter live de Console queda incluido en
+T-004. HU48/HU51/HU53 siguen definidos, pendientes de implementación.
 
 - **P0:** necesario para materializar la nueva arquitectura de tesis.
 - **P1:** necesario para la operación end-to-end de SDD 2.0.

@@ -24,3 +24,9 @@ test('HU38: lista los Runs con contexto funcional pendiente y enlaza a Focus Mod
   const link = links.find((item) => item.textContent?.includes('CouponPolicy.apply'))
   expect(link).toHaveAttribute('href', `/action-required/arun_checkout_pr42?returnTo=${encodeURIComponent('/action-required')}`)
 })
+
+test('filtra la bandeja por workspace sin mezclar pendientes de otras organizaciones', async () => {
+  renderApp(<ActionRequiredPage />, { initialEntry: '/action-required?workspaceId=2000002' })
+  expect(await screen.findByText('PR #15', { selector: '.pr-ref' })).toBeInTheDocument()
+  expect(screen.queryByText('PR #42', { selector: '.pr-ref' })).not.toBeInTheDocument()
+})

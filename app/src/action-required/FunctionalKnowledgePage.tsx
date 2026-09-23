@@ -25,7 +25,7 @@ export function FunctionalKnowledgePage() {
   const knowledgeQuery = useFunctionalKnowledge(projectId, statusFilter === 'ALL' ? undefined : statusFilter)
 
   return <section>
-    <Breadcrumbs items={[{ label: 'Proyectos', to: '/' }, { label: projectQuery.data?.name ?? projectId, to: `/projects/${projectId}` }, { label: 'Functional Knowledge' }]} />
+    <Breadcrumbs items={[{ label: 'Proyectos', to: projectQuery.data ? `/?workspaceId=${encodeURIComponent(projectQuery.data.workspace.id)}` : '/' }, { label: projectQuery.data?.name ?? projectId, to: projectQuery.data ? `/projects/${projectId}?workspaceId=${encodeURIComponent(projectQuery.data.workspace.id)}` : `/projects/${projectId}` }, { label: 'Functional Knowledge' }]} />
     <ProjectTabs projectId={projectId} />
     <div className="page-heading">
       <div>
@@ -52,7 +52,7 @@ export function FunctionalKnowledgePage() {
       : <ul className="action-required-list">
           {knowledgeQuery.data.items.map((item) => (
             <li key={item.id} className="panel action-required-item">
-              <Link to={`/projects/${projectId}/functional-knowledge/${item.id}`}>
+              <Link to={`/projects/${projectId}/functional-knowledge/${item.id}${projectQuery.data ? `?workspaceId=${encodeURIComponent(projectQuery.data.workspace.id)}` : ''}`}>
                 <div className="action-required-item-heading">
                   <span className="target-ref">{item.targetRef ?? item.scope}</span>
                   <span className={`status-badge ${item.status === 'ACTIVE' ? 'status-success' : 'status-muted'}`}>{item.status}</span>

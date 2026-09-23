@@ -4,6 +4,8 @@ import { useParams } from 'react-router-dom'
 import { isMockDataSource } from '../api/dataSource'
 import { ExperimentComparison } from '../experiments/ExperimentComparison'
 import { useAnalysisRun } from '../control-plane/queries'
+import { useProject } from '../projects/queries'
+import { bindingErrorMessage, errorCorrelationId } from '../control-plane/errors'
 import { ANALYSIS_RUN_STATUS_LABELS, analysisRunStatusClass } from '../control-plane/status'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
@@ -58,11 +60,13 @@ function TrialCard({ operation, projectId }: { operation: RunComparisonOperation
 export function RunComparisonPage() {
   const { projectId = '', analysisRunId = '' } = useParams()
   const runQuery = useAnalysisRun(analysisRunId)
+  const projectQuery = useProject(projectId)
   const queryClient = useQueryClient()
   const autoStartedRef = useRef(false)
   const [selectedQualifiedName, setSelectedQualifiedName] = useState('')
 
   const eligibleSymbols = runQuery.data ? findEligibleSymbols(runQuery.data.symbols) : []
+  const canCreateExperiment = projectQuery.data?.role === 'ADMIN' || projectQuery.data?.role === 'MAINTAINER'
   const selectedSymbol = eligibleSymbols.find((symbol) => symbol.qualifiedName === selectedQualifiedName) ?? eligibleSymbols[0] ?? null
 
   const comparisonsQuery = useQuery({
@@ -78,17 +82,18 @@ export function RunComparisonPage() {
   })
 
   useEffect(() => {
-    if (eligibleSymbols.length === 1 && comparisonsQuery.isSuccess && trials.length === 0 && !autoStartedRef.current && !startMutation.isPending && !startMutation.isError) {
+    if (eligibleSymbols.length === 1 && comparisonsQuery.isSuccess && trials.length === 0 && canCreateExperiment && !autoStartedRef.current && !startMutation.isPending && !startMutation.isError) {
       autoStartedRef.current = true
       startMutation.mutate(eligibleSymbols[0])
     }
     // Arranca una sola vez cuando hay un único símbolo elegible y todavía no hay trials; con más de
     // uno, el primer trial requiere elegir símbolo explícitamente — no debe repetirse tras eso.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [eligibleSymbols.length, comparisonsQuery.isSuccess, trials.length])
+  }, [eligibleSymbols.length, comparisonsQuery.isSuccess, trials.length, canCreateExperiment])
 
-  if (runQuery.isPending || comparisonsQuery.isPending) return <LoadingState label="Cargando Analysis Run…" />
+  if (runQuery.isPending || projectQuery.isPending || comparisonsQuery.isPending) return <LoadingState label="Cargando Analysis Run…" />
   if (runQuery.isError) return <ErrorState message={runQuery.error.message} onRetry={() => void runQuery.refetch()} />
+  if (projectQuery.isError) return <ErrorState message={projectQuery.error.message} onRetry={() => void projectQuery.refetch()} />
   if (comparisonsQuery.isError) return <ErrorState message={comparisonsQuery.error.message} onRetry={() => void comparisonsQuery.refetch()} />
 
   const run = runQuery.data
@@ -137,12 +142,12 @@ export function RunComparisonPage() {
             </select>
           </div>
         )}
-        <div className="run-actions">
+        {canCreateExperiment ? <div className="run-actions">
           <button type="button" className="button primary" disabled={!selectedSymbol || startMutation.isPending} onClick={() => selectedSymbol && startMutation.mutate(selectedSymbol)}>
             {startMutation.isPending ? 'Creando comparación…' : trials.length === 0 ? 'Iniciar comparación' : 'Repetir comparación (Replay)'}
           </button>
-        </div>
-        {startMutation.isError && <p className="inline-error" role="alert">{startMutation.error.message}</p>}
+        </div> : <p className="empty-inline-note">Tu rol es de solo lectura; un Maintainer o Admin puede crear comparaciones.</p>}
+        {startMutation.isError && <p className="inline-error" role="alert">{bindingErrorMessage(startMutation.error)}{errorCorrelationId(startMutation.error) && <> · Correlation ID: <code>{errorCorrelationId(startMutation.error)}</code></>}</p>}
       </div>
 
       {trials.slice().reverse().map((trial) => <TrialCard key={trial.id} operation={trial} projectId={projectId} />)}
