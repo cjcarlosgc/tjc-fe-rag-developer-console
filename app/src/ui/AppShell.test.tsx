@@ -37,6 +37,13 @@ beforeEach(() => {
 })
 
 describe('AppShell', () => {
+  it('muestra el nombre aprobado del producto en la marca y conserva la navegación del shell', () => {
+    renderShell()
+    expect(screen.getByRole('link', { name: 'RAG Test Studio, proyectos' })).toBeInTheDocument()
+    expect(screen.getByRole('navigation', { name: 'Navegación principal' })).toHaveTextContent('Runs')
+    expect(screen.getByRole('navigation', { name: 'Navegación principal' })).toHaveTextContent('Action Required')
+  })
+
   it('muestra la píldora de identidad simulada y el correo de sesión, como indicador independiente del de datos', async () => {
     localStorage.setItem('rag-console.mock-session', storedSession)
     renderShell()

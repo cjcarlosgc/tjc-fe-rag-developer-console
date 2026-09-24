@@ -55,7 +55,7 @@ export function LoginPage() {
 
   return <section className="auth-page">
     <div className="panel auth-panel">
-      <p className="eyebrow">RAG Developer Console</p>
+      <p className="eyebrow">RAG Test Studio</p>
       {isMockAuth() && <span className="environment environment-demo"><i aria-hidden="true" />DEMO · IDENTIDAD SIMULADA</span>}
       <h1>Iniciar sesión</h1>
       <p className="empty-inline-note">El acceso a la Console es solo con tu cuenta de GitHub.</p>
