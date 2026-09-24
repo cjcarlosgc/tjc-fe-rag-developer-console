@@ -47,6 +47,13 @@
 - [x] HU37-HU38: Focus Mode, bandeja Action Required y deep-link `returnTo` — mock-first,
       dos escenarios (action required, corrección/HEAD nuevo). Ver
       `harness/reports/HU37-HU38-focus-mode-action-required.md`.
+- [x] HU37-HU38 (adapters live Console, 2026-09-19): `listActionRequired`,
+      `getContextQuestionSet` y `submitFunctionalAnswer` llaman las rutas de INTEROP-2.2
+      §6.11; los DTOs se verificaron contra el código de Core. Ver
+      `harness/reports/HU35-HU36-HU39-HU40-live-adapters.md`.
+- [ ] HU37-HU38 (aceptación E2E live): falta un recorrido real con un AnalysisRun que
+      genere `ACTION_REQUIRED`, respuesta en Focus Mode y verificación de continuación
+      o HEAD obsoleto. El reporte live confirma que ese caso no se ha probado todavía.
 - [x] HU39-HU40 (live, 2026-09-19): Checks (Core publica el Check directamente
       en GitHub, sin API nueva para Console — confirmado que el `details_url`
       ya apunta a la ruta correcta de Console), review, freshness y
