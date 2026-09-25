@@ -1,16 +1,382 @@
 {
-  "schemaVersion": 3,
-  "sddVersion": "2.1",
+  "schemaVersion": 4,
+  "sddVersion": "3.0",
+  "planningBaseline": "2026-09-24-core-console-transition",
   "allowedStatuses": [
-    "SELECTED",
-    "SPEC_VERIFIED",
-    "AWAITING_APPROVAL",
-    "IN_PROGRESS",
-    "IN_REVIEW",
-    "BLOCKED",
-    "DECISION_REQUIRED",
-    "DONE"
+    "W-PLANNED",
+    "W-READY",
+    "W-SELECTED",
+    "W-SPEC_VERIFIED",
+    "W-AWAITING_APPROVAL",
+    "W-IN_PROGRESS",
+    "W-IN_REVIEW",
+    "W-DONE",
+    "W-BLOCKED",
+    "W-DECISION_REQUIRED",
+    "W-CANCELLED"
   ],
-  "activeWorkItem": null,
-  "lastUpdatedAt": "2026-09-24T05:30:49Z"
+  "completedWorkItems": [
+    {
+      "id": "WI-CONSOLE-001",
+      "component": "CONSOLE",
+      "workItemType": "HARNESS",
+      "storyIds": [
+        "HU01",
+        "HU02",
+        "HU03",
+        "HU04",
+        "HU05",
+        "HU06",
+        "HU07",
+        "HU08",
+        "HU09",
+        "HU10",
+        "HU11",
+        "HU12",
+        "HU13",
+        "HU14",
+        "HU15",
+        "HU16",
+        "HU17",
+        "HU18"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-001"
+      ],
+      "caseIds": [],
+      "sprint": "Transition",
+      "status": "W-DONE",
+      "syncScopePaths": [
+        "*"
+      ],
+      "deferredSyncIds": [
+        "CS-20260920-003",
+        "CS-20260921-001",
+        "CS-20260921-002",
+        "CS-20260921-003"
+      ],
+      "deferredSyncReport": "harness/reports/legacy-contract-sync-triage-3.0.md",
+      "deferredSyncDigests": {
+        "CS-20260920-003": "40817688b68b6b78aa3788a1889ea8470d31e5834e87b91287b248eb0ef33561",
+        "CS-20260921-001": "894a31cd2771c1ef7394f253de7d10f779d236533e85053e563244b705e8f1c7",
+        "CS-20260921-002": "6f03b3ed19e4a02338678e297518ac4dc6141c2ad5d1304ff4fef836a3856af0",
+        "CS-20260921-003": "878bfc838a0ff6885cfee6468d09eb5b0d2d1a0ebe303ba59cb447012c4e8d63"
+      },
+      "specPaths": [
+        "spec/features/015-sdd-harness-transition/spec.md",
+        "spec/features/015-sdd-harness-transition/plan.md",
+        "spec/features/015-sdd-harness-transition/tasks.md"
+      ],
+      "transversalPaths": [
+        "spec/constitution/planning-model.md",
+        "spec/backlog.md",
+        "spec/operational-cases.md"
+      ],
+      "approved": true,
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-09-24T21:38:49.664Z"
+      },
+      "execution": {
+        "leaderAgent": "leader",
+        "analysisAgent": "sdd-analyst",
+        "implementationAgent": "implementer",
+        "contractReviewAgent": "contract-reviewer",
+        "reviewAgent": "reviewer",
+        "uxReviewAgent": null,
+        "handoffs": [
+          {
+            "agent": "sdd-analyst",
+            "status": "APPROVED",
+            "findings": [],
+            "blockers": [],
+            "filesAffected": [
+              "spec/backlog.md",
+              "spec/operational-cases.md",
+              "spec/constitution/planning-model.md"
+            ],
+            "evidence": [
+              "harness/reports/sdd-3.0-transition-verification.md"
+            ],
+            "recommendedNextStep": "Registrar before-review y solicitar revisión independiente final."
+          },
+          {
+            "agent": "contract-reviewer",
+            "status": "APPROVED",
+            "findings": [],
+            "blockers": [],
+            "filesAffected": [
+              "spec/contracts/system-contract.md",
+              "spec/contracts/interoperability-contract.md"
+            ],
+            "evidence": [
+              "harness/reports/sdd-3.0-transition-verification.md"
+            ],
+            "recommendedNextStep": "Mantener SYSTEM-2.4/INTEROP-2.4; homologar Sandbox después."
+          },
+          {
+            "agent": "reviewer",
+            "status": "APPROVED",
+            "findings": [],
+            "blockers": [],
+            "filesAffected": [
+              "spec/",
+              "harness/"
+            ],
+            "evidence": [
+              "harness/reports/sdd-3.0-transition-review.md"
+            ],
+            "recommendedNextStep": "Registrar before-done y cerrar con snapshot verificable; no hacer push."
+          }
+        ],
+        "reviewCycles": 0,
+        "maxReviewCycles": 2
+      },
+      "gates": {
+        "sddVerified": "G-PASSED",
+        "implementationCompleted": "G-PASSED",
+        "independentReviewPassed": "G-PASSED",
+        "technicalChecksPassed": "G-PASSED",
+        "contractReviewed": "G-PASSED",
+        "canonicalContractSynced": "G-PASSED",
+        "contractSyncPublished": "G-NOT_APPLICABLE",
+        "interopSyncChecked": "G-PASSED",
+        "noBlockingDecisions": "G-PASSED",
+        "retryLimitRespected": "G-PASSED",
+        "uxReviewed": "G-NOT_APPLICABLE",
+        "noMocksPresentedAsLive": "G-PASSED"
+      },
+      "gateEvidence": {
+        "independentReviewPassed": [
+          "harness/reports/sdd-3.0-transition-review.md"
+        ],
+        "sddVerified": [
+          "harness/reports/sdd-3.0-transition-verification.md"
+        ],
+        "implementationCompleted": [
+          "harness/reports/sdd-3.0-transition-verification.md"
+        ],
+        "technicalChecksPassed": [
+          "harness/reports/sdd-3.0-transition-verification.md"
+        ],
+        "contractReviewed": [
+          "harness/reports/sdd-3.0-transition-verification.md"
+        ],
+        "canonicalContractSynced": [
+          "harness/reports/sdd-3.0-transition-verification.md"
+        ],
+        "interopSyncChecked": [
+          "harness/reports/legacy-contract-sync-triage-3.0.md"
+        ],
+        "noBlockingDecisions": [
+          "harness/reports/sdd-3.0-transition-verification.md"
+        ],
+        "retryLimitRespected": [
+          "harness/reports/sdd-3.0-transition-verification.md"
+        ],
+        "noMocksPresentedAsLive": [
+          "harness/reports/sdd-3.0-transition-verification.md"
+        ]
+      },
+      "coordination": {
+        "contractImpact": true,
+        "publishesContract": false,
+        "uiImpact": false,
+        "knownIncompatibilities": [],
+        "pullCheckpoints": [
+          {
+            "checkpoint": "start",
+            "workItem": "WI-CONSOLE-001",
+            "relevantPendingSyncIds": [],
+            "deferredSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-09-24T23:03:14.176Z"
+          },
+          {
+            "checkpoint": "implementation-delivery",
+            "workItem": "WI-CONSOLE-001",
+            "relevantPendingSyncIds": [],
+            "deferredSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-09-24T23:03:14.334Z"
+          },
+          {
+            "checkpoint": "before-review",
+            "workItem": "WI-CONSOLE-001",
+            "relevantPendingSyncIds": [],
+            "deferredSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-09-24T23:09:21.117Z"
+          },
+          {
+            "checkpoint": "before-done",
+            "workItem": "WI-CONSOLE-001",
+            "relevantPendingSyncIds": [],
+            "deferredSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-09-24T23:12:13.979Z"
+          }
+        ],
+        "publishedSyncIds": [],
+        "pendingRelevantSyncIds": []
+      },
+      "evidence": [
+        "harness/reports/sdd-3.0-transition-verification.md",
+        "harness/reports/sdd-3.0-transition-review.md",
+        "harness/reports/legacy-contract-sync-triage-3.0.md"
+      ],
+      "blockedReason": null,
+      "closedAt": "2026-09-24T23:12:49.515Z"
+    }
+  ],
+  "activeWorkItem": {
+    "id": "WI-CONSOLE-002",
+    "component": "CONSOLE",
+    "workItemType": "PRODUCT",
+    "storyIds": [
+      "HU01",
+      "HU10",
+      "HU12"
+    ],
+    "taskIds": [
+      "ST-CONSOLE-002"
+    ],
+    "caseIds": [],
+    "sprint": "Transition",
+    "status": "W-IN_PROGRESS",
+    "approved": true,
+    "contractSyncReview": [
+      {
+        "eventId": "CS-20260920-003",
+        "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+        "disposition": "NOT_RELEVANT",
+        "reason": "Este WI retira upload ZIP, generación manual y exportación legacy; el evento implementa ciclo de vida de RepositoryBinding/Project, que sigue vigente.",
+        "report": "harness/reports/contract-sync-relevance-wi002-3.0.md"
+      },
+      {
+        "eventId": "CS-20260921-001",
+        "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+        "disposition": "NOT_RELEVANT",
+        "reason": "Este WI no modifica login GitHub, workspaces, roles ni contratos de acceso; el evento de definición queda como antecedente para la extracción GitHub.",
+        "report": "harness/reports/contract-sync-relevance-wi002-3.0.md"
+      },
+      {
+        "eventId": "CS-20260921-002",
+        "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+        "disposition": "NOT_RELEVANT",
+        "reason": "Este WI no toca login GitHub ni la verificación App/organización implementada por el bundle A; las verificaciones de despliegue siguen pendientes.",
+        "report": "harness/reports/contract-sync-relevance-wi002-3.0.md"
+      },
+      {
+        "eventId": "CS-20260921-003",
+        "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+        "disposition": "NOT_RELEVANT",
+        "reason": "Este WI no modifica workspaces, roles, permisos organizacionales ni comportamiento del bundle B; esas acciones se revisarán en cortes de acceso o GitHub.",
+        "report": "harness/reports/contract-sync-relevance-wi002-3.0.md"
+      }
+    ],
+    "specPaths": [
+      "spec/features/013-pr-driven-control-plane/spec.md",
+      "spec/features/013-pr-driven-control-plane/plan.md",
+      "spec/features/013-pr-driven-control-plane/tasks.md"
+    ],
+    "transversalPaths": [],
+    "decisionGate": {
+      "checked": true,
+      "blockingDecisionIds": [],
+      "nonBlockingDecisionIds": [
+        "DEC-INF-001",
+        "DEC-VAL-001",
+        "DEC-EXP-FK-001"
+      ],
+      "checkedAt": "2026-09-24T23:48:36.000Z"
+    },
+    "execution": {
+      "leaderAgent": "leader",
+      "analysisAgent": null,
+      "implementationAgent": "implementer",
+      "contractReviewAgent": null,
+      "reviewAgent": null,
+      "handoffs": [],
+      "reviewCycles": 0,
+      "maxReviewCycles": 2
+    },
+    "gates": {
+      "sddVerified": "G-PASSED",
+      "implementationCompleted": "G-PASSED",
+      "uxReviewed": "G-NOT_RUN",
+      "contractReviewed": "G-NOT_APPLICABLE",
+      "canonicalContractSynced": "G-NOT_APPLICABLE",
+      "contractSyncPublished": "G-NOT_APPLICABLE",
+      "independentReviewPassed": "G-NOT_RUN",
+      "technicalChecksPassed": "G-PASSED",
+      "interopSyncChecked": "G-PASSED",
+      "noMocksPresentedAsLive": "G-NOT_RUN",
+      "noBlockingDecisions": "G-PASSED",
+      "retryLimitRespected": "G-NOT_RUN"
+    },
+    "gateEvidence": {
+      "sddVerified": ["harness/reports/sdd-3.0-transition-verification.md"],
+      "implementationCompleted": ["harness/reports/wi-console-002-implementation.md"],
+      "technicalChecksPassed": ["harness/reports/wi-console-002-implementation.md"],
+      "interopSyncChecked": ["harness/reports/wi-console-002-implementation.md"],
+      "noBlockingDecisions": ["harness/reports/sdd-3.0-transition-verification.md"]
+    },
+    "coordination": {
+      "contractImpact": false,
+      "publishesContract": false,
+      "uiImpact": true,
+      "pullCheckpoints": [
+        {
+          "checkpoint": "start",
+          "workItem": "WI-CONSOLE-002",
+          "relevantPendingSyncIds": [],
+          "deferredSyncIds": [],
+          "notRelevantSyncIds": [
+            "CS-20260920-003",
+            "CS-20260921-001",
+            "CS-20260921-002",
+            "CS-20260921-003"
+          ],
+          "checkedAt": "2026-09-24T23:35:01.138Z"
+        },
+        {
+          "checkpoint": "implementation-delivery",
+          "workItem": "WI-CONSOLE-002",
+          "relevantPendingSyncIds": [],
+          "deferredSyncIds": [],
+          "notRelevantSyncIds": [
+            "CS-20260920-003",
+            "CS-20260921-001",
+            "CS-20260921-002",
+            "CS-20260921-003"
+          ],
+          "checkedAt": "2026-09-25T00:14:59.977Z"
+        }
+      ],
+      "publishedSyncIds": [],
+      "pendingRelevantSyncIds": [],
+      "knownIncompatibilities": []
+    },
+    "evidence": ["harness/reports/wi-console-002-implementation.md"],
+    "blockedReason": null
+  }
 }

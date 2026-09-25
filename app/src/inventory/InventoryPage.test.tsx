@@ -28,6 +28,7 @@ test('carga el inventario de la ProjectVersion actual y mapea su contrato', asyn
   expect(screen.getByText('VITEST')).toBeInTheDocument()
   expect(screen.getByText('total')).toBeInTheDocument()
   expect(screen.getAllByText('Sin test').length).toBeGreaterThan(0)
+  expect(screen.queryByRole('button', { name: /Usar target|Generar/ })).not.toBeInTheDocument()
   expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/project-versions/v-1/test-inventory'), expect.any(Object))
 })
 
@@ -36,7 +37,7 @@ test('no consulta inventario cuando el proyecto no tiene versión actual', async
 
   renderApp(<InventoryPage />, { initialEntry: '/projects/p-1/inventory', routePath: '/projects/:projectId/inventory' })
 
-  expect(await screen.findByText('Este proyecto todavía no tiene una versión lista')).toBeInTheDocument()
+  expect(await screen.findByText('Este proyecto todavía no tiene un snapshot disponible')).toBeInTheDocument()
   expect(fetchMock).toHaveBeenCalledTimes(1)
 })
 

@@ -1,37 +1,69 @@
-# Esquema de estado — Harness V2
+# Harness V3 — esquema de estado
 
-`harness/state.json` es un checkpoint operativo y no una segunda fuente de requisitos. `storyIds` y `sprint` siempre se conservan; un corte de harness usa `workItemType: "HARNESS"` y puede tener `storyIds: []`.
+`harness/work-items.json` es la cola local y declara `id`, `component`, `status`, `priority`, `sprint`, `storyIds`, `taskIds`, `caseIds`, `dependsOn`, `contractImpact`, `publishesContract` y `specPaths`. Para un evento histórico sin alcance, `contractSyncReview` puede registrar una clasificación `NOT_RELEVANT` por WI; requiere motivo, reporte y hash del contenido normalizado. `harness/state.json` describe el WI activo y conserva snapshots inmutables de cierre en `completedWorkItems`. Ambos deben coincidir en identidad, estado, sprint, historias, subtareas, casos, rutas y banderas de contrato. Un `activeWorkItem: null` es válido cuando no hay corte seleccionado. Todo WI `W-DONE` requiere un snapshot completo con gates, handoffs, cuatro checkpoints y evidencia; no permanece activo.
 
 ```json
 {
-  "schemaVersion": 3,
-  "allowedStatuses": ["SELECTED", "SPEC_VERIFIED", "AWAITING_APPROVAL", "IN_PROGRESS", "IN_REVIEW", "BLOCKED", "DECISION_REQUIRED", "DONE"],
+  "schemaVersion": 4,
+  "sddVersion": "3.0",
+  "planningBaseline": "2026-09-24-core-console-transition",
+  "allowedStatuses": ["W-PLANNED", "W-READY", "W-SELECTED", "W-SPEC_VERIFIED", "W-AWAITING_APPROVAL", "W-IN_PROGRESS", "W-IN_REVIEW", "W-DONE", "W-BLOCKED", "W-DECISION_REQUIRED", "W-CANCELLED"],
+  "completedWorkItems": [],
   "activeWorkItem": {
-    "id": "work-item-id",
-    "workItemType": "PRODUCT | HARNESS",
-    "storyIds": ["HUxx"],
-    "sprint": "Sprint N",
-    "status": "SELECTED",
-    "specPaths": ["spec/features/..."],
+    "id": "WI-CORE-001",
+    "component": "CORE",
+    "workItemType": "PRODUCT",
+    "storyIds": ["HU01"],
+    "taskIds": ["ST-CORE-001"],
+    "caseIds": [],
+    "sprint": "Transition",
+    "status": "W-SELECTED",
+    "specPaths": ["spec/features/015-sdd-harness-transition/spec.md"],
     "transversalPaths": [],
     "approved": false,
-    "decisionGate": {"checked": false, "blockingDecisionIds": [], "nonBlockingDecisionIds": [], "checkedAt": null},
-    "execution": {"leaderAgent": "leader", "analysisAgent": null, "implementationAgent": null, "uxReviewAgent": null, "contractReviewAgent": null, "reviewAgent": null, "handoffs": [], "reviewCycles": 0, "maxReviewCycles": 2},
-    "gates": {"sddVerified": "NOT_RUN", "implementationCompleted": "NOT_RUN", "uxReviewed": "NOT_APPLICABLE", "contractReviewed": "NOT_APPLICABLE", "canonicalContractSynced": "NOT_APPLICABLE", "contractSyncPublished": "NOT_APPLICABLE", "independentReviewPassed": "NOT_RUN", "technicalChecksPassed": "NOT_RUN", "interopSyncChecked": "NOT_RUN", "noMocksPresentedAsLive": "NOT_RUN", "noBlockingDecisions": "NOT_RUN", "retryLimitRespected": "NOT_RUN"},
-    "coordination": {"uiImpact": false, "contractImpact": false, "pullCheckpoints": [], "publishedSyncIds": [], "pendingRelevantSyncIds": [], "knownIncompatibilities": []},
+    "decisionGate": {
+      "checked": false,
+      "blockingDecisionIds": [],
+      "nonBlockingDecisionIds": [],
+      "checkedAt": null
+    },
+    "execution": {
+      "leaderAgent": "leader",
+      "analysisAgent": null,
+      "implementationAgent": null,
+      "contractReviewAgent": null,
+      "reviewAgent": null,
+      "handoffs": [],
+      "reviewCycles": 0,
+      "maxReviewCycles": 2
+    },
+    "gates": {
+      "sddVerified": "G-NOT_RUN",
+      "implementationCompleted": "G-NOT_RUN",
+      "independentReviewPassed": "G-NOT_RUN",
+      "technicalChecksPassed": "G-NOT_RUN",
+      "contractReviewed": "G-NOT_APPLICABLE",
+      "canonicalContractSynced": "G-NOT_APPLICABLE",
+      "contractSyncPublished": "G-NOT_APPLICABLE",
+      "interopSyncChecked": "G-NOT_RUN",
+      "noBlockingDecisions": "G-NOT_RUN",
+      "retryLimitRespected": "G-NOT_RUN"
+    },
+    "coordination": {
+      "contractImpact": false,
+      "publishesContract": false,
+      "pullCheckpoints": [],
+      "publishedSyncIds": [],
+      "pendingRelevantSyncIds": []
+    },
     "evidence": [],
-    "createdAt": "ISO-8601",
-    "updatedAt": "ISO-8601",
     "blockedReason": null
   }
 }
 ```
 
-Reglas verificadas por `validate-harness.mjs`:
+`contractSyncPublished` solo pasa a `G-PASSED` si `publishesContract=true` y hay eventos reales en outbox registrados en `publishedSyncIds`; de otro modo es `G-NOT_APPLICABLE`.
 
-- Después de `SELECTED`, `decisionGate` está comprobado, tiene fecha y cero decisiones bloqueantes. Si una decisión bloquea, el estado es `BLOCKED` o `DECISION_REQUIRED` con pregunta concreta en `blockedReason`.
-- `PRODUCT` en `IN_PROGRESS`, `IN_REVIEW` o `DONE` requiere `approved=true`. Un corte `HARNESS` documenta su límite no funcional en `evidence`.
-- `execution.leaderAgent` siempre es `leader`; `reviewCycles <= maxReviewCycles <= 2`. Los handoffs conservan el formato estándar y el implementer no se registra como `reviewAgent`.
-- Los impactos condicionales activan sus roles/gates: `uiImpact` exige `ux-reviewer`/`uxReviewed`; `contractImpact` exige `contract-reviewer` y los tres gates contractuales. Sin impacto, esos gates son `NOT_APPLICABLE`.
-- `DONE` exige los gates obligatorios en `PASSED`, PULL en los cuatro checkpoints, cero syncs relevantes pendientes e incompatibilidades conocidas, y evidencia reproducible de los checks técnicos.
-- Las rutas especificadas existen y los IDs de decisión pertenecen a las specs referenciadas; el estado nunca duplica su contenido.
+Console añade `coordination.uiImpact`, `coordination.knownIncompatibilities` y gates `uxReviewed`/`noMocksPresentedAsLive`. Las asignaciones de implementer/reviewer/ux-reviewer pueden estar vacías antes de `W-IN_REVIEW`; ahí deben quedar explícitas, con implementer y reviewer distintos y `ux-reviewer` si el WI cambia UI. `PRODUCT` en `W-IN_PROGRESS` o posterior requiere `approved=true`. Antes de `W-DONE`, copiar el WI completo a `completedWorkItems[]` con `status: W-DONE`, `closedAt`, `gateEvidence` (cada gate aprobado apunta a un archivo existente de `harness/reports/`) y `evidence` con al menos un reporte real. El cierre exige cuatro checkpoints Contract Sync ordenados y del mismo WI, ausencia de syncs relevantes pendientes y handoff `APPROVED` de un reviewer distinto del implementer; `contractImpact` exige también handoff contractual. Luego se retira `activeWorkItem`. `W-BLOCKED`/`W-DECISION_REQUIRED` requieren razón concreta. Una decisión bloqueante no permite avanzar a `W-SPEC_VERIFIED`.
+
+Los prefijos `H-`, `O-`, `T-`, `D-`, `C-` y `G-` identifican estados de otros niveles; no se mezclan con `W-`. Los IDs `HU`, `OC`, `ST`, `WI`, `DEC` y `CS` son identificadores, no estados.

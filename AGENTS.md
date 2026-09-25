@@ -12,11 +12,12 @@ Este repositorio usa Specification-Driven Development (SDD). Este archivo es del
 
 ## Reglas de trabajo
 
+- Antes de tocar código de producto, seleccionar un `WI-<COMP>-<NNN>` local en `harness/work-items.json`, enlazado desde `ST-<COMP>-<NNN>` en el `tasks.md` dueño; ejecutar `node harness/validate-harness.mjs`. Las casillas y HU antiguas no son autorización de implementación.
 - No inventar como cerrada una decisión marcada `PENDING` o `PROPOSED`.
 - Antes de implementar, evaluar únicamente las decisiones cuyo campo `Blocks` alcance el work item activo y registrar el resultado en `decisionGate`.
 - Un cambio funcional aprobado se consolida en la spec canónica y se registra en `CHANGELOG.md`.
-- Al actualizar la línea base SDD, homologar `sddVersion` en los tres repositorios antes de commit; `SYSTEM-*` e `INTEROP-*` conservan versionado independiente.
-- Mantener `storyIds` y `sprint` en `harness/state.json`.
+- SDD 3.0 es la línea base solicitada para Core/Console; `planningBaseline` marca que Sandbox continúa en 2.1 y la homologación global sigue pendiente. No declarar ni publicar una línea base común de los tres antes de esa homologación. `SYSTEM-*` e `INTEROP-*` conservan versionado independiente.
+- Mantener `storyIds`, `taskIds`, `component` y `sprint` en el WI activo; cada subtarea nueva de `tasks.md` enlaza un WI de `harness/work-items.json`.
 - Implementar por cortes coherentes; dos desarrolladores pueden trabajar en paralelo.
 - Cada commit debe ser un cambio coherente y declarar en el cuerpo `Refs: HU...` con todas las historias afectadas.
 - No marcar una tarea como terminada sin evidencia verificable.

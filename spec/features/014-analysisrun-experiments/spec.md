@@ -1,104 +1,28 @@
 # 014 — Experimentos ligados a AnalysisRun
 
-**Estado:** HU48 con contrato **definido** (INTEROP-2.2 §6.5, 2026-09-15;
-Core todavía no implementó el controller) — mock-first implementado en
-Console contra esa forma, adapter live pendiente. HU49 sigue `PROPOSED` (sin
-contrato propio, depende de HU48) — **implementada en Console como capa
-especulativa** sobre el mock-first de HU48 (2026-09-16).
-**Story IDs:** HU48 (P1), HU49 (P4)
-**Origen:** handoff del usuario `~/Downloads/experimentos.md` ("Reorientación
-de Experimentos en SDD 2.0"), enviado también a `tjc-be-rag-core-api`.
-**Contrato:** HU48 — `interoperability-contract.md` §6.5 define
-`CreateExperimentRequest{analysisRunId, symbolFilePath, symbolQualifiedName}`
-y `ExperimentStatusResponse`/`ExperimentResultsResponse` con `analysisRunId`+
-`symbol: AnalysisSymbolResponse` (reemplaza `projectId`/`targetId`); más
-`GET /analysis-runs/{analysisRunId}/experiments`. **Definido, pendiente de
-implementación** — no hay adapter live todavía (`PendingContractError`).
-HU49 no tiene forma de contrato propia.
+**Historias:** HU17, HU18 (EP06).
+**Estado:** contrato de comparación HU17 definido en INTEROP-2.4 §6.5; adaptación live y aceptación pendientes. HU18 requiere contrato de captura antes de implementación productiva.
 
 ## Objetivo
 
-Reformular cómo se obtiene la unidad experimental de HU19 (`RAG` vs
-`GENERALIST_AGENT`) para que sea coherente con la arquitectura PR-driven: en
-vez de seleccionar manualmente un `METHOD`/`CLASS`/`PROJECT` de un
-`ProjectVersion` (modelo ZIP, ya retirado como ruta de producto en
-INTEROP-2.1), la comparación académica parte de un `AnalysisRun` real
-producido por un Pull Request.
+Comparar RAG y GENERALIST_AGENT sobre el mismo `AnalysisRun` real, snapshot, símbolo elegible y entorno. El experimento es opcional y no cambia el flujo operacional del PR.
 
-El experimento (`RAG` vs `GENERALIST_AGENT`) **se conserva** — no se
-descarta HU19, se reorienta su forma de entrada.
+## HU17 — Comparación
 
-## HU48 (P1) — Run comparison
+- La entrada es un `AnalysisRun` con PR/HEAD fijado y un símbolo `DIRECTLY_CHANGED` de tipo `METHOD` o `FUNCTION`. Si hay varios, el usuario elige explícitamente; no se inventa un target.
+- RAG y GENERALIST_AGENT comparten snapshot, target, configuración comparable y Sandbox. Se registran trials, límites, resultados, costo y trazas observables por brazo; no se presenta chain-of-thought.
+- La Console rotula `Modo experimental`, ofrece `Comparar RAG vs Agente generalista` y explica que se hacen tres repeticiones por estrategia por defecto. El agente generalista puede explorar el repositorio mediante herramientas; no se representa como un LLM aislado. Los contratos nuevos usan `GENERALIST_AGENT`, nunca `BASELINE`.
+- El resultado separa compilación, ejecución, pruebas pasadas, validez y distribución de `failureType`; muestra tiempos, tokens y costo estimado. Las tasas se comparan en puntos porcentuales y las magnitudes en diferencias absolutas o relativas según corresponda. `retrievedChunks`, `selectedChunks` y `contextTokens` explican solo el brazo RAG; para el agente se muestran `toolCalls`, `filesInspected` y contexto observable, sin fingir equivalencia entre ambas familias de métricas. Coverage queda condicionado a soporte backend explícito.
+- Cada submit usa una `Idempotency-Key` UUID estable en los retries del mismo intento lógico; un replay equivalente recupera el mismo experimento.
+- No se ejecuta mientras el Run esté `ACTION_REQUIRED`, obsoleto o sin contexto suficiente. Se pueden repetir comparaciones sobre el mismo Run sin reemplazar resultados anteriores.
+- La Console distingue un resultado mock de evidencia real; no declara aceptada HU17 hasta probar el adapter live y la paridad experimental.
 
-**Implementado en Console (mock-first, `feature/T-001`):** `run-comparison/`
-(`types.ts`/`api.ts`/`RunComparisonPage.tsx`), entrada desde
-`AnalysisRunDetailPage` cuando hay un símbolo `DIRECTLY_CHANGED`
-`METHOD`/`FUNCTION` elegible. Con exactamente un símbolo elegible, arranca
-automáticamente al entrar (comportamiento original, sin cambios); con más de
-uno, muestra un selector y requiere elegir antes de iniciar — cubre la regla
-de `ACTION_REQUIRED` del handoff (símbolo obligatorio, no ambiguo). Selector
-de símbolo y Replay (2026-09-17): `listRunComparisons` (§6.5,
-`GET /analysis-runs/{id}/experiments`) lista todos los trials ya lanzados
-sobre el Run; el botón "Repetir comparación (Replay)" lanza uno nuevo sin
-perder los anteriores, cada uno con su propio progreso independiente.
+## HU18 — Captura del siguiente PR
 
-Flujo objetivo (contrato, no todo implementado en la demo): `AnalysisRun`
-existente → acción "Run comparison" → se crea un
-`ExperimentRun` con dos `ExperimentExecution` (`RAG` y `GENERALIST_AGENT`)
-que comparten HEAD SHA, snapshot, changeset y target set — misma unidad de
-entrada para ambos brazos, para que la comparación sea defendible
-metodológicamente.
+- El usuario arma una captura one-shot; el siguiente `AnalysisRun` elegible se reserva para experimento y la captura vuelve a OFF. No es un toggle permanente ni ejecuta el agente en todos los PR.
+- Los brazos experimentales no publican Checks separados ni generan un merge automático.
+- El contrato de armado, elegibilidad, concurrencia, expiración y cancelación aún no está definido. Un simulador local no satisface HU18 ni puede presentarse como integración live.
 
-Reglas del handoff a preservar textualmente:
-- No mezclar `ExperimentRun` con `AnalysisRun`: el primero es una capa
-  académica opcional sobre el segundo, que sigue siendo 100% operacional sin
-  necesitar ningún experimento.
-- Debe permitir más de una ejecución (`trial`) sobre el mismo `AnalysisRun`,
-  y repetirla más adelante ("Replay"/"Run again") conservando el vínculo al
-  mismo HEAD.
-- Si el `AnalysisRun` operacional todavía está `ACTION_REQUIRED`, no se
-  ejecuta la comparación — primero se resuelve el contexto funcional.
-- Si el brazo `RAG` usa `FunctionalKnowledge`, debe decidirse explícitamente
-  qué recibe `GENERALIST_AGENT` para no sesgar la variable medida; el handoff
-  marca esto como decisión metodológica pendiente, no la resuelve.
-- Cada `ExperimentRun` debe poder navegarse hacia atrás hasta PR/HEAD
-  SHA/changeset/targets/ejecuciones, para sustentación de tesis.
+## Decisiones acotadas
 
-## HU49 (P4) — Capture next PR
-
-Mecanismo one-shot para demo en vivo: `Experiments` → botón "Capture next
-PR" → estado `ARMED` (espera el próximo `AnalysisRun` elegible del flujo
-normal) → al llegar, crea automáticamente el `ExperimentRun` → vuelve a
-`OFF`. No es un toggle permanente ("Experimental Mode = ON" que corra ambos
-brazos en cada PR está explícitamente prohibido por el handoff). Reusa el
-mismo modelo de HU48, no un motor experimental paralelo.
-
-**Implementado en Console (2026-09-16) como capa especulativa** (sin
-contrato, `ProposedCapabilityError` en live):
-`run-comparison/speculative/captureNextPr.ts` + panel `CaptureNextPrPanel` en
-`ExperimentPage` ("Modo experimental"), estado `ARMED`/`OFF` por proyecto. Al
-capturar, navega a `RunComparisonPage` (HU48) sin duplicar su lógica de
-inicio. **Desviación de demo deliberada respecto al flujo objetivo:** no
-existe un webhook real que dispare "el próximo PR elegible" — mientras está
-`ARMED`, la Console expone un botón "Simular llegada del PR (demo)" que
-fabrica ese `AnalysisRun` explícitamente, en vez de esperar pasivamente un
-evento que hoy no puede llegar. No sustituye el mecanismo final descrito
-arriba, solo permite demostrar el flujo `ARMED`→captura→`OFF` en vivo.
-
-## Restricciones explícitas del handoff (§39, "No hacer")
-
-No ejecutar `GENERALIST_AGENT` en cada PR empresarial; no volver
-`ExperimentRun` obligatorio para que un `AnalysisRun` funcione; no publicar
-los brazos experimentales como GitHub Checks separados; no volver a usar
-`METHOD`/`CLASS` como unidad experimental oficial; no crear un toggle
-"Experimental Mode" permanente; no bloquear P0 para implementar esto; no
-implementar HU49 antes que HU48.
-
-## UI (referencia, sin aprobar todavía)
-
-`Experiments` se mantiene como ítem de nav propio (no domina el producto
-empresarial). Entrada adicional futura desde `AnalysisRunDetailPage` ("Run
-experimental comparison"), no como CTA operacional principal. Ver
-`harness/reports/console-experiments-analysisrun-classification.md` para el
-detalle de qué componentes actuales son reutilizables (`KEEP`) y cuáles
-quedan `DROP/ADAPT` (el selector de target manual).
+`DEC-EXP-FK-001` debe resolver qué conocimiento funcional recibe cada brazo cuando RAG utiliza una regla activa. Su `Blocks` se evalúa al seleccionar el WI de paridad experimental; no bloquea otras HU.

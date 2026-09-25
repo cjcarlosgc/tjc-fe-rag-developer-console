@@ -1,24 +1,13 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import { getAnalysisRunContextTrace, getContextTrace, listDiscoveredFiles, listExperimentContextTraces, listRunContextTraces } from './api'
+import { getAnalysisRunContextTrace, getContextTrace, listDiscoveredFiles, listExperimentContextTraces } from './api'
 import { isContextTraceNotFinished } from './errors'
-import type { ExperimentContextTraceFilters, RunContextTraceFilters } from './types'
+import type { ExperimentContextTraceFilters } from './types'
 
 export const contextTraceKeys = {
-  run: (runId: string, filters: RunContextTraceFilters) => ['test-runs', runId, 'context-traces', filters] as const,
   experiment: (experimentId: string, filters: ExperimentContextTraceFilters) => ['experiments', experimentId, 'context-traces', filters] as const,
   detail: (traceId: string) => ['context-traces', traceId] as const,
   discoveredFiles: (traceId: string, step: number) => ['context-traces', traceId, 'discovered-files', step] as const,
   analysisRun: (analysisRunId: string) => ['control-plane', 'analysis-run', analysisRunId, 'context-trace'] as const,
-}
-
-export function useRunContextTraces(runId: string, filters: RunContextTraceFilters, enabled = true) {
-  return useInfiniteQuery({
-    queryKey: contextTraceKeys.run(runId, filters),
-    queryFn: ({ pageParam }) => listRunContextTraces(runId, { ...filters, cursor: pageParam }),
-    initialPageParam: null as string | null,
-    getNextPageParam: (lastPage) => lastPage.nextCursor,
-    enabled: enabled && Boolean(runId),
-  })
 }
 
 export function useExperimentContextTraces(experimentId: string, filters: ExperimentContextTraceFilters, enabled = true) {
@@ -51,7 +40,7 @@ export function useDiscoveredFiles(traceId: string, step: number) {
   })
 }
 
-/** Demo-only: contexto RAG "recolectado" para las pruebas de un AnalysisRun (sin forma de contrato, ver §6.7). */
+/** Contexto RAG asociado al AnalysisRun PR-driven en la demo. */
 export function useAnalysisRunContextTrace(analysisRunId: string) {
   return useQuery({
     queryKey: contextTraceKeys.analysisRun(analysisRunId),

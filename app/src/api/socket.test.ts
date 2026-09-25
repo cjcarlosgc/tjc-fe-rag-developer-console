@@ -66,13 +66,6 @@ test('HU21: emite subscribe al conectar y filtra actualizaciones por id', () => 
   expect(emitted).toContainEqual(['unsubscribe:project-version', { projectVersionId: 'pv-1' }])
 })
 
-test('HU22: si ya está conectado, suscribe de inmediato sin esperar el evento connect', () => {
-  mockSocket.connected = true
-  const onUpdate = vi.fn()
-  socket.subscribeTestRunUpdates('run-1', onUpdate)
-  expect(emitted).toContainEqual(['subscribe:test-run', { testRunId: 'run-1' }])
-})
-
 test('una reconexión vuelve a emitir subscribe para el mismo id', () => {
   const onUpdate = vi.fn()
   socket.subscribeProjectVersionUpdates('pv-9', onUpdate)

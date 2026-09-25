@@ -1,0 +1,219 @@
+{
+  "schemaVersion": 1,
+  "component": "CONSOLE",
+  "workItems": [
+    {
+      "id": "WI-CONSOLE-001",
+      "component": "CONSOLE",
+      "workItemType": "HARNESS",
+      "status": "W-DONE",
+      "priority": "P0",
+      "sprint": "Transition",
+      "title": "Alinear SDD y Harness",
+      "storyIds": [
+        "HU01",
+        "HU02",
+        "HU03",
+        "HU04",
+        "HU05",
+        "HU06",
+        "HU07",
+        "HU08",
+        "HU09",
+        "HU10",
+        "HU11",
+        "HU12",
+        "HU13",
+        "HU14",
+        "HU15",
+        "HU16",
+        "HU17",
+        "HU18"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-001"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": true,
+      "publishesContract": false,
+      "syncScopePaths": ["*"],
+      "deferredSyncIds": ["CS-20260920-003", "CS-20260921-001", "CS-20260921-002", "CS-20260921-003"],
+      "deferredSyncDigests": {
+        "CS-20260920-003": "40817688b68b6b78aa3788a1889ea8470d31e5834e87b91287b248eb0ef33561",
+        "CS-20260921-001": "894a31cd2771c1ef7394f253de7d10f779d236533e85053e563244b705e8f1c7",
+        "CS-20260921-002": "6f03b3ed19e4a02338678e297518ac4dc6141c2ad5d1304ff4fef836a3856af0",
+        "CS-20260921-003": "878bfc838a0ff6885cfee6468d09eb5b0d2d1a0ebe303ba59cb447012c4e8d63"
+      },
+      "deferredSyncReport": "harness/reports/legacy-contract-sync-triage-3.0.md",
+      "specPaths": [
+        "spec/features/015-sdd-harness-transition/spec.md",
+        "spec/features/015-sdd-harness-transition/plan.md",
+        "spec/features/015-sdd-harness-transition/tasks.md"
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-002",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-IN_PROGRESS",
+      "priority": "P0",
+      "sprint": "Transition",
+      "title": "Retirar flujos legacy",
+      "storyIds": [
+        "HU01",
+        "HU10",
+        "HU12"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-002"
+      ],
+      "caseIds": [],
+      "dependsOn": [
+        "WI-CONSOLE-001"
+      ],
+      "contractImpact": false,
+      "publishesContract": false,
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/013-pr-driven-control-plane/plan.md",
+        "spec/features/013-pr-driven-control-plane/tasks.md"
+      ],
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Este WI retira upload ZIP, generación manual y exportación legacy; el evento implementa ciclo de vida de RepositoryBinding/Project, que sigue vigente.",
+          "report": "harness/reports/contract-sync-relevance-wi002-3.0.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Este WI no modifica login GitHub, workspaces, roles ni contratos de acceso; el evento de definición queda como antecedente para la extracción GitHub.",
+          "report": "harness/reports/contract-sync-relevance-wi002-3.0.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Este WI no toca login GitHub ni la verificación App/organización implementada por el bundle A; las verificaciones de despliegue siguen pendientes.",
+          "report": "harness/reports/contract-sync-relevance-wi002-3.0.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Este WI no modifica workspaces, roles, permisos organizacionales ni comportamiento del bundle B; esas acciones se revisarán en cortes de acceso o GitHub.",
+          "report": "harness/reports/contract-sync-relevance-wi002-3.0.md"
+        }
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-003",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-PLANNED",
+      "priority": "P1",
+      "sprint": "Post-transition",
+      "title": "Separar GitHub Integration",
+      "storyIds": [
+        "HU02",
+        "HU14",
+        "HU16"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-003"
+      ],
+      "caseIds": [],
+      "dependsOn": [
+        "WI-CONSOLE-001",
+        "WI-CONSOLE-002"
+      ],
+      "contractImpact": true,
+      "publishesContract": false,
+      "specPaths": [
+        "spec/features/015-sdd-harness-transition/spec.md",
+        "spec/features/015-sdd-harness-transition/plan.md",
+        "spec/features/015-sdd-harness-transition/tasks.md"
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-004",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-PLANNED",
+      "priority": "P2",
+      "sprint": "P2",
+      "title": "Formalizar casos operativos",
+      "storyIds": [
+        "HU03",
+        "HU04",
+        "HU05",
+        "HU06",
+        "HU07",
+        "HU08",
+        "HU09",
+        "HU10",
+        "HU11",
+        "HU12",
+        "HU13",
+        "HU14",
+        "HU15",
+        "HU16"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-004"
+      ],
+      "caseIds": [
+        "OC01",
+        "OC02",
+        "OC03",
+        "OC04",
+        "OC05",
+        "OC06",
+        "OC07",
+        "OC08",
+        "OC09",
+        "OC10",
+        "OC11",
+        "OC12",
+        "OC13",
+        "OC14",
+        "OC15"
+      ],
+      "dependsOn": [
+        "WI-CONSOLE-001"
+      ],
+      "contractImpact": false,
+      "publishesContract": false,
+      "specPaths": [
+        "spec/features/015-sdd-harness-transition/spec.md",
+        "spec/features/015-sdd-harness-transition/plan.md",
+        "spec/features/015-sdd-harness-transition/tasks.md"
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-005", "component": "CONSOLE", "workItemType": "PRODUCT", "status": "W-PLANNED",
+      "priority": "P2", "sprint": "P2", "title": "Consolidar interfaz y sistema visual",
+      "storyIds": ["HU01", "HU12", "HU14"], "taskIds": ["ST-CONSOLE-005"], "caseIds": [],
+      "dependsOn": ["WI-CONSOLE-001", "WI-CONSOLE-002"], "contractImpact": false, "publishesContract": false,
+      "specPaths": ["spec/features/010-product-experience/spec.md", "spec/features/010-product-experience/plan.md", "spec/features/010-product-experience/tasks.md", "spec/transversal/design-system/spec.md"]
+    },
+    {
+      "id": "WI-CONSOLE-006", "component": "CONSOLE", "workItemType": "PRODUCT", "status": "W-PLANNED",
+      "priority": "P2", "sprint": "P2", "title": "Auditar y corregir accesibilidad",
+      "storyIds": ["HU01", "HU12", "HU14"], "taskIds": ["ST-CONSOLE-006"], "caseIds": [],
+      "dependsOn": ["WI-CONSOLE-005"], "contractImpact": false, "publishesContract": false,
+      "specPaths": ["spec/transversal/accessibility/spec.md", "spec/transversal/accessibility/plan.md", "spec/transversal/accessibility/tasks.md"]
+    },
+    {
+      "id": "WI-CONSOLE-007", "component": "CONSOLE", "workItemType": "PRODUCT", "status": "W-PLANNED",
+      "priority": "P2", "sprint": "P2", "title": "Unificar errores y notificaciones de la interfaz",
+      "storyIds": ["HU01", "HU12", "HU14"], "taskIds": ["ST-CONSOLE-007"], "caseIds": [],
+      "dependsOn": ["WI-CONSOLE-001"], "contractImpact": false, "publishesContract": false,
+      "specPaths": ["spec/transversal/errors-notifications/spec.md", "spec/transversal/errors-notifications/plan.md", "spec/transversal/errors-notifications/tasks.md"]
+    }
+  ]
+}

@@ -1,6 +1,5 @@
-import type { FailureType } from '../runs/types'
-
 export type ExperimentStrategy = 'RAG' | 'GENERALIST_AGENT'
+export type FailureType = 'NONE' | 'COMPILATION' | 'TEST_ASSERTION' | 'TEST_RUNTIME' | 'DEPENDENCY' | 'CONFIGURATION' | 'INFRASTRUCTURE' | 'UNKNOWN'
 export interface StrategyMetrics {
   strategy: ExperimentStrategy
   validRate: number

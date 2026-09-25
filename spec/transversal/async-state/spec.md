@@ -9,9 +9,9 @@ Manejar server state, polling y luego WebSockets sin duplicar reglas.
 
 ## Reglas y comportamiento
 
-- Respetar `pollAfterMs`, cancelar consultas obsoletas y cachear por identidad de proyecto, versión, run o experimento.
+- Respetar `pollAfterMs`, cancelar consultas obsoletas y cachear por identidad de proyecto, `AnalysisRun`, versión interna asociada o experimento.
 - WebSocket complementa, no reemplaza, los GET de estado. Ante desconexión/reconexión, conservar el id y continuar con polling sin duplicar la operación.
-- Para `POST /test-runs`, `POST /experiments` y retry manual, crear una `Idempotency-Key` al confirmar la acción y asociarla al mutation state. Retries de transporte reutilizan la key; una nueva acción humana crea otra.
+- Para cada operación mutable declarada idempotente por el contrato vigente, como `POST /experiments`, crear una `Idempotency-Key` al confirmar la acción y asociarla al mutation state. Retries de transporte reutilizan la key; una nueva acción humana crea otra. No se inicia un `test-run` manual.
 - Un replay que devuelve el recurso original se procesa como éxito normal. Nunca generar silenciosamente otra key para ocultar `IDEMPOTENCY_CONFLICT`.
 
 ## Fuera de alcance

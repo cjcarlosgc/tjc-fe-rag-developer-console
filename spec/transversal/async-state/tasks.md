@@ -1,15 +1,5 @@
-# async-state — Tareas
+# async-state — Subtareas vigentes
 
-- [x] polling abstraction.
-- [x] cache keys.
-- [x] cancellation.
-- [x] WS adapter/fallback (`api/socket.ts`, usado por HU21/HU22; el polling nunca se reemplaza).
-- [x] Lifecycle reutilizable de `Idempotency-Key` para submit/retry (`api/idempotency.ts`, usado por HU24). Pruebas de timeout/replay/conflict quedan pendientes hasta que exista un backend live real contra el que ejercitarlas.
+No hay una subtarea técnica seleccionable en este archivo para SDD 3.0. El comportamiento vigente está en `spec.md` y `plan.md`; la ejecución futura requiere una ST local y un WI registrado antes de comenzar.
 
-## Calidad
-
-- [ ] Agregar/actualizar pruebas.
-- [ ] Verificar manejo de errores.
-- [ ] Verificar observabilidad mínima.
-- [ ] Ejecutar lint/test/build.
-- [ ] Registrar evidencia de revisión en `harness/reports/`.
+Los checklists anteriores se conservan en Git, CHANGELOG y `harness/reports/open-task-triage-3.0.md`.

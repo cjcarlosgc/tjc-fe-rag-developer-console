@@ -1,12 +1,7 @@
-# formatting — Tareas
+# formatting — Subtareas vigentes
 
-- [x] formatters.
-- [x] tests edge cases.
+No hay una subtarea técnica seleccionable en este archivo para SDD 3.0. El comportamiento vigente está en `spec.md` y `plan.md`; la ejecución futura requiere una ST local y un WI registrado antes de comenzar.
 
-## Calidad
+Las antiguas casillas genéricas de calidad se absorbieron en los gates obligatorios de cada WI.
 
-- [ ] Agregar/actualizar pruebas.
-- [ ] Verificar manejo de errores.
-- [ ] Verificar observabilidad mínima.
-- [ ] Ejecutar lint/test/build.
-- [ ] Registrar evidencia de revisión en `harness/reports/`.
+Los checklists anteriores se conservan en Git, CHANGELOG y `harness/reports/open-task-triage-3.0.md`.

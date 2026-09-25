@@ -6,11 +6,9 @@ import { armCaptureNextPr, disarmCaptureNextPr, getCaptureNextPrState, simulateN
 const CAPTURE_NEXT_PR_QUERY_KEY = (projectId: string) => ['run-comparison', 'speculative', 'capture-next-pr', projectId]
 
 /**
- * PROPUESTA — HU49, ver speculative/captureNextPr.ts. Vive en `ExperimentPage`
- * ("Modo experimental"), separado del flujo legacy de selección manual de
- * target (HU19) que sigue debajo — reusa el modelo de HU48 (`AnalysisRun`),
- * no un motor experimental paralelo. Al capturar, navega a
- * `RunComparisonPage` (HU48), que arranca la comparación sola.
+ * Propuesta de captura del siguiente PR elegible. Vive en ExperimentPage y
+ * reutiliza el modelo de AnalysisRun de comparación, no el targetId del
+ * inventario del proyecto. Al capturar, navega a RunComparisonPage.
  */
 export function CaptureNextPrPanel({ projectId }: { projectId: string }) {
   const navigate = useNavigate()

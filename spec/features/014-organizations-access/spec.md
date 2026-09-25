@@ -1,7 +1,7 @@
 # 014 — Workspaces, organizaciones y acceso en Console
 
-**Estado:** aprobado para implementar (`T-004-console-workspaces`); el bundle B de Core está implementado y desplegado.
-**Historias:** HU55, HU58, HU59, HU60, HU63, HU64. HU61 (revocación backend) y HU62 (login) son responsabilidad de Core/012.
+**Estado:** contrato aprobado y capacidad implementada; la aceptación de HU01/HU02/HU14 se verifica contra sus criterios vigentes.
+**Historias:** HU01, HU02 y HU14. Workspaces, roles, identidad y revocación son capacidades de apoyo; no son HU adicionales.
 **Contrato:** SYSTEM-2.4 / INTEROP-2.4 (§6.1, §6.8, §6.9, §6.10, §6.13), `CS-20260921-003`.
 **Decisiones:** `DEC-ORG-001` APROBADO; `DEC-ORG-002` APROBADO.
 

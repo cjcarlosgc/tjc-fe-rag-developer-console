@@ -39,20 +39,20 @@ test('la sub-nav del proyecto (ProjectTabs) enlaza a Runs/Functional Knowledge/I
   expect(within(nav).getByRole('link', { name: 'Integrations' })).toHaveAttribute('href', '/projects/prj_checkout_demo/integrations/github?workspaceId=1000001')
 })
 
-test('HU19: "Modo experimental" es visible como capacidad propia, no legacy', async () => {
+test('"Modo experimental" es visible como capacidad propia, no legacy', async () => {
   renderDetail('prj_checkout_demo')
 
   await screen.findByText('checkout-service', { selector: '.repo-name' })
   expect(screen.getByRole('link', { name: /Modo experimental/ })).toHaveAttribute('href', '/projects/prj_checkout_demo/experimental?workspaceId=1000001')
 })
 
-test('el flujo ZIP no aparece en la página principal ni su link a herramientas legacy (oculto a pedido del usuario; la ruta sigue existiendo)', async () => {
+test('el proyecto no ofrece flujos manuales de carga, generación ni herramientas antiguas', async () => {
   renderDetail('prj_checkout_demo')
 
   await screen.findByText('checkout-service', { selector: '.repo-name' })
   expect(screen.queryByText('Cargar código fuente')).not.toBeInTheDocument()
   expect(screen.queryByRole('link', { name: 'Configurar generación' })).not.toBeInTheDocument()
-  expect(screen.queryByRole('link', { name: /Herramientas legacy/ })).not.toBeInTheDocument()
+  expect(screen.queryByText(/ZIP|legacy|generación manual/i)).not.toBeInTheDocument()
 })
 
 test('HU30: un proyecto sin binding ofrece conectar GitHub', async () => {

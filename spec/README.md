@@ -1,8 +1,8 @@
-# SDD 2.0 — RAG Developer Console
+# SDD — RAG Developer Console
 
 `spec/` es la fuente de verdad del proyecto.
 
-Orden de lectura: `contracts/system-contract.md` -> `contracts/interoperability-contract.md` -> `constitution/project-context.md` -> constitución aplicable -> `backlog.md` -> feature `spec.md` -> `plan.md` -> `tasks.md` -> transversales aplicables -> contratos referenciados.
+Orden de lectura: `contracts/system-contract.md` -> `contracts/interoperability-contract.md` -> `constitution/project-context.md` -> `constitution/planning-model.md` y constitución aplicable -> `backlog.md`/`operational-cases.md` -> feature `spec.md` -> `plan.md` -> `tasks.md` -> transversales aplicables -> `harness/work-items.json`.
 
 ## Contratos entre servicios
 
@@ -13,7 +13,9 @@ La demostración local usa por defecto la fuente `mock` definida en [`transversa
 
 ## Versionado
 
-La especificación vigente se consolida; no se acumulan enmiendas. Los cambios se registran en `CHANGELOG.md` y en Git. `sddVersion` representa la línea base conjunta de los tres repositorios.
+La numeración HU anterior se retiró de la especificación vigente. El mapa de capacidades históricas se conserva en `harness/reports/hu-rebaseline-audit.md`, `CHANGELOG.md` y Git; ninguna casilla histórica acredita `H-DONE`.
+
+La especificación vigente se consolida; no se acumulan enmiendas. Los cambios se registran en `CHANGELOG.md` y en Git. `sddVersion: 3.0` identifica la línea base Core/Console solicitada por el usuario; `planningBaseline: 2026-09-24-core-console-transition` advierte que Sandbox continúa en SDD 2.1 y que la homologación global está pendiente. Los 18 IDs HU nuevos no heredan automáticamente el estado de las antiguas HU homónimas.
 
 ## Estados de decisión
 

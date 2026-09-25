@@ -122,14 +122,6 @@ export function subscribeProjectVersionUpdates<T extends { id: string }>(
   return subscribeById('subscribe:project-version', 'unsubscribe:project-version', 'project-version:update', 'projectVersionId', projectVersionId, onUpdate)
 }
 
-/** HU22: complemento en tiempo real de `GET /test-runs/{id}`; el polling sigue como fallback. */
-export function subscribeTestRunUpdates<T extends { id: string }>(
-  testRunId: string,
-  onUpdate: (payload: T) => void,
-): () => void {
-  return subscribeById('subscribe:test-run', 'unsubscribe:test-run', 'test-run:update', 'testRunId', testRunId, onUpdate)
-}
-
 export function resetSocketForTests(): void {
   resetSocket()
 }

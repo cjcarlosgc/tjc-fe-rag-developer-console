@@ -7,7 +7,7 @@ test('listAnalysisHistory live: pide GET /projects/{id}/versions y mapea Page<Pr
   const page = {
     items: [
       {
-        id: 'ver-1', projectId: 'p-1', status: 'COMPLETED', originalFileName: 'demo.zip', sizeBytes: 1024,
+        id: 'ver-1', projectId: 'p-1', status: 'COMPLETED', originalFileName: null, sizeBytes: 1024,
         filesProcessed: 10, chunksCount: 40, failureReason: null, startedAt: '2026-09-01T00:00:00.000Z',
         completedAt: '2026-09-01T00:05:00.000Z', createdAt: '2026-09-01T00:00:00.000Z', updatedAt: '2026-09-01T00:05:00.000Z',
         detectedFramework: 'VITEST', targetsTotal: 5, targetsWithTest: 3, targetsMissingTest: 2, current: true,
@@ -20,7 +20,7 @@ test('listAnalysisHistory live: pide GET /projects/{id}/versions y mapea Page<Pr
   const items = await listAnalysisHistory('p-1')
 
   expect(items).toEqual([
-    { id: 'ver-1', projectId: 'p-1', status: 'COMPLETED', originalFileName: 'demo.zip', filesProcessed: 10, chunksCount: 40, detectedFramework: 'VITEST', targetsTotal: 5, targetsWithTest: 3, targetsMissingTest: 2, createdAt: '2026-09-01T00:00:00.000Z', completedAt: '2026-09-01T00:05:00.000Z', current: true },
+    { id: 'ver-1', projectId: 'p-1', status: 'COMPLETED', originalFileName: null, filesProcessed: 10, chunksCount: 40, detectedFramework: 'VITEST', targetsTotal: 5, targetsWithTest: 3, targetsMissingTest: 2, createdAt: '2026-09-01T00:00:00.000Z', completedAt: '2026-09-01T00:05:00.000Z', current: true },
   ])
   expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/projects/p-1/versions'), expect.anything())
 })

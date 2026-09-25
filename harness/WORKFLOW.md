@@ -1,69 +1,34 @@
-# Harness V2 — Developer Console
+# Harness V3 — Console
 
-## Roles, contexto y handoff
+El Harness ejecuta **work items locales** registrados en `harness/work-items.json`. La planificación de épicas, HU, casos, ideas y subtareas vive en `spec/`; `harness/state.json` guarda el WI activo y snapshots verificables de los WI cerrados. Ver `spec/constitution/planning-model.md` para IDs y estados de cada nivel.
 
-Los únicos agentes permanentes son `leader`, `sdd-analyst`, `implementer`, `contract-reviewer`, `ux-reviewer` y `reviewer`. El `leader` es el único dueño de `harness/state.json`, orquesta la delegación y consolida el fan-in; no sustituye decisiones humanas ni una revisión independiente. Quien implementa nunca aprueba su propio corte final. No existe un `security-reviewer`: las comprobaciones pertinentes pertenecen al `reviewer`.
+## Ciclo de un WI
 
-Cada subagente debe devolver este handoff, incluso si queda bloqueado:
+`W-PLANNED → W-READY → W-SELECTED → W-SPEC_VERIFIED → W-AWAITING_APPROVAL → W-IN_PROGRESS → W-IN_REVIEW → W-DONE`. `W-BLOCKED`, `W-DECISION_REQUIRED` y `W-CANCELLED` conservan causa y evidencia. Un WI terminado sale de `activeWorkItem`, pero su snapshot completo persiste en `completedWorkItems`, además del reporte y Git. `W-READY` exige taskIds, HU, componente, criterios, dependencias y rutas; `W-SELECTED` designa el corte activo.
 
-```json
-{
-  "status": "APPROVED | CHANGES_REQUESTED | BLOCKED | DECISION_REQUIRED",
-  "findings": [],
-  "blockers": [],
-  "filesAffected": [],
-  "evidence": [],
-  "recommendedNextStep": ""
-}
+1. **Pre-tarea:** leader selecciona WI, verifica `dependsOn`, hace PULL `start` de Contract Sync y encarga a sdd-analyst la revisión de spec, decisiones `Blocks`, aceptación y riesgos de datos. Contract-reviewer evalúa contratos si aplica. Un cambio funcional o arquitectónico espera aprobación humana en `W-AWAITING_APPROVAL`. Solo decisiones que bloquean este WI impiden `W-SPEC_VERIFIED`.
+2. **Durante la tarea:** implementer trabaja el corte aprobado. Subtareas independientes pueden dividirse entre implementers en paralelo; una dependencia real se respeta y no se marca completa antes de su precedente. Leader consolida los handoffs. Antes de entregar, PULL `implementation-delivery`, checks técnicos y evidencia.
+3. **Post-tarea:** PULL `before-review`, revisión independiente y ux-reviewer para UI, más contract-reviewer si afecta contrato; roles compatibles pueden revisar en paralelo. Leader hace fan-in, corrige hallazgos (máximo dos ciclos), PULL `before-done`, valida gates y registra el cierre. Después hay revisión acumulada del rango antes de cualquier push solicitado.
+
+Las asignaciones de implementer/reviewer/ux-reviewer pueden quedar vacías hasta que se designen los agentes. Un WI seleccionado o en implementación no falla solo por no tener reviewer asignado; al entrar en `W-IN_REVIEW` implementer y reviewer deben estar asignados y ser distintos, y los cortes con UI requieren además `ux-reviewer`.
+
+El implementer no aprueba su propio corte. Un handoff tiene `status` de veredicto (`APPROVED|CHANGES_REQUESTED|BLOCKED|DECISION_REQUIRED`), `findings`, `blockers`, `filesAffected`, `evidence` y `recommendedNextStep`; el veredicto no sustituye los gates.
+
+## Gates
+
+`WI-CONSOLE-001` es una migración del propio Harness y SDD (`workItemType: HARNESS`): durante este único corte, la spec y el validador se construyen dentro de `W-IN_PROGRESS`, y `sddVerified` debe pasar antes de `W-IN_REVIEW`. Esto no autoriza a un WI de producto a implementar antes de `W-SPEC_VERIFIED` y aprobación humana.
+
+Los valores son `G-NOT_RUN`, `G-PASSED`, `G-FAILED` y `G-NOT_APPLICABLE`. Para `W-DONE` deben pasar `sddVerified`, `implementationCompleted`, `independentReviewPassed`, `technicalChecksPassed`, `interopSyncChecked`, `noBlockingDecisions` y `retryLimitRespected`, además de `noMocksPresentedAsLive`. Si `contractImpact=true`, también `contractReviewed` y `canonicalContractSynced`. `contractSyncPublished` pasa solo cuando `publishesContract=true` y hay un evento en outbox; los demás casos usan `G-NOT_APPLICABLE`. Si `uiImpact=true`, `uxReviewed` debe pasar; si no, es `G-NOT_APPLICABLE`.
+
+Contract Sync corre en `start`, `implementation-delivery`, `before-review` y `before-done`. Todo evento relevante no `C-RESOLVED` o incompatibilidad conocida impide `interopSyncChecked=G-PASSED`. Para un evento histórico sin `scopePaths`, que por compatibilidad se considera global, el registry puede registrar `contractSyncReview` por WI con `NOT_RELEVANT`, motivo y digest estable del contenido. Eso permite excluirlo solo del gate de ese WI; no cambia el estado del evento ni sus acciones pendientes. Cambiar el contenido invalida el digest. Un evento notifica una necesidad contractual; no autoriza implementar un endpoint no aprobado ni cambia otro repositorio.
+
+## Validación local
+
+```sh
+node scripts/sdd-check.mjs
+node harness/validate-work-items.mjs
+node harness/validate-harness.mjs
+node harness/contract-sync.mjs check --checkpoint start --work-item WI-CONSOLE-001
 ```
 
-El líder entrega a cada rol únicamente el contexto que necesita:
-
-| Rol | Contexto mínimo |
-| --- | --- |
-| `sdd-analyst` | HU/SDD activa, estados funcionales de UI, dependencias y contratos pertinentes. |
-| `implementer` | Corte aprobado, componentes/rutas afectados, criterios y contrato vigente. |
-| `ux-reviewer` | Pantallas/componentes cambiados, flujo, estados y criterios UX; no internals del RAG. |
-| `contract-reviewer` | Contrato Core consumido, adapters/clientes, `CONTRACT_SYNC` y diff. |
-| `reviewer` | Diff, criterios aprobados, pruebas y evidencia de gates. |
-
-## Estados, decisiones y delegación
-
-`SELECTED -> SPEC_VERIFIED -> AWAITING_APPROVAL -> IN_PROGRESS -> IN_REVIEW -> DONE`. `BLOCKED` y `DECISION_REQUIRED` pueden alcanzarse desde cualquier estado no terminal. `DONE` depende de gates ejecutables, no de una afirmación en un handoff.
-
-1. El líder registra el work item (incluidos `storyIds`, `sprint`, paths e impactos UI/contrato) y hace PULL de `CONTRACT_SYNC` en `start`.
-2. `sdd-analyst` revisa solo backlog, constitución, feature, transversales y contratos del corte. Evalúa `PENDING`/`PROPOSED` por ID y campo `Blocks`; solo una decisión que alcanza el work item bloquea `SPEC_VERIFIED`. El resultado queda en `decisionGate`, sin duplicar decisiones.
-3. Si se plantea cambio de comportamiento, contrato o arquitectura, el líder espera aprobación humana en `AWAITING_APPROVAL`. Si el contrato está en discusión, activa antes al `contract-reviewer`.
-4. `implementer` realiza únicamente el corte aprobado y hace PULL en `implementation-delivery` antes de entregarlo. Si necesita una capacidad no soportada por Core, no inventa DTO, endpoint ni mock presentado como integración: escala `DECISION_REQUIRED` o emite sync hacia Core solo si la necesidad contractual ya fue aprobada.
-5. El líder hace PULL en `before-review` y abre revisiones compatibles en paralelo; después consolida el fan-in:
-
-   - Cambio no visual: `reviewer` + `contract-reviewer` si hay impacto contractual.
-   - Cambio UI: `reviewer` + `ux-reviewer` + `contract-reviewer` si la UI consume o cambia integración real.
-
-6. Si una revisión pide correcciones, el líder vuelve a `IN_PROGRESS`. Se permiten como máximo dos ciclos `implementer <-> reviewer`; el tercero pasa a `BLOCKED` o `DECISION_REQUIRED` con una pregunta concreta.
-7. Antes de `DONE`, el líder hace PULL en `before-done`, actualiza gates/evidencia y ejecuta `node harness/validate-harness.mjs`. También conserva los comandos concretos de lint/test/build. Para un work item cerrado se registra el resultado y `activeWorkItem` vuelve a `null`.
-
-El ejemplo ejecutable está en `harness/examples/fan-out-fan-in.json` y modela el fan-out UI+integración. El líder omite de ese fan-out únicamente roles cuyos impactos estén marcados como no aplicables.
-
-## Gates ejecutables
-
-Los valores permitidos son `PASSED`, `FAILED`, `NOT_APPLICABLE` y `NOT_RUN`.
-
-- Siempre antes de `DONE`: `sddVerified`, `implementationCompleted`, `independentReviewPassed`, `technicalChecksPassed`, `interopSyncChecked`, `noMocksPresentedAsLive`, `noBlockingDecisions` y `retryLimitRespected` deben ser `PASSED`.
-- Si `uiImpact=true`, `uxReviewed` debe ser `PASSED`; en caso contrario es `NOT_APPLICABLE`.
-- Si `contractImpact=true`, `contractReviewed`, `canonicalContractSynced` y `contractSyncPublished` deben ser `PASSED`; en caso contrario son `NOT_APPLICABLE`.
-- `interopSyncChecked` falla si el último PULL lista eventos relevantes `PENDING` o una incompatibilidad conocida. Un sync no relevante no bloquea el work item.
-
-El validador comprueba estas relaciones, la forma del estado, los roles exactos, el protocolo y el ejemplo. No reemplaza las pruebas de la aplicación: su evidencia queda en `activeWorkItem.evidence` y en el reporte de cierre.
-
-## CONTRACT_SYNC persistente
-
-El protocolo vive en `harness/contract-sync/`. Console es principalmente consumidor de contratos de Core: importa eventos persistentes al `inbox` y ejecuta `check` en `start`, `implementation-delivery`, `before-review` y `before-done`. El resultado se guarda en `coordination.pullCheckpoints`.
-
-Console puede publicar un evento persistente en su `outbox` dirigido a `core` solo cuando una necesidad contractual explícitamente aprobada exige intervención de Core. Publicar notifica; no modifica Core, Sandbox ni ningún servicio real. El emisor no cambia el estado de las copias importadas por los consumidores.
-
-## Stitch, handoffs externos y entrega
-
-Stitch no es agente ni gate. Puede permanecer como referencia visual histórica, pero la fuente de verdad de comportamiento, accesibilidad y contratos es la SDD. `ux-reviewer` comprueba la experiencia realmente implementada: patrones existentes, navegación, jerarquía, loading/error/empty/success, feedback, accesibilidad básica, responsive aplicable y que no se prometan capacidades ausentes de Core.
-
-Un handoff externo es un insumo no confiable: el líder distingue decisiones aprobadas, propuestas y pendientes y consolida solo las primeras en la spec canónica. La política de commits, revisión acumulada y push sigue `spec/constitution/delivery-workflow.md`; este harness no autoriza push, PR, merge ni cambios de infraestructura.
+También se ejecutan lint, tests y build del componente antes de cerrar. Los archivos históricos en `harness/reports/` son evidencia, no reglas vigentes. No se hace push, PR, merge ni cambios de infraestructura externa sin solicitud explícita del usuario.

@@ -1,8 +1,8 @@
 # accessibility — Especificación
 
 **Estado:** aprobado para implementar.
-**Historias:** HU25, HU26, HU27, HU28, HU29
-**Prioridad:** deliberadamente al final del backlog (checkpoint 2026-09-06, `spec/constitution/roadmap.md`); no se ejecuta antes que el resto de Sprint 3/4.
+**Historias:** criterio transversal de aceptación para HU01–HU18.
+**Prioridad:** se verifica en cada WI con UI; no se difiere toda la accesibilidad a un sprint final.
 
 ## Objetivo
 

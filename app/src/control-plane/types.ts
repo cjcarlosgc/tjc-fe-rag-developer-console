@@ -1,4 +1,4 @@
-/** SDD 2.0 / INTEROP-2.0 §6.8, §6.10, §6.12 — control plane PR-driven (Project↔Repository → PR/HEAD → Run → Check/Proposal). */
+/** SDD 3.0 / INTEROP-2.4 — control plane PR-driven (Project↔Repository → PR/HEAD → Run → Check/Proposal). */
 
 /**
  * §6.8 — GitHub App y repository binding (HU30, INTEROP-2.2 — discovery user-centric,
@@ -110,7 +110,7 @@ export interface AnalysisRunSummaryResponse {
 
 export type SymbolChangeKind = 'DIRECTLY_CHANGED' | 'POTENTIALLY_IMPACTED'
 
-/** Símbolo del control plane PR-driven; distinto de los targets del dominio de generación legacy (`runs/types.ts`). */
+/** Símbolo del control plane PR-driven, distinto de un target de inventario de pruebas. */
 export interface AnalysisSymbolResponse {
   language: 'TYPESCRIPT' | 'PHP'
   kind: 'CLASS' | 'METHOD' | 'FUNCTION' | 'INTERFACE' | 'TYPE' | 'TRAIT' | 'ENUM'
