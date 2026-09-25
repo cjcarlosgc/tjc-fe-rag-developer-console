@@ -29,12 +29,13 @@ test('HU30: un proyecto vinculado muestra el binding', async () => {
   expect(screen.getByText('Activo')).toBeInTheDocument()
 })
 
-test('la sub-nav del proyecto (ProjectTabs) enlaza a Runs/Functional Knowledge/Integrations, con Overview activo', async () => {
+test('la sub-nav del proyecto (ProjectTabs) enlaza a Runs/Historial/Functional Knowledge/Integrations, con Overview activo', async () => {
   renderDetail('prj_checkout_demo')
 
   const nav = await screen.findByRole('navigation', { name: 'Secciones del proyecto' })
   expect(within(nav).getByRole('link', { name: 'Overview' })).toHaveAttribute('aria-current', 'page')
   expect(within(nav).getByRole('link', { name: 'Runs' })).toHaveAttribute('href', '/analysis-runs?projectId=prj_checkout_demo&workspaceId=1000001')
+  expect(within(nav).getByRole('link', { name: 'Historial' })).toHaveAttribute('href', '/projects/prj_checkout_demo/analyses?workspaceId=1000001')
   expect(within(nav).getByRole('link', { name: 'Functional Knowledge' })).toHaveAttribute('href', '/projects/prj_checkout_demo/functional-knowledge?workspaceId=1000001')
   expect(within(nav).getByRole('link', { name: 'Integrations' })).toHaveAttribute('href', '/projects/prj_checkout_demo/integrations/github?workspaceId=1000001')
 })

@@ -56,7 +56,7 @@
       "id": "WI-CONSOLE-002",
       "component": "CONSOLE",
       "workItemType": "PRODUCT",
-      "status": "W-IN_PROGRESS",
+      "status": "W-DONE",
       "priority": "P0",
       "sprint": "Transition",
       "title": "Retirar flujos legacy",
