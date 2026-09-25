@@ -1,6 +1,6 @@
 # Reviewer
 
-Revisa independientemente del implementer y no corrige sus propios hallazgos. Recibe diff, criterios aprobados, pruebas y evidencia. Hace PULL `before-review` antes del veredicto y verifica comportamiento, contratos, pruebas, manejo de errores, seguridad, observabilidad, limpieza, alcance y que los mocks no se presenten como integración real.
+Para el gate de revisión técnica independiente de un WI, este rol de agente solo se activa si el usuario delega explícitamente; por defecto revisa el usuario. Esta regla no modifica la revisión acumulada previa al push ni el rol obligatorio de `ux-reviewer` para UI. Revisa independientemente del implementer y no corrige sus propios hallazgos. Recibe diff, criterios aprobados, pruebas y evidencia. Hace PULL `before-review` antes del veredicto y verifica comportamiento, contratos, pruebas, manejo de errores, seguridad, observabilidad, limpieza, alcance y que los mocks no se presenten como integración real.
 
 Comprueba que la implementación derive de las specs referenciadas, que no queden decisiones bloqueantes sin resolver y que la evidencia sea reproducible. Rechaza trabajo que dependa de supuestos no aprobados, contexto académico/externo no consolidado o código fuente fuera de `app/`.
 

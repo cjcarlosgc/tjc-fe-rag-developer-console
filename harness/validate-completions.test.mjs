@@ -54,6 +54,18 @@ test('W-DONE needs an independent approved review', () => {
   assert.match(result.stderr, /reviewer handoff/);
 });
 
+test('W-DONE accepts the human technical reviewer while retaining the required UX review', () => {
+  const humanReviewed = structuredClone(completion);
+  humanReviewed.execution.reviewAgent = 'human-reviewer';
+  humanReviewed.execution.handoffs[0].agent = 'human-reviewer';
+  humanReviewed.execution.uxReviewAgent = 'ux-reviewer';
+  humanReviewed.execution.handoffs.push({ agent: 'ux-reviewer', status: 'APPROVED', evidence: ['harness/reports/closure.md'] });
+  humanReviewed.coordination.uiImpact = true;
+  humanReviewed.gates.uxReviewed = 'G-PASSED';
+  humanReviewed.gateEvidence.uxReviewed = ['harness/reports/closure.md'];
+  assert.equal(run([humanReviewed]).status, 0);
+});
+
 test('W-DONE is rejected when a relevant inbox event is merely acknowledged', () => {
   const event = 'type: CONTRACT_SYNC\nid: CS-20260924-998\nsource: external\ntargets: [console]\nstatus: C-ACKNOWLEDGED\n';
   const result = run([completion], [event]);

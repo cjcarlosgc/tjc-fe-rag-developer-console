@@ -21,6 +21,7 @@ Este repositorio usa Specification-Driven Development (SDD). Este archivo es del
 - Implementar por cortes coherentes; dos desarrolladores pueden trabajar en paralelo.
 - Cada commit debe ser un cambio coherente y declarar en el cuerpo `Refs: HU...` con todas las historias afectadas.
 - No marcar una tarea como terminada sin evidencia verificable.
+- Antes de declarar un WI terminado, el usuario es el reviewer técnico independiente por defecto; presenta diff y evidencia y espera su veredicto. Solo delega esa revisión a un agente si el usuario lo pide explícitamente. El implementer no puede autoaprobarse; la revisión delegada tampoco sustituye la aprobación humana de alcance/arquitectura. Para cambios UI se mantiene la revisión obligatoria de `ux-reviewer`.
 - Antes de cerrar: lint, test y build; agregar pruebas para correcciones cuando sea viable.
 - Antes de hacer push al cierre del sprint, el reviewer debe aprobar el rango completo que se publicará y registrar la evidencia de revisión.
 - No hacer commit, push, PR, merge o cambios de infraestructura externa sin solicitud explícita.

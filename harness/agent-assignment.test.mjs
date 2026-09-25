@@ -24,3 +24,11 @@ test('acepta agentes distintos y reviewer UX antes de la revisión', () => {
     coordination: { uiImpact: true },
   }), []);
 });
+
+test('acepta revisión técnica humana y mantiene el ux-reviewer obligatorio para UI', () => {
+  assert.deepEqual(agentAssignmentIssues({
+    status: 'W-IN_REVIEW',
+    execution: { implementationAgent: 'implementer', reviewAgent: 'human-reviewer', uxReviewAgent: 'ux-reviewer' },
+    coordination: { uiImpact: true },
+  }), []);
+});
