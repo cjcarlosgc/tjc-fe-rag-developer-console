@@ -620,14 +620,14 @@
     },
     "gates": {
       "sddVerified": "G-PASSED",
-      "implementationCompleted": "G-NOT_RUN",
+      "implementationCompleted": "G-PASSED",
       "uxReviewed": "G-NOT_RUN",
       "contractReviewed": "G-NOT_RUN",
       "canonicalContractSynced": "G-NOT_RUN",
       "contractSyncPublished": "G-NOT_APPLICABLE",
       "independentReviewPassed": "G-NOT_RUN",
-      "technicalChecksPassed": "G-NOT_RUN",
-      "interopSyncChecked": "G-NOT_RUN",
+      "technicalChecksPassed": "G-PASSED",
+      "interopSyncChecked": "G-PASSED",
       "noMocksPresentedAsLive": "G-PASSED",
       "noBlockingDecisions": "G-PASSED",
       "retryLimitRespected": "G-PASSED"
@@ -637,7 +637,8 @@
         "harness/reports/wi-console-003-spec-verification.md"
       ],
       "implementationCompleted": [
-        "harness/reports/wi-console-003-implementation.md"
+        "harness/reports/wi-console-003-implementation.md",
+        "harness/reports/contract-sync-resolution-cs-gh-20260926-001.md"
       ],
       "contractReviewed": [
         "harness/reports/wi-console-003-spec-verification.md"
@@ -646,7 +647,11 @@
         "harness/reports/wi-console-003-implementation.md"
       ],
       "technicalChecksPassed": [
-        "harness/reports/wi-console-003-implementation.md"
+        "harness/reports/wi-console-003-implementation.md",
+        "harness/reports/contract-sync-resolution-cs-gh-20260926-001.md"
+      ],
+      "interopSyncChecked": [
+        "harness/reports/contract-sync-resolution-cs-gh-20260926-001.md"
       ],
       "noMocksPresentedAsLive": [
         "harness/reports/wi-console-003-implementation.md"
