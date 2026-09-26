@@ -72,3 +72,35 @@ test('W-DONE is rejected when a relevant inbox event is merely acknowledged', ()
   assert.equal(result.status, 1);
   assert.match(result.stderr, /unresolved relevant CONTRACT_SYNC/);
 });
+
+test('a Contract Sync imported after closure does not rewrite an immutable completion snapshot', () => {
+  const event = [
+    'type: CONTRACT_SYNC',
+    'id: CS-GH-20260926-001',
+    'source: github-integration',
+    'sourceWorkItem: WI-GH-006',
+    'targets: [console]',
+    'scopePaths: [*]',
+    'status: C-PENDING',
+    'consumerImportedAt: 2026-09-26T07:48:21.433Z',
+    '',
+  ].join('\n');
+  assert.equal(run([completion], [event]).status, 0);
+});
+
+test('a Contract Sync known before closure still blocks a completion snapshot', () => {
+  const event = [
+    'type: CONTRACT_SYNC',
+    'id: CS-GH-20260923-001',
+    'source: github-integration',
+    'sourceWorkItem: WI-GH-005',
+    'targets: [console]',
+    'scopePaths: [*]',
+    'status: C-ACKNOWLEDGED',
+    'consumerImportedAt: 2026-09-23T07:48:21.433Z',
+    '',
+  ].join('\n');
+  const result = run([completion], [event]);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /unresolved relevant CONTRACT_SYNC/);
+});

@@ -4,9 +4,9 @@ export interface AuthSession {
   user: AuthUser
   accessToken: string
   /**
-   * HU30 (INTEROP-2.2 §6.8): provider token OAuth GitHub efímero, usado solo para descubrir
-   * repositorios (`X-GitHub-Provider-Token`). Nunca se persiste fuera del estado de sesión ni se
-   * muestra en UI/logs/fixtures. `null` cuando Supabase no lo entrega (p.ej. sesión restaurada tras recargar).
+   * Provider token OAuth GitHub efímero para discovery y verificación inicial que requiera identidad
+   * GitHub (`X-GitHub-Provider-Token` en Integration). Nunca se envía a Core, persiste fuera de la
+   * sesión ni se muestra en UI/logs/fixtures. `null` cuando Supabase no lo entrega tras recargar.
    */
   githubProviderToken: string | null
 }

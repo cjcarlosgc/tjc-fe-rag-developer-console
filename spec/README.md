@@ -2,14 +2,15 @@
 
 `spec/` es la fuente de verdad del proyecto.
 
-Orden de lectura: `contracts/system-contract.md` -> `contracts/interoperability-contract.md` -> `constitution/project-context.md` -> `constitution/planning-model.md` y constitución aplicable -> `backlog.md`/`operational-cases.md` -> feature `spec.md` -> `plan.md` -> `tasks.md` -> transversales aplicables -> `harness/work-items.json`.
+Orden de lectura: `contracts/system-contract.md` -> `contracts/interoperability-contract.md` -> `contracts/github-integration-contract.md` -> `constitution/project-context.md` -> `constitution/planning-model.md` y constitución aplicable -> `backlog.md`/`operational-cases.md` -> feature `spec.md` -> `plan.md` -> `tasks.md` -> transversales aplicables -> `harness/work-items.json`.
 
 ## Contratos entre servicios
 
-- [`contracts/system-contract.md`](contracts/system-contract.md): copia espejo `SYSTEM-2.4` del contrato común de los tres componentes; su propietario canónico es RAG Core.
-- [`contracts/interoperability-contract.md`](contracts/interoperability-contract.md): copia espejo `INTEROP-2.4` con rutas, DTOs, estados, errores y transporte universales.
+- [`contracts/system-contract.md`](contracts/system-contract.md): copia espejo byte por byte `SYSTEM-2.5` del contrato canónico de RAG Core; Sandbox conserva su copia de línea base previa hasta su homologación.
+- [`contracts/interoperability-contract.md`](contracts/interoperability-contract.md): copia espejo byte por byte `INTEROP-2.5` con rutas, DTOs, estados, errores y transporte universales.
+- [`contracts/github-integration-contract.md`](contracts/github-integration-contract.md): copia espejo `GH-INTEROP-1.1`; Console usa sus rutas de usuario para App info, discovery, verificación GitHub y ramas, y conserva Core para dominio/RAG.
 
-La demostración local usa por defecto la fuente `mock` definida en [`transversal/demo-mode/spec.md`](transversal/demo-mode/spec.md). Sus fixtures siguen INTEROP-2.4, no modifican el contrato real de RAG Core ni constituyen integración GitHub.
+La demostración local usa por defecto la fuente `mock` definida en [`transversal/demo-mode/spec.md`](transversal/demo-mode/spec.md). Sus fixtures siguen INTEROP-2.5, no modifican el contrato real de RAG Core ni constituyen integración GitHub.
 
 ## Versionado
 

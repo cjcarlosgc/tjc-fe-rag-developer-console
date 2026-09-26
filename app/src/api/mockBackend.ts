@@ -1104,7 +1104,7 @@ function isGitHubAppAuthorized(repositoryId: string): boolean {
   return repositoryId !== 'repo_playground' || attempts >= 2
 }
 
-/** HU64: `GET /integrations/github/repositories?workspaceId`. El fixture simula el filtro de workspace de Core. */
+/** Demo GitHub: el fixture simula el filtro de repositorios al scope de workspace/Project. */
 export async function mockListGitHubUserRepositories(workspaceId: string): Promise<GitHubUserRepositoryPage> {
   await latency()
   const workspace = DEMO_WORKSPACES.find((item) => item.id === workspaceId)
@@ -1118,7 +1118,6 @@ function toGitHubAppAccessResponse(repo: GitHubUserRepositoryResponse): GitHubAp
     repositoryId: repo.repositoryId,
     repositoryName: repo.repositoryName,
     status: authorized ? 'AUTHORIZED' : 'NOT_AUTHORIZED',
-    installationId: authorized ? `inst_demo_${repo.repositoryId}` : null,
     app: { displayName: 'RAG Test Studio (demo)', configureUrl: `https://github.com/apps/rag-test-studio-demo/installations/select_target?repository=${encodeURIComponent(repo.repositoryName)}` },
   }
 }

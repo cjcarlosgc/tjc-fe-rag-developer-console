@@ -22,6 +22,8 @@ Los valores son `G-NOT_RUN`, `G-PASSED`, `G-FAILED` y `G-NOT_APPLICABLE`. Para `
 
 Contract Sync corre en `start`, `implementation-delivery`, `before-review` y `before-done`. Todo evento relevante no `C-RESOLVED` o incompatibilidad conocida impide `interopSyncChecked=G-PASSED`. Para un evento histórico sin `scopePaths`, que por compatibilidad se considera global, el registry puede registrar `contractSyncReview` por WI con `NOT_RELEVANT`, motivo y digest estable del contenido. Eso permite excluirlo solo del gate de ese WI; no cambia el estado del evento ni sus acciones pendientes. Cambiar el contenido invalida el digest. Un evento notifica una necesidad contractual; no autoriza implementar un endpoint no aprobado ni cambia otro repositorio.
 
+`consumerImportedAt` conserva cuándo un evento Contract Sync entró a este repo. El validador ignora eventos importados después del `closedAt` de un snapshot, pero continúan aplicando a todos los WIs activos o futuros.
+
 ## Validación local
 
 ```sh

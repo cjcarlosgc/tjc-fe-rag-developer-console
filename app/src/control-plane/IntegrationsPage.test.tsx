@@ -54,6 +54,7 @@ test('HU30: muestra el binding ENABLED y permite desconectar', async () => {
 
   expect(await screen.findByText('checkout-service', { selector: '.repo-name' })).toBeInTheDocument()
   expect(screen.getByText('Activo')).toBeInTheDocument()
+  expect(screen.queryByText('Consultando el acceso de la GitHub App…')).not.toBeInTheDocument()
   expect(screen.getByText(/Desconectar pausa la recepción de eventos de PR; no borra Runs ni Functional Knowledge y puedes reactivarlo/)).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Reactivar' })).not.toBeInTheDocument()
 
@@ -64,6 +65,7 @@ test('HU30: muestra el binding ENABLED y permite desconectar', async () => {
   await waitFor(() => expect(screen.getByRole('button', { name: 'Reactivar' })).toHaveFocus())
   // Desconectar es una pausa (DISABLED), no un borrado: el repositorio sigue visible y no reaparece el buscador.
   expect(await screen.findByText('Pausado')).toBeInTheDocument()
+  expect(screen.queryByText('Consultando el acceso de la GitHub App…')).not.toBeInTheDocument()
   expect(screen.getByText('checkout-service', { selector: '.repo-name' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Reactivar' })).toBeEnabled()
   expect(screen.queryByRole('button', { name: 'Desconectar' })).not.toBeInTheDocument()
@@ -387,6 +389,7 @@ test('un 5xx al vincular muestra un mensaje genérico con correlationId', async 
   await user.click(await screen.findByRole('button', { name: /notifications-service/ }))
   await user.selectOptions(await screen.findByLabelText('Integration branch'), 'develop')
   setDataSourceForTests('live')
+  vi.stubEnv('VITE_GITHUB_INTEGRATION_API_URL', 'http://localhost:3002')
   vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ code: 'INTERNAL_ERROR', message: 'P2002 unique constraint', correlationId: 'corr-500' }), { status: 500 }))
 
   await user.click(screen.getByRole('button', { name: 'Vincular repositorio' }))

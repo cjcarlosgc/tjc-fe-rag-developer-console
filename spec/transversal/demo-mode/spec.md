@@ -1,6 +1,6 @@
 # demo-mode — Especificación
 
-Los escenarios mock siguen INTEROP-2.4 y el modelo Project/RepositoryBinding/PR/HEAD/AnalysisRun. El login GitHub permanece simulado y rotulado en modo demo. Los componentes de UI y estado reutilizables se aplican al flujo PR-driven; no se conserva un mock de producto separado para ZIP, generación manual, artefactos o historial manual.
+Los escenarios mock siguen INTEROP-2.5 y el modelo Project/RepositoryBinding/PR/HEAD/AnalysisRun. El login GitHub permanece simulado y rotulado en modo demo. Los componentes de UI y estado reutilizables se aplican al flujo PR-driven; no se conserva un mock de producto separado para ZIP, generación manual, artefactos o historial manual.
 
 **Estado:** aprobado.  
 **Historias:** soporte transversal para demostración de HU01–HU18; un mock no prueba aceptación live.
@@ -19,7 +19,7 @@ Permitir una demostración navegable end-to-end aunque RAG Core todavía no haya
 - El escenario experimental puede incluir candidatos RAG descartados, snippets acotados, trayectoria del agente y archivos descubiertos paginados solo donde existe contrato de traza vigente; no inventa un endpoint de trazas de `test-runs`.
 - El escenario de workspaces incluye la cuenta personal y una organización ficticia con varios Projects, roles distintos y Analysis Runs/Action Required coherentes para demostrar selección, visibilidad y acciones permitidas. Ninguna identidad, membresía ni rol simulado se presenta como dato de GitHub real.
 - `VITE_AUTH_MODE=mock` proporciona una identidad demostrativa GitHub estable solo cuando la fuente de datos también es mock/local. El CTA «Continuar con GitHub» puede recorrerse sin contactar Supabase ni GitHub; no hay UI de correo/contraseña. El mock no simula `GITHUB_IDENTITY_REQUIRED` ni `IDENTITY_UNAVAILABLE` como si fueran Core.
-- La trayectoria GitHub mock sigue INTEROP-2.4: discovery de repositorios limitado al workspace, validación `AUTHORIZED|NOT_AUTHORIZED`, ramas y RepositoryBinding; muestra PR/HEAD, AnalysisRun y companion PR.
+- La trayectoria GitHub mock sigue INTEROP-2.5: discovery de repositorios limitado al workspace, validación `AUTHORIZED|NOT_AUTHORIZED`, ramas y RepositoryBinding; muestra PR/HEAD, AnalysisRun y companion PR.
 - Toda superficie GitHub mock mantiene visible `DEMO · GITHUB SIMULADO`. No ejecuta OAuth ni almacena tokens; representa el provider token únicamente como precondición de sesión y no produce efectos externos.
 - El modo mock no abre transporte HTTP ni WebSocket; simula el avance asíncrono localmente. No prueba el transporte de tiempo real de Core.
 - Las operaciones asíncronas mock atraviesan estados intermedios antes de finalizar, respetan cancelación del consumidor y ofrecen estados terminales. Las transiciones respetan reduced motion.

@@ -114,17 +114,20 @@
       "id": "WI-CONSOLE-003",
       "component": "CONSOLE",
       "workItemType": "PRODUCT",
-      "status": "W-PLANNED",
+      "status": "W-IN_PROGRESS",
       "priority": "P1",
       "sprint": "Post-transition",
-      "title": "Separar GitHub Integration",
+      "title": "Consumir la API autenticada de GitHub Integration",
       "storyIds": [
+        "HU01",
         "HU02",
         "HU14",
         "HU16"
       ],
       "taskIds": [
-        "ST-CONSOLE-003"
+        "ST-CONSOLE-003",
+        "ST-CONSOLE-008",
+        "ST-CONSOLE-009"
       ],
       "caseIds": [],
       "dependsOn": [
@@ -133,10 +136,27 @@
       ],
       "contractImpact": true,
       "publishesContract": false,
+      "acceptanceCriteria": [
+        "Los eventos nuevos de Console usan CS-CONSOLE-YYYYMMDD-NNN; import/check acepta CS-CORE y CS-GH, además de IDs históricos simples.",
+        "SYSTEM-2.5 e INTEROP-2.5 permanecen byte-por-byte alineados con Core; GH-INTEROP-1.1 queda sincronizado.",
+        "Console usa GitHub Integration directamente solo para App info, discovery, verificación y ramas, autenticando con sesión Supabase; Core sigue siendo dueño de Projects/workspaces, binding persistido, RAG y análisis.",
+        "El flujo UI no impone installationId ni roles; al guardar el binding presenta a Core la evidencia firmada y de vida corta obtenida de Integration.",
+        "Scripts y validadores SDD/Harness aceptan los IDs nuevos y preservan sin reescritura los eventos y evidencia históricos.",
+        "El ciclo Contract Sync registra consumerImportedAt local, permite acknowledge/resolve con evidencia y no invalida snapshots cerrados por eventos importados después."
+      ],
       "specPaths": [
-        "spec/features/015-sdd-harness-transition/spec.md",
-        "spec/features/015-sdd-harness-transition/plan.md",
-        "spec/features/015-sdd-harness-transition/tasks.md"
+        "spec/features/016-github-integration/spec.md",
+        "spec/features/016-github-integration/plan.md",
+        "spec/features/016-github-integration/tasks.md",
+        "spec/contracts/system-contract.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/github-integration-contract.md"
+      ],
+      "contractSyncReview": [
+        { "eventId": "CS-20260920-003", "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f", "disposition": "NOT_RELEVANT", "reason": "Este WI solo versiona el namespace del protocolo y conserva los contratos públicos; la validación live/deploy del binding queda fuera del corte.", "report": "harness/reports/contract-sync-relevance-wi-console-003.md" },
+        { "eventId": "CS-20260921-001", "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe", "disposition": "NOT_RELEVANT", "reason": "La definición previa de login y contrato de acceso no cambia; este WI no altera autenticación ni rutas consumidas por Console.", "report": "harness/reports/contract-sync-relevance-wi-console-003.md" },
+        { "eventId": "CS-20260921-002", "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2", "disposition": "NOT_RELEVANT", "reason": "La implementación de identidad/app sigue fuera del frontend; este WI no altera login ni el comportamiento de los adapters.", "report": "harness/reports/contract-sync-relevance-wi-console-003.md" },
+        { "eventId": "CS-20260921-003", "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468", "disposition": "NOT_RELEVANT", "reason": "Workspaces, roles y comportamiento del bundle B no cambian; se mantiene la compatibilidad actual del consumidor Core.", "report": "harness/reports/contract-sync-relevance-wi-console-003.md" }
       ]
     },
     {

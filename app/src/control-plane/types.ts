@@ -1,7 +1,7 @@
-/** SDD 3.0 / INTEROP-2.4 — control plane PR-driven (Project↔Repository → PR/HEAD → Run → Check/Proposal). */
+/** SDD 3.0 / INTEROP-2.5 — control plane PR-driven (Project↔Repository → PR/HEAD → Run → Check/Proposal). */
 
 /**
- * §6.8 — GitHub App y repository binding (HU30, INTEROP-2.2 — discovery user-centric,
+ * GH-INTEROP-1.1 — GitHub App y repository binding (HU01/HU02; discovery user-centric,
  * autorización/binding GitHub-App-centric). Reemplaza el flujo installation-centric anterior:
  * discovery vía provider token OAuth → verificar acceso de la App a un repo concreto → listar
  * sus ramas reales → crear el binding. `installationId` nunca viaja desde el navegador, lo
@@ -19,7 +19,7 @@ export interface GitHubUserRepositoryResponse {
   permissions: { admin: boolean; maintain: boolean; push: boolean; pull: boolean }
 }
 
-/** `GET /integrations/github/repositories?cursor&limit` -> `Page<GitHubUserRepositoryResponse>`. */
+/** `GET /v1/github/repositories?projectId&cursor&limit` -> `Page<GitHubUserRepositoryResponse>`. */
 export interface GitHubUserRepositoryPage {
   items: GitHubUserRepositoryResponse[]
   nextCursor: string | null
@@ -36,7 +36,8 @@ export interface GitHubAppAccessResponse {
   repositoryId: string
   repositoryName: string
   status: GitHubAppAccessStatus
-  installationId: string | null
+  /** Solo vive en la respuesta de verificación que precede al binding; nunca se persiste en Console. */
+  authorizationEvidence?: string | null
   app: { displayName: string; configureUrl: string }
 }
 

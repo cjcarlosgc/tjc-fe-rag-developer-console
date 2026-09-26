@@ -2,7 +2,7 @@
 
 ## Dependencias
 
-- `INTEROP-2.4` (§6.6 handshake WebSocket, §6.13 identidad y errores), Supabase Auth, `DEC-WEB-AUTH-001` y `DEC-ORG-001` (soporte de HU01/HU02).
+- `INTEROP-2.5` (§6.6 handshake WebSocket, §6.13 identidad y errores), Supabase Auth, `DEC-WEB-AUTH-001` y `DEC-ORG-001` (soporte de HU01/HU02).
 - Transversales `api-client`, `async-state`, `design-system`, `accessibility`, `demo-mode` y `testing`.
 
 ## Diseño técnico

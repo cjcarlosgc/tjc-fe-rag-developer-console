@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { ApiError } from '../api/client'
-import type { WorkspaceRef } from '../projects/types'
+import { isMockDataSource } from '../api/dataSource'
+import type { Project } from '../projects/types'
 import {
   createRepositoryBinding,
   createTestPublication,
@@ -8,6 +9,7 @@ import {
   enableRepository,
   getAnalysisRun,
   getGitHubAppAccess,
+  getGitHubAppInfo,
   getRepositoryBinding,
   listAnalysisRuns,
   listAllAnalysisRuns,
@@ -20,9 +22,10 @@ import type { AnalysisRunStatus, CreateRepositoryBindingRequest, CreateTestPubli
 
 export const controlPlaneKeys = {
   binding: (projectId: string) => ['control-plane', 'binding', projectId] as const,
-  githubRepositories: (workspaceId: string) => ['control-plane', 'github-repositories', workspaceId] as const,
-  githubAppAccess: (repositoryId: string) => ['control-plane', 'github-app-access', repositoryId] as const,
-  githubBranches: (repositoryName: string) => ['control-plane', 'github-branches', repositoryName] as const,
+  githubRepositories: (projectId: string, userId: string | null) => ['control-plane', 'github-repositories', userId, projectId] as const,
+  githubApp: ['control-plane', 'github-app'] as const,
+  githubAppAccess: (projectId: string, repositoryId: string, userId: string | null) => ['control-plane', 'github-app-access', userId, projectId, repositoryId] as const,
+  githubBranches: (projectId: string, repositoryName: string, userId: string | null) => ['control-plane', 'github-branches', userId, projectId, repositoryName] as const,
   runs: (projectId?: string, status?: AnalysisRunStatus) => ['control-plane', 'runs', projectId ?? null, status ?? null] as const,
   allRuns: ['control-plane', 'runs', 'all'] as const,
   run: (analysisRunId: string) => ['control-plane', 'run', analysisRunId] as const,
@@ -37,36 +40,40 @@ export function useRepositoryBinding(projectId: string) {
   })
 }
 
-export function useGitHubUserRepositories(githubProviderToken: string | null, workspace: WorkspaceRef | null) {
+export function useGitHubUserRepositories(githubProviderToken: string | null, project: Project | undefined, userId: string | undefined) {
   return useQuery({
-    queryKey: controlPlaneKeys.githubRepositories(workspace?.id ?? ''),
-    queryFn: () => listGitHubUserRepositories(githubProviderToken as string, workspace!.id),
-    enabled: Boolean(githubProviderToken && workspace),
+    queryKey: controlPlaneKeys.githubRepositories(project?.id ?? '', userId ?? null),
+    queryFn: () => listGitHubUserRepositories(githubProviderToken as string, project!.workspace.id, project!.id),
+    enabled: Boolean(githubProviderToken && project),
   })
 }
 
-export function useVerifyGitHubAppAccess() {
-  return useMutation({ mutationFn: (input: VerifyGitHubAppAccessRequest) => verifyGitHubAppAccess(input) })
+export function useVerifyGitHubAppAccess(projectId: string, githubProviderToken: string | null) {
+  return useMutation({ mutationFn: (input: VerifyGitHubAppAccessRequest) => verifyGitHubAppAccess(input, projectId, githubProviderToken) })
+}
+
+export function useGitHubAppInfo(enabled = true) {
+  return useQuery({ queryKey: controlPlaneKeys.githubApp, queryFn: getGitHubAppInfo, enabled: enabled && !isMockDataSource(), staleTime: 60_000 })
 }
 
 /** Estado de acceso y URL de configuración de la GitHub App para un repositorio ya vinculado (REVOKED, o Reactivar rechazado por falta de acceso). */
-export function useGitHubAppAccessInfo(repository: { repositoryId: string; repositoryName: string } | null) {
+export function useGitHubAppAccessInfo(projectId: string, githubProviderToken: string | null, repository: { repositoryId: string; repositoryName: string } | null, userId: string | undefined) {
   return useQuery({
-    queryKey: controlPlaneKeys.githubAppAccess(repository?.repositoryId ?? ''),
-    queryFn: () => getGitHubAppAccess({ repositoryId: repository!.repositoryId, repositoryName: repository!.repositoryName }),
+    queryKey: controlPlaneKeys.githubAppAccess(projectId, repository?.repositoryId ?? '', userId ?? null),
+    queryFn: () => getGitHubAppAccess({ repositoryId: repository!.repositoryId, repositoryName: repository!.repositoryName }, projectId, githubProviderToken),
     enabled: Boolean(repository),
-    // Es un POST a Core (verify-app-access): no se repite en cada foco de ventana ni en cada montaje mientras el dato sea reciente.
+    // La verificación directa se limita a una consulta reciente y no se repite al enfocar la ventana.
     refetchOnWindowFocus: false,
     staleTime: 60_000,
   })
 }
 
-export function useGitHubRepositoryBranches(repositoryName: string | null) {
+export function useGitHubRepositoryBranches(projectId: string, githubProviderToken: string | null, repositoryName: string | null, userId: string | undefined) {
   const [owner = '', repo = ''] = repositoryName?.split('/') ?? []
   return useQuery({
-    queryKey: controlPlaneKeys.githubBranches(repositoryName ?? ''),
-    queryFn: () => listGitHubRepositoryBranches(owner, repo),
-    enabled: Boolean(owner && repo),
+    queryKey: controlPlaneKeys.githubBranches(projectId, repositoryName ?? '', userId ?? null),
+    queryFn: () => listGitHubRepositoryBranches(owner, repo, projectId, githubProviderToken),
+    enabled: Boolean(owner && repo && githubProviderToken),
   })
 }
 
@@ -81,10 +88,10 @@ function refreshBindingOnStaleError(queryClient: QueryClient, projectId: string,
   if (error instanceof ApiError && error.code && STALE_BINDING_ERROR_CODES.includes(error.code)) void queryClient.invalidateQueries({ queryKey: controlPlaneKeys.binding(projectId) })
 }
 
-export function useCreateRepositoryBinding(projectId: string) {
+export function useCreateRepositoryBinding(projectId: string, githubProviderToken: string | null) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (input: CreateRepositoryBindingRequest) => createRepositoryBinding(projectId, input),
+    mutationFn: (input: CreateRepositoryBindingRequest) => createRepositoryBinding(projectId, input, githubProviderToken),
     onSuccess: (binding) => queryClient.setQueryData(controlPlaneKeys.binding(projectId), binding),
     onError: (error) => refreshBindingOnStaleError(queryClient, projectId, error),
   })

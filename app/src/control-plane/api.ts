@@ -1,4 +1,10 @@
 import { ApiError, apiRequest } from '../api/client'
+import {
+  getGitHubAppInfo as getGitHubAppInfoDirect,
+  listGitHubRepositoryBranches as listRepositoriesBranchesDirect,
+  listGitHubUserRepositories as listUserRepositoriesDirect,
+  verifyGitHubAppAccess as verifyGitHubAppAccessDirect,
+} from './githubIntegrationApi'
 import { getDataSource } from '../api/dataSource'
 import {
   mockCreateRepositoryBinding,
@@ -32,7 +38,11 @@ import type {
   VerifyGitHubAppAccessRequest,
 } from './types'
 
-// HU30 — repository binding / GitHub App, user-centric (INTEROP-2.3 §6.8).
+// GitHub App UI capabilities use GH-INTEROP-1.1 directly; domain and durable binding remain in Core.
+
+export function getGitHubAppInfo(): Promise<GitHubAppAccessResponse['app']> {
+  return getGitHubAppInfoDirect()
+}
 
 /**
  * `GET /projects/{projectId}/integrations/github` responde `404 REPOSITORY_BINDING_NOT_FOUND` cuando el proyecto nunca se vinculó — se traduce a `null`, igual que el mock.
@@ -49,38 +59,46 @@ export async function getRepositoryBinding(projectId: string): Promise<ProjectRe
 }
 
 /**
- * `GET /integrations/github/repositories` exige `X-GitHub-Provider-Token` (INTEROP-2.3 §6.8) — lo
- * provee la sesión de GitHub OAuth del usuario (`authSession.githubProviderToken`), nunca se
- * persiste ni se reenvía a otro lado.
+ * Discovery exige `X-GitHub-Provider-Token` en la ruta de usuario de Integration. El token de la
+ * sesión GitHub es efímero, no se incluye en query keys y nunca se persiste ni se envía a Core.
  */
-export function listGitHubUserRepositories(githubProviderToken: string, workspaceId: string): Promise<GitHubUserRepositoryPage> {
+export function listGitHubUserRepositories(githubProviderToken: string, workspaceId: string, projectId?: string): Promise<GitHubUserRepositoryPage> {
   if (getDataSource() === 'mock') return mockListGitHubUserRepositories(workspaceId)
-  const query = new URLSearchParams({ workspaceId })
-  return apiRequest<GitHubUserRepositoryPage>(`/integrations/github/repositories?${query.toString()}`, { headers: { 'X-GitHub-Provider-Token': githubProviderToken } })
+  if (!projectId) throw new ApiError('Falta el proyecto para consultar GitHub.', 400, undefined, 'INVALID_REQUEST')
+  return listUserRepositoriesDirect(projectId, githubProviderToken)
 }
 
-export function verifyGitHubAppAccess(input: VerifyGitHubAppAccessRequest): Promise<GitHubAppAccessResponse> {
+export function verifyGitHubAppAccess(input: VerifyGitHubAppAccessRequest, projectId?: string, githubProviderToken?: string | null): Promise<GitHubAppAccessResponse> {
   if (getDataSource() === 'mock') return mockVerifyGitHubAppAccess(input)
-  return apiRequest<GitHubAppAccessResponse>('/integrations/github/repositories/verify-app-access', { method: 'POST', body: JSON.stringify(input) })
+  if (!projectId) throw new ApiError('Falta el proyecto para verificar GitHub.', 400, undefined, 'INVALID_REQUEST')
+  return verifyGitHubAppAccessDirect(projectId, input, githubProviderToken ?? undefined)
 }
 
 /**
- * Lectura del estado de acceso de la App (y su `configureUrl`) a un repositorio ya vinculado. En live es la misma ruta `verify-app-access`;
+ * Lectura del estado de acceso de la App (y su `configureUrl`) a un repositorio ya vinculado. En live usa la ruta de usuario Integration;
  * en mock no cuenta como una verificación (a diferencia de `verifyGitHubAppAccess`), para no alterar el resultado determinista de Reactivar.
  */
-export function getGitHubAppAccess(input: VerifyGitHubAppAccessRequest): Promise<GitHubAppAccessResponse> {
+export function getGitHubAppAccess(input: VerifyGitHubAppAccessRequest, projectId?: string, githubProviderToken?: string | null): Promise<GitHubAppAccessResponse> {
   if (getDataSource() === 'mock') return mockPeekGitHubAppAccess(input)
-  return verifyGitHubAppAccess(input)
+  return verifyGitHubAppAccess(input, projectId, githubProviderToken)
 }
 
-export function listGitHubRepositoryBranches(owner: string, repo: string): Promise<GitHubRepositoryBranchesResponse> {
+export function listGitHubRepositoryBranches(owner: string, repo: string, projectId?: string, githubProviderToken?: string | null): Promise<GitHubRepositoryBranchesResponse> {
   if (getDataSource() === 'mock') return mockListGitHubRepositoryBranches(owner, repo)
-  return apiRequest<GitHubRepositoryBranchesResponse>(`/integrations/github/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches`)
+  if (!projectId) throw new ApiError('Falta el proyecto para consultar ramas.', 400, undefined, 'INVALID_REQUEST')
+  return listRepositoriesBranchesDirect(projectId, owner, repo, githubProviderToken ?? '')
 }
 
-export function createRepositoryBinding(projectId: string, input: CreateRepositoryBindingRequest): Promise<ProjectRepositoryBindingResponse> {
+export function createRepositoryBinding(projectId: string, input: CreateRepositoryBindingRequest, githubProviderToken?: string | null): Promise<ProjectRepositoryBindingResponse> {
   if (getDataSource() === 'mock') return mockCreateRepositoryBinding(projectId, input)
-  return apiRequest<ProjectRepositoryBindingResponse>(`/projects/${encodeURIComponent(projectId)}/integrations/github`, { method: 'POST', body: JSON.stringify(input) })
+  return verifyGitHubAppAccessDirect(projectId, input, githubProviderToken ?? undefined, input.integrationBranch)
+    .then((verified) => {
+      if (!verified.authorizationEvidence) throw new ApiError('GitHub no devolvió evidencia vigente para vincular el repositorio.', 503, undefined, 'CORE_AUTHORIZATION_UNAVAILABLE')
+      return apiRequest<ProjectRepositoryBindingResponse>(`/projects/${encodeURIComponent(projectId)}/integrations/github/verified`, {
+        method: 'POST',
+        body: JSON.stringify({ ...input, authorizationEvidence: verified.authorizationEvidence }),
+      })
+    })
 }
 
 export function disconnectRepository(projectId: string): Promise<void> {

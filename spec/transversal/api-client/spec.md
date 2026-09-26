@@ -11,7 +11,7 @@ Centralizar contratos HTTP con RAG Core y evitar fetch disperso.
 
 - Los contratos canónicos son [`../../contracts/system-contract.md`](../../contracts/system-contract.md) y [`../../contracts/interoperability-contract.md`](../../contracts/interoperability-contract.md). Las copias de contrato anteriores no autorizan rutas retiradas.
 - El cliente usa `VITE_CORE_API_URL` y no llama directamente al Sandbox.
-- Proyectos, RepositoryBinding, AnalysisRun, Action Required, propuestas, publicaciones y experimentos se solicitan al dueño del contrato vigente; la Console no sube código ZIP, no inicia generación manual ni llama directamente al Sandbox. No usa URLs, buckets ni SDK de Supabase.
+- Proyectos/workspaces, persistencia de RepositoryBinding, AnalysisRun, Action Required, propuestas, publicaciones y experimentos se solicitan a Core. App info, discovery de repositorios, verificación GitHub y ramas se solicitan directamente a las rutas autenticadas de usuario de GitHub Integration conforme a `GH-INTEROP-1.1`; la Console no sube código ZIP, no inicia generación manual ni llama directamente al Sandbox. No usa URLs, buckets ni SDK de Supabase.
 - No declarar variables `VITE_SUPABASE_*` mientras no exista una feature aprobada de acceso directo. Nunca exponer secretos ni `DATABASE_URL` en variables de Vite.
 - En errores normalizados consume `ErrorEnvelope` y expone `correlationId`; no renombra ni asume `requestId`.
 - Envía y conserva el header `x-correlation-id` cuando esté disponible.

@@ -2,7 +2,7 @@
 
 **Estado:** contrato aprobado y capacidad implementada; la aceptación de HU01/HU02/HU14 se verifica contra sus criterios vigentes.
 **Historias:** HU01, HU02 y HU14. Workspaces, roles, identidad y revocación son capacidades de apoyo; no son HU adicionales.
-**Contrato:** SYSTEM-2.4 / INTEROP-2.4 (§6.1, §6.8, §6.9, §6.10, §6.13), `CS-20260921-003`.
+**Contrato:** SYSTEM-2.5 / INTEROP-2.5 (§6.1, §6.8, §6.9, §6.10, §6.13), `CS-20260921-003`.
 **Decisiones:** `DEC-ORG-001` APROBADO; `DEC-ORG-002` APROBADO.
 
 ## Objetivo

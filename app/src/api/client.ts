@@ -37,7 +37,7 @@ export function setAuthErrorHandler(handler: ((event: AuthErrorEvent) => void) |
 
 /**
  * Un `401` cierra la sesión solo si es de sesión/identidad. Los `401 GITHUB_ACCOUNT_REQUIRED` y `GITHUB_USER_TOKEN_INVALID`
- * (discovery de repositorios, INTEROP §6.8) hablan del token OAuth de GitHub, no de la sesión de la Console: no se confunden con
+ * (rutas de usuario GitHub, GH-INTEROP-1.1) hablan del token OAuth de GitHub, no de la sesión de la Console: no se confunden con
  * un token expirado y se propagan como error normal (la UI ofrece «Renovar acceso a GitHub»).
  */
 const SESSION_ENDING_401_CODES: ReadonlySet<string> = new Set(['AUTH_REQUIRED', 'INVALID_ACCESS_TOKEN', 'GITHUB_IDENTITY_REQUIRED'])
@@ -54,9 +54,14 @@ export function getAuthToken(): string | null {
 }
 
 export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
+  return apiRequestTo<T>(baseUrl, path, init)
+}
+
+/** Transporte común para Core y servicios directos; ambos reutilizan el access token de la sesión sin guardarlo. */
+export async function apiRequestTo<T>(serviceBaseUrl: string, path: string, init?: RequestInit): Promise<T> {
   const correlationId = crypto.randomUUID()
   const accessToken = authTokenProvider?.() ?? null
-  const response = await fetch(`${baseUrl}${path}`, {
+  const response = await fetch(`${serviceBaseUrl.replace(/\/$/, '')}${path}`, {
     ...init,
     headers: {
       Accept: 'application/json',
