@@ -1,4 +1,6 @@
-/** SDD 3.0 / INTEROP-2.5 — control plane PR-driven (Project↔Repository → PR/HEAD → Run → Check/Proposal). */
+import type { ProjectLanguage } from '../projects/types'
+
+/** SDD 3.0 / INTEROP-2.6 — control plane PR-driven (Project↔Repository → PR/HEAD → Run → Check/Proposal). */
 
 /**
  * GH-INTEROP-1.1 — GitHub App y repository binding (HU01/HU02; discovery user-centric,
@@ -113,7 +115,7 @@ export type SymbolChangeKind = 'DIRECTLY_CHANGED' | 'POTENTIALLY_IMPACTED'
 
 /** Símbolo del control plane PR-driven, distinto de un target de inventario de pruebas. */
 export interface AnalysisSymbolResponse {
-  language: 'TYPESCRIPT' | 'PHP'
+  language: ProjectLanguage
   kind: 'CLASS' | 'METHOD' | 'FUNCTION' | 'INTERFACE' | 'TYPE' | 'TRAIT' | 'ENUM'
   qualifiedName: string
   filePath: string

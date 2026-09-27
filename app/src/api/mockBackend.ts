@@ -128,7 +128,7 @@ function buildInventory(projectVersionId: string, revision = 7): TestInventoryRe
   ]
   const targets = revision === 5 ? [allTargets[0], allTargets[2], allTargets[3]] : revision === 6 ? allTargets.slice(0, 4) : allTargets
   const targetsWithTest = targets.filter((target) => target.hasTest).length
-  return { projectVersionId, detectedFramework: 'VITEST', targetsTotal: targets.length, targetsWithTest, targetsMissingTest: targets.length - targetsWithTest, targets }
+  return { projectVersionId, language: 'TYPESCRIPT', detectedFramework: 'VITEST', targetsTotal: targets.length, targetsWithTest, targetsMissingTest: targets.length - targetsWithTest, targets }
 }
 
 /** No es un hash real; solo produce un string con forma hexadecimal estable para la demo. */
@@ -227,15 +227,15 @@ function seed(): void {
   projects.set(maintainerProject.id, maintainerProject)
   projects.set(readerProject.id, readerProject)
   versions.set('ver_checkout_7', {
-    history: { id: 'ver_checkout_7', projectId: project.id, status: 'COMPLETED', originalFileName: null, filesProcessed: 47, chunksCount: 186, detectedFramework: 'VITEST', targetsTotal: 5, targetsWithTest: 2, targetsMissingTest: 3, createdAt: '2026-08-31T14:17:10.000Z', completedAt, current: true },
+    history: { id: 'ver_checkout_7', projectId: project.id, status: 'COMPLETED', language: 'TYPESCRIPT', originalFileName: null, filesProcessed: 47, chunksCount: 186, detectedFramework: 'VITEST', targetsTotal: 5, targetsWithTest: 2, targetsMissingTest: 3, createdAt: '2026-08-31T14:17:10.000Z', completedAt, current: true },
     inventory: buildInventory('ver_checkout_7'),
   })
   versions.set('ver_checkout_6', {
-    history: { id: 'ver_checkout_6', projectId: project.id, status: 'COMPLETED', originalFileName: null, filesProcessed: 43, chunksCount: 164, detectedFramework: 'VITEST', targetsTotal: 4, targetsWithTest: 2, targetsMissingTest: 2, createdAt: '2026-08-28T10:05:00.000Z', completedAt: '2026-08-28T10:06:21.000Z', current: false },
+    history: { id: 'ver_checkout_6', projectId: project.id, status: 'COMPLETED', language: 'TYPESCRIPT', originalFileName: null, filesProcessed: 43, chunksCount: 164, detectedFramework: 'VITEST', targetsTotal: 4, targetsWithTest: 2, targetsMissingTest: 2, createdAt: '2026-08-28T10:05:00.000Z', completedAt: '2026-08-28T10:06:21.000Z', current: false },
     inventory: buildInventory('ver_checkout_6', 6),
   })
   versions.set('ver_checkout_5', {
-    history: { id: 'ver_checkout_5', projectId: project.id, status: 'COMPLETED', originalFileName: null, filesProcessed: 38, chunksCount: 141, detectedFramework: 'VITEST', targetsTotal: 3, targetsWithTest: 1, targetsMissingTest: 2, createdAt: '2026-08-24T09:34:00.000Z', completedAt: '2026-08-24T09:35:30.000Z', current: false },
+    history: { id: 'ver_checkout_5', projectId: project.id, status: 'COMPLETED', language: 'TYPESCRIPT', originalFileName: null, filesProcessed: 38, chunksCount: 141, detectedFramework: 'VITEST', targetsTotal: 3, targetsWithTest: 1, targetsMissingTest: 2, createdAt: '2026-08-24T09:34:00.000Z', completedAt: '2026-08-24T09:35:30.000Z', current: false },
     inventory: buildInventory('ver_checkout_5', 5),
   })
   seedContextTraces()

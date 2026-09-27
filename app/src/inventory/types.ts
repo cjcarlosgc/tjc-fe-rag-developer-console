@@ -1,3 +1,5 @@
+import type { ProjectLanguage, TestFramework } from '../projects/types'
+
 export type InventoryTargetKind = 'CLASS' | 'METHOD' | 'FUNCTION'
 
 export interface TestTargetResponse {
@@ -12,7 +14,8 @@ export interface TestTargetResponse {
 
 export interface TestInventoryResponse {
   projectVersionId: string
-  detectedFramework: string | null
+  language: ProjectLanguage
+  detectedFramework: TestFramework | null
   targetsTotal: number
   targetsWithTest: number
   targetsMissingTest: number

@@ -1,5 +1,5 @@
 # 003-test-inventory — Subtareas vigentes
 
-No hay una subtarea técnica seleccionable en este archivo para SDD 3.0. El comportamiento vigente está en `spec.md` y `plan.md`; la ejecución futura requiere una ST local y un WI registrado antes de comenzar.
+- [x] **ST-CONSOLE-011 · T-DONE · WI-CONSOLE-009 · HU04:** sincronizar DTOs de ProjectVersion/inventario con INTEROP-2.6 y probar que `PHP`/`PHPUNIT` se representa como detección, no como readiness de generación/ejecución antes de WI-CORE-013. Evidencia: harness/reports/wi-console-009-closure.md.
 
 Los checklists anteriores se conservan en Git, CHANGELOG y `harness/reports/open-task-triage-3.0.md`.
