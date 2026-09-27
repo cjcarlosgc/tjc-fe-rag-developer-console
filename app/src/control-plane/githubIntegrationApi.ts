@@ -34,10 +34,9 @@ export function listGitHubRepositoryBranches(
   projectId: string,
   owner: string,
   repo: string,
-  providerToken: string,
 ): Promise<GitHubRepositoryBranchesResponse> {
   const query = new URLSearchParams({ projectId })
-  return request(`/v1/github/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches?${query.toString()}`, providerToken)
+  return request(`/v1/github/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches?${query.toString()}`)
 }
 
 function request<T>(path: string, providerToken?: string, init?: RequestInit): Promise<T> {

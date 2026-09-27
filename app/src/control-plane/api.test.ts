@@ -587,8 +587,8 @@ describe('control-plane api (live) — HU30 repository binding, Core ya lo imple
   it('listGitHubRepositoryBranches pide GET directo a Integration con autorización de Project', async () => {
     const branches = { items: [{ name: 'main', protected: true }] }
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(branches), { status: 200 }))
-    await expect(listGitHubRepositoryBranches('acme', 'repo', 'project-id', 'gho_token')).resolves.toEqual(branches)
-    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/v1/github/repositories/acme/repo/branches?projectId=project-id'), expect.anything())
+    await expect(listGitHubRepositoryBranches('acme', 'repo', 'project-id')).resolves.toEqual(branches)
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/v1/github/repositories/acme/repo/branches?projectId=project-id'), expect.objectContaining({ headers: expect.not.objectContaining({ 'X-GitHub-Provider-Token': expect.anything() }) }))
   })
 
   it('createRepositoryBinding obtiene evidencia en Integration y solo después pide persistir a Core', async () => {

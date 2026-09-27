@@ -78,15 +78,15 @@ export function verifyGitHubAppAccess(input: VerifyGitHubAppAccessRequest, proje
  * Lectura del estado de acceso de la App (y su `configureUrl`) a un repositorio ya vinculado. En live usa la ruta de usuario Integration;
  * en mock no cuenta como una verificación (a diferencia de `verifyGitHubAppAccess`), para no alterar el resultado determinista de Reactivar.
  */
-export function getGitHubAppAccess(input: VerifyGitHubAppAccessRequest, projectId?: string, githubProviderToken?: string | null): Promise<GitHubAppAccessResponse> {
+export function getGitHubAppAccess(input: VerifyGitHubAppAccessRequest, projectId?: string): Promise<GitHubAppAccessResponse> {
   if (getDataSource() === 'mock') return mockPeekGitHubAppAccess(input)
-  return verifyGitHubAppAccess(input, projectId, githubProviderToken)
+  return verifyGitHubAppAccess(input, projectId)
 }
 
-export function listGitHubRepositoryBranches(owner: string, repo: string, projectId?: string, githubProviderToken?: string | null): Promise<GitHubRepositoryBranchesResponse> {
+export function listGitHubRepositoryBranches(owner: string, repo: string, projectId?: string): Promise<GitHubRepositoryBranchesResponse> {
   if (getDataSource() === 'mock') return mockListGitHubRepositoryBranches(owner, repo)
   if (!projectId) throw new ApiError('Falta el proyecto para consultar ramas.', 400, undefined, 'INVALID_REQUEST')
-  return listRepositoriesBranchesDirect(projectId, owner, repo, githubProviderToken ?? '')
+  return listRepositoriesBranchesDirect(projectId, owner, repo)
 }
 
 export function createRepositoryBinding(projectId: string, input: CreateRepositoryBindingRequest, githubProviderToken?: string | null): Promise<ProjectRepositoryBindingResponse> {

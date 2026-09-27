@@ -52,11 +52,11 @@ export function IntegrationsPage() {
   const [selectedRepo, setSelectedRepo] = useState<GitHubUserRepositoryResponse | null>(null)
   const [accessResult, setAccessResult] = useState<GitHubAppAccessResponse | null>(null)
   const [integrationBranch, setIntegrationBranch] = useState('')
-  const branchesQuery = useGitHubRepositoryBranches(projectId, providerToken, accessResult?.status === 'AUTHORIZED' ? selectedRepo?.repositoryName ?? null : null, authSession?.user.id)
+  const branchesQuery = useGitHubRepositoryBranches(projectId, accessResult?.status === 'AUTHORIZED' ? selectedRepo?.repositoryName ?? null : null, authSession?.user.id)
   // El enlace a configurar la App se ofrece en REVOKED sin esperar a que Reactivar falle, y en DISABLED si Reactivar fue rechazado por falta de acceso.
   const enableNeedsAccess = enable.error instanceof ApiError && enable.error.code === 'GITHUB_APP_ACCESS_REQUIRED'
   const bindingForAccess = canReactivateBinding && bindingQuery.data && (bindingQuery.data.status === 'REVOKED' || enableNeedsAccess) ? bindingQuery.data : null
-  const appAccessInfo = useGitHubAppAccessInfo(projectId, providerToken, bindingForAccess, authSession?.user.id)
+  const appAccessInfo = useGitHubAppAccessInfo(projectId, bindingForAccess, authSession?.user.id)
   const appInfo = useGitHubAppInfo(Boolean(bindingForAccess))
   // La verificación de acceso también devuelve la URL verificada. Si el endpoint informativo
   // falla, esta respuesta permite conservar la ruta de recuperación sin inventar un enlace.

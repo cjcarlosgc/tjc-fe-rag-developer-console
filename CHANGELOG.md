@@ -4,6 +4,7 @@ Todos los cambios notables de la línea base SDD se registran aquí. El contenid
 
 ## [Unreleased]
 
+- **Cierre local de la integración Console→GitHub Integration (2026-09-26):** `WI-CONSOLE-003` quedó revisado y cerrado con evidencia de UI/UX estática, contratos sincronizados y gates registrados. Console mantiene Core como autoridad de dominio. `WI-CONSOLE-008` queda planificado solo para validar el contrato del corte de PRs pre-binding; no agrega cambios de UI ni implica deploy/cutover.
 - **Alineación de contratos compartidos (2026-09-26):** se corrigieron dos descripciones heredadas: Console consume directamente discovery en Integration y Core autoriza/devuelve el owner scope mientras Integration filtra resultados GitHub. No implica deploy, cutover ni cierre de `WI-CONSOLE-003`.
 - **Recuperación de binding revocado:** si falla App info, la Console usa solo la `configureUrl` devuelta por verificación autenticada; fallos de ambas consultas muestran un error accesible y reintento. La espera de ramas ahora se anuncia a tecnologías de asistencia. La revisión UX estática del agente fue aprobada; el visto bueno personal de `WI-CONSOLE-003` sigue pendiente.
 - **Ciclo Contract Sync del Harness (2026-09-26):** la importación idempotente registra `consumerImportedAt`, acknowledge/resolve exigen evidencia y el validador conserva snapshots cerrados frente a eventos importados después. `CS-GH-20260926-001` sigue `C-PENDING`; `WI-CONSOLE-003` permanece abierto.

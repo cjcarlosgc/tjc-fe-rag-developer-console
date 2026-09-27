@@ -13,8 +13,9 @@ La planificación de producto conserva las seis épicas y 18 HU fijas de `spec/b
 
 1. `WI-CONSOLE-001` (P0, cerrado localmente): reordenar SDD/Harness, IDs, estados, gates y contratos sin asumir aceptación de HU antiguas.
 2. `WI-CONSOLE-002` (P0, después del 001): retirar carga manual de código ZIP y descarga legacy de artefactos. Conservar snapshot ZIP interno y datos activos; migración/purga solo con inventario y respaldo.
-3. `WI-CONSOLE-003` (P1, después de 001/002): consumir `tjc-be-github-integration-api` directamente para App info, discovery, verificación y ramas; mantener Core para dominio, Projects/workspaces, persistencia de binding, RAG y análisis. El WI permanece abierto para revisión personal.
-4. `WI-CONSOLE-004` (P2): formalizar OC01–OC15, happy paths primero y subcasos después. El catálogo de nombres no equivale a cobertura validada.
+3. `WI-CONSOLE-003` (P1, después de 001/002): consumir `tjc-be-github-integration-api` directamente para App info, discovery, verificación y ramas; mantener Core para dominio, Projects/workspaces, persistencia de binding, RAG y análisis. `W-DONE` local con revisión UX y humana; sin deploy/cutover.
+4. `WI-CONSOLE-008` (P2): sincronizar el contrato del corte PR/binding tras `WI-GH-007` y `WI-CORE-011`; verificar el filtrado por Project sin agregar UI.
+5. `WI-CONSOLE-004` (P2): formalizar OC01–OC15, happy paths primero y subcasos después. El catálogo de nombres no equivale a cobertura validada.
 
 ## Backlog técnico P2, no seleccionado
 

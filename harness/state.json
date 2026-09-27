@@ -541,182 +541,260 @@
       ],
       "blockedReason": null,
       "closedAt": "2026-09-25T01:44:50.000Z"
-    }
-  ],
-  "activeWorkItem": {
-    "id": "WI-CONSOLE-003",
-    "component": "CONSOLE",
-    "workItemType": "PRODUCT",
-    "storyIds": [
-      "HU01",
-      "HU02",
-      "HU14",
-      "HU16"
-    ],
-    "taskIds": [
-      "ST-CONSOLE-003",
-      "ST-CONSOLE-008",
-      "ST-CONSOLE-009"
-    ],
-    "caseIds": [],
-    "sprint": "Post-transition",
-    "status": "W-IN_PROGRESS",
-    "specPaths": [
-      "spec/features/016-github-integration/spec.md",
-      "spec/features/016-github-integration/plan.md",
-      "spec/features/016-github-integration/tasks.md",
-      "spec/contracts/system-contract.md",
-      "spec/contracts/interoperability-contract.md",
-      "spec/contracts/github-integration-contract.md"
-    ],
-    "transversalPaths": [],
-    "contractSyncReview": [
-      {
-        "eventId": "CS-20260920-003",
-        "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
-        "disposition": "NOT_RELEVANT",
-        "reason": "Este WI solo versiona el namespace del protocolo y conserva los contratos públicos; la validación live/deploy del binding queda fuera del corte.",
-        "report": "harness/reports/contract-sync-relevance-wi-console-003.md"
-      },
-      {
-        "eventId": "CS-20260921-001",
-        "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
-        "disposition": "NOT_RELEVANT",
-        "reason": "La definición previa de login y contrato de acceso no cambia; este WI no altera autenticación ni rutas consumidas por Console.",
-        "report": "harness/reports/contract-sync-relevance-wi-console-003.md"
-      },
-      {
-        "eventId": "CS-20260921-002",
-        "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
-        "disposition": "NOT_RELEVANT",
-        "reason": "La implementación de identidad/app sigue fuera del frontend; este WI no altera login ni el comportamiento de los adapters.",
-        "report": "harness/reports/contract-sync-relevance-wi-console-003.md"
-      },
-      {
-        "eventId": "CS-20260921-003",
-        "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
-        "disposition": "NOT_RELEVANT",
-        "reason": "Workspaces, roles y comportamiento del bundle B no cambian; se mantiene la compatibilidad actual del consumidor Core.",
-        "report": "harness/reports/contract-sync-relevance-wi-console-003.md"
-      }
-    ],
-    "approved": true,
-    "decisionGate": {
-      "checked": true,
-      "blockingDecisionIds": [],
-      "nonBlockingDecisionIds": [],
-      "checkedAt": "2026-09-26T05:47:28.000Z"
     },
-    "execution": {
-      "leaderAgent": "leader",
-      "analysisAgent": "sdd-analyst",
-      "implementationAgent": "implementer",
-      "contractReviewAgent": "contract-reviewer",
-      "reviewAgent": "human-reviewer",
-      "uxReviewAgent": "ux-reviewer",
-      "handoffs": [],
-      "reviewCycles": 0,
-      "maxReviewCycles": 2
-    },
-    "gates": {
-      "sddVerified": "G-PASSED",
-      "implementationCompleted": "G-PASSED",
-      "uxReviewed": "G-NOT_RUN",
-      "contractReviewed": "G-NOT_RUN",
-      "canonicalContractSynced": "G-NOT_RUN",
-      "contractSyncPublished": "G-NOT_APPLICABLE",
-      "independentReviewPassed": "G-NOT_RUN",
-      "technicalChecksPassed": "G-PASSED",
-      "interopSyncChecked": "G-PASSED",
-      "noMocksPresentedAsLive": "G-PASSED",
-      "noBlockingDecisions": "G-PASSED",
-      "retryLimitRespected": "G-PASSED"
-    },
-    "gateEvidence": {
-      "sddVerified": [
-        "harness/reports/wi-console-003-spec-verification.md"
+    {
+      "id": "WI-CONSOLE-003",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "storyIds": [
+        "HU01",
+        "HU02",
+        "HU14",
+        "HU16"
       ],
-      "implementationCompleted": [
-        "harness/reports/wi-console-003-implementation.md",
-        "harness/reports/contract-sync-resolution-cs-gh-20260926-001.md"
+      "taskIds": [
+        "ST-CONSOLE-003",
+        "ST-CONSOLE-008",
+        "ST-CONSOLE-009"
       ],
-      "contractReviewed": [
-        "harness/reports/wi-console-003-spec-verification.md"
+      "caseIds": [],
+      "sprint": "Post-transition",
+      "status": "W-DONE",
+      "specPaths": [
+        "spec/features/016-github-integration/spec.md",
+        "spec/features/016-github-integration/plan.md",
+        "spec/features/016-github-integration/tasks.md",
+        "spec/contracts/system-contract.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/github-integration-contract.md"
       ],
-      "canonicalContractSynced": [
-        "harness/reports/wi-console-003-implementation.md"
-      ],
-      "technicalChecksPassed": [
-        "harness/reports/wi-console-003-implementation.md",
-        "harness/reports/contract-sync-resolution-cs-gh-20260926-001.md"
-      ],
-      "interopSyncChecked": [
-        "harness/reports/contract-sync-resolution-cs-gh-20260926-001.md"
-      ],
-      "noMocksPresentedAsLive": [
-        "harness/reports/wi-console-003-implementation.md"
-      ],
-      "noBlockingDecisions": [
-        "harness/reports/wi-console-003-spec-verification.md"
-      ],
-      "retryLimitRespected": [
-        "harness/reports/wi-console-003-implementation.md"
-      ]
-    },
-    "coordination": {
-      "contractImpact": true,
-      "publishesContract": false,
-      "uiImpact": true,
-      "pullCheckpoints": [
+      "transversalPaths": [],
+      "contractSyncReview": [
         {
-          "checkpoint": "start",
-          "workItem": "WI-CONSOLE-003",
-          "relevantPendingSyncIds": [],
-          "deferredSyncIds": [],
-          "notRelevantSyncIds": [
-            "CS-20260920-003",
-            "CS-20260921-001",
-            "CS-20260921-002",
-            "CS-20260921-003"
-          ],
-          "checkedAt": "2026-09-25T05:29:09.114Z"
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Este WI solo versiona el namespace del protocolo y conserva los contratos públicos; la validación live/deploy del binding queda fuera del corte.",
+          "report": "harness/reports/contract-sync-relevance-wi-console-003.md"
         },
         {
-          "checkpoint": "implementation-delivery",
-          "workItem": "WI-CONSOLE-003",
-          "relevantPendingSyncIds": [],
-          "deferredSyncIds": [],
-          "notRelevantSyncIds": [
-            "CS-20260920-003",
-            "CS-20260921-001",
-            "CS-20260921-002",
-            "CS-20260921-003"
-          ],
-          "checkedAt": "2026-09-25T06:41:21.921Z"
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "La definición previa de login y contrato de acceso no cambia; este WI no altera autenticación ni rutas consumidas por Console.",
+          "report": "harness/reports/contract-sync-relevance-wi-console-003.md"
         },
         {
-          "checkpoint": "before-review",
-          "workItem": "WI-CONSOLE-003",
-          "relevantPendingSyncIds": [],
-          "deferredSyncIds": [],
-          "notRelevantSyncIds": [
-            "CS-20260920-003",
-            "CS-20260921-001",
-            "CS-20260921-002",
-            "CS-20260921-003"
-          ],
-          "checkedAt": "2026-09-26T05:48:45.504Z"
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "La implementación de identidad/app sigue fuera del frontend; este WI no altera login ni el comportamiento de los adapters.",
+          "report": "harness/reports/contract-sync-relevance-wi-console-003.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Workspaces, roles y comportamiento del bundle B no cambian; se mantiene la compatibilidad actual del consumidor Core.",
+          "report": "harness/reports/contract-sync-relevance-wi-console-003.md"
         }
       ],
-      "publishedSyncIds": [],
-      "pendingRelevantSyncIds": [],
-      "knownIncompatibilities": []
-    },
-    "evidence": [
-      "harness/reports/wi-console-003-spec-verification.md",
-      "harness/reports/wi-console-003-implementation.md",
-      "harness/reports/wi-console-003-approval.md"
-    ],
-    "blockedReason": null
-  }
+      "approved": true,
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-09-26T05:47:28.000Z"
+      },
+      "execution": {
+        "leaderAgent": "leader",
+        "analysisAgent": "sdd-analyst",
+        "implementationAgent": "implementer",
+        "contractReviewAgent": "contract-reviewer",
+        "reviewAgent": "human-reviewer",
+        "uxReviewAgent": "ux-reviewer",
+        "handoffs": [
+          {
+            "agent": "human-reviewer",
+            "status": "APPROVED",
+            "findings": [
+              "El usuario revisó la migración consolidada y autorizó cerrar los WIs relacionados."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "harness/reports/wi-console-003-user-review-final.md"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-003-user-review-final.md"
+            ],
+            "recommendedNextStep": "Mantener el cutover fuera de este cierre y revisar WI-CONSOLE-008 después de Core/GH."
+          },
+          {
+            "agent": "contract-reviewer",
+            "status": "APPROVED",
+            "findings": [],
+            "blockers": [],
+            "filesAffected": [
+              "spec/contracts/system-contract.md",
+              "spec/contracts/interoperability-contract.md",
+              "spec/contracts/github-integration-contract.md"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-003-contract-review-final.md"
+            ],
+            "recommendedNextStep": "Mantener contratos sincronizados y resolver cambios futuros por Contract Sync."
+          },
+          {
+            "agent": "ux-reviewer",
+            "status": "APPROVED",
+            "findings": [
+              "Aprobación UX estática; no hubo navegador disponible para inspección visual/responsive."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/control-plane/IntegrationsPage.tsx",
+              "app/src/control-plane/githubIntegrationApi.ts"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-003-ux-review-final.md"
+            ],
+            "recommendedNextStep": "No se requieren cambios UX para este WI."
+          }
+        ],
+        "reviewCycles": 0,
+        "maxReviewCycles": 2
+      },
+      "gates": {
+        "sddVerified": "G-PASSED",
+        "implementationCompleted": "G-PASSED",
+        "uxReviewed": "G-PASSED",
+        "contractReviewed": "G-PASSED",
+        "canonicalContractSynced": "G-PASSED",
+        "contractSyncPublished": "G-NOT_APPLICABLE",
+        "independentReviewPassed": "G-PASSED",
+        "technicalChecksPassed": "G-PASSED",
+        "interopSyncChecked": "G-PASSED",
+        "noMocksPresentedAsLive": "G-PASSED",
+        "noBlockingDecisions": "G-PASSED",
+        "retryLimitRespected": "G-PASSED"
+      },
+      "gateEvidence": {
+        "sddVerified": [
+          "harness/reports/wi-console-003-spec-verification.md"
+        ],
+        "implementationCompleted": [
+          "harness/reports/wi-console-003-implementation.md",
+          "harness/reports/contract-sync-resolution-cs-gh-20260926-001.md"
+        ],
+        "contractReviewed": [
+          "harness/reports/wi-console-003-contract-review-final.md"
+        ],
+        "canonicalContractSynced": [
+          "harness/reports/wi-console-003-contract-review-final.md"
+        ],
+        "technicalChecksPassed": [
+          "harness/reports/wi-console-003-implementation.md",
+          "harness/reports/contract-sync-resolution-cs-gh-20260926-001.md"
+        ],
+        "interopSyncChecked": [
+          "harness/reports/wi-console-003-closure.md"
+        ],
+        "noMocksPresentedAsLive": [
+          "harness/reports/wi-console-003-implementation.md"
+        ],
+        "noBlockingDecisions": [
+          "harness/reports/wi-console-003-spec-verification.md"
+        ],
+        "retryLimitRespected": [
+          "harness/reports/wi-console-003-closure.md"
+        ],
+        "independentReviewPassed": [
+          "harness/reports/wi-console-003-user-review-final.md"
+        ],
+        "uxReviewed": [
+          "harness/reports/wi-console-003-ux-review-final.md"
+        ]
+      },
+      "coordination": {
+        "contractImpact": true,
+        "publishesContract": false,
+        "uiImpact": true,
+        "pullCheckpoints": [
+          {
+            "checkpoint": "start",
+            "workItem": "WI-CONSOLE-003",
+            "relevantPendingSyncIds": [],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-09-25T05:29:09.114Z"
+          },
+          {
+            "checkpoint": "implementation-delivery",
+            "workItem": "WI-CONSOLE-003",
+            "relevantPendingSyncIds": [],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-09-25T06:41:21.921Z"
+          },
+          {
+            "checkpoint": "before-review",
+            "workItem": "WI-CONSOLE-003",
+            "relevantPendingSyncIds": [],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-09-26T05:48:45.504Z"
+          },
+          {
+            "checkpoint": "before-done",
+            "workItem": "WI-CONSOLE-003",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002",
+              "CS-20260924-001",
+              "CS-GH-20260926-001"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-09-27T03:42:39.069Z"
+          }
+        ],
+        "publishedSyncIds": [],
+        "pendingRelevantSyncIds": [],
+        "knownIncompatibilities": []
+      },
+      "evidence": [
+        "harness/reports/wi-console-003-spec-verification.md",
+        "harness/reports/wi-console-003-implementation.md",
+        "harness/reports/wi-console-003-approval.md",
+        "harness/reports/wi-console-003-user-review-final.md",
+        "harness/reports/wi-console-003-contract-review-final.md",
+        "harness/reports/wi-console-003-ux-review-final.md",
+        "harness/reports/wi-console-003-closure.md"
+      ],
+      "blockedReason": null,
+      "closedAt": "2026-09-27T03:48:31Z"
+    }
+  ],
+  "activeWorkItem": null
 }

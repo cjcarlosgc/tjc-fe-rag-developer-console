@@ -57,10 +57,10 @@ export function useGitHubAppInfo(enabled = true) {
 }
 
 /** Estado de acceso y URL de configuración de la GitHub App para un repositorio ya vinculado (REVOKED, o Reactivar rechazado por falta de acceso). */
-export function useGitHubAppAccessInfo(projectId: string, githubProviderToken: string | null, repository: { repositoryId: string; repositoryName: string } | null, userId: string | undefined) {
+export function useGitHubAppAccessInfo(projectId: string, repository: { repositoryId: string; repositoryName: string } | null, userId: string | undefined) {
   return useQuery({
     queryKey: controlPlaneKeys.githubAppAccess(projectId, repository?.repositoryId ?? '', userId ?? null),
-    queryFn: () => getGitHubAppAccess({ repositoryId: repository!.repositoryId, repositoryName: repository!.repositoryName }, projectId, githubProviderToken),
+    queryFn: () => getGitHubAppAccess({ repositoryId: repository!.repositoryId, repositoryName: repository!.repositoryName }, projectId),
     enabled: Boolean(repository),
     // La verificación directa se limita a una consulta reciente y no se repite al enfocar la ventana.
     refetchOnWindowFocus: false,
@@ -68,12 +68,12 @@ export function useGitHubAppAccessInfo(projectId: string, githubProviderToken: s
   })
 }
 
-export function useGitHubRepositoryBranches(projectId: string, githubProviderToken: string | null, repositoryName: string | null, userId: string | undefined) {
+export function useGitHubRepositoryBranches(projectId: string, repositoryName: string | null, userId: string | undefined) {
   const [owner = '', repo = ''] = repositoryName?.split('/') ?? []
   return useQuery({
     queryKey: controlPlaneKeys.githubBranches(projectId, repositoryName ?? '', userId ?? null),
-    queryFn: () => listGitHubRepositoryBranches(owner, repo, projectId, githubProviderToken),
-    enabled: Boolean(owner && repo && githubProviderToken),
+    queryFn: () => listGitHubRepositoryBranches(owner, repo, projectId),
+    enabled: Boolean(owner && repo),
   })
 }
 

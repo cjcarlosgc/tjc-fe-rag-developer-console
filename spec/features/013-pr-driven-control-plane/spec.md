@@ -22,7 +22,7 @@ Los adapters `mock|live` respetan el mismo contrato INTEROP-2.5. La demo se rotu
 
 ## Seguridad
 
-No exponer secretos de GitHub App, token del Sandbox, keys de Storage ni URLs firmadas internas. El provider token OAuth solo se usa para discovery, no se persiste en fixtures ni logs. Core determina autorización, clasificación, suficiencia, impacto y freshness; la UI presenta esos resultados. Un recurso no visible no revela existencia por mensaje o estado.
+No exponer secretos de GitHub App, token del Sandbox, keys de Storage ni URLs firmadas internas. En el flujo directo de GitHub Integration, el provider token OAuth se usa en memoria para discovery o verificación de un repositorio nuevo, nunca se persiste ni se registra y no se reenvía a Core. La compatibilidad temporal de las rutas Core antiguas puede recibirlo y reenviarlo a Integration. Core determina autorización, clasificación, suficiencia, impacto y freshness; la UI presenta esos resultados. Un recurso no visible no revela existencia por mensaje o estado.
 
 ## Casos operativos
 

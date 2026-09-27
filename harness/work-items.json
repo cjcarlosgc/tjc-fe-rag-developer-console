@@ -114,7 +114,7 @@
       "id": "WI-CONSOLE-003",
       "component": "CONSOLE",
       "workItemType": "PRODUCT",
-      "status": "W-IN_PROGRESS",
+      "status": "W-DONE",
       "priority": "P1",
       "sprint": "Post-transition",
       "title": "Consumir la API autenticada de GitHub Integration",
@@ -139,7 +139,7 @@
       "acceptanceCriteria": [
         "Los eventos nuevos de Console usan CS-CONSOLE-YYYYMMDD-NNN; import/check acepta CS-CORE y CS-GH, además de IDs históricos simples.",
         "SYSTEM-2.5 e INTEROP-2.5 permanecen byte-por-byte alineados con Core; GH-INTEROP-1.1 queda sincronizado.",
-        "Console usa GitHub Integration directamente solo para App info, discovery, verificación y ramas, autenticando con sesión Supabase; Core sigue siendo dueño de Projects/workspaces, binding persistido, RAG y análisis.",
+      "Console usa GitHub Integration directamente solo para App info, discovery, verificación y ramas, autenticando con sesión Supabase; provider token solo acompaña discovery/verificación de repo nuevo, nunca branches/binding existente. Core sigue siendo dueño de Projects/workspaces, binding persistido, RAG y análisis.",
         "El flujo UI no impone installationId ni roles; al guardar el binding presenta a Core la evidencia firmada y de vida corta obtenida de Integration.",
         "Scripts y validadores SDD/Harness aceptan los IDs nuevos y preservan sin reescritura los eventos y evidencia históricos.",
         "El ciclo Contract Sync registra consumerImportedAt local, permite acknowledge/resolve con evidencia y no invalida snapshots cerrados por eventos importados después."
@@ -234,6 +234,59 @@
       "storyIds": ["HU01", "HU12", "HU14"], "taskIds": ["ST-CONSOLE-007"], "caseIds": [],
       "dependsOn": ["WI-CONSOLE-001"], "contractImpact": false, "publishesContract": false,
       "specPaths": ["spec/transversal/errors-notifications/spec.md", "spec/transversal/errors-notifications/plan.md", "spec/transversal/errors-notifications/tasks.md"]
+    },
+    {
+      "id": "WI-CONSOLE-008",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-PLANNED",
+      "priority": "P2",
+      "sprint": "Post-transition",
+      "title": "Sincronizar contrato de exclusión de PRs pre-binding",
+      "storyIds": ["HU12", "HU14"],
+      "taskIds": ["ST-CONSOLE-010"],
+      "caseIds": [],
+      "dependsOn": ["WI-CONSOLE-003"],
+      "contractImpact": true,
+      "publishesContract": false,
+      "externalDependencies": [
+        {
+          "component": "GH",
+          "repository": "tjc-be-github-integration-api",
+          "workItemIds": ["WI-GH-007"],
+          "requiredStatus": "W-DONE",
+          "requiredContractSync": "imported-and-acknowledged",
+          "verification": "manual-cross-repository"
+        },
+        {
+          "component": "CORE",
+          "repository": "tjc-be-rag-core-api",
+          "workItemIds": ["WI-CORE-011"],
+          "requiredStatus": "W-DONE",
+          "requiredContractSync": "imported-and-acknowledged",
+          "verification": "manual-cross-repository"
+        }
+      ],
+      "externalDependencyGate": {
+        "status": "G-NOT_RUN",
+        "evidenceReport": null,
+        "sourceRevisions": {},
+        "verifiedAt": null,
+        "verifiedBy": null
+      },
+      "acceptanceCriteria": [
+        "Importar y revisar los Contract Sync de GH-007 y Core-011; el contrato local queda byte a byte alineado con la fuente canónica.",
+        "Verificar que Console ya limita Runs al Project consultado y que los Runs ocultos por Core no se reconstruyen en la UI.",
+        "No agregar filtros UI, cambios visuales ni borrado de registros; lint, test, build y Harness pasan."
+      ],
+      "specPaths": [
+        "spec/features/016-github-integration/spec.md",
+        "spec/features/016-github-integration/plan.md",
+        "spec/features/016-github-integration/tasks.md",
+        "spec/contracts/system-contract.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/github-integration-contract.md"
+      ]
     }
   ]
 }
