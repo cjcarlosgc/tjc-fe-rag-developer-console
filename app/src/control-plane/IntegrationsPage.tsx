@@ -16,7 +16,7 @@ import { BINDING_STATUS_BADGES } from './status'
 import type { CreateRepositoryBindingRequest, GitHubAppAccessResponse, GitHubUserRepositoryResponse } from './types'
 
 /**
- * HU01/HU02 — repository binding user-centric (GH-INTEROP-1.1). La instalación real de la GitHub App
+ * HU01/HU02 — repository binding user-centric (GH-INTEROP-1.2). La instalación real de la GitHub App
  * y el popup de OAuth no pueden reproducirse en este mock: se simulan en 4 pasos explícitos
  * (descubrir → verificar acceso de la App → elegir rama → vincular), siempre etiquetados DEMO.
  */

@@ -1,6 +1,6 @@
 # 016 — Frontera GitHub Integration (Console)
 
-**Estado:** la migración de código fuente quedó cerrada localmente bajo `WI-CONSOLE-003`; no hay despliegue ni cutover. La sincronización contractual del corte temporal PR/binding se planifica por separado en `WI-CONSOLE-008` y no implica cambio funcional de UI.
+**Estado:** la migración de código fuente quedó cerrada localmente bajo `WI-CONSOLE-003`; la sincronización de contratos y la verificación de Runs por Project de `WI-CONSOLE-008` también están cerradas. `WI-CONSOLE-010` está `W-DONE`: Console importó y resolvió `CS-CORE-20260927-004/005/006`; SYSTEM-2.5, INTEROP-2.6 y GH-INTEROP-1.2 coinciden byte a byte con Core y GitHub Integration. Pasaron la puerta externa, la revisión contractual y la aprobación humana. No cambia comportamiento ni UI; no hay despliegue ni cutover.
 
 ## Resultado esperado
 

@@ -38,7 +38,7 @@ import type {
   VerifyGitHubAppAccessRequest,
 } from './types'
 
-// GitHub App UI capabilities use GH-INTEROP-1.1 directly; domain and durable binding remain in Core.
+// GitHub App UI capabilities use GH-INTEROP-1.2 directly; domain and durable binding remain in Core.
 
 export function getGitHubAppInfo(): Promise<GitHubAppAccessResponse['app']> {
   return getGitHubAppInfoDirect()

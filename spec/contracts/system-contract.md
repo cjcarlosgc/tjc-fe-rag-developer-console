@@ -5,7 +5,7 @@
 **Estado:** APROBADO salvo decisiones `PENDING` explícitas
 **Propietario canónico:** `tjc-be-rag-core-api/spec/contracts/system-contract.md`
 
-Core y Console establecen la frontera de un cuarto componente durante `planningBaseline: 2026-09-24-core-console-transition`. Sandbox conserva por ahora la copia operativa SYSTEM-2.4 sin editarla. `GH-INTEROP-1.1` reemplaza el contrato anterior de extracción: Core y GitHub Integration sirven al pipeline; Console accede directamente a GitHub Integration para capacidades de GitHub propias de su interfaz, con autorización síncrona de Core. La migración de código fuente fue revisada y cerrada localmente en `WI-CORE-003`, `WI-CONSOLE-003` y `WI-GH-006`; configuración externa, despliegue y cutover siguen pendientes.
+Core y Console establecen la frontera de un cuarto componente durante `planningBaseline: 2026-09-24-core-console-transition`. Sandbox conserva por ahora la copia operativa SYSTEM-2.4 sin editarla. `GH-INTEROP-1.2` extiende el contrato de extracción: Core y GitHub Integration sirven al pipeline; Console accede directamente a GitHub Integration para capacidades de GitHub propias de su interfaz, con autorización síncrona de Core. La topología quedó implementada y cerrada localmente; la extensión de fecha original del PR se publicó en `WI-CORE-014`, se implementó en `WI-GH-007` y Core la consumió en `WI-CORE-011`. Console sincronizó y validó el corte previo en `WI-CONSOLE-008`. Los cierres son locales: la configuración externa, el despliegue coordinado y el cutover siguen pendientes de autorización.
 
 ## Arquitectura operativa vigente y transición aprobada
 
@@ -31,7 +31,7 @@ Developer Console ──user API──> GitHub Integration ──> GitHub
 ```
 
 - Developer Console es el control plane, workspace human-in-the-loop y superficie de revisión/trazabilidad. No es un launcher obligatorio.
-- GitHub Integration (`tjc-be-github-integration-api`) es dueño de toda interacción GitHub, incluido SDK, GitHub App, REST/Git Data y recepción/verificación de webhooks. `GH-INTEROP-1.1` define operaciones privadas Core↔Integration y rutas de usuario Console→Integration. Console usa estas últimas solo para información de App, discovery, verificación GitHub y ramas; Core mantiene dominio, sesión, autorización, persistencia, RAG, freshness y orquestación. Core continúa usando Integration internamente para el pipeline y recibe sus webhooks normalizados. Ningún cambio implica deploy/cutover externo.
+- GitHub Integration (`tjc-be-github-integration-api`) es dueño de toda interacción GitHub, incluido SDK, GitHub App, REST/Git Data y recepción/verificación de webhooks. `GH-INTEROP-1.2` define operaciones privadas Core↔Integration y rutas de usuario Console→Integration. Console usa estas últimas solo para información de App, discovery, verificación GitHub y ramas; Core mantiene dominio, sesión, autorización, persistencia, RAG, freshness y orquestación. Core continúa usando Integration internamente para el pipeline y recibe sus webhooks normalizados. Ningún cambio implica deploy/cutover externo.
 - Test Execution Sandbox ejecuta perfiles aislados y devuelve hechos. Permanece ciego a GitHub, OAuth, usuarios, RAG, reglas funcionales, estrategia experimental y conclusiones de negocio.
 - PostgreSQL + pgvector, Supabase Storage, jobs DB-backed y containers efímeros permanecen vigentes. No se incorporan Redis, RabbitMQ o Kafka sin una decisión posterior.
 
@@ -61,10 +61,10 @@ Eliminar un `Project` (solo Admin) es un borrado lógico irreversible desde la A
 
 ## Workspaces, roles y acceso
 
-Consolida `DEC-ORG-001` (HU01/HU02); el detalle normativo de rutas, DTOs, errores y eventos vive en `INTEROP-2.5` §6.13 y §6.14.
+Consolida `DEC-ORG-001` (HU01/HU02); el detalle normativo de rutas, DTOs, errores y eventos vive en `INTEROP-2.6` §6.13 y §6.14.
 
 - Un `Project` pertenece a un workspace: la cuenta personal de su creador o una organización de GitHub donde la GitHub App está instalada y el usuario es miembro. Un Project personal solo lo ve su creador, que es siempre su Admin y no tiene registro de acceso; solo se comparte mediante organizaciones. GitHub es la fuente de verdad de la autorización; Core solo persiste el vínculo `userId -> githubUserId`, la organización del Project y, para Projects de organización, un registro de acceso `(projectId, userId, rol, verifiedAt)`.
-- Roles por Project, con jerarquía Admin ⊃ Maintainer ⊃ Reader (en una organización, Maintainer y Reader exigen además ser miembro activo de ella): Reader solo consulta; Maintainer opera el día a día (binding, preguntas funcionales, publicaciones, experimentos); Admin, además, crea, renombra y elimina Projects. La matriz rol -> operación de toda la superficie HTTP es `INTEROP-2.5` §6.13.
+- Roles por Project, con jerarquía Admin ⊃ Maintainer ⊃ Reader (en una organización, Maintainer y Reader exigen además ser miembro activo de ella): Reader solo consulta; Maintainer opera el día a día (binding, preguntas funcionales, publicaciones, experimentos); Admin, además, crea, renombra y elimina Projects. La matriz rol -> operación de toda la superficie HTTP es `INTEROP-2.6` §6.13.
 - El acceso se crea al entrar mediante una verificación en vivo solicitada a GitHub Integration, donde reside el installation token de la App; se revoca por los eventos normalizados de webhook y por una reconciliación horaria, nunca por caché ni por reinicio de sesión. Si GitHub no responde, Core conserva los accesos ya registrados y no concede accesos nuevos.
 - Ninguna identidad implica autorización de la otra: ver un Project no autoriza automatización sobre el repositorio, que sigue autorizada solo por la GitHub App. Un recurso no visible responde el mismo `404` que uno inexistente; uno visible con rol insuficiente responde `403`.
 
@@ -87,6 +87,8 @@ También se procesan `closed`, `edited` y `converted_to_draft` para mantener lif
 - nuevo HEAD marca el Run anterior `OBSOLETE` y crea otro;
 - cierre sin merge cancela/obsoleta trabajo no terminal sin borrar historial;
 - merge cierra el lifecycle y resultados tardíos no pueden publicarse como vigentes.
+
+Solo son elegibles los PR cuya fecha original de creación sea igual o posterior a `RepositoryBinding.createdAt`; un PR anterior no inicia ni reinicia análisis aunque después reciba eventos. Si la fecha no puede verificarse temporalmente, Core acepta el webhook y conserva de forma durable el evento normalizado necesario para reanudarlo, sin crear un Run provisional ni sustituir la fecha con `receivedAt`. Al recuperar la metadata, Core reanuda solo con binding habilitado y HEAD aún vigente. Los Runs históricos anteriores al binding se conservan como evidencia y se ocultan de listas, detalles y bandejas; los eventos de cierre mantienen el lifecycle aunque falte la fecha.
 
 Fork PR se distingue de same-repository PR. Su publicación queda fuera del primer incremento hasta resolver permisos de escritura específicos.
 
@@ -183,7 +185,7 @@ OBSOLETE
 
 - El análisis productivo nace de un `AnalysisRun` asociado a PR/HEAD. El snapshot ZIP que recupera Docker/Sandbox es un detalle interno, no una entrada manual de proyecto.
 - La comparación `RAG` vs `GENERALIST_AGENT` de HU17 usa un `AnalysisRun` y un símbolo elegible compartidos; su adaptación live sigue pendiente de aceptación.
-- Los mocks frontend implementan `INTEROP-2.5`, están señalizados como demo y permanecen detrás de adapters separados de live. No son evidencia científica ni empresarial.
+- Los mocks frontend implementan `INTEROP-2.6`, están señalizados como demo y permanecen detrás de adapters separados de live. No son evidencia científica ni empresarial.
 
 ## Decisiones compartidas
 
@@ -264,7 +266,7 @@ OBSOLETE
 **Decisiones de producto cerradas (2026-09-20):** origen de la lista de workspaces (organizaciones con la App instalada), reconciliación cada hora, comportamiento ante una caída de GitHub (conservar lo existente, negar lo nuevo) y ciclo de vida de una organización que desaparece (Projects ocultos y conservados). Límite aceptado: solo se comparte con quien tiene acceso al repositorio en GitHub.
 
 **Verificaciones técnicas contra GitHub (spike 2026-09-20):**
-- **Permiso de un colaborador (evidencia histórica de integración):** GitHub Integration consulta el permiso efectivo con solo `Metadata: read`, permiso que la App ya tiene. Se usa `role_name` (admin, maintain, write, triage, read o rol personalizado); el campo `permission` colapsa maintain a write y triage a read. Un rol personalizado se mapea por su permiso base. No se probó un colaborador que no sea owner ni el permiso heredado por Team o permiso base de la organización. La llamada se delega ahora mediante `GH-INTEROP-1.1`.
+- **Permiso de un colaborador (evidencia histórica de integración):** GitHub Integration consulta el permiso efectivo con solo `Metadata: read`, permiso que la App ya tiene. Se usa `role_name` (admin, maintain, write, triage, read o rol personalizado); el campo `permission` colapsa maintain a write y triage a read. Un rol personalizado se mapea por su permiso base. No se probó un colaborador que no sea owner ni el permiso heredado por Team o permiso base de la organización. La llamada se delega ahora mediante `GH-INTEROP-1.2`.
 - **Rol en la organización (DOCUMENTADO, no probado):** `GET /orgs/{org}/memberships/{username}` (`role` admin = owner; solo cuenta `state=active`) y `GET /orgs/{org}/members` exigen el permiso de organización `Members: read`, que la App no tiene hoy. No se probó contra una organización real porque la única instalación de la App es de una cuenta personal.
 - **Permisos y eventos nuevos de la App:** `Members: read` (lo acepta un owner en cada organización) y suscripción a `member`, `membership`, `organization`, `team` y `repository`. `installation` e `installation_repositories` llegan siempre; `Metadata: read` ya cubre `repository`. Hoy la App solo se suscribe a `pull_request`.
 - **Cobertura de eventos (DOCUMENTADO):** cubiertos los cambios de colaborador directo (`member`), alta y baja de miembro de la organización (`organization`), membresía y permisos de Team sobre un repositorio (`membership`, `team`, con la salvedad de que un cambio de permiso del Team no está garantizado) y renombre, transferencia, eliminación o privatización del repositorio (`repository`). **Sin evento fiable:** cambio de rol en la organización, cambio del permiso base de la organización y accesos heredados que cambian sin evento directo. Para esos casos la reconciliación horaria es el único mecanismo, con una ventana de hasta una hora.
@@ -335,4 +337,4 @@ OBSOLETE
 
 ## Regla de compatibilidad
 
-`SYSTEM-2.5` conserva las reglas operativas PR/HEAD; la topología de cuatro componentes está implementada y revisada en código fuente bajo `GH-INTEROP-1.1`, cerrada localmente por los WIs de migración y sin despliegue/cutover. La carga manual ZIP y los modos manuales no son rutas de producto; el ZIP interno de snapshot para Docker/Sandbox continúa. El estado de implementación o despliegue de cada capacidad se demuestra con evidencia por componente, no se infiere del número de contrato.
+`SYSTEM-2.5` conserva las reglas operativas PR/HEAD; la topología de cuatro componentes está implementada y cerrada localmente por los WIs de migración bajo `GH-INTEROP-1.1`. `GH-INTEROP-1.2` agrega la fecha original de creación del PR, implementada y cerrada localmente en `WI-GH-007` y consumida por Core en `WI-CORE-011`, tras la publicación canónica de `WI-CORE-014`. Console validó el corte previo del espejo en `WI-CONSOLE-008`. No hay despliegue ni cutover. La carga manual ZIP y los modos manuales no son rutas de producto; el ZIP interno de snapshot para Docker/Sandbox continúa. El estado de implementación o despliegue de cada capacidad se demuestra con evidencia por componente, no se infiere del número de contrato.
