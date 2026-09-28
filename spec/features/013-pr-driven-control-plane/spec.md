@@ -2,7 +2,7 @@
 
 **Estado:** aprobado como comportamiento objetivo; aceptación de cada HU requiere evidencia propia.
 **Historias:** HU01, HU02, HU07–HU09, HU12–HU16
-**Contrato operativo:** SYSTEM-2.5 / INTEROP-2.5 / GH-INTEROP-1.1.
+**Contrato operativo:** SYSTEM-2.5 / INTEROP-2.6 / GH-INTEROP-1.2.
 
 ## Objetivo
 
@@ -18,7 +18,7 @@ Permitir al usuario autorizado seguir un repositorio vinculado y cada `AnalysisR
 
 ## Mock y live
 
-Los adapters `mock|live` respetan el mismo contrato INTEROP-2.5. La demo se rotula y jamás se presenta como evidencia de integración o del experimento. Fixtures pueden ilustrar success, action required, mismatch, HEAD nuevo, tests suficientes, baseline fallido, fallo técnico, cambios no relevantes y publicación stale; una pantalla mock no prueba que el backend cubra el caso. Cualquier campo o capacidad especulativa sin contrato aprobado se marca pendiente o se elimina, no se infiere desde fixtures.
+Los adapters `mock|live` respetan el mismo contrato INTEROP-2.6. La demo se rotula y jamás se presenta como evidencia de integración o del experimento. Fixtures pueden ilustrar success, action required, mismatch, HEAD nuevo, tests suficientes, baseline fallido, fallo técnico, cambios no relevantes y publicación stale; una pantalla mock no prueba que el backend cubra el caso. Cualquier campo o capacidad especulativa sin contrato aprobado se marca pendiente o se elimina, no se infiere desde fixtures.
 
 ## Seguridad
 

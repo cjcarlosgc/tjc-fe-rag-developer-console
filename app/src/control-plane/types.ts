@@ -3,7 +3,7 @@ import type { ProjectLanguage } from '../projects/types'
 /** SDD 3.0 / INTEROP-2.6 — control plane PR-driven (Project↔Repository → PR/HEAD → Run → Check/Proposal). */
 
 /**
- * GH-INTEROP-1.1 — GitHub App y repository binding (HU01/HU02; discovery user-centric,
+ * GH-INTEROP-1.2 — GitHub App y repository binding (HU01/HU02; discovery user-centric,
  * autorización/binding GitHub-App-centric). Reemplaza el flujo installation-centric anterior:
  * discovery vía provider token OAuth → verificar acceso de la App a un repo concreto → listar
  * sus ramas reales → crear el binding. `installationId` nunca viaja desde el navegador, lo

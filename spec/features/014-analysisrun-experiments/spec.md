@@ -1,7 +1,7 @@
 # 014 — Experimentos ligados a AnalysisRun
 
 **Historias:** HU17, HU18 (EP06).
-**Estado:** contrato de comparación HU17 definido en INTEROP-2.5 §6.5; adaptación live y aceptación pendientes. HU18 requiere contrato de captura antes de implementación productiva.
+**Estado:** contrato de comparación HU17 definido en INTEROP-2.6 §6.5; adaptación live y aceptación pendientes. HU18 requiere contrato de captura antes de implementación productiva.
 
 ## Objetivo
 

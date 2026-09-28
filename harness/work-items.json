@@ -335,7 +335,7 @@
       "id": "WI-CONSOLE-008",
       "component": "CONSOLE",
       "workItemType": "PRODUCT",
-      "status": "W-PLANNED",
+      "status": "W-DONE",
       "priority": "P2",
       "sprint": "Post-transition",
       "title": "Sincronizar contrato de exclusión de PRs pre-binding",
@@ -375,11 +375,14 @@
         }
       ],
       "externalDependencyGate": {
-        "status": "G-NOT_RUN",
-        "evidenceReport": null,
-        "sourceRevisions": {},
-        "verifiedAt": null,
-        "verifiedBy": null
+        "status": "G-PASSED",
+        "evidenceReport": "harness/reports/wi-console-008-external-dependency-gate.md",
+        "sourceRevisions": {
+          "CORE": "a99b3c315738966d956e9cb08833b2c42a7c85e5",
+          "GH": "35bd9f2006240ebcd12ce0c3353d3a43bb1c1d0c"
+        },
+        "verifiedAt": "2026-09-28T00:40:58.601Z",
+        "verifiedBy": "leader"
       },
       "acceptanceCriteria": [
         "Importar y revisar los Contract Sync de GH-007 y Core-011; el contrato local queda byte a byte alineado con la fuente canónica.",
@@ -387,12 +390,55 @@
         "No agregar filtros UI, cambios visuales ni borrado de registros; lint, test, build y Harness pasan."
       ],
       "specPaths": [
-        "spec/features/016-github-integration/spec.md",
-        "spec/features/016-github-integration/plan.md",
-        "spec/features/016-github-integration/tasks.md",
-        "spec/contracts/system-contract.md",
+        "CHANGELOG.md",
+        "spec/README.md",
+        "spec/constitution/architecture.md",
+        "spec/contracts/github-integration-contract.md",
         "spec/contracts/interoperability-contract.md",
-        "spec/contracts/github-integration-contract.md"
+        "spec/contracts/system-contract.md",
+        "spec/features/011-context-explorer/spec.md",
+        "spec/features/012-authentication/plan.md",
+        "spec/features/012-authentication/spec.md",
+        "spec/features/013-pr-driven-control-plane/plan.md",
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/014-analysisrun-experiments/plan.md",
+        "spec/features/014-analysisrun-experiments/spec.md",
+        "spec/features/014-organizations-access/plan.md",
+        "spec/features/014-organizations-access/spec.md",
+        "spec/features/016-github-integration/plan.md",
+        "spec/features/016-github-integration/spec.md",
+        "spec/features/016-github-integration/tasks.md",
+        "spec/transversal/api-client/spec.md"
+      ],
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre el lifecycle del binding y borrado lógico; WI-CONSOLE-008 cubre elegibilidad temporal de PRs sin cambiar esas operaciones.",
+          "report": "harness/reports/wi-console-008-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y sus rutas; WI-CONSOLE-008 no modifica esos contratos ni sus consumidores.",
+          "report": "harness/reports/wi-console-008-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticación y seguridad de binding; WI-CONSOLE-008 solo homologa la fecha original del PR y visibilidad de Runs.",
+          "report": "harness/reports/wi-console-008-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre workspaces, membresía y eventos organizacionales; WI-CONSOLE-008 no toca esa superficie contractual.",
+          "report": "harness/reports/wi-console-008-contract-sync-scope-review.md"
+        }
       ]
     },
     {
@@ -459,6 +505,113 @@
         "spec/transversal/api-client/spec.md",
         "spec/transversal/testing/spec.md",
         "spec/contracts/interoperability-contract.md"
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-010",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P2",
+      "sprint": "Post-transition",
+      "title": "Homologar estados vigentes de contratos Core/GH y roadmap Console",
+      "storyIds": [
+        "HU12",
+        "HU14"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-012"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": true,
+      "publishesContract": false,
+      "acceptanceCriteria": [
+        "Los IDs y revisiones de los WIs propietarios solo se incorporan después de verificarlos con los repositorios fuente; no se inventa dependsOn ni sourceWorkItem.",
+        "Se reciben los eventos Contract Sync dirigidos a Console y el líder confirma las revisiones fuente y los SHA-256 antes de copiar los espejos SYSTEM y GH-INTEROP.",
+        "Las copias SYSTEM-2.5, INTEROP-2.6 y GH-INTEROP-1.2 quedan byte por byte iguales a las fuentes Core confirmadas; no cambia semántica ni versionado.",
+        "El roadmap y las referencias vigentes declaran WI-CONSOLE-008 cerrado y describen WI-CONSOLE-010 como seguimiento documental; snapshots/reportes históricos permanecen intactos.",
+        "No se cambia código de aplicación, comportamiento de producto, UI, Sandbox, configuración externa, deploy o cutover.",
+        "La validación SDD/Harness, el diff check y la evidencia contractual pasan antes de revisión; al ser un corte documental, lint/tests/build de aplicación no aplican si no cambia código."
+      ],
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "WI-CONSOLE-010 solo replica estados contractuales y no cambia lifecycle de Projects/bindings; la necesidad descrita por este evento ya no se reabre en este corte.",
+          "report": "harness/reports/wi-console-010-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "La sincronización documental de WI-CONSOLE-010 no toca identidad, workspaces, roles, acceso ni rutas de usuario descritas por este evento.",
+          "report": "harness/reports/wi-console-010-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "WI-CONSOLE-010 no cambia autenticación, seguridad de binding, errores ni comportamiento del cliente de Console.",
+          "report": "harness/reports/wi-console-010-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "WI-CONSOLE-010 no modifica workspaces, membresía, roles ni eventos organizacionales; solo actualiza el espejo después del cambio canónico.",
+          "report": "harness/reports/wi-console-010-contract-sync-scope-review.md"
+        }
+      ],
+      "specPaths": [
+        "CHANGELOG.md",
+        "spec/contracts/system-contract.md",
+        "spec/contracts/github-integration-contract.md",
+        "spec/constitution/roadmap.md",
+        "spec/features/015-sdd-harness-transition/tasks.md",
+        "spec/features/016-github-integration/spec.md",
+        "spec/features/016-github-integration/plan.md",
+        "spec/features/016-github-integration/tasks.md",
+        "harness/progress/current.md",
+        "spec/contracts/interoperability-contract.md"
+      ],
+      "syncScopePaths": [
+        "spec/contracts/system-contract.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/github-integration-contract.md"
+      ],
+      "externalDependencyGate": {
+        "status": "G-PASSED",
+        "evidenceReport": "harness/reports/wi-console-010-external-dependency-gate.md",
+        "sourceRevisions": {
+          "CORE": "22614d0c4b68058b9eb91d4c1c832e4c87375ac7",
+          "GH": "8e5782a8030037771ca2274dd6bb108c49b3a8d8"
+        },
+        "verifiedAt": "2026-09-28T05:01:35.383Z",
+        "verifiedBy": "leader"
+      },
+      "externalDependencies": [
+        {
+          "component": "CORE",
+          "repository": "tjc-be-rag-core-api",
+          "workItemIds": [
+            "WI-CORE-015"
+          ],
+          "requiredStatus": "W-DONE",
+          "requiredContractSync": "imported-and-acknowledged",
+          "verification": "manual-cross-repository"
+        },
+        {
+          "component": "GH",
+          "repository": "tjc-be-github-integration-api",
+          "workItemIds": [
+            "WI-GH-008"
+          ],
+          "requiredStatus": "W-DONE",
+          "requiredContractSync": "imported-and-acknowledged",
+          "verification": "manual-cross-repository"
+        }
       ]
     }
   ]
