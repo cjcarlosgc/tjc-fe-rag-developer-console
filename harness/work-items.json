@@ -1,0 +1,465 @@
+{
+  "schemaVersion": 1,
+  "component": "CONSOLE",
+  "workItems": [
+    {
+      "id": "WI-CONSOLE-001",
+      "component": "CONSOLE",
+      "workItemType": "HARNESS",
+      "status": "W-DONE",
+      "priority": "P0",
+      "sprint": "Transition",
+      "title": "Alinear SDD y Harness",
+      "storyIds": [
+        "HU01",
+        "HU02",
+        "HU03",
+        "HU04",
+        "HU05",
+        "HU06",
+        "HU07",
+        "HU08",
+        "HU09",
+        "HU10",
+        "HU11",
+        "HU12",
+        "HU13",
+        "HU14",
+        "HU15",
+        "HU16",
+        "HU17",
+        "HU18"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-001"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": true,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "*"
+      ],
+      "deferredSyncIds": [
+        "CS-20260920-003",
+        "CS-20260921-001",
+        "CS-20260921-002",
+        "CS-20260921-003"
+      ],
+      "deferredSyncDigests": {
+        "CS-20260920-003": "40817688b68b6b78aa3788a1889ea8470d31e5834e87b91287b248eb0ef33561",
+        "CS-20260921-001": "894a31cd2771c1ef7394f253de7d10f779d236533e85053e563244b705e8f1c7",
+        "CS-20260921-002": "6f03b3ed19e4a02338678e297518ac4dc6141c2ad5d1304ff4fef836a3856af0",
+        "CS-20260921-003": "878bfc838a0ff6885cfee6468d09eb5b0d2d1a0ebe303ba59cb447012c4e8d63"
+      },
+      "deferredSyncReport": "harness/reports/legacy-contract-sync-triage-3.0.md",
+      "specPaths": [
+        "spec/features/015-sdd-harness-transition/spec.md",
+        "spec/features/015-sdd-harness-transition/plan.md",
+        "spec/features/015-sdd-harness-transition/tasks.md"
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-002",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P0",
+      "sprint": "Transition",
+      "title": "Retirar flujos legacy",
+      "storyIds": [
+        "HU01",
+        "HU10",
+        "HU12"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-002"
+      ],
+      "caseIds": [],
+      "dependsOn": [
+        "WI-CONSOLE-001"
+      ],
+      "contractImpact": false,
+      "publishesContract": false,
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/013-pr-driven-control-plane/plan.md",
+        "spec/features/013-pr-driven-control-plane/tasks.md"
+      ],
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Este WI retira upload ZIP, generación manual y exportación legacy; el evento implementa ciclo de vida de RepositoryBinding/Project, que sigue vigente.",
+          "report": "harness/reports/contract-sync-relevance-wi002-3.0.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Este WI no modifica login GitHub, workspaces, roles ni contratos de acceso; el evento de definición queda como antecedente para la extracción GitHub.",
+          "report": "harness/reports/contract-sync-relevance-wi002-3.0.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Este WI no toca login GitHub ni la verificación App/organización implementada por el bundle A; las verificaciones de despliegue siguen pendientes.",
+          "report": "harness/reports/contract-sync-relevance-wi002-3.0.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Este WI no modifica workspaces, roles, permisos organizacionales ni comportamiento del bundle B; esas acciones se revisarán en cortes de acceso o GitHub.",
+          "report": "harness/reports/contract-sync-relevance-wi002-3.0.md"
+        }
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-003",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P1",
+      "sprint": "Post-transition",
+      "title": "Consumir la API autenticada de GitHub Integration",
+      "storyIds": [
+        "HU01",
+        "HU02",
+        "HU14",
+        "HU16"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-003",
+        "ST-CONSOLE-008",
+        "ST-CONSOLE-009"
+      ],
+      "caseIds": [],
+      "dependsOn": [
+        "WI-CONSOLE-001",
+        "WI-CONSOLE-002"
+      ],
+      "contractImpact": true,
+      "publishesContract": false,
+      "acceptanceCriteria": [
+        "Los eventos nuevos de Console usan CS-CONSOLE-YYYYMMDD-NNN; import/check acepta CS-CORE y CS-GH, además de IDs históricos simples.",
+        "SYSTEM-2.5 e INTEROP-2.5 permanecen byte-por-byte alineados con Core; GH-INTEROP-1.1 queda sincronizado.",
+        "Console usa GitHub Integration directamente solo para App info, discovery, verificación y ramas, autenticando con sesión Supabase; provider token solo acompaña discovery/verificación de repo nuevo, nunca branches/binding existente. Core sigue siendo dueño de Projects/workspaces, binding persistido, RAG y análisis.",
+        "El flujo UI no impone installationId ni roles; al guardar el binding presenta a Core la evidencia firmada y de vida corta obtenida de Integration.",
+        "Scripts y validadores SDD/Harness aceptan los IDs nuevos y preservan sin reescritura los eventos y evidencia históricos.",
+        "El ciclo Contract Sync registra consumerImportedAt local, permite acknowledge/resolve con evidencia y no invalida snapshots cerrados por eventos importados después."
+      ],
+      "specPaths": [
+        "spec/features/016-github-integration/spec.md",
+        "spec/features/016-github-integration/plan.md",
+        "spec/features/016-github-integration/tasks.md",
+        "spec/contracts/system-contract.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/github-integration-contract.md"
+      ],
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Este WI solo versiona el namespace del protocolo y conserva los contratos públicos; la validación live/deploy del binding queda fuera del corte.",
+          "report": "harness/reports/contract-sync-relevance-wi-console-003.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "La definición previa de login y contrato de acceso no cambia; este WI no altera autenticación ni rutas consumidas por Console.",
+          "report": "harness/reports/contract-sync-relevance-wi-console-003.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "La implementación de identidad/app sigue fuera del frontend; este WI no altera login ni el comportamiento de los adapters.",
+          "report": "harness/reports/contract-sync-relevance-wi-console-003.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Workspaces, roles y comportamiento del bundle B no cambian; se mantiene la compatibilidad actual del consumidor Core.",
+          "report": "harness/reports/contract-sync-relevance-wi-console-003.md"
+        }
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-004",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-PLANNED",
+      "priority": "P2",
+      "sprint": "P2",
+      "title": "Formalizar casos operativos",
+      "storyIds": [
+        "HU03",
+        "HU04",
+        "HU05",
+        "HU06",
+        "HU07",
+        "HU08",
+        "HU09",
+        "HU10",
+        "HU11",
+        "HU12",
+        "HU13",
+        "HU14",
+        "HU15",
+        "HU16"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-004"
+      ],
+      "caseIds": [
+        "OC01",
+        "OC02",
+        "OC03",
+        "OC04",
+        "OC05",
+        "OC06",
+        "OC07",
+        "OC08",
+        "OC09",
+        "OC10",
+        "OC11",
+        "OC12",
+        "OC13",
+        "OC14",
+        "OC15"
+      ],
+      "dependsOn": [
+        "WI-CONSOLE-001"
+      ],
+      "contractImpact": false,
+      "publishesContract": false,
+      "specPaths": [
+        "spec/features/015-sdd-harness-transition/spec.md",
+        "spec/features/015-sdd-harness-transition/plan.md",
+        "spec/features/015-sdd-harness-transition/tasks.md"
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-005",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-PLANNED",
+      "priority": "P2",
+      "sprint": "P2",
+      "title": "Consolidar interfaz y sistema visual",
+      "storyIds": [
+        "HU01",
+        "HU12",
+        "HU14"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-005"
+      ],
+      "caseIds": [],
+      "dependsOn": [
+        "WI-CONSOLE-001",
+        "WI-CONSOLE-002"
+      ],
+      "contractImpact": false,
+      "publishesContract": false,
+      "specPaths": [
+        "spec/features/010-product-experience/spec.md",
+        "spec/features/010-product-experience/plan.md",
+        "spec/features/010-product-experience/tasks.md",
+        "spec/transversal/design-system/spec.md"
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-006",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-PLANNED",
+      "priority": "P2",
+      "sprint": "P2",
+      "title": "Auditar y corregir accesibilidad",
+      "storyIds": [
+        "HU01",
+        "HU12",
+        "HU14"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-006"
+      ],
+      "caseIds": [],
+      "dependsOn": [
+        "WI-CONSOLE-005"
+      ],
+      "contractImpact": false,
+      "publishesContract": false,
+      "specPaths": [
+        "spec/transversal/accessibility/spec.md",
+        "spec/transversal/accessibility/plan.md",
+        "spec/transversal/accessibility/tasks.md"
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-007",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-PLANNED",
+      "priority": "P2",
+      "sprint": "P2",
+      "title": "Unificar errores y notificaciones de la interfaz",
+      "storyIds": [
+        "HU01",
+        "HU12",
+        "HU14"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-007"
+      ],
+      "caseIds": [],
+      "dependsOn": [
+        "WI-CONSOLE-001"
+      ],
+      "contractImpact": false,
+      "publishesContract": false,
+      "specPaths": [
+        "spec/transversal/errors-notifications/spec.md",
+        "spec/transversal/errors-notifications/plan.md",
+        "spec/transversal/errors-notifications/tasks.md"
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-008",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-PLANNED",
+      "priority": "P2",
+      "sprint": "Post-transition",
+      "title": "Sincronizar contrato de exclusión de PRs pre-binding",
+      "storyIds": [
+        "HU12",
+        "HU14"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-010"
+      ],
+      "caseIds": [],
+      "dependsOn": [
+        "WI-CONSOLE-003"
+      ],
+      "contractImpact": true,
+      "publishesContract": false,
+      "externalDependencies": [
+        {
+          "component": "GH",
+          "repository": "tjc-be-github-integration-api",
+          "workItemIds": [
+            "WI-GH-007"
+          ],
+          "requiredStatus": "W-DONE",
+          "requiredContractSync": "imported-and-acknowledged",
+          "verification": "manual-cross-repository"
+        },
+        {
+          "component": "CORE",
+          "repository": "tjc-be-rag-core-api",
+          "workItemIds": [
+            "WI-CORE-011"
+          ],
+          "requiredStatus": "W-DONE",
+          "requiredContractSync": "imported-and-acknowledged",
+          "verification": "manual-cross-repository"
+        }
+      ],
+      "externalDependencyGate": {
+        "status": "G-NOT_RUN",
+        "evidenceReport": null,
+        "sourceRevisions": {},
+        "verifiedAt": null,
+        "verifiedBy": null
+      },
+      "acceptanceCriteria": [
+        "Importar y revisar los Contract Sync de GH-007 y Core-011; el contrato local queda byte a byte alineado con la fuente canónica.",
+        "Verificar que Console ya limita Runs al Project consultado y que los Runs ocultos por Core no se reconstruyen en la UI.",
+        "No agregar filtros UI, cambios visuales ni borrado de registros; lint, test, build y Harness pasan."
+      ],
+      "specPaths": [
+        "spec/features/016-github-integration/spec.md",
+        "spec/features/016-github-integration/plan.md",
+        "spec/features/016-github-integration/tasks.md",
+        "spec/contracts/system-contract.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/github-integration-contract.md"
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-009",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P1",
+      "sprint": "Post-transition",
+      "title": "Consumir tipos PHP de ProjectVersion e inventario",
+      "storyIds": [
+        "HU04"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-011"
+      ],
+      "caseIds": [],
+      "dependsOn": [
+        "WI-CONSOLE-001",
+        "WI-CONSOLE-003"
+      ],
+      "contractImpact": true,
+      "publishesContract": false,
+      "acceptanceCriteria": [
+        "La copia Console de INTEROP-2.6 queda byte por byte alineada con el contrato actual del checkout Core; el sourceRevision 242ffbfa3eb0a6251aa42cc83bbbc06f0e5be279 es la base funcional y se refleja además la fecha de corte 2026-09-27 solicitada por el usuario.",
+        "Los tipos compartidos incluyen ProjectLanguage, TestFramework con PHPUNIT y language en los DTOs de ProjectVersion, resultados, resumen e inventario.",
+        "Los fixtures TypeScript existentes especifican TYPESCRIPT; una respuesta PHP/PHPUNIT se acepta sin ofrecer ni afirmar readiness de generación/ejecución antes de WI-CORE-013.",
+        "Lint, pruebas, build y validadores SDD/Harness pasan; no se modifica UI, Core ni Sandbox."
+      ],
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento trata RepositoryBinding/Project y este WI solo sincroniza los DTOs del inventario HU04.",
+          "report": "harness/reports/wi-console-009-contract-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento trata login y acceso; no modifica historial ni DTOs de ProjectVersion/inventario.",
+          "report": "harness/reports/wi-console-009-contract-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento trata identidad/App y verificación GitHub, fuera del alcance de los tipos HU04.",
+          "report": "harness/reports/wi-console-009-contract-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento trata roles/workspaces; este WI no modifica acceso, solo cobertura e inventario.",
+          "report": "harness/reports/wi-console-009-contract-scope-review.md"
+        }
+      ],
+      "specPaths": [
+        "spec/features/003-test-inventory/spec.md",
+        "spec/features/003-test-inventory/plan.md",
+        "spec/features/003-test-inventory/tasks.md",
+        "spec/transversal/api-client/spec.md",
+        "spec/transversal/testing/spec.md",
+        "spec/contracts/interoperability-contract.md"
+      ]
+    }
+  ]
+}

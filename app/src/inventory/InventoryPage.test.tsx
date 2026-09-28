@@ -3,11 +3,13 @@ import { expect, test, vi } from 'vitest'
 import { renderApp } from '../test/render'
 import { setDataSourceForTests } from '../api/dataSource'
 import { InventoryPage } from './InventoryPage'
+import type { TestInventoryResponse } from './types'
 
 test('carga el inventario de la ProjectVersion actual y mapea su contrato', async () => {
   const project = { id: 'p-1', name: 'checkout', currentVersionId: 'v-1', workspace: { kind: 'PERSONAL', id: 'ws-1', login: 'demo-user' }, role: 'ADMIN', createdAt: '2026-08-31T10:00:00.000Z', updatedAt: '2026-08-31T10:01:00.000Z' }
-  const inventory = {
+  const inventory: TestInventoryResponse = {
     projectVersionId: 'v-1',
+    language: 'TYPESCRIPT',
     detectedFramework: 'VITEST',
     targetsTotal: 2,
     targetsWithTest: 1,
@@ -28,6 +30,7 @@ test('carga el inventario de la ProjectVersion actual y mapea su contrato', asyn
   expect(screen.getByText('VITEST')).toBeInTheDocument()
   expect(screen.getByText('total')).toBeInTheDocument()
   expect(screen.getAllByText('Sin test').length).toBeGreaterThan(0)
+  expect(screen.queryByRole('button', { name: /Usar target|Generar/ })).not.toBeInTheDocument()
   expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/project-versions/v-1/test-inventory'), expect.any(Object))
 })
 
@@ -36,7 +39,7 @@ test('no consulta inventario cuando el proyecto no tiene versión actual', async
 
   renderApp(<InventoryPage />, { initialEntry: '/projects/p-1/inventory', routePath: '/projects/:projectId/inventory' })
 
-  expect(await screen.findByText('Este proyecto todavía no tiene una versión lista')).toBeInTheDocument()
+  expect(await screen.findByText('Este proyecto todavía no tiene un snapshot disponible')).toBeInTheDocument()
   expect(fetchMock).toHaveBeenCalledTimes(1)
 })
 
@@ -50,4 +53,29 @@ test('abre el inventario de una versión histórica en modo lectura', async () =
   expect(screen.getByText('3', { selector: 'dd' })).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /Usar target/ })).not.toBeInTheDocument()
   expect(fetchMock).not.toHaveBeenCalled()
+})
+
+test('acepta PHP/PHPUNIT como detección de inventario sin presentar generación lista', async () => {
+  const project = { id: 'p-php', name: 'billing-php', currentVersionId: 'v-php', workspace: { kind: 'PERSONAL', id: 'ws-1', login: 'demo-user' }, role: 'ADMIN', createdAt: '2026-09-27', updatedAt: '2026-09-27' }
+  const inventory: TestInventoryResponse = {
+    projectVersionId: 'v-php',
+    language: 'PHP',
+    detectedFramework: 'PHPUNIT',
+    targetsTotal: 1,
+    targetsWithTest: 1,
+    targetsMissingTest: 0,
+    targets: [{ id: 't-php', filePath: 'src/InvoiceService.php', symbolName: 'InvoiceService', methodName: null, targetType: 'CLASS', hasTest: true, testFilePaths: ['tests/InvoiceServiceTest.php'] }],
+  }
+  const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+    const url = String(input)
+    return new Response(JSON.stringify(url.includes('/test-inventory') ? inventory : project), { status: 200 })
+  })
+
+  renderApp(<InventoryPage />, { initialEntry: '/projects/p-php/inventory', routePath: '/projects/:projectId/inventory' })
+
+  expect(await screen.findByText('PHPUNIT')).toBeInTheDocument()
+  expect(screen.getByText('InvoiceService')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /generar|ejecutar|ready|listo para generar/i })).not.toBeInTheDocument()
+  expect(screen.queryByText(/generación.*lista|phpunit.*disponible/i)).not.toBeInTheDocument()
+  expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/project-versions/v-php/test-inventory'), expect.any(Object))
 })

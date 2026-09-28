@@ -96,14 +96,6 @@ export interface ContextTracePage { items: ContextTraceSummary[]; nextCursor: st
 export interface DiscoveredFile { filePath: string }
 export interface DiscoveredFilePage { items: DiscoveredFile[]; nextCursor: string | null }
 
-export interface RunContextTraceFilters {
-  targetId?: string
-  artifactId?: string
-  includeSuperseded?: boolean
-  cursor?: string | null
-  limit?: number
-}
-
 export interface ExperimentContextTraceFilters {
   strategy?: ContextTraceStrategy
   repetition?: 1 | 2 | 3

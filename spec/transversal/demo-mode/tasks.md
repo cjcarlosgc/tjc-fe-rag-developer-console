@@ -1,19 +1,5 @@
-# demo-mode — Tareas
+# demo-mode — Subtareas vigentes
 
-- [x] Selector `mock|live` y señalización visible.
-- [x] Backend mock stateful y escenario semilla.
-- [x] Flujo proyectos/indexación/inventario.
-- [x] Flujo generación/run/validación/artifacts.
-- [x] Flujo experimental RAG vs agente generalista.
-- [x] Adapters live preservados para contratos disponibles.
-- [ ] Ampliar escenario a trazas RAG/agente e intentos anteriores (HU27/HU28).
-- [ ] Implementar identidad mock y pantallas de correo desacopladas de Supabase (HU29).
-- [ ] Implementar recorrido GitHub completamente simulado y señalizado (HU26).
+No hay una subtarea técnica seleccionable en este archivo para SDD 3.0. El comportamiento vigente está en `spec.md` y `plan.md`; la ejecución futura requiere una ST local y un WI registrado antes de comenzar.
 
-## Calidad
-
-- [x] Agregar/actualizar pruebas.
-- [x] Verificar ausencia de requests HTTP en mock.
-- [ ] Verificar ausencia de requests Supabase/Core/GitHub en los recorridos nuevos.
-- [x] Ejecutar lint/test/build.
-- [x] Registrar evidencia de revisión en `harness/reports/`.
+Los checklists anteriores se conservan en Git, CHANGELOG y `harness/reports/open-task-triage-3.0.md`.

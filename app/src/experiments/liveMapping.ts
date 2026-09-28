@@ -1,5 +1,4 @@
-import type { FailureType } from '../runs/types'
-import type { ExperimentOperation, ExperimentResultViewModel, ExperimentStrategy, StrategyMetrics } from './types'
+import type { ExperimentOperation, ExperimentResultViewModel, ExperimentStrategy, FailureType, StrategyMetrics } from './types'
 
 /**
  * `ExperimentResultsResponse` (INTEROP-1.5) trae `strategies: StrategyMetricsResponse[]` (RAG +

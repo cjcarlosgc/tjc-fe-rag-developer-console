@@ -14,6 +14,8 @@ const codeMessages: Record<string, string> = {
   GITHUB_USER_TOKEN_INVALID: 'Tu acceso a GitHub no está disponible o expiró. Renuévalo para descubrir tus repositorios.',
   // Reintentable: no afirma que el repositorio no exista ni que falte el permiso.
   GITHUB_VERIFICATION_UNAVAILABLE: 'No pudimos verificar el permiso en GitHub ahora; inténtalo de nuevo.',
+  GITHUB_UPSTREAM_UNAVAILABLE: 'GitHub no está disponible ahora; inténtalo de nuevo en unos minutos.',
+  CORE_AUTHORIZATION_UNAVAILABLE: 'No pudimos autorizar esta operación de GitHub ahora; inténtalo de nuevo en unos minutos.',
   GITHUB_APP_ACCESS_REQUIRED: 'La GitHub App no tiene acceso al repositorio. Configura el acceso en GitHub y vuelve a intentarlo.',
   PROJECT_NOT_FOUND: 'El proyecto ya no existe.',
   WORKSPACE_NOT_FOUND: 'Ese workspace ya no está disponible. Actualiza la lista de workspaces y vuelve a elegirlo.',
@@ -55,7 +57,8 @@ export function isGitHubAccessRenewalRequired(error: unknown): boolean {
 
 /** HU64 (INTEROP-2.4 §6.13): GitHub no permitió verificar el permiso o la instalación; reintentar tiene sentido y no implica ningún juicio sobre el repositorio. */
 export function isVerificationUnavailable(error: unknown): boolean {
-  return error instanceof ApiError && error.status === 503 && error.code === 'GITHUB_VERIFICATION_UNAVAILABLE'
+  return error instanceof ApiError && error.status === 503 &&
+    (error.code === 'GITHUB_VERIFICATION_UNAVAILABLE' || error.code === 'GITHUB_UPSTREAM_UNAVAILABLE' || error.code === 'CORE_AUTHORIZATION_UNAVAILABLE')
 }
 
 /** Referencia para soporte: solo existe en errores que vinieron de Core (o del mock) con `correlationId`. */

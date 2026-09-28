@@ -1,9 +1,12 @@
-export type AnalysisStatus = 'PENDING' | 'EXTRACTING' | 'ANALYZING' | 'CHUNKING' | 'EMBEDDING' | 'PERSISTING' | 'COMPLETED' | 'FAILED'
+export type ProjectVersionStatus = 'PENDING' | 'EXTRACTING' | 'ANALYZING' | 'CHUNKING' | 'EMBEDDING' | 'PERSISTING' | 'COMPLETED' | 'FAILED'
+export type ProjectLanguage = 'TYPESCRIPT' | 'PHP'
+export type TestFramework = 'JEST' | 'VITEST' | 'PHPUNIT'
 
-export interface AnalysisOperation {
+export interface ProjectVersionResponse {
   id: string
   projectId: string
-  status: AnalysisStatus
+  status: ProjectVersionStatus
+  language: ProjectLanguage
   originalFileName: string | null
   sizeBytes: number | null
   filesProcessed: number | null
@@ -15,24 +18,26 @@ export interface AnalysisOperation {
   updatedAt: string
 }
 
-export interface AnalysisResult {
+export interface ProjectVersionResultsResponse {
   id: string
   projectId: string
   status: 'COMPLETED'
+  language: ProjectLanguage
   filesProcessed: number
   chunksCount: number
-  detectedFramework: string | null
+  detectedFramework: TestFramework | null
   targetsTotal: number
   targetsWithTest: number
   targetsMissingTest: number
   completedAt: string | null
 }
 
-export interface UploadAccepted {
-  projectId: string
-  projectVersionId: string
-  status: 'PENDING'
-  pollAfterMs: number
+export interface ProjectVersionSummaryResponse extends ProjectVersionResponse {
+  detectedFramework: TestFramework | null
+  targetsTotal: number | null
+  targetsWithTest: number | null
+  targetsMissingTest: number | null
+  current: boolean
 }
 
 export type WorkspaceKind = 'PERSONAL' | 'ORGANIZATION'
@@ -54,7 +59,7 @@ export interface WorkspaceListResponse {
   items: Workspace[]
 }
 
-/** `ProjectResponse` de INTEROP-2.4. El rol es el del usuario actual en ese Project. */
+/** `ProjectResponse` de INTEROP-2.6. El rol es el del usuario actual en ese Project. */
 export interface Project {
   id: string
   name: string
@@ -83,11 +88,12 @@ export interface ProjectListPage {
 export interface AnalysisHistoryItem {
   id: string
   projectId: string
-  status: AnalysisStatus
+  status: ProjectVersionStatus
+  language: ProjectLanguage
   originalFileName: string | null
   filesProcessed: number | null
   chunksCount: number | null
-  detectedFramework: string | null
+  detectedFramework: TestFramework | null
   targetsTotal: number | null
   targetsWithTest: number | null
   targetsMissingTest: number | null

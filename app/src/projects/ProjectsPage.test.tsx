@@ -191,7 +191,7 @@ test('presenta el escenario semilla en modo demo sin consultar la red', async ()
   expect(fetchMock).not.toHaveBeenCalled()
 })
 
-test('la franja de demo apunta al tour de Runs de SDD 2.0, no al flujo ZIP', async () => {
+test('la franja de demo apunta al tour de Runs de SDD 3.0, no al flujo ZIP', async () => {
   setDataSourceForTests('mock')
   resetMockBackend()
   renderApp(<ProjectsPage />)

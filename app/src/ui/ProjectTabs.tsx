@@ -7,15 +7,15 @@ interface Tab {
   isActive: (pathname: string, search: string, projectId: string) => boolean
 }
 
-/** "History" queda fuera a propósito: no hay timeline/historial real de un AnalysisRun en el contrato todavía. */
 const TABS: Tab[] = [
   { label: 'Overview', to: (id) => `/projects/${id}`, isActive: (pathname, _search, id) => pathname === `/projects/${id}` },
   { label: 'Runs', to: (id) => `/analysis-runs?projectId=${id}`, isActive: (pathname, search) => pathname === '/analysis-runs' && new URLSearchParams(search).get('projectId') !== null },
+  { label: 'Historial', to: (id) => `/projects/${id}/analyses`, isActive: (pathname, _search, id) => pathname === `/projects/${id}/analyses` },
   { label: 'Functional Knowledge', to: (id) => `/projects/${id}/functional-knowledge`, isActive: (pathname, _search, id) => pathname.startsWith(`/projects/${id}/functional-knowledge`) },
   { label: 'Integrations', to: (id) => `/projects/${id}/integrations/github`, isActive: (pathname, _search, id) => pathname === `/projects/${id}/integrations/github` },
 ]
 
-/** Sub-nav persistente por proyecto (Overview/Runs/Functional Knowledge/Integrations). El tab activo se deriva de la ruta actual, no de un prop. */
+/** Sub-nav del proyecto (Overview/Runs/Historial/Functional Knowledge/Integrations); el tab activo se deriva de la ruta actual. */
 export function ProjectTabs({ projectId }: { projectId: string }) {
   const location = useLocation()
   const projectQuery = useProject(projectId)

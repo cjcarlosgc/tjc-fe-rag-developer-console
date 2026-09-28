@@ -26,6 +26,7 @@ it.each([
   [400, 'REPOSITORY_OUTSIDE_WORKSPACE', 'Este repositorio no pertenece a tu cuenta; en un proyecto personal solo puedes vincular repositorios propios.'],
   [403, 'REPOSITORY_PERMISSION_INSUFFICIENT', 'Necesitas permiso maintain, write o admin sobre este repositorio.'],
   [503, 'GITHUB_VERIFICATION_UNAVAILABLE', 'No pudimos verificar el permiso en GitHub ahora; inténtalo de nuevo.'],
+  [503, 'GITHUB_UPSTREAM_UNAVAILABLE', 'GitHub no está disponible ahora; inténtalo de nuevo en unos minutos.'],
   [403, 'GITHUB_APP_ACCESS_REQUIRED', 'La GitHub App no tiene acceso al repositorio. Configura el acceso en GitHub y vuelve a intentarlo.'],
 ])('HU64: %s %s se mapea a su mensaje, con y sin correlationId', (status, code, message) => {
   expect(bindingErrorMessage(new ApiError('mensaje crudo de Core', status, 'corr-64', code))).toBe(message)
@@ -40,8 +41,10 @@ it('HU64: el 404 GITHUB_REPOSITORY_NOT_FOUND no distingue motivos y el 503 no af
   expect(unavailable).not.toMatch(/no existe|no encontramos|no tienes|necesitas/i)
 })
 
-it('isVerificationUnavailable solo aplica al 503 GITHUB_VERIFICATION_UNAVAILABLE', () => {
+it('isVerificationUnavailable reconoce errores 503 reintentables de Integration/Core', () => {
   expect(isVerificationUnavailable(new ApiError('x', 503, 'c', 'GITHUB_VERIFICATION_UNAVAILABLE'))).toBe(true)
+  expect(isVerificationUnavailable(new ApiError('x', 503, 'c', 'GITHUB_UPSTREAM_UNAVAILABLE'))).toBe(true)
+  expect(isVerificationUnavailable(new ApiError('x', 503, 'c', 'CORE_AUTHORIZATION_UNAVAILABLE'))).toBe(true)
   expect(isVerificationUnavailable(new ApiError('x', 503, 'c', 'IDENTITY_UNAVAILABLE'))).toBe(false)
   expect(isVerificationUnavailable(new ApiError('x', 404, 'c', 'GITHUB_REPOSITORY_NOT_FOUND'))).toBe(false)
   expect(isVerificationUnavailable(new Error('x'))).toBe(false)

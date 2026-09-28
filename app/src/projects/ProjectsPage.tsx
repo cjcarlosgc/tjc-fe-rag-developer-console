@@ -376,7 +376,7 @@ export function ProjectsPage() {
       {mock && workspace && (
         <div className="demo-strip">
           <div>
-            <span className="demo-kicker">Demo mode · SDD 2.0</span>
+            <span className="demo-kicker">Demo mode · SDD 3.0</span>
             <strong>Control plane PR-driven</strong>
             <p>Explora escenarios preparados del nuevo flujo: Action Required, Behavioral Mismatch, corrección por nuevo HEAD y publicación de tests.</p>
           </div>

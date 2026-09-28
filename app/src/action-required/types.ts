@@ -1,4 +1,4 @@
-/** SDD 2.0 / INTEROP-2.0 §6.11 — Action Required y Functional Knowledge. */
+/** SDD 3.0 / INTEROP-2.4 §6.11 — Action Required y Functional Knowledge. */
 
 import type { AnalysisSymbolResponse } from '../control-plane/types'
 

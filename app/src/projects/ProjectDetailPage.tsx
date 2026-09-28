@@ -115,11 +115,7 @@ export function ProjectDetailPage() {
         )}
       </div>
       }
-      {/* HU19 (RAG vs agente generalista) es capacidad de tesis vigente, no ZIP-legacy — vive fuera
-          del panel de binding y de "Herramientas legacy" a propósito. */}
       {canMaintain && <div className="detail-actions"><Link className="button secondary button-link" to={`/projects/${project.id}/experimental?workspaceId=${encodeURIComponent(project.workspace.id)}`}>Modo experimental →</Link></div>}
-      {/* El link a "Herramientas legacy" (/projects/:id/legacy, LegacyToolsPage) se ocultó a pedido
-          explícito del usuario: la ruta y el código siguen intactos, solo se retiró de la UI principal. */}
     </section>
   )
 }

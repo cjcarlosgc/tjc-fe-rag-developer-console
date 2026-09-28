@@ -5,11 +5,6 @@ import { AppShell } from './ui/AppShell'
 import { ProjectDetailPage } from './projects/ProjectDetailPage'
 import { ProjectsPage } from './projects/ProjectsPage'
 import { InventoryPage } from './inventory/InventoryPage'
-import { LegacyToolsPage } from './projects/LegacyToolsPage'
-import { GenerationPage } from './generation/GenerationPage'
-import { RunPage } from './runs/RunPage'
-import { RunHistoryPage } from './runs/RunHistoryPage'
-import { ArtifactsPage } from './artifacts/ArtifactsPage'
 import { ExperimentPage } from './experiments/ExperimentPage'
 import { AnalysisHistoryPage } from './analysis/AnalysisHistoryPage'
 import { ContextExplorerPage } from './context-explorer/ContextExplorerPage'
@@ -40,17 +35,10 @@ export const router = createBrowserRouter([
           { path: 'projects/:projectId/runs/:analysisRunId/comparison', element: <RunComparisonPage /> },
           { path: 'projects/:projectId/functional-knowledge', element: <FunctionalKnowledgePage /> },
           { path: 'projects/:projectId/functional-knowledge/:knowledgeId', element: <FunctionalKnowledgeDetailPage /> },
-          { path: 'projects/:projectId/legacy', element: <LegacyToolsPage /> },
           { path: 'projects/:projectId/integrations/github', element: <IntegrationsPage /> },
           { path: 'projects/:projectId/analyses', element: <AnalysisHistoryPage /> },
           { path: 'projects/:projectId/inventory', element: <InventoryPage /> },
           { path: 'projects/:projectId/versions/:projectVersionId/inventory', element: <InventoryPage /> },
-          { path: 'projects/:projectId/generate', element: <GenerationPage /> },
-          { path: 'projects/:projectId/legacy/runs', element: <RunHistoryPage /> },
-          { path: 'projects/:projectId/legacy/versions/:projectVersionId/runs', element: <RunHistoryPage /> },
-          { path: 'projects/:projectId/legacy/runs/:runId', element: <RunPage /> },
-          { path: 'projects/:projectId/legacy/runs/:runId/artifacts', element: <ArtifactsPage /> },
-          { path: 'projects/:projectId/legacy/runs/:runId/context', element: <ContextExplorerPage /> },
           { path: 'projects/:projectId/experimental', element: <ExperimentPage /> },
           { path: 'projects/:projectId/experimental/:experimentId/context', element: <ContextExplorerPage /> },
         ],

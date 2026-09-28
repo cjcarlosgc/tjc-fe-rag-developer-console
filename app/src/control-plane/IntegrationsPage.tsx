@@ -10,13 +10,13 @@ import { ErrorNote, ErrorState, LoadingState, ProjectNotFoundState } from '../ui
 import { ProjectTabs } from '../ui/ProjectTabs'
 import { RepoChip } from '../ui/RepoChip'
 import { bindingErrorMessage, errorCorrelationId, isGitHubAccessRenewalRequired, isProjectNotFound, isVerificationUnavailable, reactivateErrorMessage } from './errors'
-import { useCreateRepositoryBinding, useDisconnectRepository, useEnableRepository, useGitHubAppAccessInfo, useGitHubRepositoryBranches, useGitHubUserRepositories, useRepositoryBinding, useVerifyGitHubAppAccess } from './queries'
+import { useCreateRepositoryBinding, useDisconnectRepository, useEnableRepository, useGitHubAppAccessInfo, useGitHubAppInfo, useGitHubRepositoryBranches, useGitHubUserRepositories, useRepositoryBinding, useVerifyGitHubAppAccess } from './queries'
 import { canBindRepository } from './repositoryPermissions'
 import { BINDING_STATUS_BADGES } from './status'
 import type { CreateRepositoryBindingRequest, GitHubAppAccessResponse, GitHubUserRepositoryResponse } from './types'
 
 /**
- * HU30 — repository binding user-centric (INTEROP-2.3 §6.8). La instalación real de la GitHub App
+ * HU01/HU02 — repository binding user-centric (GH-INTEROP-1.1). La instalación real de la GitHub App
  * y el popup de OAuth no pueden reproducirse en este mock: se simulan en 4 pasos explícitos
  * (descubrir → verificar acceso de la App → elegir rama → vincular), siempre etiquetados DEMO.
  */
@@ -33,9 +33,10 @@ export function IntegrationsPage() {
   const project = projectQuery.data
   const canManageBinding = project?.role === 'ADMIN' || project?.role === 'MAINTAINER'
   const canReactivateBinding = canManageBinding && (bindingQuery.data?.status !== 'REVOKED' || project?.role === 'ADMIN')
-  const reposQuery = useGitHubUserRepositories(authSession?.githubProviderToken ?? null, project?.workspace ?? null)
-  const verifyAccess = useVerifyGitHubAppAccess()
-  const createBinding = useCreateRepositoryBinding(projectId)
+  const providerToken = authSession?.githubProviderToken ?? null
+  const reposQuery = useGitHubUserRepositories(providerToken, project, authSession?.user.id)
+  const verifyAccess = useVerifyGitHubAppAccess(projectId, providerToken)
+  const createBinding = useCreateRepositoryBinding(projectId, providerToken)
   // Resultado de Desconectar/Reactivar para lectores de pantalla (aria-live polite): el botón cambia o desaparece al cambiar el estado.
   const [announcement, setAnnouncement] = useState('')
 
@@ -51,11 +52,15 @@ export function IntegrationsPage() {
   const [selectedRepo, setSelectedRepo] = useState<GitHubUserRepositoryResponse | null>(null)
   const [accessResult, setAccessResult] = useState<GitHubAppAccessResponse | null>(null)
   const [integrationBranch, setIntegrationBranch] = useState('')
-  const branchesQuery = useGitHubRepositoryBranches(accessResult?.status === 'AUTHORIZED' ? selectedRepo?.repositoryName ?? null : null)
+  const branchesQuery = useGitHubRepositoryBranches(projectId, accessResult?.status === 'AUTHORIZED' ? selectedRepo?.repositoryName ?? null : null, authSession?.user.id)
   // El enlace a configurar la App se ofrece en REVOKED sin esperar a que Reactivar falle, y en DISABLED si Reactivar fue rechazado por falta de acceso.
   const enableNeedsAccess = enable.error instanceof ApiError && enable.error.code === 'GITHUB_APP_ACCESS_REQUIRED'
   const bindingForAccess = canReactivateBinding && bindingQuery.data && (bindingQuery.data.status === 'REVOKED' || enableNeedsAccess) ? bindingQuery.data : null
-  const appAccessInfo = useGitHubAppAccessInfo(bindingForAccess)
+  const appAccessInfo = useGitHubAppAccessInfo(projectId, bindingForAccess, authSession?.user.id)
+  const appInfo = useGitHubAppInfo(Boolean(bindingForAccess))
+  // La verificación de acceso también devuelve la URL verificada. Si el endpoint informativo
+  // falla, esta respuesta permite conservar la ruta de recuperación sin inventar un enlace.
+  const appConfigureUrl = mock ? appAccessInfo.data?.app.configureUrl : appInfo.data?.configureUrl ?? appAccessInfo.data?.app.configureUrl
 
   // Foco tras Desconectar/Reactivar: el botón pulsado desaparece al cambiar el estado, así que el foco pasa al botón opuesto.
   const reactivateButtonRef = useRef<HTMLButtonElement>(null)
@@ -196,9 +201,17 @@ export function IntegrationsPage() {
               </button>
             </div>}
             {canReactivateBinding && enable.isError && <ErrorNote message={reactivateErrorMessage(enable.error)} correlationId={errorCorrelationId(enable.error)} />}
-            {appAccessInfo.data?.status === 'NOT_AUTHORIZED' && (
-              <p className="empty-inline-note"><a href={appAccessInfo.data.app.configureUrl} target="_blank" rel="noreferrer">Configurar acceso de la GitHub App →</a></p>
+            {canReactivateBinding && bindingForAccess && appAccessInfo.isPending && <p role="status">Consultando el acceso de la GitHub App…</p>}
+            {bindingForAccess && appAccessInfo.data?.status === 'NOT_AUTHORIZED' && appConfigureUrl && (
+              <p className="empty-inline-note"><a href={appConfigureUrl} target="_blank" rel="noreferrer">Configurar acceso de la GitHub App →</a></p>
             )}
+            {bindingForAccess && appAccessInfo.isError && <>
+              <ErrorNote message="No pudimos confirmar el acceso actual de la GitHub App." correlationId={errorCorrelationId(appAccessInfo.error)} />
+              <button type="button" className="button secondary" onClick={() => {
+                void appAccessInfo.refetch()
+                void appInfo.refetch()
+              }}>Reintentar consulta de acceso</button>
+            </>}
             {!canReactivateBinding && <p className="empty-inline-note">{binding.status === 'REVOKED' ? 'Solo un Admin puede reactivar un binding revocado.' : 'Tu rol permite consultar el vínculo, pero no reactivarlo. Un Maintainer o Admin debe hacerlo.'}</p>}
           </>
         )}
@@ -269,7 +282,7 @@ export function IntegrationsPage() {
           <div className="panel success-note contract-note">
             <div>
               <strong>Acceso autorizado a {selectedRepo.repositoryName}</strong>
-              {branchesQuery.isPending && <p>Cargando ramas…</p>}
+              {branchesQuery.isPending && <p role="status">Cargando ramas…</p>}
               {branchesQuery.isError && <>
                 <ErrorNote message={bindingErrorMessage(branchesQuery.error)} correlationId={errorCorrelationId(branchesQuery.error)} />
                 {isVerificationUnavailable(branchesQuery.error) && <button type="button" className="button secondary" onClick={() => void branchesQuery.refetch()}>Reintentar</button>}

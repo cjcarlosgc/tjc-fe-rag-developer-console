@@ -1,7 +1,9 @@
-/** SDD 2.0 / INTEROP-2.0 §6.8, §6.10, §6.12 — control plane PR-driven (Project↔Repository → PR/HEAD → Run → Check/Proposal). */
+import type { ProjectLanguage } from '../projects/types'
+
+/** SDD 3.0 / INTEROP-2.6 — control plane PR-driven (Project↔Repository → PR/HEAD → Run → Check/Proposal). */
 
 /**
- * §6.8 — GitHub App y repository binding (HU30, INTEROP-2.2 — discovery user-centric,
+ * GH-INTEROP-1.1 — GitHub App y repository binding (HU01/HU02; discovery user-centric,
  * autorización/binding GitHub-App-centric). Reemplaza el flujo installation-centric anterior:
  * discovery vía provider token OAuth → verificar acceso de la App a un repo concreto → listar
  * sus ramas reales → crear el binding. `installationId` nunca viaja desde el navegador, lo
@@ -19,7 +21,7 @@ export interface GitHubUserRepositoryResponse {
   permissions: { admin: boolean; maintain: boolean; push: boolean; pull: boolean }
 }
 
-/** `GET /integrations/github/repositories?cursor&limit` -> `Page<GitHubUserRepositoryResponse>`. */
+/** `GET /v1/github/repositories?projectId&cursor&limit` -> `Page<GitHubUserRepositoryResponse>`. */
 export interface GitHubUserRepositoryPage {
   items: GitHubUserRepositoryResponse[]
   nextCursor: string | null
@@ -36,7 +38,8 @@ export interface GitHubAppAccessResponse {
   repositoryId: string
   repositoryName: string
   status: GitHubAppAccessStatus
-  installationId: string | null
+  /** Solo vive en la respuesta de verificación que precede al binding; nunca se persiste en Console. */
+  authorizationEvidence?: string | null
   app: { displayName: string; configureUrl: string }
 }
 
@@ -110,9 +113,9 @@ export interface AnalysisRunSummaryResponse {
 
 export type SymbolChangeKind = 'DIRECTLY_CHANGED' | 'POTENTIALLY_IMPACTED'
 
-/** Símbolo del control plane PR-driven; distinto de los targets del dominio de generación legacy (`runs/types.ts`). */
+/** Símbolo del control plane PR-driven, distinto de un target de inventario de pruebas. */
 export interface AnalysisSymbolResponse {
-  language: 'TYPESCRIPT' | 'PHP'
+  language: ProjectLanguage
   kind: 'CLASS' | 'METHOD' | 'FUNCTION' | 'INTERFACE' | 'TYPE' | 'TRAIT' | 'ENUM'
   qualifiedName: string
   filePath: string
