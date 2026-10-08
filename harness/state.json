@@ -2097,6 +2097,239 @@
         ]
       },
       "closedAt": "2026-10-08T19:00:00.000Z"
+    },
+    {
+      "id": "WI-CONSOLE-012",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "storyIds": [
+        "HU12",
+        "HU14"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-014"
+      ],
+      "caseIds": [],
+      "sprint": "SMART V3",
+      "status": "W-DONE",
+      "priority": "P1",
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/013-pr-driven-control-plane/plan.md",
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "app/src/control-plane/RunsPage.tsx",
+        "app/src/control-plane/RunsPage.test.tsx"
+      ],
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "syncScopePaths": [],
+      "approved": true,
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-10-08T19:20:00.000Z"
+      },
+      "execution": {
+        "leaderAgent": "leader",
+        "analysisAgent": "leader",
+        "implementationAgent": "leader",
+        "contractReviewAgent": null,
+        "reviewAgent": "human-reviewer",
+        "uxReviewAgent": null,
+        "handoffs": [
+          {
+            "agent": "leader",
+            "executedBy": {
+              "agent": "leader",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "claude-sonnet-5-5",
+              "effort": "medium"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "No reproduce: 120 corridas aisladas (UTC, America/Lima, Pacific/Auckland; con y sin fecha fija) y 4 corridas de suite, todas verdes. Sin cambios de codigo; no se delego a implementer porque no habia nada que implementar."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "harness/reports/wi-console-012-reproduction.md"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-012-reproduction.md"
+            ],
+            "recommendedNextStep": "Revision independiente del usuario (human-reviewer)."
+          },
+          {
+            "agent": "human-reviewer",
+            "status": "APPROVED",
+            "findings": [],
+            "blockers": [],
+            "filesAffected": [
+              "harness/reports/wi-console-012-reproduction.md"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-012-user-review.md"
+            ],
+            "recommendedNextStep": "Cerrar el WI y liberar state.json; no publicar sin una solicitud explícita."
+          }
+        ],
+        "reviewCycles": 0,
+        "maxReviewCycles": 2
+      },
+      "gates": {
+        "sddVerified": "G-PASSED",
+        "implementationCompleted": "G-PASSED",
+        "uxReviewed": "G-NOT_APPLICABLE",
+        "contractReviewed": "G-NOT_APPLICABLE",
+        "canonicalContractSynced": "G-NOT_APPLICABLE",
+        "contractSyncPublished": "G-NOT_APPLICABLE",
+        "independentReviewPassed": "G-PASSED",
+        "technicalChecksPassed": "G-PASSED",
+        "interopSyncChecked": "G-PASSED",
+        "noMocksPresentedAsLive": "G-PASSED",
+        "noBlockingDecisions": "G-PASSED",
+        "retryLimitRespected": "G-PASSED"
+      },
+      "coordination": {
+        "contractImpact": false,
+        "publishesContract": false,
+        "uiImpact": false,
+        "pullCheckpoints": [
+          {
+            "checkpoint": "start",
+            "workItem": "WI-CONSOLE-012",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [],
+            "checkedAt": "2026-10-08T19:08:15.690Z"
+          },
+          {
+            "checkpoint": "implementation-delivery",
+            "workItem": "WI-CONSOLE-012",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-08T19:08:15.774Z"
+          },
+          {
+            "checkpoint": "before-review",
+            "workItem": "WI-CONSOLE-012",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-08T19:08:15.858Z"
+          },
+          {
+            "checkpoint": "before-done",
+            "workItem": "WI-CONSOLE-012",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-08T19:15:06.869Z"
+          }
+        ],
+        "publishedSyncIds": [],
+        "pendingRelevantSyncIds": [],
+        "knownIncompatibilities": []
+      },
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-012 solo reproduce una prueba de RunsPage y no cambia codigo ni consumidores.",
+          "report": "harness/reports/wi-console-012-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas; WI-CONSOLE-012 solo reproduce una prueba de RunsPage y no cambia codigo ni consumidores.",
+          "report": "harness/reports/wi-console-012-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-012 solo reproduce una prueba de RunsPage y no cambia codigo ni consumidores.",
+          "report": "harness/reports/wi-console-012-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre workspaces, membresia y eventos organizacionales; WI-CONSOLE-012 solo reproduce una prueba de RunsPage y no cambia codigo ni consumidores.",
+          "report": "harness/reports/wi-console-012-contract-sync-scope-review.md"
+        }
+      ],
+      "evidence": [
+        "harness/reports/wi-console-012-reproduction.md",
+        "harness/reports/wi-console-012-contract-sync-scope-review.md",
+        "harness/reports/wi-console-012-user-review.md",
+        "harness/reports/wi-console-012-closure.md"
+      ],
+      "blockedReason": null,
+      "gateEvidence": {
+        "sddVerified": [
+          "harness/reports/wi-console-012-closure.md"
+        ],
+        "noBlockingDecisions": [
+          "harness/reports/wi-console-012-closure.md"
+        ],
+        "implementationCompleted": [
+          "harness/reports/wi-console-012-reproduction.md"
+        ],
+        "noMocksPresentedAsLive": [
+          "harness/reports/wi-console-012-reproduction.md"
+        ],
+        "technicalChecksPassed": [
+          "harness/reports/wi-console-012-reproduction.md"
+        ],
+        "interopSyncChecked": [
+          "harness/reports/wi-console-012-contract-sync-scope-review.md"
+        ],
+        "independentReviewPassed": [
+          "harness/reports/wi-console-012-user-review.md"
+        ],
+        "retryLimitRespected": [
+          "harness/reports/wi-console-012-closure.md"
+        ]
+      },
+      "closedAt": "2026-10-08T19:20:00.000Z"
     }
   ],
   "activeWorkItem": null

@@ -732,7 +732,7 @@
     {
       "component": "CONSOLE",
       "workItemType": "PRODUCT",
-      "status": "W-READY",
+      "status": "W-DONE",
       "priority": "P1",
       "sprint": "SMART V3",
       "caseIds": [],
@@ -761,6 +761,36 @@
         "spec/features/013-pr-driven-control-plane/tasks.md",
         "app/src/control-plane/RunsPage.tsx",
         "app/src/control-plane/RunsPage.test.tsx"
+      ],
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-012 solo reproduce una prueba de RunsPage y no cambia codigo ni consumidores.",
+          "report": "harness/reports/wi-console-012-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas; WI-CONSOLE-012 solo reproduce una prueba de RunsPage y no cambia codigo ni consumidores.",
+          "report": "harness/reports/wi-console-012-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-012 solo reproduce una prueba de RunsPage y no cambia codigo ni consumidores.",
+          "report": "harness/reports/wi-console-012-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre workspaces, membresia y eventos organizacionales; WI-CONSOLE-012 solo reproduce una prueba de RunsPage y no cambia codigo ni consumidores.",
+          "report": "harness/reports/wi-console-012-contract-sync-scope-review.md"
+        }
       ]
     },
     {
