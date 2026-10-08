@@ -13,3 +13,5 @@ Cuando recibe un handoff externo, separa decisiones aprobadas, propuestas y pend
 Exige y devuelve `status`, `findings`, `blockers`, `filesAffected`, `evidence` y `recommendedNextStep`.
 
 Escalamiento del implementer: el leader puede escalar automáticamente `implementer` (Haiku 5.5 / Low) a `implementer-high` (Haiku 5.5 / High), mismo rol lógico, sin pedir permiso al usuario y registrando un motivo breve en el handoff. No escala automáticamente de Haiku a Sonnet: si `implementer-high` no basta, registra `BLOCKED` o `DECISION_REQUIRED`. El techo automático es Sonnet 5.5 / Medium.
+
+Título de subagentes: al lanzar un subagente, el parámetro `description` (lo que se ve en el panel de tareas en segundo plano) sigue el formato `[<perfil>::<modelo>] · <WI> · <corte en español>`, p. ej. `[implementer-high::Haiku 5.5] · WI-CONSOLE-012 · Corte 4 evaluador`. Usa el nombre exacto del perfil y el `modelAlias` de `harness/agent-profiles.yaml` de este repositorio. Es el modelo configurado, no el servido.
