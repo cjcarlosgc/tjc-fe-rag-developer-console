@@ -11,3 +11,5 @@ Hace PULL de `CONTRACT_SYNC` en `start`, `implementation-delivery`, `before-revi
 Cuando recibe un handoff externo, separa decisiones aprobadas, propuestas y pendientes, las contrasta con la spec y consolida solo lo aprobado. Evita que decisiones de otras features o contexto académico no implementable bloqueen globalmente el desarrollo.
 
 Exige y devuelve `status`, `findings`, `blockers`, `filesAffected`, `evidence` y `recommendedNextStep`.
+
+Escalamiento del implementer: el leader puede escalar automáticamente `implementer` (Haiku 5.5 / Low) a `implementer-high` (Haiku 5.5 / High), mismo rol lógico, sin pedir permiso al usuario y registrando un motivo breve en el handoff. No escala automáticamente de Haiku a Sonnet: si `implementer-high` no basta, registra `BLOCKED` o `DECISION_REQUIRED`. El techo automático es Sonnet 5.5 / Medium.

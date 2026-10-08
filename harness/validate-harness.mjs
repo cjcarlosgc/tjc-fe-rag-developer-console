@@ -20,7 +20,7 @@ if (contractSyncCliTests.status !== 0) failures.push(contractSyncCliTests.stderr
 if (contractSyncLifecycleTests.status !== 0) failures.push(contractSyncLifecycleTests.stderr.trim() || contractSyncLifecycleTests.stdout.trim() || contractSyncLifecycleTests.error?.message || 'Contract Sync lifecycle tests failed');
 const assignmentTests = spawnSync(process.execPath, ['--test', path.join(root, 'harness/agent-assignment.test.mjs')], { cwd: root, encoding: 'utf8' });
 if (assignmentTests.status !== 0) failures.push(assignmentTests.stderr.trim() || assignmentTests.stdout.trim() || assignmentTests.error?.message || 'agent assignment tests failed');
-const roles = ['leader.md', 'sdd-analyst.md', 'implementer.md', 'contract-reviewer.md', 'ux-reviewer.md', 'reviewer.md'];
+const roles = ['leader.md', 'sdd-analyst.md', 'implementer.md', 'contract-reviewer.md', 'human-reviewer.md', 'ux-reviewer.md', 'reviewer.md'];
 const handoffFields = ['status', 'findings', 'blockers', 'filesAffected', 'evidence', 'recommendedNextStep'];
 const statuses = new Set(['W-PLANNED', 'W-READY', 'W-SELECTED', 'W-SPEC_VERIFIED', 'W-AWAITING_APPROVAL', 'W-IN_PROGRESS', 'W-IN_REVIEW', 'W-DONE', 'W-BLOCKED', 'W-DECISION_REQUIRED', 'W-CANCELLED']);
 const gateValues = new Set(['G-PASSED', 'G-FAILED', 'G-NOT_APPLICABLE', 'G-NOT_RUN']);
@@ -37,6 +37,14 @@ function hasHandoff(item, role) { return item.execution?.handoffs?.some((handoff
 
 for (const role of roles) assert(fs.existsSync(path.join(root, 'harness/roles', role)), `missing role: ${role}`);
 for (const deprecated of ['analyst.md', 'design-reviewer.md', 'stitch-reader.md', 'stitch-analyst.md']) assert(!fs.existsSync(path.join(root, 'harness/roles', deprecated)), `deprecated permanent role remains: ${deprecated}`);
+
+for (const agent of ['leader', 'sdd-analyst', 'implementer', 'implementer-high', 'contract-reviewer']) {
+  assert(fs.existsSync(path.join(root, '.claude/agents', `${agent}.md`)), `missing Claude agent profile: ${agent}`);
+}
+const agentProfiles = fs.readFileSync(path.join(root, 'harness/agent-profiles.yaml'), 'utf8');
+for (const modelId of ['claude-sonnet-5-5', 'claude-haiku-5-5']) {
+  assert(agentProfiles.includes(modelId), `agent-profiles.yaml missing exactModelId: ${modelId}`);
+}
 for (const directory of ['harness/contract-sync/inbox', 'harness/contract-sync/outbox']) assert(fs.existsSync(path.join(root, directory)), `missing CONTRACT_SYNC directory: ${directory}`);
 
 const state = readJson('harness/state.json');
