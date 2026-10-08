@@ -30,10 +30,15 @@ claude:
     modelAlias: "Sonnet 5.5"
     exactModelId: "claude-sonnet-5-5"
     reasoningEffort: "low"
+  ux-reviewer:
+    role: ux-reviewer
+    modelAlias: "Sonnet 5.5"
+    exactModelId: "claude-sonnet-5-5"
+    reasoningEffort: "low"
   human-reviewer:
     role: human-reviewer
     actor: user
 
-# Roles permanentes: leader, sdd-analyst, implementer, contract-reviewer y human-reviewer.
+# Roles permanentes: leader, sdd-analyst, implementer, contract-reviewer, ux-reviewer (solo Console, para cambios de UI) y human-reviewer.
 # contract-reviewer se activa solo para impacto contractual. human-reviewer (el usuario) es el reviewer independiente
 # por defecto; un agente `reviewer` solo existe si el usuario delega explícitamente la revisión.
