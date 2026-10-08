@@ -2330,6 +2330,300 @@
         ]
       },
       "closedAt": "2026-10-08T19:20:00.000Z"
+    },
+    {
+      "id": "WI-CONSOLE-019",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "storyIds": [
+        "HU17"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-021"
+      ],
+      "caseIds": [],
+      "sprint": "SMART V3",
+      "status": "W-DONE",
+      "priority": "P1",
+      "specPaths": [
+        "spec/features/014-analysisrun-experiments/spec.md",
+        "spec/features/014-analysisrun-experiments/plan.md",
+        "spec/features/014-analysisrun-experiments/tasks.md"
+      ],
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "syncScopePaths": [],
+      "approved": true,
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [
+          "DEC-INF-001",
+          "DEC-VAL-001"
+        ],
+        "checkedAt": "2026-10-08T19:25:00.000Z"
+      },
+      "execution": {
+        "leaderAgent": "leader",
+        "analysisAgent": "sdd-analyst",
+        "implementationAgent": "implementer",
+        "contractReviewAgent": null,
+        "reviewAgent": "human-reviewer",
+        "uxReviewAgent": "ux-reviewer",
+        "handoffs": [
+          {
+            "agent": "sdd-analyst",
+            "executedBy": {
+              "agent": "sdd-analyst",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "SUFFICIENT; sin decisiones bloqueantes; nota exacta en ExperimentPage y RunComparisonPage; no tocar ExperimentComparison (WI-CONSOLE-018)."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "harness/reports/wi-console-019-sdd-verification.md"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-019-sdd-verification.md"
+            ],
+            "recommendedNextStep": "Delegar a implementer."
+          },
+          {
+            "agent": "implementer",
+            "executedBy": {
+              "agent": "implementer",
+              "configuredModel": "claude-haiku-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Nota exacta en ExperimentPage y RunComparisonPage; prueba negativa de veredictos verificada (falla al inyectar «ganador»)."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/experiments/ExperimentConditionsNote.tsx",
+              "app/src/experiments/noAutomaticVerdict.test.tsx",
+              "app/src/experiments/ExperimentPage.tsx",
+              "app/src/experiments/ExperimentPage.test.tsx",
+              "app/src/run-comparison/RunComparisonPage.tsx",
+              "app/src/run-comparison/RunComparisonPage.test.tsx"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-019-implementation.md"
+            ],
+            "recommendedNextStep": "Revision UX y revision independiente del usuario."
+          },
+          {
+            "agent": "ux-reviewer",
+            "executedBy": {
+              "agent": "ux-reviewer",
+              "configuredModel": "unknown",
+              "servedModel": "claude-sonnet-5-5",
+              "effort": "unknown"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Revision estatica sin verificacion visual; confirmar espaciado entre dos contract-note en RunComparisonPage. Riesgo residual: deltas verde/rojo de WI-CONSOLE-018."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/experiments/ExperimentConditionsNote.tsx",
+              "app/src/experiments/ExperimentPage.tsx",
+              "app/src/run-comparison/RunComparisonPage.tsx"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-019-ux-review.md"
+            ],
+            "recommendedNextStep": "Revision del usuario."
+          },
+          {
+            "agent": "human-reviewer",
+            "status": "APPROVED",
+            "findings": [],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/experiments/ExperimentConditionsNote.tsx",
+              "app/src/experiments/ExperimentPage.tsx",
+              "app/src/run-comparison/RunComparisonPage.tsx"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-019-user-review.md"
+            ],
+            "recommendedNextStep": "Cerrar el WI y liberar state.json; no publicar sin una solicitud explícita del usuario."
+          }
+        ],
+        "reviewCycles": 0,
+        "maxReviewCycles": 2
+      },
+      "gates": {
+        "sddVerified": "G-PASSED",
+        "implementationCompleted": "G-PASSED",
+        "uxReviewed": "G-PASSED",
+        "contractReviewed": "G-NOT_APPLICABLE",
+        "canonicalContractSynced": "G-NOT_APPLICABLE",
+        "contractSyncPublished": "G-NOT_APPLICABLE",
+        "independentReviewPassed": "G-PASSED",
+        "technicalChecksPassed": "G-PASSED",
+        "interopSyncChecked": "G-PASSED",
+        "noMocksPresentedAsLive": "G-PASSED",
+        "noBlockingDecisions": "G-PASSED",
+        "retryLimitRespected": "G-PASSED"
+      },
+      "coordination": {
+        "contractImpact": false,
+        "publishesContract": false,
+        "uiImpact": true,
+        "pullCheckpoints": [
+          {
+            "checkpoint": "start",
+            "workItem": "WI-CONSOLE-019",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "resolvedSyncIds": [
+              "CS-20260920-002"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [],
+            "checkedAt": "2026-10-08T19:16:09.458Z"
+          },
+          {
+            "checkpoint": "implementation-delivery",
+            "workItem": "WI-CONSOLE-019",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-08T19:25:41.267Z"
+          },
+          {
+            "checkpoint": "before-review",
+            "workItem": "WI-CONSOLE-019",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-08T19:25:41.375Z"
+          },
+          {
+            "checkpoint": "before-done",
+            "workItem": "WI-CONSOLE-019",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-08T20:08:50.214Z"
+          }
+        ],
+        "publishedSyncIds": [],
+        "pendingRelevantSyncIds": [],
+        "knownIncompatibilities": []
+      },
+      "evidence": [
+        "harness/reports/wi-console-019-sdd-verification.md",
+        "harness/reports/wi-console-019-contract-sync-scope-review.md",
+        "harness/reports/wi-console-019-implementation.md",
+        "harness/reports/wi-console-019-ux-review.md",
+        "harness/reports/wi-console-019-user-review.md",
+        "harness/reports/wi-console-019-closure.md"
+      ],
+      "blockedReason": null,
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-019 solo cambia copy y pruebas de la UI de experimentos.",
+          "report": "harness/reports/wi-console-019-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas; WI-CONSOLE-019 solo cambia copy y pruebas de la UI de experimentos.",
+          "report": "harness/reports/wi-console-019-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-019 solo cambia copy y pruebas de la UI de experimentos.",
+          "report": "harness/reports/wi-console-019-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre workspaces, membresia y eventos organizacionales; WI-CONSOLE-019 solo cambia copy y pruebas de la UI de experimentos.",
+          "report": "harness/reports/wi-console-019-contract-sync-scope-review.md"
+        }
+      ],
+      "gateEvidence": {
+        "sddVerified": [
+          "harness/reports/wi-console-019-sdd-verification.md"
+        ],
+        "noBlockingDecisions": [
+          "harness/reports/wi-console-019-sdd-verification.md"
+        ],
+        "implementationCompleted": [
+          "harness/reports/wi-console-019-implementation.md"
+        ],
+        "noMocksPresentedAsLive": [
+          "harness/reports/wi-console-019-implementation.md"
+        ],
+        "technicalChecksPassed": [
+          "harness/reports/wi-console-019-implementation.md"
+        ],
+        "interopSyncChecked": [
+          "harness/reports/wi-console-019-contract-sync-scope-review.md"
+        ],
+        "uxReviewed": [
+          "harness/reports/wi-console-019-ux-review.md"
+        ],
+        "retryLimitRespected": [
+          "harness/reports/wi-console-019-implementation.md"
+        ],
+        "independentReviewPassed": [
+          "harness/reports/wi-console-019-user-review.md"
+        ]
+      },
+      "closedAt": "2026-10-08T20:10:00.000Z"
     }
   ],
   "activeWorkItem": null

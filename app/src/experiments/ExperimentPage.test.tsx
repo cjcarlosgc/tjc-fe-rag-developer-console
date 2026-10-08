@@ -5,6 +5,7 @@ import { setDataSourceForTests } from '../api/dataSource'
 import { renderApp } from '../test/render'
 import { getCaptureNextPrState } from '../run-comparison/speculative/captureNextPr'
 import { ExperimentPage } from './ExperimentPage'
+import { EXPERIMENT_CONDITIONS_NOTE } from './ExperimentConditionsNote'
 
 test('ejecuta y presenta una comparación simulada sin red', async () => {
   setDataSourceForTests('mock')
@@ -13,6 +14,7 @@ test('ejecuta y presenta una comparación simulada sin red', async () => {
   renderApp(<ExperimentPage />, { initialEntry: '/projects/prj_checkout_demo/experimental', routePath: '/projects/:projectId/experimental' })
 
   expect(await screen.findByRole('heading', { name: 'RAG vs Agente generalista', level: 1 })).toBeInTheDocument()
+  expect(screen.getByText(EXPERIMENT_CONDITIONS_NOTE)).toBeInTheDocument()
   await user.click(await screen.findByRole('button', { name: 'Ejecutar comparación' }))
 
   expect(await screen.findByText('Huella de retrieval', {}, { timeout: 2000 })).toBeInTheDocument()

@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
 import { isMockDataSource } from '../api/dataSource'
 import { ExperimentComparison } from '../experiments/ExperimentComparison'
+import { ExperimentConditionsNote } from '../experiments/ExperimentConditionsNote'
 import { useAnalysisRun } from '../control-plane/queries'
 import { useProject } from '../projects/queries'
 import { bindingErrorMessage, errorCorrelationId } from '../control-plane/errors'
@@ -108,6 +109,8 @@ export function RunComparisonPage() {
         <p>Comparación académica sobre el mismo HEAD, changeset y símbolos que ya validó el flujo operacional — no sustituye ni bloquea el resultado del Run.</p>
       </div>
     </div>
+
+    <ExperimentConditionsNote />
 
     <div className={`contract-note ${isMockDataSource() ? 'success-note' : ''}`}>
       <span className="contract-glyph">{isMockDataSource() ? 'DEMO' : 'API'}</span>
