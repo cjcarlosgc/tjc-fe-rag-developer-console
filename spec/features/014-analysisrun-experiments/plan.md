@@ -7,7 +7,7 @@
 
 ## Cortes SMART V3
 
-`WI-CONSOLE-014` (OE2) depende de `WI-CORE-022`; `WI-CONSOLE-018` (presentación OE5) depende de `WI-CORE-025`; `WI-CONSOLE-019` (wording) es independiente. Los mocks siguen rotulados `DEMO · DATOS SIMULADOS` y los adapters live no se escriben contra campos que Core no haya publicado.
+`WI-CONSOLE-014` (OE2) y `WI-CONSOLE-018` (presentación OE5) se construyen contra el contrato INTEROP-2.7 con mocks y su verificación live es `WI-CONSOLE-020`; `WI-CONSOLE-019` (wording) es independiente. Los mocks siguen rotulados `DEMO · DATOS SIMULADOS` y los adapters live no se escriben contra campos que Core no haya publicado.
 
 ## Diseño técnico SMART V3
 

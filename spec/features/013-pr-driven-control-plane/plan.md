@@ -17,7 +17,7 @@ Pruebas de rutas, permisos, freshness, accesibilidad, separación mock/live, ses
 
 ## Cortes SMART V3
 
-`WI-CONSOLE-011` sincroniza SYSTEM-2.6/INTEROP-2.7 y desbloquea a los demás tras `WI-CORE-017`. `WI-CONSOLE-012` (`RunsPage`) y `WI-CONSOLE-019` (wording) no dependen de Core y pueden ejecutarse ya. `WI-CONSOLE-013` depende de `WI-CORE-018` y `WI-CORE-019`; `WI-CONSOLE-015`, de `WI-CORE-019` y `WI-CORE-020`; `WI-CONSOLE-016`, de `WI-CORE-026`; `WI-CONSOLE-017`, de `WI-CORE-027`. Cada corte UI exige `ux-reviewer`.
+`WI-CONSOLE-011` sincroniza SYSTEM-2.6/INTEROP-2.7 (el contrato ya está definido y acusado) y desbloquea a `WI-CONSOLE-013` a `WI-CONSOLE-018`, que se construyen contra el contrato canónico con mocks rotulados y adapter live pendiente. `WI-CONSOLE-012` (`RunsPage`) y `WI-CONSOLE-019` (wording) no dependen de nada y pueden ejecutarse ya. La activación y verificación live contra Core se hace en `WI-CONSOLE-020`, que sí espera a los WI de Core. Cada corte UI exige `ux-reviewer`.
 
 ## Diseño técnico SMART V3
 
