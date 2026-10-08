@@ -4,6 +4,7 @@ import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
 import { RepoChip } from '../ui/RepoChip'
 import { useAllActionRequiredList } from './queries'
+import { abstentionLabel } from './abstention'
 import { useAllProjects } from '../projects/queries'
 
 /** HU38 — bandeja de Runs con contexto funcional pendiente; cada fila abre Focus Mode con retorno seguro. */
@@ -48,6 +49,7 @@ export function ActionRequiredPage() {
                   <span className="target-ref">{question.target.qualifiedName}</span>
                 </div>
                 <p>{question.question}</p>
+                {question.abstention && <p className="abstention-note">{abstentionLabel(question.abstention)}</p>}
                 <span className="card-link">Abrir Focus Mode →</span>
               </Link>
             </li>

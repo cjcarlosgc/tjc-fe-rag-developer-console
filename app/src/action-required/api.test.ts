@@ -13,7 +13,7 @@ beforeEach(() => {
 describe('action-required api (mock)', () => {
   it('HU38: lista la pregunta vigente por cada Run con contexto pendiente', async () => {
     const page = await listActionRequired()
-    expect(page.items.map((item) => item.analysisRunId)).toEqual(['arun_billing_pr17', 'arun_checkout_pr42', 'arun_billing_pr24', 'arun_org_metrics_pr15', 'arun_checkout_pr52'])
+    expect(page.items.map((item) => item.analysisRunId)).toEqual(['arun_billing_pr17', 'arun_checkout_pr42', 'arun_billing_pr24', 'arun_org_metrics_pr15', 'arun_checkout_pr52', 'arun_org_writer_pr21']);
     expect(page.items.every((item) => item.status === 'PENDING')).toBe(true)
   })
 
@@ -35,10 +35,28 @@ describe('action-required api (mock)', () => {
     expect(after.currentQuestion?.id).toBe('fq_checkout_pr42_2')
   })
 
-  it('HU37: "No lo sé" (UNKNOWN) cierra la pregunta sin crear conocimiento y continúa el Run', async () => {
+  it('INTEROP-2.7: "No lo sé" (UNKNOWN) devuelve ABSTAINED, deja la pregunta PENDING y registra la abstención', async () => {
     const accepted = await submitFunctionalAnswer('arun_checkout_pr42', 'fq_checkout_pr42_1', { choice: 'UNKNOWN', answer: null })
+    expect(accepted.outcome).toBe('ABSTAINED')
     expect(accepted.knowledgeId).toBeNull()
-    expect(accepted.continuationAttemptId).not.toBeNull()
+    expect(accepted.continuationAttemptId).toBeNull()
+
+    const after = await getContextQuestionSet('arun_checkout_pr42')
+    expect(after.currentQuestion?.id).toBe('fq_checkout_pr42_1')
+    expect(after.currentQuestion?.status).toBe('PENDING')
+    expect(after.currentQuestion?.abstention).toMatchObject({ count: 1, lastByRole: 'ADMIN' })
+  })
+
+  it('INTEROP-2.7: una respuesta no UNKNOWN devuelve outcome ANSWERED', async () => {
+    const accepted = await submitFunctionalAnswer('arun_checkout_pr42', 'fq_checkout_pr42_1', { choice: 'YES', answer: null })
+    expect(accepted.outcome).toBe('ANSWERED')
+  })
+
+  it('PROJECT_ROLE_INSUFFICIENT: un Writer no puede abstenerse ni responder (403 autoritativo de Core)', async () => {
+    const error = await submitFunctionalAnswer('arun_org_writer_pr21', 'fq_org_writer_pr21_1', { choice: 'UNKNOWN', answer: null }).catch((reason: unknown) => reason)
+    expect(error).toBeInstanceOf(ApiError)
+    expect((error as ApiError).code).toBe('PROJECT_ROLE_INSUFFICIENT')
+    expect((await getContextQuestionSet('arun_org_writer_pr21')).currentQuestion?.abstention).toBeNull()
   })
 
   it('HU37: al responder la última pregunta del Run, queda validado y sin pregunta vigente', async () => {

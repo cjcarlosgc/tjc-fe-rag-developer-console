@@ -1,5 +1,5 @@
 import { apiRequest } from '../api/client'
-import { getDataSource } from '../api/dataSource'
+import { getDataSource, PendingContractError } from '../api/dataSource'
 import { mockGetContextQuestionSet, mockListActionRequired, mockListFunctionalKnowledge, mockSubmitFunctionalAnswer } from '../api/mockBackend'
 import type { ActionRequiredListPage, FunctionalAnswerAcceptedResponse, FunctionalKnowledgeListPage, FunctionalKnowledgeStatus, FunctionalQuestionSetResponse, SubmitFunctionalAnswerRequest } from './types'
 
@@ -45,6 +45,8 @@ export function getContextQuestionSet(analysisRunId: string): Promise<Functional
  */
 export function submitFunctionalAnswer(analysisRunId: string, questionId: string, input: SubmitFunctionalAnswerRequest): Promise<FunctionalAnswerAcceptedResponse> {
   if (getDataSource() === 'mock') return mockSubmitFunctionalAnswer(analysisRunId, questionId, input)
+  // INTEROP-2.7 §6.11 (WI-CORE-018 pendiente): la abstención UNKNOWN todavía no se publica como `outcome` en Core; no se envía como respuesta.
+  if (input.choice === 'UNKNOWN') return Promise.reject(new PendingContractError('la abstención de una pregunta funcional (INTEROP-2.7)'))
   const body: { choice: typeof input.choice; answer?: string; conflictResolution?: typeof input.conflictResolution } = { choice: input.choice }
   if (input.answer) body.answer = input.answer
   if (input.conflictResolution) body.conflictResolution = input.conflictResolution

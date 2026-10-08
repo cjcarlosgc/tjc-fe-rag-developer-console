@@ -19,7 +19,7 @@ test('HU32: lista todos los Analysis Runs con su badge de estado', async () => {
   expect(screen.getByText('Behavioral mismatch')).toBeInTheDocument()
   expect(screen.getByText('Obsolete (HEAD nuevo)')).toBeInTheDocument()
   expect(screen.getByText('NO VIGENTE')).toBeInTheDocument()
-  expect(container.querySelectorAll('.repo-chip')).toHaveLength(16)
+  expect(container.querySelectorAll('.repo-chip')).toHaveLength(17)
 })
 
 test('el workspace personal no mezcla Runs de las organizaciones', async () => {

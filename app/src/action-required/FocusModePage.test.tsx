@@ -30,14 +30,53 @@ test('HU37: muestra la pregunta vigente con su visualAid y avanza a la siguiente
   expect(await screen.findByText('¿El redondeo de "calculateTotal" debe truncar o redondear al centavo más cercano?')).toBeInTheDocument()
 })
 
-test('HU37: "No lo sé" (UNKNOWN) también avanza, sin prometer conocimiento persistido', async () => {
+test('HU37/INTEROP-2.7: "No lo sé" (UNKNOWN) es una abstención: la pregunta permanece, muestra la abstención y no avanza', async () => {
   const user = userEvent.setup()
   renderFocusMode('arun_checkout_pr42')
 
   await screen.findByText('¿"apply" debe rechazar un cupón vencido aunque el pedido ya esté marcado como pagado?')
   await user.click(screen.getByRole('button', { name: 'No lo sé' }))
 
-  expect(await screen.findByText('¿El redondeo de "calculateTotal" debe truncar o redondear al centavo más cercano?')).toBeInTheDocument()
+  const status = await screen.findByRole('status')
+  expect(status).toHaveTextContent(/^Abstención registrada · ADMIN · .+ · 1 abstención\(es\)$/)
+  expect(screen.getByText('¿"apply" debe rechazar un cupón vencido aunque el pedido ya esté marcado como pagado?')).toBeInTheDocument()
+  expect(screen.queryByText('¿El redondeo de "calculateTotal" debe truncar o redondear al centavo más cercano?')).not.toBeInTheDocument()
+  expect(screen.queryByText('Contexto funcional confirmado')).not.toBeInTheDocument()
+  expect(screen.queryByText(/resuelto|continuando|todas las preguntas respondidas/i)).not.toBeInTheDocument()
+  expect(screen.queryByText(/usr_demo/)).not.toBeInTheDocument()
+})
+
+test('INTEROP-2.7: una segunda abstención incrementa el contador sin avanzar', async () => {
+  const user = userEvent.setup()
+  renderFocusMode('arun_checkout_pr42')
+
+  await screen.findByText('¿"apply" debe rechazar un cupón vencido aunque el pedido ya esté marcado como pagado?')
+  await user.click(screen.getByRole('button', { name: 'No lo sé' }))
+  await screen.findByText(/1 abstención\(es\)/)
+  await user.click(screen.getByRole('button', { name: 'No lo sé' }))
+
+  expect(await screen.findByText(/2 abstención\(es\)/)).toBeInTheDocument()
+  expect(screen.getByText('¿"apply" debe rechazar un cupón vencido aunque el pedido ya esté marcado como pagado?')).toBeInTheDocument()
+})
+
+test('HU07/HU14: Writer no ve «No lo sé» ni respuestas y recibe la nota de Maintainer o Admin', async () => {
+  renderFocusMode('arun_org_writer_pr21')
+
+  expect(await screen.findByText('¿El reintento de cobro debe respetar el límite diario aunque el cliente tenga un plan anual?')).toBeInTheDocument()
+  expect(screen.getByText('Solo un Maintainer o Admin puede responder esta pregunta funcional')).toBeInTheDocument()
+  for (const name of ['Sí', 'No', 'Depende', 'No lo sé', 'Responder solo con este texto']) {
+    expect(screen.queryByRole('button', { name })).not.toBeInTheDocument()
+  }
+  expect(screen.queryByRole('group', { name: 'Respuesta' })).not.toBeInTheDocument()
+})
+
+test('HU07/HU14: Reader ve la misma nota de Maintainer o Admin y ninguna respuesta', async () => {
+  renderFocusMode('arun_org_metrics_pr15')
+
+  expect(await screen.findByText('¿Los límites de fecha se interpretan en UTC o en la zona horaria del usuario?')).toBeInTheDocument()
+  expect(screen.getByText('Solo un Maintainer o Admin puede responder esta pregunta funcional')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'No lo sé' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Sí' })).not.toBeInTheDocument()
 })
 
 test('HU37: al agotar las preguntas del Run, confirma el contexto y permite volver a returnTo', async () => {
@@ -104,4 +143,50 @@ test('HU51: "Mantener la vigente" (KEEP_EXISTING) avanza sin tocar la regla', as
   await user.click(screen.getByRole('button', { name: 'Mantener la vigente, guardar como evidencia' }))
 
   expect(await screen.findByText('Contexto funcional confirmado')).toBeInTheDocument()
+})
+
+const CHECKOUT_QUESTION = '¿"apply" debe rechazar un cupón vencido aunque el pedido ya esté marcado como pagado?'
+
+test('INTEROP-2.7 teclado: «No lo sé» se alcanza con Tab, se activa con Enter y el foco queda en el contenedor de la pregunta', async () => {
+  const user = userEvent.setup()
+  renderFocusMode('arun_checkout_pr42')
+
+  await screen.findByText(CHECKOUT_QUESTION)
+  screen.getByRole('button', { name: 'Sí' }).focus()
+  await user.tab()
+  await user.tab()
+  await user.tab()
+  const unknown = screen.getByRole('button', { name: 'No lo sé' })
+  expect(unknown).toHaveFocus()
+
+  await user.keyboard('{Enter}')
+
+  const status = await screen.findByRole('status')
+  expect(status).toHaveTextContent(/^Abstención registrada · ADMIN · .+ · 1 abstención\(es\)$/)
+  expect(screen.getByText(CHECKOUT_QUESTION).closest('.focus-mode-card')).toHaveFocus()
+  expect(screen.queryByText('¿El redondeo de "calculateTotal" debe truncar o redondear al centavo más cercano?')).not.toBeInTheDocument()
+})
+
+test('INTEROP-2.7 teclado: «No lo sé» también responde con Espacio y acumula la abstención', async () => {
+  const user = userEvent.setup()
+  renderFocusMode('arun_checkout_pr42')
+
+  await screen.findByText(CHECKOUT_QUESTION)
+  screen.getByRole('button', { name: 'No lo sé' }).focus()
+  await user.keyboard(' ')
+
+  expect(await screen.findByText(/1 abstención\(es\)/)).toBeInTheDocument()
+  expect(screen.getByText(CHECKOUT_QUESTION)).toBeInTheDocument()
+})
+
+test('INTEROP-2.7 (comportamiento provisional del mock): «No lo sé» con HEAD cambiado deja la pregunta OBSOLETE sin abstención registrada', async () => {
+  const user = userEvent.setup()
+  renderFocusMode('arun_billing_pr17')
+
+  await screen.findByText('¿"DiscountEngine.applyDiscount" puede dejar el total en negativo si el cupón excede el subtotal?')
+  await user.click(screen.getByRole('button', { name: 'No lo sé' }))
+
+  expect(await screen.findByText('Sin preguntas pendientes en este Run')).toBeInTheDocument()
+  expect(screen.queryByText(/Abstención registrada/)).not.toBeInTheDocument()
+  expect(screen.queryByText('¿"DiscountEngine.applyDiscount" puede dejar el total en negativo si el cupón excede el subtotal?')).not.toBeInTheDocument()
 })

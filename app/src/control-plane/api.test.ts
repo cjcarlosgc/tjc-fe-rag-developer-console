@@ -310,9 +310,9 @@ describe('control-plane api (mock) — HU30 repository binding user-centric (INT
 })
 
 describe('control-plane api (mock) — HU32 Analysis Runs, los 16 escenarios', () => {
-  it('lista los 16 Analysis Runs (incluye los escenarios de organizaciones)', async () => {
+  it('lista los 17 Analysis Runs (incluye los escenarios de organizaciones)', async () => {
     const page = await listAnalysisRuns()
-    expect(page.items).toHaveLength(16)
+    expect(page.items).toHaveLength(17)
   })
 
   it('filtra por proyecto y por status', async () => {

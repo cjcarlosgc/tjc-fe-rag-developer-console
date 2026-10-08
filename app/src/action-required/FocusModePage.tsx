@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { hasRole } from '../projects/roles'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { isMockDataSource } from '../api/dataSource'
@@ -8,6 +9,7 @@ import { RepoChip } from '../ui/RepoChip'
 import { useProject } from '../projects/queries'
 import { bindingErrorMessage, errorCorrelationId } from '../control-plane/errors'
 import { useContextQuestionSet, useSubmitFunctionalAnswer } from './queries'
+import { abstentionLabel } from './abstention'
 import type { ConflictResolution, FunctionalAnswerChoice, FunctionalKnowledgeConflictResponse, VisualAidResponse } from './types'
 
 /** Evita open-redirect: `returnTo` solo puede ser una ruta interna. */
@@ -41,6 +43,8 @@ export function FocusModePage() {
   const projectQuery = useProject(currentQuestionId)
   const [answerText, setAnswerText] = useState('')
   const [pendingAnswer, setPendingAnswer] = useState<{ questionId: string; choice: FunctionalAnswerChoice; answer: string | null } | null>(null)
+  /** Tras una abstención el botón «No lo sé» se deshabilita durante el envío y pierde el foco: se devuelve al contenedor de la pregunta. */
+  const cardRef = useRef<HTMLDivElement>(null)
 
   if (questionSetQuery.isPending) return <LoadingState label="Abriendo Focus Mode…" />
   if (questionSetQuery.isError) return <ErrorState message={questionSetQuery.error.message} onRetry={() => void questionSetQuery.refetch()} />
@@ -48,7 +52,7 @@ export function FocusModePage() {
   if (questionSetQuery.data.currentQuestion && projectQuery.isError) return <ErrorState message={bindingErrorMessage(projectQuery.error)} correlationId={errorCorrelationId(projectQuery.error)} onRetry={() => void projectQuery.refetch()} />
 
   const { currentQuestion, functionalBehaviorValidated } = questionSetQuery.data
-  const canAnswer = !currentQuestion || projectQuery.data?.role === 'ADMIN' || projectQuery.data?.role === 'MAINTAINER'
+  const canAnswer = !currentQuestion || hasRole(projectQuery.data?.role, 'MAINTAINER')
   const conflict = submitAnswer.error instanceof ApiError && submitAnswer.error.code === 'FUNCTIONAL_KNOWLEDGE_CONFLICT'
     ? submitAnswer.error.details as FunctionalKnowledgeConflictResponse
     : null
@@ -59,7 +63,11 @@ export function FocusModePage() {
     setPendingAnswer({ questionId: currentQuestion.id, choice, answer })
     submitAnswer.mutate(
       { questionId: currentQuestion.id, input: { choice, answer } },
-      { onSuccess: () => { setAnswerText(''); setPendingAnswer(null) } },
+      { onSuccess: (result) => {
+        if (result.outcome !== 'ABSTAINED') setAnswerText('')
+        else cardRef.current?.focus()
+        setPendingAnswer(null)
+      } },
     )
   }
 
@@ -68,7 +76,7 @@ export function FocusModePage() {
     if (!pendingAnswer || !conflict) return
     submitAnswer.mutate(
       { questionId: pendingAnswer.questionId, input: { choice: pendingAnswer.choice, answer: pendingAnswer.answer, conflictResolution: { conflictId: conflict.conflictId, action } } },
-      { onSuccess: () => { setAnswerText(''); setPendingAnswer(null) } },
+      { onSuccess: (result) => { if (result.outcome !== 'ABSTAINED') setAnswerText(''); setPendingAnswer(null) } },
     )
   }
 
@@ -94,11 +102,12 @@ export function FocusModePage() {
       </div>
     )}
 
-    {currentQuestion && <div className="panel focus-mode-card">
+    {currentQuestion && <div className="panel focus-mode-card" ref={cardRef} tabIndex={-1}>
       <span className="run-heading-meta"><RepoChip repositoryName={currentQuestion.repositoryName} /><span className="pr-ref">PR #{currentQuestion.pullRequestNumber} · {currentQuestion.target.qualifiedName}</span></span>
       <h2>{currentQuestion.question}</h2>
       <p className="focus-mode-rationale">{currentQuestion.rationale}</p>
       {currentQuestion.visualAid && <VisualAid aid={currentQuestion.visualAid} />}
+      <div role="status">{currentQuestion.abstention && <p className="abstention-note">{abstentionLabel(currentQuestion.abstention)}</p>}</div>
 
       {canAnswer ? <>
       <div className="answer-choices" role="group" aria-label="Respuesta">
@@ -133,7 +142,7 @@ export function FocusModePage() {
       )}
 
       {submitAnswer.isError && !conflict && <p className="inline-error" role="alert">{bindingErrorMessage(submitAnswer.error)}{errorCorrelationId(submitAnswer.error) && <> · Correlation ID: <code>{errorCorrelationId(submitAnswer.error)}</code></>}</p>}
-      </> : <p className="empty-inline-note">Tu rol es de solo lectura. Un Maintainer o Admin puede responder esta pregunta funcional.</p>}
+      </> : <p className="role-note">Solo un Maintainer o Admin puede responder esta pregunta funcional</p>}
     </div>}
 
     <div className="run-actions"><Link className="button secondary button-link" to={returnTo}>Volver</Link></div>

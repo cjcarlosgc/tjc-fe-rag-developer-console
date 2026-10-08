@@ -143,3 +143,15 @@ test('HU56: confirmar la eliminación borra el proyecto, navega a la lista con e
   expect(sawNotFound).toBe(false)
   await expect(getProject('prj_checkout_demo')).rejects.toMatchObject({ code: 'PROJECT_NOT_FOUND' })
 })
+
+test('HU07: un Writer ve la capacidad de operar el proyecto; un Reader no', async () => {
+  renderDetail('prj_org_writer_demo')
+  await screen.findByText('payments-gateway', { selector: '.repo-name' })
+  expect(screen.getByRole('link', { name: /Modo experimental/ })).toBeInTheDocument()
+})
+
+test('HU07: un Reader no ve la acción de operar el proyecto', async () => {
+  renderDetail('prj_org_metrics_demo')
+  await screen.findByText('metrics-console', { selector: '.repo-name' })
+  expect(screen.queryByRole('link', { name: /Modo experimental/ })).not.toBeInTheDocument()
+})

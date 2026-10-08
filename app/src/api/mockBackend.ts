@@ -51,6 +51,9 @@ interface MockContextTraceState {
   polls: number
 }
 
+/** Usuario demo que registra las abstenciones (solo demo; la UI no muestra identidades de abstención). */
+const MOCK_ACTOR_USER_ID = 'usr_demo_admin'
+
 /** HU37/HU38: preguntas de un `AnalysisRun` (control plane PR-driven), ordenadas — solo una `PENDING` a la vez está vigente. `headChanged` simula que llegó un HEAD nuevo mientras se respondía: la pregunta pasa a `OBSOLETE` en vez de `ANSWERED` y el Run no se reanuda. `conflictQuestionId` (HU51, INTEROP-2.1 §6.11) marca la única pregunta demo cuyo primer envío choca con una `FunctionalKnowledge` `ACTIVE` existente — intencionalmente no es un chequeo genérico por `targetRef`: varias preguntas HU37/38 ya comparten `targetRef` con FK seedeadas y romperían su propio flujo si el conflicto se evaluara siempre. */
 interface MockActionRequiredRunState {
   analysisRunId: string
@@ -222,10 +225,12 @@ function seed(): void {
   const emptyProject: Project = { id: 'prj_billing_demo', name: 'billing-engine', currentVersionId: null, workspace: DEMO_WORKSPACES[0], role: 'ADMIN', createdAt: '2026-08-30T16:45:00.000Z', updatedAt: '2026-08-30T16:45:00.000Z' }
   const maintainerProject: Project = { id: 'prj_org_orders_demo', name: 'orders-api', currentVersionId: null, workspace: DEMO_WORKSPACES[2], role: 'MAINTAINER', createdAt: '2026-09-12T08:30:00.000Z', updatedAt: '2026-09-13T12:00:00.000Z' }
   const readerProject: Project = { id: 'prj_org_metrics_demo', name: 'metrics-console', currentVersionId: null, workspace: DEMO_WORKSPACES[1], role: 'READER', createdAt: '2026-09-13T10:15:00.000Z', updatedAt: '2026-09-13T10:15:00.000Z' }
+  const writerProject: Project = { id: 'prj_org_writer_demo', name: 'payments-gateway', currentVersionId: null, workspace: DEMO_WORKSPACES[2], role: 'WRITER', createdAt: '2026-09-16T08:00:00.000Z', updatedAt: '2026-09-16T08:00:00.000Z' }
   projects.set(project.id, project)
   projects.set(emptyProject.id, emptyProject)
   projects.set(maintainerProject.id, maintainerProject)
   projects.set(readerProject.id, readerProject)
+  projects.set(writerProject.id, writerProject)
   versions.set('ver_checkout_7', {
     history: { id: 'ver_checkout_7', projectId: project.id, status: 'COMPLETED', language: 'TYPESCRIPT', originalFileName: null, filesProcessed: 47, chunksCount: 186, detectedFramework: 'VITEST', targetsTotal: 5, targetsWithTest: 2, targetsMissingTest: 3, createdAt: '2026-08-31T14:17:10.000Z', completedAt, current: true },
     inventory: buildInventory('ver_checkout_7'),
@@ -252,7 +257,7 @@ function seedActionRequired(): void {
     headChanged: false,
     questions: [
       {
-        id: 'fq_checkout_pr42_1',
+        id: 'fq_checkout_pr42_1', scenarioKind: 'EXCEPTION', scenarioKey: 'coupon.apply.expired-paid-order', abstention: null,
         analysisRunId: 'arun_checkout_pr42',
         projectId: 'prj_checkout_demo',
         repositoryName: 'acme/checkout-service',
@@ -266,7 +271,7 @@ function seedActionRequired(): void {
         createdAt: '2026-09-12T18:20:00.000Z',
       },
       {
-        id: 'fq_checkout_pr42_2',
+        id: 'fq_checkout_pr42_2', scenarioKind: 'BOUNDARY', scenarioKey: 'order.calculateTotal.rounding', abstention: null,
         analysisRunId: 'arun_checkout_pr42',
         projectId: 'prj_checkout_demo',
         repositoryName: 'acme/checkout-service',
@@ -287,7 +292,7 @@ function seedActionRequired(): void {
     headChanged: true,
     questions: [
       {
-        id: 'fq_billing_pr17_1',
+        id: 'fq_billing_pr17_1', scenarioKind: 'BOUNDARY', scenarioKey: 'discount.applyDiscount.negative-total', abstention: null,
         analysisRunId: 'arun_billing_pr17',
         projectId: 'prj_billing_demo',
         repositoryName: 'acme/billing-engine',
@@ -309,7 +314,7 @@ function seedActionRequired(): void {
     headChanged: false,
     questions: [
       {
-        id: 'fq_billing_pr24_1',
+        id: 'fq_billing_pr24_1', scenarioKind: 'STATE_TRANSITION', scenarioKey: 'invoice.applyLateFee.partial-payment', abstention: { count: 2, lastAt: '2026-09-20T10:15:00.000Z', lastByUserId: 'usr_demo_admin', lastByRole: 'ADMIN' },
         analysisRunId: 'arun_billing_pr24',
         projectId: 'prj_billing_demo',
         repositoryName: 'acme/billing-engine',
@@ -332,7 +337,7 @@ function seedActionRequired(): void {
     conflictQuestionId: 'fq_checkout_pr52_1',
     questions: [
       {
-        id: 'fq_checkout_pr52_1',
+        id: 'fq_checkout_pr52_1', scenarioKind: 'EXCEPTION', scenarioKey: 'shipping.validate.corporate-exception', abstention: null,
         analysisRunId: 'arun_checkout_pr52',
         projectId: 'prj_checkout_demo',
         repositoryName: 'acme/checkout-service',
@@ -347,12 +352,25 @@ function seedActionRequired(): void {
       },
     ],
   })
+  actionRequiredRuns.set('arun_org_writer_pr21', {
+    analysisRunId: 'arun_org_writer_pr21',
+    projectId: 'prj_org_writer_demo',
+    headChanged: false,
+    questions: [{
+      id: 'fq_org_writer_pr21_1', scenarioKind: 'BOUNDARY', scenarioKey: 'payments.retry.annual-plan-limit', abstention: null, analysisRunId: 'arun_org_writer_pr21', projectId: 'prj_org_writer_demo',
+      repositoryName: 'rag-tesis-org/payments-gateway', pullRequestNumber: 21, headSha: '21w21a1',
+      target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'PaymentRetry.schedule', filePath: 'src/payments/PaymentRetry.ts', changeKind: 'DIRECTLY_CHANGED' },
+      question: '¿El reintento de cobro debe respetar el límite diario aunque el cliente tenga un plan anual?',
+      rationale: 'El PR cambia la programación de reintentos sin aclarar si el límite diario aplica a planes anuales.',
+      status: 'PENDING', visualAid: null, createdAt: '2026-09-16T09:00:00.000Z',
+    }],
+  })
   actionRequiredRuns.set('arun_org_metrics_pr15', {
     analysisRunId: 'arun_org_metrics_pr15',
     projectId: 'prj_org_metrics_demo',
     headChanged: false,
     questions: [{
-      id: 'fq_org_metrics_pr15_1', analysisRunId: 'arun_org_metrics_pr15', projectId: 'prj_org_metrics_demo',
+      id: 'fq_org_metrics_pr15_1', scenarioKind: 'FUNCTIONAL_PRECONDITION', scenarioKey: 'metrics.range.timezone', abstention: null, analysisRunId: 'arun_org_metrics_pr15', projectId: 'prj_org_metrics_demo',
       repositoryName: 'observability-lab/metrics-console', pullRequestNumber: 15, headSha: '15f15f1',
       target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'MetricsQuery.range', filePath: 'src/metrics/MetricsQuery.ts', changeKind: 'DIRECTLY_CHANGED' },
       question: '¿Los límites de fecha se interpretan en UTC o en la zona horaria del usuario?',
@@ -371,6 +389,7 @@ function seedControlPlane(): void {
   repositoryBindings.set('prj_checkout_demo', { projectId: 'prj_checkout_demo', installationId: 'inst_checkout_1', repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service', integrationBranch: 'develop', status: 'ENABLED', createdAt: '2026-08-20T10:00:00.000Z', updatedAt: '2026-08-20T10:00:00.000Z' })
   repositoryBindings.set('prj_billing_demo', { projectId: 'prj_billing_demo', installationId: 'inst_billing_1', repositoryId: 'repo_billing', repositoryName: 'acme/billing-engine', integrationBranch: 'develop', status: 'ENABLED', createdAt: '2026-08-22T10:00:00.000Z', updatedAt: '2026-08-22T10:00:00.000Z' })
   repositoryBindings.set('prj_org_orders_demo', { projectId: 'prj_org_orders_demo', installationId: 'inst_rag_orders', repositoryId: 'repo_rag_orders', repositoryName: 'rag-tesis-org/orders-api', integrationBranch: 'main', status: 'ENABLED', createdAt: '2026-09-12T08:30:00.000Z', updatedAt: '2026-09-12T08:30:00.000Z' })
+  repositoryBindings.set('prj_org_writer_demo', { projectId: 'prj_org_writer_demo', installationId: 'inst_rag_payments', repositoryId: 'repo_rag_payments', repositoryName: 'rag-tesis-org/payments-gateway', integrationBranch: 'main', status: 'ENABLED', createdAt: '2026-09-16T08:10:00.000Z', updatedAt: '2026-09-16T08:10:00.000Z' })
   repositoryBindings.set('prj_org_metrics_demo', { projectId: 'prj_org_metrics_demo', installationId: 'inst_observability_metrics', repositoryId: 'repo_observability_metrics', repositoryName: 'observability-lab/metrics-console', integrationBranch: 'main', status: 'ENABLED', createdAt: '2026-09-13T10:15:00.000Z', updatedAt: '2026-09-13T10:15:00.000Z' })
 
   function pr(repositoryId: string, repositoryName: string, number: number, title: string, headRef: string, headSha: string, actorLogin: string) {
@@ -567,6 +586,15 @@ function seedControlPlane(): void {
       symbols: [{ language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'MetricsQuery.range', filePath: 'src/metrics/MetricsQuery.ts', changeKind: 'DIRECTLY_CHANGED' }],
       functionalBehaviorValidated: false, resultSummary: null, detailsUrl: '/projects/prj_org_metrics_demo/runs/arun_org_metrics_pr15',
     },
+    {
+      id: 'arun_org_writer_pr21', projectId: 'prj_org_writer_demo',
+      pullRequest: pr('repo_rag_payments', 'rag-tesis-org/payments-gateway', 21, 'Ajusta la programación de reintentos de cobro', 'feature/payment-retry', '21w21a1', 'demo-writer'),
+      status: 'ACTION_REQUIRED', current: true, actionRequiredCount: 1, generatedTestsCount: 0,
+      createdAt: '2026-09-16T09:00:00.000Z', updatedAt: '2026-09-16T09:05:00.000Z', completedAt: null,
+      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: '29b29b2', changesetHeadSha: '21w21a1', indexDeltaBaseSha: '29b29b2',
+      symbols: [{ language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'PaymentRetry.schedule', filePath: 'src/payments/PaymentRetry.ts', changeKind: 'DIRECTLY_CHANGED' }],
+      functionalBehaviorValidated: false, resultSummary: null, detailsUrl: '/projects/prj_org_writer_demo/runs/arun_org_writer_pr21',
+    },
   ]
 
   for (const { __proposals, ...run } of seeds) {
@@ -654,7 +682,7 @@ function canSeeProject(project: Project): boolean {
 
 function requireProjectRole(projectId: string, requiredRole: ProjectRole): Project {
   const project = requireProject(projectId)
-  const rank: Record<ProjectRole, number> = { READER: 0, MAINTAINER: 1, ADMIN: 2 }
+  const rank: Record<ProjectRole, number> = { READER: 0, WRITER: 1, MAINTAINER: 2, ADMIN: 3 }
   if (rank[project.role] < rank[requiredRole]) {
     throw new ApiError(`Tu rol ${project.role} no permite esta acción; se requiere ${requiredRole}.`, 403, 'demo-correlation-id', 'PROJECT_ROLE_INSUFFICIENT', { requiredRole, currentRole: project.role })
   }
@@ -783,7 +811,7 @@ function seedExperimentContextTraces(experimentId: string, projectVersionId: str
 
 export async function mockStartExperiment(projectId: string, targetId: string): Promise<ExperimentAccepted> {
   await latency()
-  const project = requireProjectRole(projectId, 'MAINTAINER')
+  const project = requireProjectRole(projectId, 'WRITER')
   const inventory = project.currentVersionId ? versions.get(project.currentVersionId)?.inventory : undefined
   const target = inventory?.targets.find((item) => item.id === targetId)
   if (!target) notFound('El TestTarget no existe o no pertenece a este Project.', 'UNRESOLVABLE_TARGET')
@@ -811,7 +839,7 @@ export async function mockStartRunComparison(analysisRunId: string, symbol: Anal
   await latency()
   const run = findVisibleRun(analysisRunId)
   if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
-  requireProjectRole(run.projectId, 'MAINTAINER')
+  requireProjectRole(run.projectId, 'WRITER')
   if (run.status === 'ACTION_REQUIRED') throw new ApiError('Este Run todavía necesita contexto funcional antes de compararse — resuelve las preguntas pendientes primero.', 409, 'demo-correlation-id', 'RUN_NOT_ELIGIBLE')
   if (symbol.changeKind !== 'DIRECTLY_CHANGED' || (symbol.kind !== 'METHOD' && symbol.kind !== 'FUNCTION')) throw new ApiError(`"${symbol.qualifiedName}" no es un símbolo METHOD/FUNCTION con cambio directo — no es una unidad experimental válida.`, 422, 'demo-correlation-id', 'UNSUPPORTED_SYMBOL_KIND')
   sequence += 1
@@ -1013,14 +1041,28 @@ export async function mockSubmitFunctionalAnswer(analysisRunId: string, question
   await latency()
   const state = findVisibleActionRequiredRun(analysisRunId)
   if (!state) notFound(`No existe el Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
-  requireProjectRole(state.projectId, 'MAINTAINER')
+  const project = requireProjectRole(state.projectId, 'MAINTAINER')
   const question = state.questions.find((item) => item.id === questionId)
   if (!question) notFound(`No existe la pregunta demo "${questionId}".`, 'QUESTION_NOT_FOUND')
   if (question.status !== 'PENDING') throw new ApiError('La pregunta demo ya no está pendiente.', 409, 'demo-correlation-id', 'QUESTION_NOT_PENDING')
 
   if (state.headChanged) {
+    // Comportamiento PROVISIONAL del mock: INTEROP-2.7 §6.11 solo fija que la pregunta queda OBSOLETE; no define el outcome ni registra abstención.
+    // No definido por §6.11; diferido a WI-CORE-018. No es contrato: no reinterpretar como abstención registrada.
     question.status = 'OBSOLETE'
-    return { status: 'PENDING', pollAfterMs: 400, analysisRunId, questionId, continuationAttemptId: null, knowledgeId: null }
+    return { status: 'PENDING', pollAfterMs: 400, analysisRunId, questionId, outcome: input.choice === 'UNKNOWN' ? 'ABSTAINED' : 'ANSWERED', continuationAttemptId: null, knowledgeId: null }
+  }
+
+  /** INTEROP-2.7 (DEC-FK-002): UNKNOWN es una abstención auditada. La pregunta sigue PENDING, no avanza `sequence`, no crea conocimiento ni continuación. */
+  if (input.choice === 'UNKNOWN') {
+    const previous = question.abstention
+    question.abstention = {
+      count: (previous?.count ?? 0) + 1,
+      lastAt: nowIso(),
+      lastByUserId: MOCK_ACTOR_USER_ID,
+      lastByRole: project.role === 'ADMIN' ? 'ADMIN' : 'MAINTAINER',
+    }
+    return { status: 'PENDING', pollAfterMs: 300, analysisRunId, questionId, outcome: 'ABSTAINED', continuationAttemptId: null, knowledgeId: null }
   }
 
   const conflicting = questionId === state.conflictQuestionId ? findConflictingKnowledge(state.projectId, question.target.qualifiedName) : null
@@ -1040,10 +1082,10 @@ export async function mockSubmitFunctionalAnswer(analysisRunId: string, question
   sequence += 1
 
   if (conflicting && input.conflictResolution?.action === 'KEEP_EXISTING') {
-    return { status: 'PENDING', pollAfterMs: 300, analysisRunId, questionId, continuationAttemptId: `attempt_demo_${sequence}`, knowledgeId: null }
+    return { status: 'PENDING', pollAfterMs: 300, analysisRunId, questionId, outcome: 'ANSWERED', continuationAttemptId: `attempt_demo_${sequence}`, knowledgeId: null }
   }
 
-  let knowledgeId = input.choice === 'UNKNOWN' ? null : `fk_demo_${sequence}`
+  let knowledgeId = `fk_demo_${sequence}`
   if (conflicting && input.conflictResolution?.action === 'SUPERSEDE') {
     conflicting.status = 'SUPERSEDED'
     knowledgeId = `fk_demo_${sequence}`
@@ -1070,7 +1112,7 @@ export async function mockSubmitFunctionalAnswer(analysisRunId: string, question
     }
   }
 
-  return { status: 'PENDING', pollAfterMs: 300, analysisRunId, questionId, continuationAttemptId: `attempt_demo_${sequence}`, knowledgeId }
+  return { status: 'PENDING', pollAfterMs: 300, analysisRunId, questionId, outcome: 'ANSWERED', continuationAttemptId: `attempt_demo_${sequence}`, knowledgeId }
 }
 
 function requireProject(projectId: string): Project {
@@ -1160,7 +1202,7 @@ export async function mockListGitHubRepositoryBranches(owner: string, repo: stri
  */
 export async function mockCreateRepositoryBinding(projectId: string, input: CreateRepositoryBindingRequest): Promise<ProjectRepositoryBindingResponse> {
   await latency()
-  const project = requireProjectRole(projectId, 'MAINTAINER')
+  const project = requireProjectRole(projectId, 'WRITER')
   if (repositoryBindings.get(projectId)) throw new ApiError('Este proyecto ya tiene un repositorio vinculado.', 409, 'demo-correlation-id', 'REPOSITORY_BINDING_ALREADY_EXISTS')
   if (!isGitHubAppAuthorized(input.repositoryId)) throw new ApiError(`La GitHub App no tiene acceso a "${input.repositoryName}" todavía.`, 403, 'demo-correlation-id', 'GITHUB_APP_ACCESS_REQUIRED')
   // Un id falso, uno discordante con el nombre y un repositorio sin visibilidad responden lo mismo (un solo 404, sin distinguir motivos).
@@ -1190,7 +1232,7 @@ export async function mockCreateRepositoryBinding(projectId: string, input: Crea
 /** HU30/HU57: `DELETE /projects/{projectId}/integrations/github`. Como Core: pausa reversible — el binding queda `DISABLED` (fila y `repositoryId` se conservan), deja de aceptar eventos nuevos y no borra Runs ni Functional Knowledge. Sobre `REVOKED` no cambia nada; sin binding 404 `REPOSITORY_BINDING_NOT_FOUND` (INTEROP-2.3 §6.8). */
 export async function mockDisconnectRepository(projectId: string): Promise<void> {
   await latency()
-  requireProjectRole(projectId, 'MAINTAINER')
+  requireProjectRole(projectId, 'WRITER')
   const binding = repositoryBindings.get(projectId)
   if (!binding) notFound(`El proyecto demo "${projectId}" no tiene un repositorio vinculado.`, 'REPOSITORY_BINDING_NOT_FOUND')
   if (binding.status === 'REVOKED') return
@@ -1203,7 +1245,7 @@ export async function mockDisconnectRepository(projectId: string): Promise<void>
  */
 export async function mockEnableRepository(projectId: string): Promise<ProjectRepositoryBindingResponse> {
   await latency()
-  const project = requireProjectRole(projectId, 'MAINTAINER')
+  const project = requireProjectRole(projectId, 'WRITER')
   const binding = repositoryBindings.get(projectId)
   if (!binding) notFound(`El proyecto demo "${projectId}" no tiene un repositorio vinculado.`, 'REPOSITORY_BINDING_NOT_FOUND')
   if (binding.status === 'ENABLED') return clone(binding)
@@ -1324,7 +1366,7 @@ export async function mockCreateTestPublication(analysisRunId: string, input: Cr
   await latency()
   const run = findVisibleRun(analysisRunId)
   if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
-  requireProjectRole(run.projectId, 'MAINTAINER')
+  requireProjectRole(run.projectId, 'WRITER')
   if (run.status !== 'SUCCESS') throw new ApiError('Solo un Run SUCCESS admite publicación.', 409, 'demo-correlation-id', 'RUN_NOT_PUBLISHABLE')
   const proposals = testProposals.get(analysisRunId) ?? []
   const selected = proposals.filter((proposal) => input.proposalIds.includes(proposal.id))

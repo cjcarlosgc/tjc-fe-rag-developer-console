@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { hasRole } from '../projects/roles'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
 import { isMockDataSource } from '../api/dataSource'
@@ -67,7 +68,7 @@ export function RunComparisonPage() {
   const [selectedQualifiedName, setSelectedQualifiedName] = useState('')
 
   const eligibleSymbols = runQuery.data ? findEligibleSymbols(runQuery.data.symbols) : []
-  const canCreateExperiment = projectQuery.data?.role === 'ADMIN' || projectQuery.data?.role === 'MAINTAINER'
+  const canCreateExperiment = hasRole(projectQuery.data?.role, 'WRITER')
   const selectedSymbol = eligibleSymbols.find((symbol) => symbol.qualifiedName === selectedQualifiedName) ?? eligibleSymbols[0] ?? null
 
   const comparisonsQuery = useQuery({
@@ -149,7 +150,7 @@ export function RunComparisonPage() {
           <button type="button" className="button primary" disabled={!selectedSymbol || startMutation.isPending} onClick={() => selectedSymbol && startMutation.mutate(selectedSymbol)}>
             {startMutation.isPending ? 'Creando comparación…' : trials.length === 0 ? 'Iniciar comparación' : 'Repetir comparación (Replay)'}
           </button>
-        </div> : <p className="empty-inline-note">Tu rol es de solo lectura; un Maintainer o Admin puede crear comparaciones.</p>}
+        </div> : <p className="empty-inline-note">Tu rol es de solo lectura; un Writer, Maintainer o Admin puede crear comparaciones.</p>}
         {startMutation.isError && <p className="inline-error" role="alert">{bindingErrorMessage(startMutation.error)}{errorCorrelationId(startMutation.error) && <> · Correlation ID: <code>{errorCorrelationId(startMutation.error)}</code></>}</p>}
       </div>
 

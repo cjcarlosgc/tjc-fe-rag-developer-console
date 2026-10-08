@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { hasRole } from '../projects/roles'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 import { isMockDataSource } from '../api/dataSource'
@@ -48,7 +49,7 @@ function PublishSection({ analysisRunId, projectId, targetBranch }: { analysisRu
   if (projectQuery.isError) return <ErrorState message={bindingErrorMessage(projectQuery.error)} correlationId={errorCorrelationId(projectQuery.error)} onRetry={() => void projectQuery.refetch()} />
   if (proposalsQuery.isError) return <ErrorState message={proposalsQuery.error.message} onRetry={() => void proposalsQuery.refetch()} />
 
-  const canPublish = projectQuery.data.role === 'ADMIN' || projectQuery.data.role === 'MAINTAINER'
+  const canPublish = hasRole(projectQuery.data.role, 'WRITER')
   const available = proposalsQuery.data.items.filter((item) => item.status === 'AVAILABLE')
   const published = proposalsQuery.data.items.filter((item) => item.status === 'PUBLISHED')
 
@@ -83,7 +84,7 @@ function PublishSection({ analysisRunId, projectId, targetBranch }: { analysisRu
         </button>
       </div>
     )}
-    {available.length > 0 && !canPublish && <p className="empty-inline-note">Tu rol es de solo lectura. Un Maintainer o Admin puede publicar estas propuestas.</p>}
+    {available.length > 0 && !canPublish && <p className="empty-inline-note">Tu rol es de solo lectura. Un Writer, Maintainer o Admin puede publicar estas propuestas.</p>}
     {publishMutation.isError && <p className="inline-error" role="alert">{bindingErrorMessage(publishMutation.error)}{errorCorrelationId(publishMutation.error) && <> · Correlation ID: <code>{errorCorrelationId(publishMutation.error)}</code></>}</p>}
   </div>
 }

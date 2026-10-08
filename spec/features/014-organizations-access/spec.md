@@ -17,8 +17,8 @@ Permitir cambiar entre la cuenta personal y las organizaciones verificadas por C
 
 - Obtener workspaces con `GET /workspaces`. Mostrar primero la cuenta personal y luego las organizaciones en el orden del contrato; no inferir membresías desde OAuth ni desde `user_metadata`.
 - El workspace seleccionado delimita `GET /projects?workspaceId=...` y `POST /projects` (`workspaceId` es `WorkspaceResponse.id`). Mantener la selección al navegar/recargar mediante la URL; no enviar IDs de workspace hasta recibir un workspace válido.
-- Todo `ProjectResponse` consume `workspace: {kind,id,login}` y `role: ADMIN|MAINTAINER|READER`. No replicar la autorización del servidor: ocultar/deshabilitar acciones que el rol no permite y mostrar los errores de Core como resultado autoritativo.
-- Solo workspace `ADMIN` puede crear un Project de organización. Solo Project `ADMIN` puede renombrar o eliminar; `MAINTAINER` puede vincular, pausar/reactivar, responder preguntas, publicar tests y crear experimentos; `READER` solo lee.
+- Todo `ProjectResponse` consume `workspace: {kind,id,login}` y `role: ADMIN|MAINTAINER|WRITER|READER`. No replicar la autorización del servidor: ocultar/deshabilitar acciones que el rol no permite y mostrar los errores de Core como resultado autoritativo.
+- Solo workspace `ADMIN` puede crear un Project de organización. Solo Project `ADMIN` puede renombrar o eliminar; `WRITER` (y superiores) puede vincular, pausar/reactivar, publicar tests y crear experimentos; solo `MAINTAINER` o `ADMIN` responden preguntas funcionales y registran `UNKNOWN`; `READER` solo lee.
 - La creación incluye el `workspaceId` seleccionado. Repository discovery transmite `Project.workspace.id`; no permite vincular repositorios de otra organización ni ofrecer operaciones para las que el rol no alcanza.
 - El nombre se cambia con `PATCH /projects/{projectId}` y `{name}`; no se envían campos adicionales.
 - La vista Overview consume `GET /analysis-runs` y `GET /action-required` globales. Al mostrar un workspace, filtra en UI por los IDs de sus Projects; el endpoint global no se vuelve a presentar como endpoint live pendiente.

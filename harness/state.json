@@ -2624,6 +2624,394 @@
         ]
       },
       "closedAt": "2026-10-08T20:10:00.000Z"
+    },
+    {
+      "id": "WI-CONSOLE-013",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "storyIds": [
+        "HU07",
+        "HU08",
+        "HU14"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-015"
+      ],
+      "caseIds": [],
+      "sprint": "SMART V3",
+      "status": "W-DONE",
+      "priority": "P1",
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/013-pr-driven-control-plane/plan.md",
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/features/014-organizations-access/spec.md",
+        "spec/features/014-organizations-access/plan.md",
+        "spec/features/014-organizations-access/tasks.md"
+      ],
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md",
+        "spec/transversal/accessibility/spec.md"
+      ],
+      "syncScopePaths": [],
+      "approved": true,
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [
+          "DEC-INF-001",
+          "DEC-VAL-001"
+        ],
+        "checkedAt": "2026-10-08T20:30:00.000Z"
+      },
+      "execution": {
+        "leaderAgent": "leader",
+        "analysisAgent": "sdd-analyst",
+        "implementationAgent": "implementer",
+        "contractReviewAgent": "contract-reviewer",
+        "reviewAgent": "human-reviewer",
+        "uxReviewAgent": "ux-reviewer",
+        "handoffs": [
+          {
+            "agent": "sdd-analyst",
+            "executedBy": {
+              "agent": "sdd-analyst",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "claude-sonnet-5-5",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "SUFFICIENT; blockingDecisionIds []; DEC-FK-002 y DEC-ORG-003 aprobadas; cortes A (rol) y B (abstencion) propuestos."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "harness/reports/wi-console-013-sdd-verification.md"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-013-sdd-verification.md"
+            ],
+            "recommendedNextStep": "Delegar a implementer en dos cortes."
+          },
+          {
+            "agent": "implementer",
+            "executedBy": {
+              "agent": "implementer",
+              "configuredModel": "claude-haiku-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Corte A (rol WRITER) y Corte B (abstencion UNKNOWN) implementados sin commit."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/projects/roles.ts",
+              "app/src/action-required/FocusModePage.tsx",
+              "app/src/action-required/ActionRequiredPage.tsx",
+              "app/src/api/mockBackend.ts"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-013-implementation.md"
+            ],
+            "recommendedNextStep": "Revision UX y revision independiente del usuario."
+          },
+          {
+            "agent": "ux-reviewer",
+            "executedBy": {
+              "agent": "ux-reviewer",
+              "configuredModel": "unknown",
+              "servedModel": "claude-sonnet-5-5",
+              "effort": "unknown"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Revision estatica; ajustes menores (formatDate, status montado) aplicados."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/action-required/abstention.ts",
+              "app/src/action-required/FocusModePage.tsx"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-013-ux-review.md"
+            ],
+            "recommendedNextStep": "Revision del usuario."
+          },
+          {
+            "agent": "human-reviewer",
+            "status": "CHANGES_REQUESTED",
+            "findings": [
+              "Rechazo tras recorrer el mock; motivos exactos no especificados. Correcciones derivadas: contraste de abstention-note y nota de rol, cobertura Writer/Reader y abstencion, caso HEAD cambiado + UNKNOWN no inventar semantica, teclado/foco/role=status."
+            ],
+            "blockers": [],
+            "filesAffected": [],
+            "evidence": [
+              "harness/reports/wi-console-013-user-review.md"
+            ],
+            "recommendedNextStep": "Implementer corrige; revalidar con contract-reviewer y ux-reviewer; volver a W-IN_REVIEW."
+          },
+          {
+            "agent": "implementer",
+            "executedBy": {
+              "agent": "implementer",
+              "configuredModel": "claude-haiku-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Correccion 1: abstention-note/role-note con contraste 16.17:1, pruebas Writer/Reader y abstencion, caso HEAD+UNKNOWN documentado como diferido a WI-CORE-018, foco y teclado."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/styles.css",
+              "app/src/action-required/FocusModePage.tsx",
+              "app/src/action-required/ActionRequiredPage.tsx",
+              "app/src/api/mockBackend.ts",
+              "app/src/test/roleGating.test.tsx",
+              "app/src/control-plane/IntegrationsRoles.test.tsx"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-013-correction-1.md"
+            ],
+            "recommendedNextStep": "Revision del delta y del usuario."
+          },
+          {
+            "agent": "contract-reviewer",
+            "executedBy": {
+              "agent": "contract-reviewer",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Sin semantica inventada; HEAD+UNKNOWN diferido a WI-CORE-018."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/api/mockBackend.ts"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-013-correction-1-review.md"
+            ],
+            "recommendedNextStep": "Revision del usuario."
+          },
+          {
+            "agent": "ux-reviewer",
+            "executedBy": {
+              "agent": "ux-reviewer",
+              "configuredModel": "unknown",
+              "servedModel": "claude-sonnet-5-5",
+              "effort": "unknown"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Contraste, foco y role=status correctos; 3 observaciones menores no bloqueantes."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/styles.css",
+              "app/src/action-required/FocusModePage.tsx"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-013-correction-1-review.md"
+            ],
+            "recommendedNextStep": "Revision del usuario."
+          },
+          {
+            "agent": "human-reviewer",
+            "status": "APPROVED",
+            "findings": [
+              "Aprobado por el usuario tras verlo en el mock (ciclo de correccion 1 de 2). Observaciones no bloqueantes registradas en el cierre."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/action-required/FocusModePage.tsx",
+              "app/src/action-required/ActionRequiredPage.tsx",
+              "app/src/projects/roles.ts",
+              "app/src/styles.css",
+              "app/src/api/mockBackend.ts"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-013-user-review.md",
+              "harness/reports/wi-console-013-closure.md"
+            ],
+            "recommendedNextStep": "Cerrar el WI y liberar state.json; no publicar sin una solicitud explicita del usuario."
+          }
+        ],
+        "reviewCycles": 1,
+        "maxReviewCycles": 2
+      },
+      "gates": {
+        "sddVerified": "G-PASSED",
+        "implementationCompleted": "G-PASSED",
+        "uxReviewed": "G-PASSED",
+        "contractReviewed": "G-NOT_APPLICABLE",
+        "canonicalContractSynced": "G-NOT_APPLICABLE",
+        "contractSyncPublished": "G-NOT_APPLICABLE",
+        "independentReviewPassed": "G-PASSED",
+        "technicalChecksPassed": "G-PASSED",
+        "interopSyncChecked": "G-PASSED",
+        "noMocksPresentedAsLive": "G-PASSED",
+        "noBlockingDecisions": "G-PASSED",
+        "retryLimitRespected": "G-PASSED"
+      },
+      "coordination": {
+        "contractImpact": false,
+        "publishesContract": false,
+        "uiImpact": true,
+        "pullCheckpoints": [
+          {
+            "checkpoint": "start",
+            "workItem": "WI-CONSOLE-013",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-08T20:30:00.000Z"
+          },
+          {
+            "checkpoint": "implementation-delivery",
+            "workItem": "WI-CONSOLE-013",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-08T21:00:00.000Z"
+          },
+          {
+            "checkpoint": "before-review",
+            "workItem": "WI-CONSOLE-013",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-08T21:00:00.000Z"
+          },
+          {
+            "checkpoint": "before-done",
+            "workItem": "WI-CONSOLE-013",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-08T21:42:41.171Z"
+          }
+        ],
+        "publishedSyncIds": [],
+        "pendingRelevantSyncIds": [],
+        "knownIncompatibilities": []
+      },
+      "evidence": [
+        "harness/reports/wi-console-013-sdd-verification.md",
+        "harness/reports/wi-console-013-contract-sync-scope-review.md",
+        "harness/reports/wi-console-013-implementation.md",
+        "harness/reports/wi-console-013-ux-review.md",
+        "harness/reports/wi-console-013-user-review.md",
+        "harness/reports/wi-console-013-correction-1.md",
+        "harness/reports/wi-console-013-correction-1-review.md",
+        "harness/reports/wi-console-013-closure.md"
+      ],
+      "blockedReason": null,
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-013 no cambia el adapter de enable ni DELETE.",
+          "report": "harness/reports/wi-console-013-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Lectura de contexto: define Project.role y PROJECT_ROLE_INSUFFICIENT ya adoptados en WI-CONSOLE-011; el rol WRITER lo enmienda INTEROP-2.7; sin accion adicional.",
+          "report": "harness/reports/wi-console-013-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion e identidad GitHub; WI-CONSOLE-013 no toca login ni seguridad de binding.",
+          "report": "harness/reports/wi-console-013-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre workspaces, membresia y eventos organizacionales; solo contexto de la jerarquia previa de roles.",
+          "report": "harness/reports/wi-console-013-contract-sync-scope-review.md"
+        }
+      ],
+      "gateEvidence": {
+        "sddVerified": [
+          "harness/reports/wi-console-013-sdd-verification.md"
+        ],
+        "noBlockingDecisions": [
+          "harness/reports/wi-console-013-sdd-verification.md"
+        ],
+        "implementationCompleted": [
+          "harness/reports/wi-console-013-implementation.md",
+          "harness/reports/wi-console-013-correction-1.md"
+        ],
+        "noMocksPresentedAsLive": [
+          "harness/reports/wi-console-013-implementation.md"
+        ],
+        "technicalChecksPassed": [
+          "harness/reports/wi-console-013-closure.md"
+        ],
+        "interopSyncChecked": [
+          "harness/reports/wi-console-013-contract-sync-scope-review.md"
+        ],
+        "uxReviewed": [
+          "harness/reports/wi-console-013-ux-review.md",
+          "harness/reports/wi-console-013-correction-1-review.md"
+        ],
+        "retryLimitRespected": [
+          "harness/reports/wi-console-013-user-review.md"
+        ],
+        "independentReviewPassed": [
+          "harness/reports/wi-console-013-user-review.md"
+        ]
+      },
+      "closedAt": "2026-10-08T21:45:00.000Z"
     }
   ],
   "activeWorkItem": null

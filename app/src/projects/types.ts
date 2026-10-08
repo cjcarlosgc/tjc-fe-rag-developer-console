@@ -42,7 +42,7 @@ export interface ProjectVersionSummaryResponse extends ProjectVersionResponse {
 
 export type WorkspaceKind = 'PERSONAL' | 'ORGANIZATION'
 export type WorkspaceRole = 'ADMIN' | 'MEMBER'
-export type ProjectRole = 'ADMIN' | 'MAINTAINER' | 'READER'
+export type ProjectRole = 'ADMIN' | 'MAINTAINER' | 'WRITER' | 'READER'
 
 export interface WorkspaceRef {
   kind: WorkspaceKind

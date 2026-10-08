@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { hasRole } from './roles'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { isMockDataSource } from '../api/dataSource'
 import { bindingErrorMessage, errorCorrelationId, isProjectNotFound } from '../control-plane/errors'
@@ -52,7 +53,7 @@ export function ProjectDetailPage() {
 
   const project = projectQuery.data
   const binding = bindingQuery.data ?? null
-  const canMaintain = project.role === 'ADMIN' || project.role === 'MAINTAINER'
+  const canOperate = hasRole(project.role, 'WRITER')
   function saveProjectName(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const name = projectName.trim()
@@ -83,7 +84,7 @@ export function ProjectDetailPage() {
           /* Ver Runs / Functional Knowledge / Gestionar integración ya viven en <ProjectTabs> arriba — no se duplican acá. */
           <dl className="metadata"><div><dt>Repositorio</dt><dd><RepoChip repositoryName={binding.repositoryName} /></dd></div><div><dt>Integration branch</dt><dd><code>{binding.integrationBranch}</code></dd></div><div><dt>Estado</dt><dd><span className={`status-badge ${BINDING_STATUS_BADGES[binding.status].className}`}>{BINDING_STATUS_BADGES[binding.status].label}</span></dd></div></dl>
         ) : (
-          <div className="empty-inline"><strong>Sin repositorio vinculado</strong><p>Conecta una GitHub App para habilitar análisis automático por PR.</p>{canMaintain ? <Link className="button primary button-link" to={`/projects/${project.id}/integrations/github?workspaceId=${encodeURIComponent(project.workspace.id)}`}>Conectar GitHub →</Link> : <p>Tu rol es de solo lectura; un Maintainer o Admin debe vincular el repositorio.</p>}</div>
+          <div className="empty-inline"><strong>Sin repositorio vinculado</strong><p>Conecta una GitHub App para habilitar análisis automático por PR.</p>{canOperate ? <Link className="button primary button-link" to={`/projects/${project.id}/integrations/github?workspaceId=${encodeURIComponent(project.workspace.id)}`}>Conectar GitHub →</Link> : <p>Tu rol es de solo lectura; un Writer, Maintainer o Admin debe vincular el repositorio.</p>}</div>
         )}
       </div>
       {/* HU56: borrado lógico, `DELETE /projects/{id}` (INTEROP-2.3, implementado en Core — CS-20260920-003). */}
@@ -115,7 +116,7 @@ export function ProjectDetailPage() {
         )}
       </div>
       }
-      {canMaintain && <div className="detail-actions"><Link className="button secondary button-link" to={`/projects/${project.id}/experimental?workspaceId=${encodeURIComponent(project.workspace.id)}`}>Modo experimental →</Link></div>}
+      {canOperate && <div className="detail-actions"><Link className="button secondary button-link" to={`/projects/${project.id}/experimental?workspaceId=${encodeURIComponent(project.workspace.id)}`}>Modo experimental →</Link></div>}
     </section>
   )
 }

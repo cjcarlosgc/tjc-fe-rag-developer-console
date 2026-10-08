@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { hasRole } from '../projects/roles'
 import { useLocation, useParams } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { isMockDataSource } from '../api/dataSource'
@@ -31,7 +32,7 @@ export function IntegrationsPage() {
   const enable = useEnableRepository(projectId)
   const hasGitHub = Boolean(authSession?.githubProviderToken)
   const project = projectQuery.data
-  const canManageBinding = project?.role === 'ADMIN' || project?.role === 'MAINTAINER'
+  const canManageBinding = hasRole(project?.role, 'WRITER')
   const canReactivateBinding = canManageBinding && (bindingQuery.data?.status !== 'REVOKED' || project?.role === 'ADMIN')
   const providerToken = authSession?.githubProviderToken ?? null
   const reposQuery = useGitHubUserRepositories(providerToken, project, authSession?.user.id)
@@ -186,7 +187,7 @@ export function IntegrationsPage() {
             </button>
             <p className="empty-inline-note">Desconectar pausa la recepción de eventos de PR; no borra Runs ni Functional Knowledge y puedes reactivarlo.</p>
             {disconnect.isError && <ErrorNote message={bindingErrorMessage(disconnect.error)} correlationId={errorCorrelationId(disconnect.error)} />}
-          </> : <p className="empty-inline-note">Tu rol permite consultar el vínculo, pero no pausarlo. Un Maintainer o Admin puede cambiarlo.</p>
+          </> : <p className="empty-inline-note">Tu rol permite consultar el vínculo, pero no pausarlo. Un Writer, Maintainer o Admin puede cambiarlo.</p>
         ) : (
           <>
             {binding.status === 'REVOKED' ? (
@@ -212,7 +213,7 @@ export function IntegrationsPage() {
                 void appInfo.refetch()
               }}>Reintentar consulta de acceso</button>
             </>}
-            {!canReactivateBinding && <p className="empty-inline-note">{binding.status === 'REVOKED' ? 'Solo un Admin puede reactivar un binding revocado.' : 'Tu rol permite consultar el vínculo, pero no reactivarlo. Un Maintainer o Admin debe hacerlo.'}</p>}
+            {!canReactivateBinding && <p className="empty-inline-note">{binding.status === 'REVOKED' ? 'Solo un Admin puede reactivar un binding revocado.' : 'Tu rol permite consultar el vínculo, pero no reactivarlo. Un Writer, Maintainer o Admin debe hacerlo.'}</p>}
           </>
         )}
       </div>

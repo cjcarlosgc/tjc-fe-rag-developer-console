@@ -41,6 +41,10 @@ export function useFunctionalKnowledge(projectId: string, status?: FunctionalKno
   })
 }
 
+/**
+ * INTEROP-2.7: ANSWERED y ABSTAINED invalidan la pregunta vigente y la bandeja. El resultado queda en `data.outcome`:
+ * una abstención (ABSTAINED) no es una respuesta — la pregunta sigue pendiente y la UI la muestra como tal.
+ */
 export function useSubmitFunctionalAnswer(analysisRunId: string) {
   const queryClient = useQueryClient()
   return useMutation({

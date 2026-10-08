@@ -381,6 +381,11 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .discovered-summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #0d0a1c; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
 .discovered-summary p { margin: 0; color: var(--muted); font-size: 12px; }
 .empty-inline-note { color: var(--muted); font-size: 13px; }
+/* Nota de abstención (INTEROP-2.7 §6.11). Propia, no hereda de .empty-inline-note. Texto #eae7f7 sobre --surface-1 #0b0b0d = 16.17:1 (WCAG AA >= 4.5:1), 14px. El borde izquierdo marca la nota sin depender del color. */
+.abstention-note { margin: 0; color: #eae7f7; font-size: 14px; line-height: 1.5; border-left: 3px solid var(--signal-semantic); padding: 2px 0 2px 12px; }
+/* Nota de rol en Focus Mode. Mismo criterio que .abstention-note: 16.17:1 sobre #0b0b0d, 14px, borde izquierdo no cromático en su forma. */
+.role-note { margin: 0; color: #eae7f7; font-size: 14px; line-height: 1.5; border-left: 3px dashed var(--accent); padding: 2px 0 2px 12px; }
+.focus-mode-card:focus-visible { outline: 3px solid rgba(201,180,250,.42); outline-offset: 2px; }
 .discovered-files { margin-top: 16px; border: 1px solid var(--border); border-radius: 10px; padding: 14px; background: var(--surface-1); }
 .discovered-files-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .discovered-files-list { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow-y: auto; display: grid; gap: 4px; }

@@ -2,7 +2,7 @@
 
 - [ ] **ST-CONSOLE-004 · T-BACKLOGGED · WI-CONSOLE-004 · HU03–HU16:** especificar la experiencia de OC01–OC15 desde happy paths; subcasos y evidencia se agregan solo tras aprobación.
 - [x] **ST-CONSOLE-014 [T-DONE] · WI-CONSOLE-012 · HU12, HU14:** reproducir la prueba reportada como rota de `RunsPage`, registrar comando y mensaje, determinar su causa y corregir la causa (no el conteo de aserciones) o cerrar con evidencia si no reproduce.
-- [ ] **ST-CONSOLE-015 · T-BACKLOGGED · WI-CONSOLE-013 · HU07, HU08, HU14:** rol `WRITER` y abstención `UNKNOWN` en Focus Mode y Action Required según `DEC-FK-002` y `DEC-ORG-003`; la pregunta sigue pendiente y no se muestra como resuelta.
+- [x] **ST-CONSOLE-015 [T-DONE] · WI-CONSOLE-013 · HU07, HU08, HU14:** rol `WRITER` y abstención `UNKNOWN` en Focus Mode y Action Required según `DEC-FK-002` y `DEC-ORG-003`; la pregunta sigue pendiente y no se muestra como resuelta.
 - [ ] **ST-CONSOLE-017 · T-BACKLOGGED · WI-CONSOLE-015 · HU07, HU09:** mostrar varias reglas `ACTIVE` por target agrupadas por escenario y su procedencia, y retirar el panel especulativo de procedencia.
 - [ ] **ST-CONSOLE-018 · T-BACKLOGGED · WI-CONSOLE-016 · HU12, HU15:** vista de trace operativo de nueve enlaces con `retrieval_id`, `context_id` y `execution_id` según INTEROP-2.7 §6.16.
 - [ ] **ST-CONSOLE-019 · T-BACKLOGGED · WI-CONSOLE-017 · HU12, HU15, HU17:** descarga de evidencia JSON versionada del Run, del experimento y de la comparación de retrieval; los mocks permanecen rotulados como simulados.

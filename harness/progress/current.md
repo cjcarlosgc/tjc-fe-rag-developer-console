@@ -12,7 +12,7 @@ El usuario aprobó el alcance de `WI-CONSOLE-011` a `WI-CONSOLE-019` (`harness/r
 
 **Último corte cerrado:** `WI-CONSOLE-008`, `W-DONE`, con revisión independiente delegada y evidencia registrada. El cierre de WI-CONSOLE-003 tampoco implica aceptación de las 18 HU ni despliegue/cutover. Ver `harness/state.json` y `harness/work-items.json`.
 
-**Cierre más reciente:** `WI-CONSOLE-019` / `ST-CONSOLE-021`, `W-DONE`: nota «condiciones experimentales externas controladas» en Modo experimental y Run comparison, con prueba de ausencia de veredictos automáticos (HU17). UX aprobado, aprobación humana tras verlo en el navegador, Contract Sync `before-done` PASS. Cambió `app/` (copy y pruebas). No se hizo push ni PR. Ver `harness/reports/wi-console-019-closure.md`. Cierres previos: `WI-CONSOLE-012`, `WI-CONSOLE-011`. No hay WI activo; siguiente elegible: `WI-CONSOLE-013`.
+**Cierre más reciente:** `WI-CONSOLE-013` / `ST-CONSOLE-015`, `W-DONE`: rol Writer (`hasRole`) y `UNKNOWN` como abstención auditada en Focus Mode y Action Required (HU07, HU08, HU14). UX aprobado, un ciclo de corrección, aprobación humana tras verlo en el mock, Contract Sync `before-done` PASS. Cambió `app/`. No se hizo push ni PR. Ver `harness/reports/wi-console-013-closure.md`. Cierres previos: `WI-CONSOLE-019`, `WI-CONSOLE-012`, `WI-CONSOLE-011`. No hay WI activo; siguiente elegible: `WI-CONSOLE-015`.
 
 **Hecho en este corte:** Console consume GitHub Integration directamente para capacidades GitHub de interfaz; Core conserva Projects, bindings, autorización de dominio, RAG y análisis. Migración revisada y cerrada localmente con validadores y evidencia. No hubo deploy/cutover ni cambios en Sandbox.
 

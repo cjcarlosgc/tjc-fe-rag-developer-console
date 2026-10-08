@@ -30,3 +30,31 @@ test('filtra la bandeja por workspace sin mezclar pendientes de otras organizaci
   expect(await screen.findByText('PR #15', { selector: '.pr-ref' })).toBeInTheDocument()
   expect(screen.queryByText('PR #42', { selector: '.pr-ref' })).not.toBeInTheDocument()
 })
+
+test('INTEROP-2.7: la bandeja muestra la abstención registrada sin identidad de quien se abstuvo', async () => {
+  renderApp(<ActionRequiredPage />, { initialEntry: '/action-required' })
+
+  expect(await screen.findByText(/Abstención registrada · ADMIN · .+ · 2 abstención\(es\)/)).toBeInTheDocument()
+  expect(screen.getByText('¿"applyLateFee" debe aplicarse si la factura ya fue marcada como pagada parcialmente?')).toBeInTheDocument()
+  expect(screen.queryByText(/usr_demo/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/resuelto|continuando|todas las preguntas respondidas/i)).not.toBeInTheDocument()
+})
+
+test('INTEROP-2.7: una abstención mantiene la pregunta en la bandeja, sin texto de cierre ni identidad', async () => {
+  renderApp(<ActionRequiredPage />, { initialEntry: '/action-required' })
+
+  const line = await screen.findByText(/Abstención registrada · ADMIN · .+ · 2 abstención\(es\)/)
+  expect(line).toHaveClass('abstention-note')
+  expect(line.closest('.action-required-item')).toHaveTextContent('¿"applyLateFee" debe aplicarse si la factura ya fue marcada como pagada parcialmente?')
+  expect(screen.queryByText(/usr_/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/resuelto|continuando|todas las preguntas respondidas/i)).not.toBeInTheDocument()
+})
+
+test('Writer y Reader ven la bandeja sin botones de respuesta ni «No lo sé»', async () => {
+  renderApp(<ActionRequiredPage />, { initialEntry: '/action-required' })
+
+  expect(await screen.findByText('PR #21', { selector: '.pr-ref' })).toBeInTheDocument()
+  expect(screen.getByText('PR #15', { selector: '.pr-ref' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'No lo sé' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Sí' })).not.toBeInTheDocument()
+})
