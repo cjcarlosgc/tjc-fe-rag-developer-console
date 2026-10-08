@@ -2,7 +2,7 @@
 
 **Estado:** aprobado como comportamiento objetivo; aceptación de cada HU requiere evidencia propia.
 **Historias:** HU01, HU02, HU07–HU09, HU12–HU16
-**Contrato operativo:** SYSTEM-2.5 / INTEROP-2.6 / GH-INTEROP-1.2.
+**Contrato operativo:** SYSTEM-2.6 / INTEROP-2.7 / GH-INTEROP-1.2.
 
 ## Objetivo
 
@@ -18,7 +18,7 @@ Permitir al usuario autorizado seguir un repositorio vinculado y cada `AnalysisR
 
 ## Mock y live
 
-Los adapters `mock|live` respetan el mismo contrato INTEROP-2.6. La demo se rotula y jamás se presenta como evidencia de integración o del experimento. Fixtures pueden ilustrar success, action required, mismatch, HEAD nuevo, tests suficientes, baseline fallido, fallo técnico, cambios no relevantes y publicación stale; una pantalla mock no prueba que el backend cubra el caso. Cualquier campo o capacidad especulativa sin contrato aprobado se marca pendiente o se elimina, no se infiere desde fixtures.
+Los adapters `mock|live` respetan el mismo contrato INTEROP-2.7. La demo se rotula y jamás se presenta como evidencia de integración o del experimento. Fixtures pueden ilustrar success, action required, mismatch, HEAD nuevo, tests suficientes, baseline fallido, fallo técnico, cambios no relevantes y publicación stale; una pantalla mock no prueba que el backend cubra el caso. Cualquier campo o capacidad especulativa sin contrato aprobado se marca pendiente o se elimina, no se infiere desde fixtures.
 
 ## Seguridad
 
@@ -26,7 +26,7 @@ No exponer secretos de GitHub App, token del Sandbox, keys de Storage ni URLs fi
 
 ## Alineación SMART V3 (SDD 2026-10-08; implementación pendiente)
 
-Contrato objetivo: SYSTEM-2.6 / INTEROP-2.7 (canónico en Core, `WI-CORE-017`). Console lo adopta en `WI-CONSOLE-011`; hasta entonces su copia sigue siendo INTEROP-2.6 y nada de lo descrito se presenta como live.
+Contrato adoptado: SYSTEM-2.6 / INTEROP-2.7 (canónico en Core, `WI-CORE-017`). Console adoptó esa copia en `WI-CONSOLE-011`; el comportamiento descrito sigue pendiente de sus WI y no se presenta como live.
 
 - **`UNKNOWN` (`WI-CONSOLE-013`).** «No lo sé» es una abstención auditada (`DEC-FK-002`): la pregunta sigue pendiente y el Run sigue en `ACTION_REQUIRED`. Console muestra la abstención registrada (quién, rol y cuándo, según `abstention`) y nunca presenta «resuelto», «continuando» ni «todas las preguntas respondidas» como consecuencia. Solo Maintainer o Admin pueden registrarla; Console oculta o deshabilita la acción para Writer y Reader pero deja que `403 PROJECT_ROLE_INSUFFICIENT` de Core sea la autoridad. La acción nunca se decide en el navegador.
 - **Functional Knowledge (`WI-CONSOLE-015`).** Puede haber varias reglas `ACTIVE` por target, una por escenario; Console las agrupa por `scenarioKind` y no asume una regla por target. Muestra procedencia (`confirmedByUserId`, `confirmedRole`, `originHeadSha`, `source`, `sourceRef`) cuando existe y «sin procedencia registrada» para reglas históricas. Console no calcula ni edita `scenarioKey`. El panel especulativo `context-explorer/speculative/contextProvenance.ts` se reemplaza por datos live o se retira.

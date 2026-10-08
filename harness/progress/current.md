@@ -4,7 +4,7 @@
 
 El usuario aprobó el alcance de `WI-CONSOLE-011` a `WI-CONSOLE-019` (`harness/reports/smart-v3-scope-approval.md`). El Leader los toma por prioridad y dependencias, sin pedir aprobación por corte; los cambios visibles exigen `ux-reviewer`.
 
-1. **Ya elegibles:** `WI-CONSOLE-011` (P0, sincroniza los espejos SYSTEM-2.6/INTEROP-2.7; el Contract Sync ya está importado y acusado, y habilita al resto), `WI-CONSOLE-012` (prueba de `RunsPage`; hoy pasa 6/6 y la suite 428/428, así que se espera cierre con evidencia) y `WI-CONSOLE-019` (copy de OE5, sin veredictos automáticos). Solo puede haber un WI activo, así que el Leader empieza por `WI-CONSOLE-011`.
+1. **Ya elegibles:** `WI-CONSOLE-011` quedó `W-DONE` (espejos SYSTEM-2.6/INTEROP-2.7 sincronizados). Quedan `WI-CONSOLE-012` (prueba de `RunsPage`; hoy pasa 6/6 y la suite 428/428, así que se espera cierre con evidencia) y `WI-CONSOLE-019` (copy de OE5, sin veredictos automáticos). Solo puede haber un WI activo.
 2. **Tras `WI-CONSOLE-011`, sin esperar a Core:** `WI-CONSOLE-013` (roles y `UNKNOWN`), `WI-CONSOLE-015` (Functional Knowledge), `WI-CONSOLE-014` (OE2), `WI-CONSOLE-016` (trace), `WI-CONSOLE-018` (metadata de OE5, tras `WI-CONSOLE-019`) y `WI-CONSOLE-017` (evidencia, tras `WI-CONSOLE-014`). Se construyen contra el contrato canónico INTEROP-2.7 con mocks rotulados y el adapter live pendiente.
 3. **Al final, cuando Core implemente:** `WI-CONSOLE-020` activa y verifica los adapters live contra Core (espera los WI de Core `018`, `019`, `020`, `022`, `025`, `026` y `027`).
 4. **P2 al final:** `WI-CONSOLE-004` a `007`.
@@ -12,7 +12,7 @@ El usuario aprobó el alcance de `WI-CONSOLE-011` a `WI-CONSOLE-019` (`harness/r
 
 **Último corte cerrado:** `WI-CONSOLE-008`, `W-DONE`, con revisión independiente delegada y evidencia registrada. El cierre de WI-CONSOLE-003 tampoco implica aceptación de las 18 HU ni despliegue/cutover. Ver `harness/state.json` y `harness/work-items.json`.
 
-**Cierre más reciente:** `WI-CONSOLE-010` / `ST-CONSOLE-012`, `W-DONE`, corte exclusivamente documental. Se actualizaron las referencias vigentes a WI-CONSOLE-008 y se importaron y resolvieron `CS-CORE-20260927-004/005/006`. SYSTEM-2.5, INTEROP-2.6 y GH-INTEROP-1.2 coinciden byte a byte entre Console, Core y GitHub Integration. La puerta externa pasó con WI-CORE-015 y WI-GH-008 en `W-DONE`; revisión contractual y aprobación humana registradas. No cambió la aplicación. No se hizo push ni PR. Ver `harness/reports/wi-console-010-closure.md`.
+**Cierre más reciente:** `WI-CONSOLE-011` / `ST-CONSOLE-013`, `W-DONE`, corte documental. SYSTEM-2.6 e INTEROP-2.7 coinciden byte a byte con Core `ab5142b` (WI-CORE-017); GH-INTEROP-1.2 sin cambios; `CS-CORE-20261008-001` acusado y resuelto; referencias vigentes actualizadas. Contract Sync `before-done` PASS, revisión contractual y aprobación humana registradas. No cambió `app/`. No se hizo push ni PR. Ver `harness/reports/wi-console-011-closure.md`. No hay WI activo; siguientes elegibles: `WI-CONSOLE-012` y `WI-CONSOLE-019`, y luego los desbloqueados por 011.
 
 **Hecho en este corte:** Console consume GitHub Integration directamente para capacidades GitHub de interfaz; Core conserva Projects, bindings, autorización de dominio, RAG y análisis. Migración revisada y cerrada localmente con validadores y evidencia. No hubo deploy/cutover ni cambios en Sandbox.
 

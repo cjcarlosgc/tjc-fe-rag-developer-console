@@ -11,5 +11,6 @@ requiredAction:
   - Console: importar el evento, acusarlo con WI-CONSOLE-011, sincronizar byte a byte SYSTEM-2.6 e INTEROP-2.7, tratar 403 PROJECT_ROLE_INSUFFICIENT para Writer en responder y UNKNOWN y adoptar los cambios con WI-CONSOLE-013 a WI-CONSOLE-019 cuando los WI Core productores esten W-DONE. GitHub Integration: importar el evento, acusarlo con WI-GH-010 y sincronizar los espejos SYSTEM-2.6 e INTEROP-2.7; GH-INTEROP-1.2 no cambia y no se requiere cambio funcional.
 sourceRevision: 0e2cd1c1a35b5b6b59f1d5c5787e424293ce278f
 consumerImportedAt: 2026-10-08T16:48:06.462Z
-status: C-ACKNOWLEDGED
+status: C-RESOLVED
 acknowledgementEvidence: harness/reports/wi-console-011-contract-sync-acknowledgement.md
+resolutionEvidence: harness/reports/wi-console-011-implementation.md

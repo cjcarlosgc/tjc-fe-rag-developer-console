@@ -2,12 +2,12 @@
 
 **Estado:** contrato aprobado y capacidad implementada; la aceptación de HU01/HU02/HU14 se verifica contra sus criterios vigentes.
 **Historias:** HU01, HU02 y HU14. Workspaces, roles, identidad y revocación son capacidades de apoyo; no son HU adicionales.
-**Contrato:** SYSTEM-2.5 / INTEROP-2.6 (§6.1, §6.8, §6.9, §6.10, §6.13), `CS-20260921-003`.
+**Contrato:** SYSTEM-2.6 / INTEROP-2.7 (§6.1, §6.8, §6.9, §6.10, §6.13), `CS-20260921-003`.
 **Decisiones:** `DEC-ORG-001` APROBADO; `DEC-ORG-002` APROBADO.
 
 ## Enmienda SMART V3 — rol Writer (`DEC-ORG-003`; implementación pendiente)
 
-Contrato objetivo: SYSTEM-2.6 / INTEROP-2.7 (canónico en Core, `WI-CORE-017`). Console lo adopta en `WI-CONSOLE-011`; hasta entonces su copia sigue siendo INTEROP-2.6 y nada de lo descrito se presenta como live. Con esa versión `ProjectRole` pasa a `ADMIN | MAINTAINER | WRITER | READER`, jerarquía Admin ⊃ Maintainer ⊃ Writer ⊃ Reader, y esta enmienda prevalece sobre la frase de «Reglas y comportamiento» que hace a `MAINTAINER` el rol de vincular, pausar, responder preguntas, publicar y crear experimentos. Writer vincula, pausa/reactiva, publica tests, crea experimentos y lanza comparaciones de retrieval; **responder preguntas funcionales y registrar `UNKNOWN` exige Maintainer o Admin**. Console oculta o deshabilita lo que el rol no permite, trata el `403 PROJECT_ROLE_INSUFFICIENT` de Core como resultado autoritativo y nunca infiere el rol en el navegador. Implementación: `WI-CONSOLE-013`.
+Contrato adoptado: SYSTEM-2.6 / INTEROP-2.7 (canónico en Core, `WI-CORE-017`). Console adoptó esa copia en `WI-CONSOLE-011`; el comportamiento descrito sigue pendiente de sus WI y no se presenta como live. Con esa versión `ProjectRole` pasa a `ADMIN | MAINTAINER | WRITER | READER`, jerarquía Admin ⊃ Maintainer ⊃ Writer ⊃ Reader, y esta enmienda prevalece sobre la frase de «Reglas y comportamiento» que hace a `MAINTAINER` el rol de vincular, pausar, responder preguntas, publicar y crear experimentos. Writer vincula, pausa/reactiva, publica tests, crea experimentos y lanza comparaciones de retrieval; **responder preguntas funcionales y registrar `UNKNOWN` exige Maintainer o Admin**. Console oculta o deshabilita lo que el rol no permite, trata el `403 PROJECT_ROLE_INSUFFICIENT` de Core como resultado autoritativo y nunca infiere el rol en el navegador. Implementación: `WI-CONSOLE-013`.
 
 ## Objetivo
 

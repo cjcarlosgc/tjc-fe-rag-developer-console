@@ -1,7 +1,7 @@
 # 014 — Experimentos ligados a AnalysisRun
 
 **Historias:** HU17, HU18 (EP06).
-**Estado:** contrato de comparación HU17 definido en INTEROP-2.6 §6.5; adaptación live y aceptación pendientes. HU18 requiere contrato de captura antes de implementación productiva.
+**Estado:** contrato de comparación HU17 definido en INTEROP-2.7 §6.5; adaptación live y aceptación pendientes. HU18 requiere contrato de captura antes de implementación productiva.
 
 ## Objetivo
 
@@ -25,7 +25,7 @@ Comparar RAG y GENERALIST_AGENT sobre el mismo `AnalysisRun` real, snapshot, sí
 
 ## Alineación SMART V3 (SDD 2026-10-08; implementación pendiente)
 
-Contrato objetivo: SYSTEM-2.6 / INTEROP-2.7 (canónico en Core, `WI-CORE-017`). Console lo adopta en `WI-CONSOLE-011`; hasta entonces su copia sigue siendo INTEROP-2.6 y nada de lo descrito se presenta como live.
+Contrato adoptado: SYSTEM-2.6 / INTEROP-2.7 (canónico en Core, `WI-CORE-017`). Console adoptó esa copia en `WI-CONSOLE-011`; el comportamiento descrito sigue pendiente de sus WI y no se presenta como live.
 
 ### OE2 — comparación de retrieval SE vs SEM (`WI-CONSOLE-014`)
 
