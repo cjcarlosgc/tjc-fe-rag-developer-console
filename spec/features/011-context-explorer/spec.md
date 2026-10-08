@@ -75,3 +75,7 @@ Core llega a definir una forma.
 - Otras variantes de "Explorador de contexto" generadas en el mismo proyecto (`92c1ded50a61421689d9ccdee438b76e`, `a7133770a0854e13b82cb1d2f0760286`, `d56719f3acc84654a5904dc98a9acfd8`, y la versión mobile `7bcc082ab5394a2e8c6878408247179f`) quedan **superadas**: no consultar como referencia para evitar que el diseño vuelva a fragmentarse entre variantes divergentes.
 - Las láminas de especificación `7fef8eee58b74e458c1351bbf7de214c` ("Semántica de nodos") y `7c6689c53a214653af4b00d962bdca18` ("Estados y movimiento") documentan estados/loaders y taxonomía de color con más detalle visual que este texto; sus reglas normativas ya están incorporadas arriba. No adoptar de esas láminas los patrones de partículas animadas ni el brillo/badge "ACTIVO": son decorativos, ya rechazados una vez en la revisión de HU17.
 - Revisión de diseño contra Stitch: una sola vez al final de cada tanda de cambios, contra el screen canónico + las dos láminas — no una revisión por cada tarea individual.
+
+## Nota SMART V3 (SDD 2026-10-08)
+
+El trace operativo de nueve enlaces del `AnalysisRun` (`INTEROP-2.7` §6.16, `WI-CONSOLE-016`) y la procedencia de Functional Knowledge (`WI-CONSOLE-015`) no se representan como nodos de este Context Explorer experimental: viven en el detalle del Run. Las implementaciones especulativas actuales (`speculative/contextProvenance.ts`) se reemplazan por datos live cuando Core entregue el contrato, o se retiran.

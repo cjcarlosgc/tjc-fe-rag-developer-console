@@ -23,6 +23,20 @@ Comparar RAG y GENERALIST_AGENT sobre el mismo `AnalysisRun` real, snapshot, sí
 - Los brazos experimentales no publican Checks separados ni generan un merge automático.
 - El contrato de armado, elegibilidad, concurrencia, expiración y cancelación aún no está definido. Un simulador local no satisface HU18 ni puede presentarse como integración live.
 
+## Alineación SMART V3 (SDD 2026-10-08; implementación pendiente)
+
+Contrato objetivo: SYSTEM-2.6 / INTEROP-2.7 (canónico en Core, `WI-CORE-017`). Console lo adopta en `WI-CONSOLE-011`; hasta entonces su copia sigue siendo INTEROP-2.6 y nada de lo descrito se presenta como live.
+
+### OE2 — comparación de retrieval SE vs SEM (`WI-CONSOLE-014`)
+
+Capacidad experimental de solo retrieval, separada de OE5 y del flujo operacional. La entrada es un `AnalysisRun` y un símbolo `DIRECTLY_CHANGED` de tipo `METHOD`/`FUNCTION` elegido explícitamente por el usuario; Console rotula `Modo experimental` y ofrece **«Comparar retrieval SE vs SEM»**, que llama a `POST /retrieval-comparisons` con una `Idempotency-Key` UUID estable en los retries (INTEROP-2.7 §6.15; rol Writer o superior). Puede adjuntarse opcionalmente una verdad de terreno externa; sin ella, Precision/Recall se muestran como «no disponible» y nunca como cero.
+
+El resultado muestra lado a lado los dos modos: ranking, `semanticScore`, relación estructural (solo SE), `combinedScore` (solo SE) y selección, además de P@10/R@10 como métricas principales y P@5/R@5 secundarias cuando existan. No se presentan SE y SEM como estrategias equivalentes a RAG o al agente generalista, no se declara ganador, no hay selector permanente de modo en el producto y no se calculan bootstrap, Wilcoxon ni kappa en la interfaz. La operación no llama a LLM, Functional Knowledge, `ACTION_REQUIRED`, generación ni Sandbox.
+
+### OE5 — presentación y wording (`WI-CONSOLE-018`, `WI-CONSOLE-019`)
+
+El texto de la interfaz usa «condiciones experimentales externas controladas» y no «paridad estricta de información»: RAG usa recuperación SE, `ContextBuilder` y el conocimiento funcional aplicable; el agente generalista explora en solo lectura sin conocimiento persistente; ambos comparten snapshot, target, proveedor, modelo, esfuerzo de razonamiento, perfil de Sandbox y presupuesto. `WI-CONSOLE-018` presenta, cuando Core los expone, repetición, par, posición en el par, estrategia, configuración del modelo, tope de herramientas, presupuesto de contexto, perfil de ejecución, resultados técnicos y eficiencia, y marca «técnicamente no evaluable» cuando corresponde. Jerarquía: CF primaria, CO secundaria y VT guardrail; mientras CF/CO sean externos, Console no los inventa ni los deriva de `valid`/`passed`, y no muestra un ganador automático ni afirma superioridad. Precision/Recall pertenecen solo a OE2. `WI-CONSOLE-019` puede ejecutarse antes: solo corrige copy y verifica que no haya veredictos automáticos.
+
 ## Decisiones acotadas
 
-`DEC-EXP-FK-001` debe resolver qué conocimiento funcional recibe cada brazo cuando RAG utiliza una regla activa. Su `Blocks` se evalúa al seleccionar el WI de paridad experimental; no bloquea otras HU.
+`DEC-EXP-FK-001` quedó `APROBADO` (2026-10-08): RAG recibe el conocimiento funcional `ACTIVE` aplicable y el agente generalista no recibe conocimiento persistente; la comparación se presenta bajo condiciones experimentales externas controladas. `DEC-EXP-003` (`APROBADO`) permite al agente descubrir y leer las pruebas existentes.

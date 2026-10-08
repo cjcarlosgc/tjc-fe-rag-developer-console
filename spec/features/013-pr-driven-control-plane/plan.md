@@ -14,3 +14,7 @@ SYSTEM-2.5/INTEROP-2.6/GH-INTEROP-1.2, identidad Supabase, diseño, routing, que
 ## Verificación
 
 Pruebas de rutas, permisos, freshness, accesibilidad, separación mock/live, sesión/token efímeros y ausencia de ZIP manual. Lint, tests, build, revisión independiente, UX cuando aplique y cuatro checkpoints Contract Sync.
+
+## Cortes SMART V3
+
+`WI-CONSOLE-011` sincroniza SYSTEM-2.6/INTEROP-2.7 y desbloquea a los demás tras `WI-CORE-017`. `WI-CONSOLE-012` (`RunsPage`) y `WI-CONSOLE-019` (wording) no dependen de Core y pueden ejecutarse ya. `WI-CONSOLE-013` depende de `WI-CORE-018` y `WI-CORE-019`; `WI-CONSOLE-015`, de `WI-CORE-019` y `WI-CORE-020`; `WI-CONSOLE-016`, de `WI-CORE-026`; `WI-CONSOLE-017`, de `WI-CORE-027`. Cada corte UI exige `ux-reviewer`.

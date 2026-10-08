@@ -24,6 +24,16 @@ Los adapters `mock|live` respetan el mismo contrato INTEROP-2.6. La demo se rotu
 
 No exponer secretos de GitHub App, token del Sandbox, keys de Storage ni URLs firmadas internas. En el flujo directo de GitHub Integration, el provider token OAuth se usa en memoria para discovery o verificación de un repositorio nuevo, nunca se persiste ni se registra y no se reenvía a Core. La compatibilidad temporal de las rutas Core antiguas puede recibirlo y reenviarlo a Integration. Core determina autorización, clasificación, suficiencia, impacto y freshness; la UI presenta esos resultados. Un recurso no visible no revela existencia por mensaje o estado.
 
+## Alineación SMART V3 (SDD 2026-10-08; implementación pendiente)
+
+Contrato objetivo: SYSTEM-2.6 / INTEROP-2.7 (canónico en Core, `WI-CORE-017`). Console lo adopta en `WI-CONSOLE-011`; hasta entonces su copia sigue siendo INTEROP-2.6 y nada de lo descrito se presenta como live.
+
+- **`UNKNOWN` (`WI-CONSOLE-013`).** «No lo sé» es una abstención auditada (`DEC-FK-002`): la pregunta sigue pendiente y el Run sigue en `ACTION_REQUIRED`. Console muestra la abstención registrada (quién, rol y cuándo, según `abstention`) y nunca presenta «resuelto», «continuando» ni «todas las preguntas respondidas» como consecuencia. Solo Maintainer o Admin pueden registrarla; Console oculta o deshabilita la acción para Writer y Reader pero deja que `403 PROJECT_ROLE_INSUFFICIENT` de Core sea la autoridad. La acción nunca se decide en el navegador.
+- **Functional Knowledge (`WI-CONSOLE-015`).** Puede haber varias reglas `ACTIVE` por target, una por escenario; Console las agrupa por `scenarioKind` y no asume una regla por target. Muestra procedencia (`confirmedByUserId`, `confirmedRole`, `originHeadSha`, `source`, `sourceRef`) cuando existe y «sin procedencia registrada» para reglas históricas. Console no calcula ni edita `scenarioKey`. El panel especulativo `context-explorer/speculative/contextProvenance.ts` se reemplaza por datos live o se retira.
+- **Trace operativo (`WI-CONSOLE-016`).** El detalle del Run muestra los nueve enlaces con su estado `PRESENT`/`NOT_APPLICABLE` y los identificadores `retrieval_id`, `context_id` y `execution_id` que entrega Core; no inventa identificadores ni veredictos «CUMPLE/NO CUMPLE». Es distinto del Context Explorer experimental.
+- **Evidencia (`WI-CONSOLE-017`).** Console descarga los paquetes de evidencia JSON versionados que expone Core; no es el registro académico de evidencia. Un mock se rotula `DEMO · DATOS SIMULADOS` y nunca se ofrece como evidencia científica ni empresarial.
+- **Prueba rota de `RunsPage` (`WI-CONSOLE-012`).** El reporte previo «arreglar la prueba rota de `RunsPage`» no se reproduce hoy: en `51b11e7`, `app/src/control-plane/RunsPage.test.tsx` pasa (6/6) y la suite completa también (53 archivos, 428 pruebas). El WI primero busca una reproducción (reintentos, zona horaria y fecha) y registra comando y mensaje exactos; si no reproduce, se cierra con esa evidencia y sin cambios de código.
+
 ## Casos operativos
 
 Ver `spec/operational-cases.md`: OC01–OC15 están catalogados para formalización P2, happy paths primero. Subcasos, aceptación y evidencia se enlazan por subtarea/WI; el catálogo no significa cobertura completa.

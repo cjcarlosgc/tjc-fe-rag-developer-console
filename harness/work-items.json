@@ -613,6 +613,467 @@
           "verification": "manual-cross-repository"
         }
       ]
+    },
+    {
+      "component": "CONSOLE",
+      "workItemType": "HARNESS",
+      "status": "W-PLANNED",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "contractImpact": true,
+      "publishesContract": false,
+      "scopeApprovalReport": "harness/reports/smart-v3-scope-approval.md",
+      "id": "WI-CONSOLE-011",
+      "title": "Sincronizar espejos SYSTEM-2.6 e INTEROP-2.7",
+      "storyIds": [
+        "HU12",
+        "HU14"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-013"
+      ],
+      "dependsOn": [],
+      "syncScopePaths": [
+        "spec/contracts/system-contract.md",
+        "spec/contracts/interoperability-contract.md"
+      ],
+      "acceptanceCriteria": [
+        "Se importan los eventos Contract Sync de WI-CORE-017 dirigidos a Console, el líder confirma la revisión canónica y su SHA-256 y los eventos pasan a C-ACKNOWLEDGED y luego C-RESOLVED con evidencia.",
+        "Las copias SYSTEM-2.6 e INTEROP-2.7 quedan byte por byte iguales a la fuente canónica de Core; GH-INTEROP-1.2 se verifica sin cambios y no se altera su espejo.",
+        "Las referencias de versión de las specs de Console que describen el contrato vigente se alinean sin reescribir snapshots ni reportes históricos.",
+        "No se cambia código de aplicación, UI, Core, GitHub Integration, Sandbox ni configuración externa; la validación SDD/Harness y el diff check pasan."
+      ],
+      "specPaths": [
+        "spec/contracts/system-contract.md",
+        "spec/contracts/interoperability-contract.md",
+        "CHANGELOG.md",
+        "spec/features/016-github-integration/spec.md",
+        "spec/features/016-github-integration/plan.md",
+        "spec/features/016-github-integration/tasks.md"
+      ],
+      "externalDependencies": [
+        {
+          "component": "CORE",
+          "repository": "tjc-be-rag-core-api",
+          "workItemIds": [
+            "WI-CORE-017"
+          ],
+          "requiredStatus": "W-DONE",
+          "requiredContractSync": "imported-and-acknowledged",
+          "verification": "manual-cross-repository"
+        }
+      ],
+      "externalDependencyGate": {
+        "status": "G-NOT_RUN",
+        "evidenceReport": null,
+        "verifiedAt": null,
+        "verifiedBy": null,
+        "sourceRevisions": {}
+      }
+    },
+    {
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-READY",
+      "priority": "P2",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "scopeApprovalReport": "harness/reports/smart-v3-scope-approval.md",
+      "id": "WI-CONSOLE-012",
+      "title": "Reproducir y resolver la prueba rota de RunsPage",
+      "storyIds": [
+        "HU12",
+        "HU14"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-014"
+      ],
+      "dependsOn": [],
+      "acceptanceCriteria": [
+        "Se intenta reproducir el fallo de app/src/control-plane/RunsPage.test.tsx con repetición, otra zona horaria y fecha, y se registra comando y mensaje exactos. Línea base conocida: en 51b11e7 la prueba pasa 6/6 y la suite completa pasa 53 archivos y 428 pruebas.",
+        "Si reproduce, se clasifica la causa (expectativa obsoleta, fixture desalineado, bug real o upstream) con evidencia y se corrige la causa, no solo el conteo de aserciones; no se alteran mocks para forzar verde y se añade una prueba de regresión.",
+        "Si no reproduce tras los intentos, se cierra con el informe de evidencia y sin cambios de código.",
+        "Si cambia una experiencia visible interviene ux-reviewer; lint, pruebas, build y validadores pasan."
+      ],
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/013-pr-driven-control-plane/plan.md",
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "app/src/control-plane/RunsPage.tsx",
+        "app/src/control-plane/RunsPage.test.tsx"
+      ]
+    },
+    {
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-PLANNED",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "scopeApprovalReport": "harness/reports/smart-v3-scope-approval.md",
+      "id": "WI-CONSOLE-013",
+      "title": "Rol Writer y abstención UNKNOWN en Focus Mode y Action Required",
+      "storyIds": [
+        "HU07",
+        "HU08",
+        "HU14"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-015"
+      ],
+      "dependsOn": [
+        "WI-CONSOLE-011"
+      ],
+      "acceptanceCriteria": [
+        "Los tipos y el adapter aceptan ProjectRole WRITER con jerarquía Admin ⊃ Maintainer ⊃ Writer ⊃ Reader; Console oculta o deshabilita responder y UNKNOWN para Writer y Reader, y muestra el 403 PROJECT_ROLE_INSUFFICIENT de Core (requiredRole/currentRole) como resultado autoritativo sin inferir el rol en el navegador.",
+        "Tras UNKNOWN, Focus Mode muestra la abstención registrada (outcome ABSTAINED y abstention con quién, rol y cuándo), la pregunta sigue pendiente en la bandeja y el Run se muestra en ACTION_REQUIRED; nunca aparece «resuelto», «continuando» ni «todas las preguntas respondidas» como consecuencia.",
+        "Una respuesta no-UNKNOWN sigue su flujo, incluido el conflicto 409 FUNCTIONAL_KNOWLEDGE_CONFLICT; los mocks reflejan el contrato y permanecen rotulados.",
+        "La revisión de ux-reviewer, el lint, las pruebas, el build y los validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
+      ],
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/013-pr-driven-control-plane/plan.md",
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/features/014-organizations-access/spec.md",
+        "spec/features/014-organizations-access/plan.md",
+        "spec/features/014-organizations-access/tasks.md"
+      ],
+      "externalDependencies": [
+        {
+          "component": "CORE",
+          "repository": "tjc-be-rag-core-api",
+          "workItemIds": [
+            "WI-CORE-018",
+            "WI-CORE-019"
+          ],
+          "requiredStatus": "W-DONE",
+          "requiredContractSync": "imported-and-acknowledged",
+          "verification": "manual-cross-repository"
+        }
+      ],
+      "externalDependencyGate": {
+        "status": "G-NOT_RUN",
+        "evidenceReport": null,
+        "verifiedAt": null,
+        "verifiedBy": null,
+        "sourceRevisions": {}
+      }
+    },
+    {
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-PLANNED",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "scopeApprovalReport": "harness/reports/smart-v3-scope-approval.md",
+      "id": "WI-CONSOLE-014",
+      "title": "UI de comparación de retrieval OE2 (SE vs SEM)",
+      "storyIds": [
+        "HU05",
+        "HU17"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-016"
+      ],
+      "dependsOn": [
+        "WI-CONSOLE-011"
+      ],
+      "acceptanceCriteria": [
+        "Desde un AnalysisRun y un símbolo DIRECTLY_CHANGED METHOD/FUNCTION elegido explícitamente, el botón «Comparar retrieval SE vs SEM» llama a POST /retrieval-comparisons con Idempotency-Key UUID estable en retries; muestra estados PENDING/RUNNING/COMPLETED/FAILED con polling por pollAfterMs.",
+        "El resultado presenta lado a lado SE y SEM con ranking, semanticScore, structuralRelation y combinedScore (solo SE), selección y configuración, y P@10/R@10 principales con P@5/R@5 secundarias cuando Core las entrega; sin verdad de terreno se muestran «no disponible» y nunca cero.",
+        "Se rotula Modo experimental; SE y SEM no se presentan como equivalentes a RAG o GA, no hay ganador, no hay selector permanente de modo en el producto ni cálculo estadístico en la interfaz.",
+        "La acción se oculta o deshabilita por rol sin sustituir el 403 de Core; los errores 404/409/422 de §6.15 se muestran con mensajes accesibles; el adapter live no usa campos no publicados.",
+        "La revisión de ux-reviewer, el lint, las pruebas, el build y los validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
+      ],
+      "specPaths": [
+        "spec/features/014-analysisrun-experiments/spec.md",
+        "spec/features/014-analysisrun-experiments/plan.md",
+        "spec/features/014-analysisrun-experiments/tasks.md",
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/013-pr-driven-control-plane/plan.md",
+        "spec/features/013-pr-driven-control-plane/tasks.md"
+      ],
+      "externalDependencies": [
+        {
+          "component": "CORE",
+          "repository": "tjc-be-rag-core-api",
+          "workItemIds": [
+            "WI-CORE-022"
+          ],
+          "requiredStatus": "W-DONE",
+          "requiredContractSync": "imported-and-acknowledged",
+          "verification": "manual-cross-repository"
+        }
+      ],
+      "externalDependencyGate": {
+        "status": "G-NOT_RUN",
+        "evidenceReport": null,
+        "verifiedAt": null,
+        "verifiedBy": null,
+        "sourceRevisions": {}
+      }
+    },
+    {
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-PLANNED",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "scopeApprovalReport": "harness/reports/smart-v3-scope-approval.md",
+      "id": "WI-CONSOLE-015",
+      "title": "Procedencia de Functional Knowledge y varias reglas ACTIVE",
+      "storyIds": [
+        "HU07",
+        "HU09"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-017"
+      ],
+      "dependsOn": [
+        "WI-CONSOLE-011"
+      ],
+      "acceptanceCriteria": [
+        "Console agrupa las reglas ACTIVE de un target por scenarioKind sin asumir una sola regla por target y muestra ACTIVE y SUPERSEDED con su historia.",
+        "Muestra confirmedByUserId, confirmedRole, originHeadSha, source y sourceRef cuando existen y «sin procedencia registrada» para reglas históricas; no calcula ni edita scenarioKey.",
+        "El flujo de conflicto 409 se presenta solo cuando la regla propuesta comparte escenario con una ACTIVE; el panel especulativo contextProvenance se reemplaza por datos live o se retira.",
+        "La revisión de ux-reviewer, el lint, las pruebas, el build y los validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
+      ],
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/013-pr-driven-control-plane/plan.md",
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/features/011-context-explorer/spec.md",
+        "spec/features/011-context-explorer/plan.md",
+        "spec/features/011-context-explorer/tasks.md"
+      ],
+      "externalDependencies": [
+        {
+          "component": "CORE",
+          "repository": "tjc-be-rag-core-api",
+          "workItemIds": [
+            "WI-CORE-019",
+            "WI-CORE-020"
+          ],
+          "requiredStatus": "W-DONE",
+          "requiredContractSync": "imported-and-acknowledged",
+          "verification": "manual-cross-repository"
+        }
+      ],
+      "externalDependencyGate": {
+        "status": "G-NOT_RUN",
+        "evidenceReport": null,
+        "verifiedAt": null,
+        "verifiedBy": null,
+        "sourceRevisions": {}
+      }
+    },
+    {
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-PLANNED",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "scopeApprovalReport": "harness/reports/smart-v3-scope-approval.md",
+      "id": "WI-CONSOLE-016",
+      "title": "Vista de trace operativo de nueve enlaces",
+      "storyIds": [
+        "HU12",
+        "HU15"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-018"
+      ],
+      "dependsOn": [
+        "WI-CONSOLE-011"
+      ],
+      "acceptanceCriteria": [
+        "El detalle del Run consume GET /analysis-runs/{id}/trace y muestra los nueve enlaces con su estado PRESENT o NOT_APPLICABLE y los identificadores retrieval_id, context_id y execution_id copiables; no inventa identificadores ni veredictos CUMPLE/NO CUMPLE.",
+        "Un enlace NOT_APPLICABLE se explica sin tratarlo como error; la vista es distinta del Context Explorer experimental.",
+        "La revisión de ux-reviewer, el lint, las pruebas, el build y los validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
+      ],
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/013-pr-driven-control-plane/plan.md",
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/features/011-context-explorer/spec.md",
+        "spec/features/011-context-explorer/plan.md",
+        "spec/features/011-context-explorer/tasks.md"
+      ],
+      "externalDependencies": [
+        {
+          "component": "CORE",
+          "repository": "tjc-be-rag-core-api",
+          "workItemIds": [
+            "WI-CORE-026"
+          ],
+          "requiredStatus": "W-DONE",
+          "requiredContractSync": "imported-and-acknowledged",
+          "verification": "manual-cross-repository"
+        }
+      ],
+      "externalDependencyGate": {
+        "status": "G-NOT_RUN",
+        "evidenceReport": null,
+        "verifiedAt": null,
+        "verifiedBy": null,
+        "sourceRevisions": {}
+      }
+    },
+    {
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-PLANNED",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "scopeApprovalReport": "harness/reports/smart-v3-scope-approval.md",
+      "id": "WI-CONSOLE-017",
+      "title": "Exportación de evidencia versionada",
+      "storyIds": [
+        "HU12",
+        "HU15",
+        "HU17"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-019"
+      ],
+      "dependsOn": [
+        "WI-CONSOLE-011"
+      ],
+      "acceptanceCriteria": [
+        "Console ofrece descargar el EvidenceBundleResponse del Run, del experimento y de la comparación de retrieval, muestra schemaVersion y maneja 409 EVIDENCE_NOT_FINISHED sin tratarlo como fallo.",
+        "Console no genera identificadores EV-OE*, no se presenta como registro académico y rotula cualquier mock DEMO · DATOS SIMULADOS sin ofrecerlo como evidencia científica o empresarial.",
+        "La revisión de ux-reviewer, el lint, las pruebas, el build y los validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
+      ],
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/013-pr-driven-control-plane/plan.md",
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/features/014-analysisrun-experiments/spec.md",
+        "spec/features/014-analysisrun-experiments/plan.md",
+        "spec/features/014-analysisrun-experiments/tasks.md"
+      ],
+      "externalDependencies": [
+        {
+          "component": "CORE",
+          "repository": "tjc-be-rag-core-api",
+          "workItemIds": [
+            "WI-CORE-027"
+          ],
+          "requiredStatus": "W-DONE",
+          "requiredContractSync": "imported-and-acknowledged",
+          "verification": "manual-cross-repository"
+        }
+      ],
+      "externalDependencyGate": {
+        "status": "G-NOT_RUN",
+        "evidenceReport": null,
+        "verifiedAt": null,
+        "verifiedBy": null,
+        "sourceRevisions": {}
+      }
+    },
+    {
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-PLANNED",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "scopeApprovalReport": "harness/reports/smart-v3-scope-approval.md",
+      "id": "WI-CONSOLE-018",
+      "title": "Presentación de la metadata de OE5",
+      "storyIds": [
+        "HU17"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-020"
+      ],
+      "dependsOn": [
+        "WI-CONSOLE-011",
+        "WI-CONSOLE-019"
+      ],
+      "acceptanceCriteria": [
+        "La vista de resultados muestra repetición, par, posición en el par, estrategia, configuración del modelo, tope de herramientas, presupuesto de contexto, perfil de ejecución, resultados técnicos y eficiencia cuando Core los expone, con null como «no disponible» y nunca cero.",
+        "Una repetición con technicallyEvaluable false se marca «técnicamente no evaluable».",
+        "No se muestra ganador automático ni se afirma superioridad; mientras CF/CO sean externos no se inventan ni se derivan de valid/passed; Precision/Recall no aparecen en OE5.",
+        "La revisión de ux-reviewer, el lint, las pruebas, el build y los validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
+      ],
+      "specPaths": [
+        "spec/features/014-analysisrun-experiments/spec.md",
+        "spec/features/014-analysisrun-experiments/plan.md",
+        "spec/features/014-analysisrun-experiments/tasks.md",
+        "spec/features/011-context-explorer/spec.md",
+        "spec/features/011-context-explorer/plan.md",
+        "spec/features/011-context-explorer/tasks.md"
+      ],
+      "externalDependencies": [
+        {
+          "component": "CORE",
+          "repository": "tjc-be-rag-core-api",
+          "workItemIds": [
+            "WI-CORE-025"
+          ],
+          "requiredStatus": "W-DONE",
+          "requiredContractSync": "imported-and-acknowledged",
+          "verification": "manual-cross-repository"
+        }
+      ],
+      "externalDependencyGate": {
+        "status": "G-NOT_RUN",
+        "evidenceReport": null,
+        "verifiedAt": null,
+        "verifiedBy": null,
+        "sourceRevisions": {}
+      }
+    },
+    {
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-READY",
+      "priority": "P2",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "scopeApprovalReport": "harness/reports/smart-v3-scope-approval.md",
+      "id": "WI-CONSOLE-019",
+      "title": "Copy de OE5 y ausencia de veredictos automáticos",
+      "storyIds": [
+        "HU17"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-021"
+      ],
+      "dependsOn": [],
+      "acceptanceCriteria": [
+        "Todo texto de la interfaz y del mock que implique paridad estricta de información se reemplaza por «condiciones experimentales externas controladas», describiendo RAG como SE + ContextBuilder + conocimiento funcional aplicable y al agente generalista como exploración de solo lectura sin conocimiento persistente.",
+        "Se verifica que ninguna pantalla declara un ganador automático ni afirma superioridad a partir de validRate, passedRate u otras tasas técnicas.",
+        "La revisión de ux-reviewer, el lint, las pruebas, el build y los validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
+      ],
+      "specPaths": [
+        "spec/features/014-analysisrun-experiments/spec.md",
+        "spec/features/014-analysisrun-experiments/plan.md",
+        "spec/features/014-analysisrun-experiments/tasks.md"
+      ]
     }
   ]
 }
