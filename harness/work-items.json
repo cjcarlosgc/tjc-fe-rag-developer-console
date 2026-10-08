@@ -273,6 +273,12 @@
         "spec/features/010-product-experience/plan.md",
         "spec/features/010-product-experience/tasks.md",
         "spec/transversal/design-system/spec.md"
+      ],
+      "acceptanceCriteria": [
+        "Los tokens, colores, fuentes y radios de spec/transversal/design-system/spec.md están centralizados y no hay colores ni fuentes arbitrarias en el CSS de las features (comprobable por grep).",
+        "Shell, tablas, formularios, diff y estados asíncronos usan primitives compartidas de app/src/ui.",
+        "Las rutas de router.tsx (login, Projects, Integrations, Runs, Action Required, Experiments, Context Explorer) se revisan en 1280 px y 375 px con captura, y prefers-reduced-motion se verifica.",
+        "ux-reviewer, lint, pruebas, build y validadores SDD/Harness pasan antes de la revisión humana."
       ]
     },
     {
@@ -301,6 +307,12 @@
         "spec/transversal/accessibility/spec.md",
         "spec/transversal/accessibility/plan.md",
         "spec/transversal/accessibility/tasks.md"
+      ],
+      "acceptanceCriteria": [
+        "Todas las acciones son alcanzables por teclado con foco visible de al menos 2 px y el contraste cumple WCAG AA sobre el fondo glass.",
+        "Los formularios tienen label y error asociado, las tablas tienen encabezados y los diálogos y paneles restauran el foco; los grafos del Context Explorer tienen una alternativa estructurada para lector de pantalla.",
+        "Zoom al 200 %, objetivo mínimo de 40×40 px y reduced motion ≤ 120 ms; pruebas automatizadas de semántica y foco más evidencia manual reproducible en harness/reports.",
+        "ux-reviewer, lint, pruebas, build y validadores SDD/Harness pasan antes de la revisión humana."
       ]
     },
     {
@@ -329,6 +341,12 @@
         "spec/transversal/errors-notifications/spec.md",
         "spec/transversal/errors-notifications/plan.md",
         "spec/transversal/errors-notifications/tasks.md"
+      ],
+      "acceptanceCriteria": [
+        "Un catálogo único código→mensaje (extiende control-plane/errors.ts) cubre los códigos de INTEROP vigentes y conserva correlationId; los códigos de SMART V3 se agregan en sus propios WI sobre ese mismo catálogo, sin duplicarlo.",
+        "valid=false no se muestra como fallo de plataforma; UNSUPPORTED_PACKAGE_MANAGER explica que se requiere pnpm-lock.yaml; IDEMPOTENCY_CONFLICT no genera otra key automáticamente.",
+        "Ninguna pantalla muestra tokens, headers Core↔Sandbox ni URLs firmadas; hay pruebas por código.",
+        "ux-reviewer, lint, pruebas, build y validadores SDD/Harness pasan antes de la revisión humana."
       ]
     },
     {
@@ -641,7 +659,7 @@
       "acceptanceCriteria": [
         "Se importan los eventos Contract Sync de WI-CORE-017 dirigidos a Console, el líder confirma la revisión canónica y su SHA-256 y los eventos pasan a C-ACKNOWLEDGED y luego C-RESOLVED con evidencia.",
         "Las copias SYSTEM-2.6 e INTEROP-2.7 quedan byte por byte iguales a la fuente canónica de Core; GH-INTEROP-1.2 se verifica sin cambios y no se altera su espejo.",
-        "Las referencias de versión de las specs de Console que describen el contrato vigente se alinean sin reescribir snapshots ni reportes históricos.",
+        "Las referencias a actualizar son exactamente las líneas «Contrato» de 013-pr-driven-control-plane, 014-analysisrun-experiments, 014-organizations-access y la nota SMART V3 de 011-context-explorer (no frases históricas); el CHANGELOG registra el cambio y no se tocan harness/reports ni snapshots.",
         "No se cambia código de aplicación, UI, Core, GitHub Integration, Sandbox ni configuración externa; la validación SDD/Harness y el diff check pasan."
       ],
       "specPaths": [
@@ -693,7 +711,7 @@
       ],
       "dependsOn": [],
       "acceptanceCriteria": [
-        "Se intenta reproducir el fallo de app/src/control-plane/RunsPage.test.tsx con repetición, otra zona horaria y fecha, y se registra comando y mensaje exactos. Línea base conocida: en 51b11e7 la prueba pasa 6/6 y la suite completa pasa 53 archivos y 428 pruebas.",
+        "Se intenta reproducir el fallo de app/src/control-plane/RunsPage.test.tsx con al menos 20 repeticiones y las zonas horarias UTC, America/Lima y Pacific/Auckland, con fecha fija (vi.setSystemTime) y sin ella, y se registra comando y mensaje exactos. Línea base conocida: en 51b11e7 la prueba pasa 6/6 y la suite completa pasa 53 archivos y 428 pruebas.",
         "Si reproduce, se clasifica la causa (expectativa obsoleta, fixture desalineado, bug real o upstream) con evidencia y se corrige la causa, no solo el conteo de aserciones; no se alteran mocks para forzar verde y se añade una prueba de regresión.",
         "Si no reproduce tras los intentos, se cierra con el informe de evidencia y sin cambios de código.",
         "Si cambia una experiencia visible interviene ux-reviewer; lint, pruebas, build y validadores pasan."
@@ -730,10 +748,11 @@
         "WI-CONSOLE-011"
       ],
       "acceptanceCriteria": [
-        "Los tipos y el adapter aceptan ProjectRole WRITER con jerarquía Admin ⊃ Maintainer ⊃ Writer ⊃ Reader; Console oculta o deshabilita responder y UNKNOWN para Writer y Reader, y muestra el 403 PROJECT_ROLE_INSUFFICIENT de Core (requiredRole/currentRole) como resultado autoritativo sin inferir el rol en el navegador.",
-        "Tras UNKNOWN, Focus Mode muestra la abstención registrada (outcome ABSTAINED y abstention con quién, rol y cuándo), la pregunta sigue pendiente en la bandeja y el Run se muestra en ACTION_REQUIRED; nunca aparece «resuelto», «continuando» ni «todas las preguntas respondidas» como consecuencia.",
-        "Una respuesta no-UNKNOWN sigue su flujo, incluido el conflicto 409 FUNCTIONAL_KNOWLEDGE_CONFLICT; los mocks reflejan el contrato y permanecen rotulados.",
-        "La revisión de ux-reviewer, el lint, las pruebas, el build y los validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
+        "Existe un único helper de roles (hasRole(role, min)) y el tipo ProjectRole de projects/types.ts incluye WRITER; reemplaza las comprobaciones `ADMIN || MAINTAINER` de ExperimentPage, RunComparisonPage, AnalysisRunDetailPage (publicar), IntegrationsPage (binding), ProjectDetailPage y FocusModePage. Writer puede publicar, vincular, pausar y lanzar experimentos; los mensajes «Un Maintainer o Admin puede publicar» se corrigen.",
+        "Se usa Project.role entregado por Core (no OAuth ni user_metadata). Para Writer y Reader, Focus Mode no muestra «No lo sé» ni las respuestas YES/NO/DEPENDS/FREE_TEXT y renderiza la nota «Solo un Maintainer o Admin puede responder esta pregunta funcional»; el 403 PROJECT_ROLE_INSUFFICIENT de Core (requiredRole/currentRole) sigue siendo el resultado autoritativo.",
+        "Con outcome=ABSTAINED la pregunta permanece como currentQuestion en Focus Mode y en la bandeja Action Required, el Run se muestra en ACTION_REQUIRED y aparece «Abstención registrada · {lastByRole} · {lastAt} · {count} abstención(es)» sin nombre de usuario ni id; nunca aparecen «resuelto», «continuando» ni «todas las preguntas respondidas». El uso de outcome en la mutación (queries.ts) reemplaza la suposición actual.",
+        "El mock deja de tratar UNKNOWN como respuesta (api/mockBackend.ts:1043-1062): devuelve ABSTAINED con continuationAttemptId=null y knowledgeId=null y deja la pregunta PENDING; los tipos agregan outcome, abstention, scenarioKind y scenarioKey. Una respuesta no-UNKNOWN sigue su flujo, incluido el conflicto 409 FUNCTIONAL_KNOWLEDGE_CONFLICT.",
+        "La UI cumple spec/transversal/accessibility (teclado, foco visible, estados no solo por color, regiones role=\"status\" o \"alert\" para polling y errores); los tipos nuevos viven en el módulo de la feature, el mock refleja el contrato y en modo live el adapter solo usa campos publicados en INTEROP-2.7 (hasta entonces responde con el PendingContractError del adapter). La revisión de ux-reviewer, el lint, las pruebas, el build y los validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
       ],
       "specPaths": [
         "spec/features/013-pr-driven-control-plane/spec.md",
@@ -787,11 +806,11 @@
         "WI-CONSOLE-011"
       ],
       "acceptanceCriteria": [
-        "Desde un AnalysisRun y un símbolo DIRECTLY_CHANGED METHOD/FUNCTION elegido explícitamente, el botón «Comparar retrieval SE vs SEM» llama a POST /retrieval-comparisons con Idempotency-Key UUID estable en retries; muestra estados PENDING/RUNNING/COMPLETED/FAILED con polling por pollAfterMs.",
-        "El resultado presenta lado a lado SE y SEM con ranking, semanticScore, structuralRelation y combinedScore (solo SE), selección y configuración, y P@10/R@10 principales con P@5/R@5 secundarias cuando Core las entrega; sin verdad de terreno se muestran «no disponible» y nunca cero.",
-        "Se rotula Modo experimental; SE y SEM no se presentan como equivalentes a RAG o GA, no hay ganador, no hay selector permanente de modo en el producto ni cálculo estadístico en la interfaz.",
-        "La acción se oculta o deshabilita por rol sin sustituir el 403 de Core; los errores 404/409/422 de §6.15 se muestran con mensajes accesibles; el adapter live no usa campos no publicados.",
-        "La revisión de ux-reviewer, el lint, las pruebas, el build y los validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
+        "El botón «Comparar retrieval SE vs SEM» vive en AnalysisRunDetailPage junto a «Run comparison →» y navega a la ruta nueva /projects/:projectId/runs/:analysisRunId/retrieval-comparison (módulo app/src/retrieval-comparison con types, api, queries y RetrievalComparisonPage). La página exige elegir el símbolo DIRECTLY_CHANGED METHOD/FUNCTION en un selector (sin auto-inicio aunque haya uno solo), llama a POST /retrieval-comparisons con Idempotency-Key UUID estable en retries, usa el pollAfterMs de la respuesta 202 y lista las comparaciones previas del Run sin reemplazarlas.",
+        "OE2 no usa los gates de OE5 (Run en ACTION_REQUIRED u obsoleto): solo requiere un AnalysisRun visible y el rol mínimo es Writer. Se rotula Modo experimental; SE y SEM no se presentan como equivalentes a RAG o GA y no hay selector permanente de modo en el producto, ganador ni cálculo estadístico en la interfaz.",
+        "El resultado muestra lado a lado SE y SEM con ranking, semanticScore, structuralRelation y combinedScore (solo SE) y selección; si metrics es null se muestra «no disponible» para P@5, R@5, P@10 y R@10 y si existe se muestran las cuatro con P@10/R@10 destacadas. La UI no ofrece cargar verdad de terreno en este corte y no promete relaciones PHP.",
+        "Los estados PENDING, RUNNING, COMPLETED y FAILED se muestran con regiones accesibles; FAILED muestra failureCode y failureMessage con ErrorNote y correlationId; cada error 404/409/422 de §6.15 tiene mensaje propio en control-plane/errors.ts; la acción se oculta o deshabilita por rol sin sustituir el 403 de Core.",
+        "La UI cumple spec/transversal/accessibility (teclado, foco visible, estados no solo por color, regiones role=\"status\" o \"alert\" para polling y errores); los tipos nuevos viven en el módulo de la feature, el mock refleja el contrato y en modo live el adapter solo usa campos publicados en INTEROP-2.7 (hasta entonces responde con el PendingContractError del adapter). La revisión de ux-reviewer, el lint, las pruebas, el build y los validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
       ],
       "specPaths": [
         "spec/features/014-analysisrun-experiments/spec.md",
@@ -844,10 +863,10 @@
         "WI-CONSOLE-011"
       ],
       "acceptanceCriteria": [
-        "Console agrupa las reglas ACTIVE de un target por scenarioKind sin asumir una sola regla por target y muestra ACTIVE y SUPERSEDED con su historia.",
-        "Muestra confirmedByUserId, confirmedRole, originHeadSha, source y sourceRef cuando existen y «sin procedencia registrada» para reglas históricas; no calcula ni edita scenarioKey.",
-        "El flujo de conflicto 409 se presenta solo cuando la regla propuesta comparte escenario con una ACTIVE; el panel especulativo contextProvenance se reemplaza por datos live o se retira.",
-        "La revisión de ux-reviewer, el lint, las pruebas, el build y los validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
+        "FunctionalKnowledgePage agrupa las reglas por scenarioKind (orden EXPECTED_RESULT, BOUNDARY, EXCEPTION, STATE_TRANSITION, OBSERVABLE_SIDE_EFFECT, FUNCTIONAL_PRECONDITION) con una etiqueta en español por grupo, mantiene el filtro de estado y no asume una sola regla por target; FunctionalKnowledgeDetailPage muestra la cadena SUPERSEDED por supersedesId. Console no calcula ni edita scenarioKey.",
+        "Se muestran confirmedByUserId (solo id), confirmedRole, originHeadSha (7 caracteres con el valor completo en el título), source y sourceRef (solo si source=APPROVED_IMPORT) y, para reglas históricas con campos null, «sin procedencia registrada».",
+        "Se retira context-explorer/speculative/contextProvenance.ts, su mock y el bloque «Qué más alimentó este contexto» de AnalysisRunDetailPage; la procedencia por Run la aporta WI-CONSOLE-016 con functionalRuleIds del trace. El flujo de conflicto 409 se muestra como llega de Core.",
+        "El mock incluye varias reglas ACTIVE por target. La UI cumple spec/transversal/accessibility (teclado, foco visible, estados no solo por color, regiones role=\"status\" o \"alert\" para polling y errores); los tipos nuevos viven en el módulo de la feature, el mock refleja el contrato y en modo live el adapter solo usa campos publicados en INTEROP-2.7 (hasta entonces responde con el PendingContractError del adapter). La revisión de ux-reviewer, el lint, las pruebas, el build y los validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
       ],
       "specPaths": [
         "spec/features/013-pr-driven-control-plane/spec.md",
@@ -901,9 +920,10 @@
         "WI-CONSOLE-011"
       ],
       "acceptanceCriteria": [
-        "El detalle del Run consume GET /analysis-runs/{id}/trace y muestra los nueve enlaces con su estado PRESENT o NOT_APPLICABLE y los identificadores retrieval_id, context_id y execution_id copiables; no inventa identificadores ni veredictos CUMPLE/NO CUMPLE.",
-        "Un enlace NOT_APPLICABLE se explica sin tratarlo como error; la vista es distinta del Context Explorer experimental.",
-        "La revisión de ux-reviewer, el lint, las pruebas, el build y los validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
+        "AnalysisRunDetailPage agrega la sección «Trace operativo» que consume GET /analysis-runs/{id}/trace y muestra, en este orden, repositorio/PR/HEAD, AnalysisRun, Cambios (changeset) y, por cada target, Retrieval, Contexto, Generación y Ejecuciones (Sandbox y resultados), más Publicación: los nueve enlaces del mapeo de INTEROP-2.7 §6.16. Cada enlace muestra PRESENT o NOT_APPLICABLE.",
+        "retrievalId, contextId y executionId se muestran con los nombres del DTO (rotulados retrieval_id, context_id y execution_id) y un botón «Copiar» accesible; no se inventan identificadores ni veredictos CUMPLE/NO CUMPLE.",
+        "NOT_APPLICABLE muestra «No aplica: el flujo terminó antes de este paso» con estilo informativo (no ErrorNote); varios targets se listan; mientras el Run está QUEUED o PROCESSING la vista maneja el 409 sin tratarlo como fallo. La vista es distinta del Context Explorer experimental.",
+        "La UI cumple spec/transversal/accessibility (teclado, foco visible, estados no solo por color, regiones role=\"status\" o \"alert\" para polling y errores); los tipos nuevos viven en el módulo de la feature, el mock refleja el contrato y en modo live el adapter solo usa campos publicados en INTEROP-2.7 (hasta entonces responde con el PendingContractError del adapter). La revisión de ux-reviewer, el lint, las pruebas, el build y los validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
       ],
       "specPaths": [
         "spec/features/013-pr-driven-control-plane/spec.md",
@@ -954,12 +974,14 @@
         "ST-CONSOLE-019"
       ],
       "dependsOn": [
-        "WI-CONSOLE-011"
+        "WI-CONSOLE-011",
+        "WI-CONSOLE-014"
       ],
       "acceptanceCriteria": [
-        "Console ofrece descargar el EvidenceBundleResponse del Run, del experimento y de la comparación de retrieval, muestra schemaVersion y maneja 409 EVIDENCE_NOT_FINISHED sin tratarlo como fallo.",
+        "Console ofrece «Descargar evidencia (JSON)» en AnalysisRunDetailPage, en el resultado de ExperimentPage y en la página de comparación OE2 (WI-CONSOLE-014); la descarga entrega `evidence-{kind}-{subjectId}.json` con el JSON tal como lo devuelve Core, mediante Blob y ancla, sin URLs firmadas, y muestra schemaVersion.",
+        "Antes del estado terminal el botón queda deshabilitado y el 409 EVIDENCE_NOT_FINISHED muestra «La evidencia estará disponible cuando termine el proceso» con estado informativo y reintento, sin tratarlo como fallo.",
         "Console no genera identificadores EV-OE*, no se presenta como registro académico y rotula cualquier mock DEMO · DATOS SIMULADOS sin ofrecerlo como evidencia científica o empresarial.",
-        "La revisión de ux-reviewer, el lint, las pruebas, el build y los validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
+        "La UI cumple spec/transversal/accessibility (teclado, foco visible, estados no solo por color, regiones role=\"status\" o \"alert\" para polling y errores); los tipos nuevos viven en el módulo de la feature, el mock refleja el contrato y en modo live el adapter solo usa campos publicados en INTEROP-2.7 (hasta entonces responde con el PendingContractError del adapter). La revisión de ux-reviewer, el lint, las pruebas, el build y los validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
       ],
       "specPaths": [
         "spec/features/013-pr-driven-control-plane/spec.md",
@@ -974,7 +996,8 @@
           "component": "CORE",
           "repository": "tjc-be-rag-core-api",
           "workItemIds": [
-            "WI-CORE-027"
+            "WI-CORE-027",
+            "WI-CORE-022"
           ],
           "requiredStatus": "W-DONE",
           "requiredContractSync": "imported-and-acknowledged",
@@ -1012,10 +1035,10 @@
         "WI-CONSOLE-019"
       ],
       "acceptanceCriteria": [
-        "La vista de resultados muestra repetición, par, posición en el par, estrategia, configuración del modelo, tope de herramientas, presupuesto de contexto, perfil de ejecución, resultados técnicos y eficiencia cuando Core los expone, con null como «no disponible» y nunca cero.",
-        "Una repetición con technicallyEvaluable false se marca «técnicamente no evaluable».",
-        "No se muestra ganador automático ni se afirma superioridad; mientras CF/CO sean externos no se inventan ni se derivan de valid/passed; Precision/Recall no aparecen en OE5.",
-        "La revisión de ux-reviewer, el lint, las pruebas, el build y los validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
+        "Los campos de INTEROP-2.7 §6.5.1 se agregan a ExperimentOperation y RepetitionResult (experiments/types.ts) y se mapean en experiments/liveMapping.ts; la tabla «Detalle por target y repetición» agrega Par, Posición, Intento y Evaluable y un bloque «Configuración» muestra model, budget, executionProfile y randomizationSeed. Los valores null se muestran «no disponible», nunca cero.",
+        "Una repetición con technicallyEvaluable false se marca «técnicamente no evaluable». El modelo y el esfuerzo de razonamiento se muestran tal como los registra Core (DEC-EXP-004), idénticos en ambos brazos.",
+        "Las filas de tasas dejan de colorearse como mejora o empeoramiento (se retiran positive-delta y negative-delta de ExperimentComparison) y se muestran como diferencias neutras; no se muestra ganador automático ni se afirma superioridad; mientras CF/CO sean externos no se inventan ni se derivan de valid/passed; Precision/Recall no aparecen en OE5 (prueba negativa).",
+        "La UI cumple spec/transversal/accessibility (teclado, foco visible, estados no solo por color, regiones role=\"status\" o \"alert\" para polling y errores); los tipos nuevos viven en el módulo de la feature, el mock refleja el contrato y en modo live el adapter solo usa campos publicados en INTEROP-2.7 (hasta entonces responde con el PendingContractError del adapter). La revisión de ux-reviewer, el lint, las pruebas, el build y los validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
       ],
       "specPaths": [
         "spec/features/014-analysisrun-experiments/spec.md",
@@ -1065,8 +1088,8 @@
       ],
       "dependsOn": [],
       "acceptanceCriteria": [
-        "Todo texto de la interfaz y del mock que implique paridad estricta de información se reemplaza por «condiciones experimentales externas controladas», describiendo RAG como SE + ContextBuilder + conocimiento funcional aplicable y al agente generalista como exploración de solo lectura sin conocimiento persistente.",
-        "Se verifica que ninguna pantalla declara un ganador automático ni afirma superioridad a partir de validRate, passedRate u otras tasas técnicas.",
+        "El texto «Comparación bajo condiciones experimentales externas controladas. RAG usa recuperación SE + ContextBuilder + conocimiento funcional aplicable; el agente generalista explora en solo lectura sin conocimiento persistente.» se agrega como nota en RunComparisonPage y ExperimentPage, y no queda en la interfaz ni en el mock ningún texto que implique paridad estricta de información.",
+        "Un test falla si la UI contiene «paridad», «ganador» o «superior», y se verifica que ninguna pantalla declara un ganador automático a partir de validRate, passedRate u otras tasas técnicas.",
         "La revisión de ux-reviewer, el lint, las pruebas, el build y los validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
       ],
       "specPaths": [

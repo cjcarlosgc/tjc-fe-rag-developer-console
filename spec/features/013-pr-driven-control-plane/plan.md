@@ -18,3 +18,7 @@ Pruebas de rutas, permisos, freshness, accesibilidad, separación mock/live, ses
 ## Cortes SMART V3
 
 `WI-CONSOLE-011` sincroniza SYSTEM-2.6/INTEROP-2.7 y desbloquea a los demás tras `WI-CORE-017`. `WI-CONSOLE-012` (`RunsPage`) y `WI-CONSOLE-019` (wording) no dependen de Core y pueden ejecutarse ya. `WI-CONSOLE-013` depende de `WI-CORE-018` y `WI-CORE-019`; `WI-CONSOLE-015`, de `WI-CORE-019` y `WI-CORE-020`; `WI-CONSOLE-016`, de `WI-CORE-026`; `WI-CONSOLE-017`, de `WI-CORE-027`. Cada corte UI exige `ux-reviewer`.
+
+## Diseño técnico SMART V3
+
+Un helper único `hasRole(role, min)` reemplaza las comprobaciones `ADMIN || MAINTAINER` dispersas (ExperimentPage, RunComparisonPage, AnalysisRunDetailPage, IntegrationsPage, ProjectDetailPage y FocusModePage) y respeta la jerarquía Admin ⊃ Maintainer ⊃ Writer ⊃ Reader. La sección «Trace operativo» vive en `AnalysisRunDetailPage` junto a `ContextSection`. El panel especulativo de procedencia se retira en `WI-CONSOLE-015`. Los tipos nuevos viven en el módulo de cada feature y, mientras Core no publique, el adapter live responde con el error de contrato pendiente ya usado por la capa de datos.
