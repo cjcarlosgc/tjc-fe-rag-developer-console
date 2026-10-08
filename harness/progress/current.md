@@ -4,9 +4,9 @@
 
 El usuario aprobó el alcance de `WI-CONSOLE-011` a `WI-CONSOLE-019` (`harness/reports/smart-v3-scope-approval.md`). El Leader los toma por prioridad y dependencias, sin pedir aprobación por corte; los cambios visibles exigen `ux-reviewer`.
 
-1. **Ya elegibles, sin depender de Core:** `WI-CONSOLE-012` (prueba de `RunsPage`; hoy pasa 6/6 y la suite 428/428, así que se espera cierre con evidencia) y `WI-CONSOLE-019` (copy de OE5, sin veredictos automáticos).
-2. **P0 al publicar Core `WI-CORE-017`:** `WI-CONSOLE-011` importa el Contract Sync y sincroniza SYSTEM-2.6/INTEROP-2.7; habilita al resto.
-3. **P1 según Core:** `WI-CONSOLE-013` (tras Core 018 y 019), `WI-CONSOLE-015` (tras 019 y 020), `WI-CONSOLE-014` (OE2, tras 022), `WI-CONSOLE-018` (tras 025 y `WI-CONSOLE-019`), `WI-CONSOLE-016` (tras 026) y `WI-CONSOLE-017` (tras 027). Mientras Core no cierre un WI, el Leader sigue con los elegibles y no espera.
+1. **Ya elegibles:** `WI-CONSOLE-011` (P0, sincroniza los espejos SYSTEM-2.6/INTEROP-2.7; el Contract Sync ya está importado y acusado, y habilita al resto), `WI-CONSOLE-012` (prueba de `RunsPage`; hoy pasa 6/6 y la suite 428/428, así que se espera cierre con evidencia) y `WI-CONSOLE-019` (copy de OE5, sin veredictos automáticos). Solo puede haber un WI activo, así que el Leader empieza por `WI-CONSOLE-011`.
+2. **Tras `WI-CONSOLE-011`, sin esperar a Core:** `WI-CONSOLE-013` (roles y `UNKNOWN`), `WI-CONSOLE-015` (Functional Knowledge), `WI-CONSOLE-014` (OE2), `WI-CONSOLE-016` (trace), `WI-CONSOLE-018` (metadata de OE5, tras `WI-CONSOLE-019`) y `WI-CONSOLE-017` (evidencia, tras `WI-CONSOLE-014`). Se construyen contra el contrato canónico INTEROP-2.7 con mocks rotulados y el adapter live pendiente.
+3. **Al final, cuando Core implemente:** `WI-CONSOLE-020` activa y verifica los adapters live contra Core (espera los WI de Core `018`, `019`, `020`, `022`, `025`, `026` y `027`).
 4. **P2 al final:** `WI-CONSOLE-004` a `007`.
 
 
