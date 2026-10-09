@@ -11,7 +11,7 @@ test('ejecuta y presenta una comparación simulada sin red', async () => {
   setDataSourceForTests('mock')
   const fetchMock = vi.spyOn(globalThis, 'fetch')
   const user = userEvent.setup()
-  renderApp(<ExperimentPage />, { initialEntry: '/projects/prj_checkout_demo/experimental', routePath: '/projects/:projectId/experimental' })
+  const { container } = renderApp(<ExperimentPage />, { initialEntry: '/projects/prj_checkout_demo/experimental', routePath: '/projects/:projectId/experimental' })
 
   expect(await screen.findByRole('heading', { name: 'RAG vs Agente generalista', level: 1 })).toBeInTheDocument()
   expect(screen.getByText(EXPERIMENT_CONDITIONS_NOTE)).toBeInTheDocument()
@@ -19,6 +19,7 @@ test('ejecuta y presenta una comparación simulada sin red', async () => {
 
   expect(await screen.findByText('Huella de retrieval', {}, { timeout: 2000 })).toBeInTheDocument()
   expect(screen.getByText('Laboratorio simulado')).toBeInTheDocument()
+  expect(container.textContent).not.toMatch(/precision|recall/i)
   expect(fetchMock).not.toHaveBeenCalled()
 })
 

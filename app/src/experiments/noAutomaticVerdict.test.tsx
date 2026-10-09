@@ -55,6 +55,8 @@ function assertNoAutomaticVerdict(container: HTMLElement) {
   const text = container.textContent ?? ''
   expect(text).not.toMatch(FORBIDDEN)
   expect(container.querySelector('[class*="winner"], [class*="ganador"], [class*="verdict"], [data-winner], [role="img"][aria-label*="ganador" i]')).toBeNull()
+  for (const node of Array.from(container.querySelectorAll('[class*="delta"]'))) expect(node.getAttribute('class')).toBe('rate-delta')
+  expect(text).not.toMatch(/precision|recall/i)
 }
 
 for (const invert of [false, true]) {
@@ -69,6 +71,9 @@ for (const invert of [false, true]) {
     expect(await screen.findByText('Huella de retrieval', {}, { timeout: 2000 })).toBeInTheDocument()
 
     expect(screen.getByText(EXPERIMENT_CONDITIONS_NOTE)).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Configuración' })).toBeInTheDocument()
+    await user.click(screen.getByText('Ver detalle por target y repetición'))
+    expect(screen.getByText('técnicamente no evaluable')).toBeVisible()
     assertNoAutomaticVerdict(container)
     expect(screen.queryByRole('status', { name: /ganador/i })).toBeNull()
   })

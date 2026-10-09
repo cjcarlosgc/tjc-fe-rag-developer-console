@@ -901,15 +901,25 @@ export async function mockGetTestInventory(projectVersionId: string): Promise<Te
 
 function experimentResult(target: string): ExperimentResultViewModel {
   return {
-    baseline: { strategy: 'GENERALIST_AGENT', validRate: .5, compilationRate: .67, executionRate: .5, passedRate: .5, totalDurationMs: 4_820, totalTokens: 2_940, estimatedCost: .018, failures: { COMPILATION: 1, TEST_ASSERTION: 1 }, toolCalls: 6, filesInspected: 4 },
-    rag: { strategy: 'RAG', validRate: .83, compilationRate: 1, executionRate: .83, passedRate: .83, totalDurationMs: 5_460, totalTokens: 4_180, estimatedCost: .027, failures: { TEST_ASSERTION: 1 }, retrievedChunks: 24, selectedChunks: 7, contextTokens: 2_180 },
+    // Agregados derivados de las 6 repeticiones (denominador 3 por brazo): válida = passed; compila = failureType distinto de COMPILATION/INFRASTRUCTURE; ejecuta = NONE o TEST_ASSERTION.
+    baseline: { strategy: 'GENERALIST_AGENT', validRate: 1 / 3, compilationRate: 1 / 3, executionRate: 1 / 3, passedRate: 1 / 3, totalDurationMs: 4_820, totalTokens: 2_940, estimatedCost: .018, failures: { COMPILATION: 1, INFRASTRUCTURE: 1 }, toolCalls: 6, filesInspected: 4 },
+    rag: { strategy: 'RAG', validRate: 2 / 3, compilationRate: 1, executionRate: 1, passedRate: 2 / 3, totalDurationMs: 5_460, totalTokens: 4_180, estimatedCost: .027, failures: { TEST_ASSERTION: 1 }, retrievedChunks: 24, selectedChunks: 7, contextTokens: 2_180 },
+    // DEMO · DATOS SIMULADOS: configuración ilustrativa, no es un valor medido.
+    configuration: {
+      model: { provider: 'OpenAI', model: 'gpt-6-luna', modelVersion: null, reasoningEffort: 'high', temperature: null, maxOutputTokens: null },
+      budget: { toolCallCap: 8, contextTokenBudget: 12_000, maxDurationMs: 60_000 },
+      executionProfile: 'sandbox-demo-standard',
+      runnerHint: 'demo-runner',
+      randomizationSeed: 'demo-seed-7431',
+    },
+    // Tres pares (RAG + GA por repetición). Dentro de cada par, la posición 1 y 2 ocupan brazos distintos.
     repetitions: [
-      { target, repetition: 1, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'COMPILATION', durationMs: 810, totalTokens: 480, errorSummary: 'jest.config.js: Cannot find module ts-jest' },
-      { target, repetition: 2, strategy: 'GENERALIST_AGENT', valid: true, failureType: 'NONE', durationMs: 760, totalTokens: 470, errorSummary: null },
-      { target, repetition: 3, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'TEST_ASSERTION', durationMs: 840, totalTokens: 520, errorSummary: 'Expected discount to be 20, received 15.' },
-      { target, repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', durationMs: 910, totalTokens: 680, errorSummary: null },
-      { target, repetition: 2, strategy: 'RAG', valid: true, failureType: 'NONE', durationMs: 890, totalTokens: 700, errorSummary: null },
-      { target, repetition: 3, strategy: 'RAG', valid: false, failureType: 'TEST_ASSERTION', durationMs: 930, totalTokens: 710, errorSummary: 'Expected discount to be 20, received 15.' },
+      { target, repetition: 1, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'COMPILATION', durationMs: 810, totalTokens: 480, errorSummary: 'jest.config.js: Cannot find module ts-jest', pairId: 'pair-1', pairPosition: 2, attempt: 1, technicallyEvaluable: true },
+      { target, repetition: 2, strategy: 'GENERALIST_AGENT', valid: true, failureType: 'NONE', durationMs: 760, totalTokens: 470, errorSummary: null, pairId: 'pair-2', pairPosition: 1, attempt: 1, technicallyEvaluable: true },
+      { target, repetition: 3, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'INFRASTRUCTURE', durationMs: 840, totalTokens: 520, errorSummary: 'DEMO: fallo de infraestructura en el segundo intento', pairId: 'pair-3', pairPosition: 2, attempt: 2, technicallyEvaluable: false },
+      { target, repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', durationMs: 910, totalTokens: 680, errorSummary: null, pairId: 'pair-1', pairPosition: 1, attempt: 1, technicallyEvaluable: true },
+      { target, repetition: 2, strategy: 'RAG', valid: true, failureType: 'NONE', durationMs: 890, totalTokens: 700, errorSummary: null, pairId: 'pair-2', pairPosition: 2, attempt: 2, technicallyEvaluable: true },
+      { target, repetition: 3, strategy: 'RAG', valid: false, failureType: 'TEST_ASSERTION', durationMs: 930, totalTokens: 710, errorSummary: 'Expected discount to be 20, received 15.', pairId: 'pair-3', pairPosition: 1, attempt: 1, technicallyEvaluable: true },
     ],
   }
 }

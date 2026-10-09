@@ -188,7 +188,7 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .segmented button[aria-pressed="true"] { color: #110825; background: var(--accent); border-color: var(--accent); }
 .table-frame { overflow-x: auto; }
 .table-frame table { width: 100%; border-collapse: collapse; text-align: left; }
-.table-frame th { color: var(--text-dim); font: 750 10px 'JetBrains Mono', ui-monospace, monospace; text-transform: uppercase; letter-spacing: .1em; background: var(--surface-2); }
+.table-frame th { color: var(--muted); font: 750 10px 'JetBrains Mono', ui-monospace, monospace; text-transform: uppercase; letter-spacing: .1em; background: var(--surface-2); }
 .table-frame th, .table-frame td { padding: 15px 18px; border-bottom: 1px solid var(--border-subtle); }
 .table-frame tbody tr:hover { background: rgba(201,180,250,.035); }
 .table-frame td strong { display: block; }
@@ -238,8 +238,7 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .comparison-row > * { padding: 14px; text-align: right; }
 .comparison-row > strong { color: var(--muted); text-align: left; font-size: 12px; }
 .comparison-row > span { border-left: 1px solid var(--border-subtle); font: 700 13px 'JetBrains Mono', ui-monospace, monospace; }
-.positive-delta { color: var(--success); }
-.negative-delta { color: var(--danger); }
+.rate-delta { color: inherit; }
 .failure-chart { border: 1px solid var(--border-subtle); background: var(--surface-1); padding: 22px; margin-top: 18px; }
 .failure-row { display: grid; grid-template-columns: 180px 1fr; gap: 14px; align-items: center; margin-top: 12px; }
 .failure-row > div { display: grid; gap: 3px; }
@@ -251,6 +250,13 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .retrieval-panel dl { display: flex; gap: 34px; margin: 0; }
 .retrieval-panel dt { color: var(--muted); font-size: 11px; }
 .retrieval-panel dd { margin: 6px 0 0; font: 750 15px 'JetBrains Mono', ui-monospace, monospace; }
+.experiment-configuration { flex-direction: column; align-items: stretch; gap: 18px; }
+.experiment-configuration h3 { margin: 0; font-size: 24px; }
+.experiment-configuration dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 18px 28px; margin: 0; }
+.experiment-configuration dd { overflow-wrap: anywhere; font-size: 14px; }
+.configuration-note { margin: 6px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.evaluability-mark { display: inline-block; margin-top: 6px; padding: 2px 8px; border: 1px dashed var(--muted); border-radius: 999px; color: #eae7f7; font: 700 11px 'JetBrains Mono', ui-monospace, monospace; }
+.table-frame[role="region"]:focus-visible { outline: 2px solid var(--signal-focus); outline-offset: 2px; }
 .repetition-detail { border: 1px solid var(--border-subtle); margin-top: 18px; }
 .repetition-detail > summary { color: var(--accent); padding: 16px; cursor: pointer; font-weight: 700; }
 .repetition-error-summary { margin-top: 6px; padding: 8px 10px; max-width: 260px; }

@@ -10,11 +10,12 @@ import { EXPERIMENT_CONDITIONS_NOTE } from '../experiments/ExperimentConditionsN
 test('HU48: arranca la comparación al montar y presenta el resultado tras varios polls', async () => {
   setDataSourceForTests('mock')
   resetMockBackend()
-  renderApp(<RunComparisonPage />, { initialEntry: '/projects/prj_checkout_demo/runs/arun_checkout_pr45/comparison', routePath: '/projects/:projectId/runs/:analysisRunId/comparison' })
+  const { container } = renderApp(<RunComparisonPage />, { initialEntry: '/projects/prj_checkout_demo/runs/arun_checkout_pr45/comparison', routePath: '/projects/:projectId/runs/:analysisRunId/comparison' })
 
   expect(await screen.findByText('Laboratorio simulado')).toBeInTheDocument()
   expect(screen.getByText(EXPERIMENT_CONDITIONS_NOTE)).toBeInTheDocument()
   expect(await screen.findByText('Huella de retrieval', {}, { timeout: 2000 })).toBeInTheDocument()
+  expect(container.textContent).not.toMatch(/precision|recall/i)
 })
 
 test('HU48: un Run ACTION_REQUIRED no puede compararse', async () => {

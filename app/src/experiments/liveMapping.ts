@@ -1,4 +1,4 @@
-import type { ExperimentOperation, ExperimentResultViewModel, ExperimentStrategy, FailureType, StrategyMetrics } from './types'
+import type { ExperimentConfiguration, ExperimentOperation, ExperimentResultViewModel, ExperimentStrategy, FailureType, StrategyMetrics } from './types'
 
 /**
  * `ExperimentResultsResponse` (INTEROP-1.5) trae `strategies: StrategyMetricsResponse[]` (RAG +
@@ -19,6 +19,27 @@ export interface ExperimentStatusResponse {
   failureMessage: string | null
   startedAt: string | null
   completedAt: string | null
+  /** INTEROP-2.7 §6.5.1, opcionales: Core aún puede no enviarlos. */
+  model?: ExperimentModelConfigResponse
+  budget?: ExperimentBudgetResponse
+  executionProfile?: string
+  runnerHint?: string
+  randomizationSeed?: string
+}
+
+interface ExperimentModelConfigResponse {
+  provider: string
+  model: string
+  modelVersion?: string | null
+  reasoningEffort?: string | null
+  temperature?: number | null
+  maxOutputTokens?: number | null
+}
+
+interface ExperimentBudgetResponse {
+  toolCallCap: number
+  contextTokenBudget: number
+  maxDurationMs: number
 }
 
 interface StrategyMetricsResponse {
@@ -50,6 +71,11 @@ interface ExperimentRepetitionResponse {
   totalDurationMs: number
   totalTokens: number | null
   errorSummary: string | null
+  /** INTEROP-2.7 §6.5.1, opcionales. */
+  pairId?: string | null
+  pairPosition?: 1 | 2 | null
+  attempt?: number | null
+  technicallyEvaluable?: boolean | null
 }
 
 export interface ExperimentResultsResponse {
@@ -81,7 +107,29 @@ function toStrategyMetrics(metrics: StrategyMetricsResponse): StrategyMetrics {
   }
 }
 
-export function toExperimentResultViewModel(results: ExperimentResultsResponse, targetLabel: string): ExperimentResultViewModel {
+/** Solo devuelve configuración si están todos los campos requeridos; nunca inventa valores. */
+export function toExperimentConfiguration(status: ExperimentStatusResponse): ExperimentConfiguration | null {
+  const { model, budget, executionProfile, runnerHint, randomizationSeed } = status
+  if (!model?.provider || !model.model) return null
+  if (!budget || budget.toolCallCap == null || budget.contextTokenBudget == null || budget.maxDurationMs == null) return null
+  if (executionProfile == null || runnerHint == null || randomizationSeed == null) return null
+  return {
+    model: {
+      provider: model.provider,
+      model: model.model,
+      modelVersion: model.modelVersion ?? null,
+      reasoningEffort: model.reasoningEffort ?? null,
+      temperature: model.temperature ?? null,
+      maxOutputTokens: model.maxOutputTokens ?? null,
+    },
+    budget: { toolCallCap: budget.toolCallCap, contextTokenBudget: budget.contextTokenBudget, maxDurationMs: budget.maxDurationMs },
+    executionProfile,
+    runnerHint,
+    randomizationSeed,
+  }
+}
+
+export function toExperimentResultViewModel(results: ExperimentResultsResponse, targetLabel: string, configuration: ExperimentConfiguration | null = null): ExperimentResultViewModel {
   const rag = results.strategies.find((item) => item.strategy === 'RAG')
   const agent = results.strategies.find((item) => item.strategy === 'GENERALIST_AGENT')
   if (!rag || !agent) throw new Error('El experimento no trae métricas para ambas estrategias.')
@@ -98,15 +146,22 @@ export function toExperimentResultViewModel(results: ExperimentResultsResponse, 
       durationMs: repetition.totalDurationMs,
       totalTokens: repetition.totalTokens,
       errorSummary: repetition.errorSummary,
+      pairId: repetition.pairId ?? null,
+      pairPosition: repetition.pairPosition ?? null,
+      attempt: repetition.attempt ?? null,
+      technicallyEvaluable: repetition.technicallyEvaluable ?? null,
     })),
+    configuration,
   }
 }
 
 export function toExperimentOperation(status: ExperimentStatusResponse, results: ExperimentResultsResponse | null, targetLabel: string): ExperimentOperation {
+  const configuration = toExperimentConfiguration(status)
   return {
     id: status.id,
     status: status.status,
     progress: status.totalRepetitions > 0 ? Math.round(status.completedRepetitions / status.totalRepetitions * 100) : 0,
-    result: results ? toExperimentResultViewModel(results, targetLabel) : undefined,
+    result: results ? toExperimentResultViewModel(results, targetLabel, configuration) : undefined,
+    configuration,
   }
 }
