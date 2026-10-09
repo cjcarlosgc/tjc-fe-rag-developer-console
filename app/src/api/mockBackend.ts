@@ -2,6 +2,7 @@ import type { ActionRequiredListPage, FunctionalAnswerAcceptedResponse, Function
 import type { AgentTrajectoryStep, ContextTraceDetail, ContextTracePage, ContextTraceSummary, DiscoveredFilePage, ExperimentContextTraceFilters, RagCandidateNode, RagContextTraceDetail, SourceExcerpt } from '../context-explorer/types'
 import type { ExperimentAccepted, ExperimentOperation, ExperimentResultViewModel } from '../experiments/types'
 import type { RunComparisonAccepted, RunComparisonListPage, RunComparisonOperation } from '../run-comparison/types'
+import type { RetrievalCandidateResponse, RetrievalComparisonAcceptedResponse, RetrievalComparisonListPage, RetrievalComparisonResultsResponse, RetrievalComparisonStatusResponse, RetrievalMetricsResponse, RetrievalModeResultResponse } from '../retrieval-comparison/types'
 import type { CaptureNextPrState } from '../run-comparison/speculative/captureNextPr'
 import type { PriorCoverageLevel } from '../control-plane/speculative/priorCoverage'
 import type { TestInventoryResponse } from '../inventory/types'
@@ -75,6 +76,49 @@ const versions = new Map<string, MockVersionState>()
 const experiments = new Map<string, MockExperimentState>()
 /** INTEROP-2.1 §6.5 (HU48, definido/no implementado), ver run-comparison/types.ts. Mapa aparte de `experiments` a propósito: no es la misma capacidad. */
 const runComparisons = new Map<string, { polls: number; operation: RunComparisonOperation }>()
+/** INTEROP-2.7 §6.15 (OE2). Estado separado de `runComparisons` (HU48): no comparten semillas ni contadores. */
+interface MockRetrievalComparisonState {
+  projectId: string
+  /** `true` avanza PENDING → RUNNING → estado final en cada GET (comparaciones recién creadas y seeds en curso). */
+  advances: boolean
+  finalStatus: 'COMPLETED' | 'FAILED'
+  /** Si la comparación tiene verdad de terreno externa (métricas presentes) o no (`metrics: null`). */
+  withMetrics: boolean
+  polls: number
+  operation: RetrievalComparisonStatusResponse
+  results: RetrievalComparisonResultsResponse | null
+  /** Huella del cuerpo original: misma key con otro cuerpo responde 409 IDEMPOTENCY_CONFLICT. */
+  fingerprint: string
+}
+const retrievalComparisons = new Map<string, MockRetrievalComparisonState>()
+const retrievalComparisonByIdempotencyKey = new Map<string, string>()
+const RETRIEVAL_IDEMPOTENCY_KEY_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const RETRIEVAL_PAGE_SIZE = 20
+const RETRIEVAL_SEED_COMPLETED_AT = '2026-10-07T10:00:00.000Z'
+const RETRIEVAL_SEED_STARTED_AT = '2026-10-07T09:58:00.000Z'
+
+/** Candidatos demo TypeScript (sin relaciones PHP). `symbolQualifiedName: null` y `semanticScore` distinto por modo son intencionales. */
+const DEMO_RETRIEVAL_CANDIDATES: Array<Omit<RetrievalCandidateResponse, 'rank' | 'selected'>> = [
+  { chunkId: 'chk_demo_calc', filePath: 'src/domain/OrderService.ts', symbolQualifiedName: 'OrderService.calculateTotal', semanticScore: 0.912, structuralRelation: 'DECLARING_CLASS', combinedScore: 0.861 },
+  { chunkId: 'chk_demo_create', filePath: 'src/domain/OrderService.ts', symbolQualifiedName: 'OrderService.createOrder', semanticScore: 0.874, structuralRelation: null, combinedScore: 0.812 },
+  { chunkId: 'chk_demo_tax', filePath: 'src/domain/TaxCalculator.ts', symbolQualifiedName: 'TaxCalculator.compute', semanticScore: 0.851, structuralRelation: 'IMPORTS', combinedScore: 0.836 },
+  { chunkId: 'chk_demo_coupon', filePath: 'src/domain/CouponPolicy.ts', symbolQualifiedName: 'CouponPolicy.apply', semanticScore: 0.806, structuralRelation: 'IMPORTED_BY', combinedScore: 0.809 },
+  { chunkId: 'chk_demo_money', filePath: 'src/shared/money.ts', symbolQualifiedName: 'formatCurrency', semanticScore: 0.788, structuralRelation: 'IMPORTS', combinedScore: 0.7 },
+  { chunkId: 'chk_demo_refund', filePath: 'src/domain/RefundPolicy.ts', symbolQualifiedName: null, semanticScore: 0.742, structuralRelation: null, combinedScore: 0.519 },
+  { chunkId: 'chk_demo_invoice', filePath: 'src/domain/InvoiceService.ts', symbolQualifiedName: 'InvoiceService.applyLateFee', semanticScore: 0.731, structuralRelation: null, combinedScore: 0.512 },
+  { chunkId: 'chk_demo_shipping', filePath: 'src/domain/ShippingAddressValidator.ts', symbolQualifiedName: 'ShippingAddressValidator.validate', semanticScore: 0.702, structuralRelation: 'IMPORTED_BY', combinedScore: 0.671 },
+  { chunkId: 'chk_demo_discount', filePath: 'src/domain/DiscountEngine.ts', symbolQualifiedName: 'DiscountEngine.applyDiscount', semanticScore: 0.688, structuralRelation: 'DECLARING_CLASS', combinedScore: 0.78 },
+  { chunkId: 'chk_demo_payment', filePath: 'src/domain/PaymentGateway.ts', symbolQualifiedName: 'PaymentGateway.charge', semanticScore: 0.641, structuralRelation: null, combinedScore: 0.449 },
+  { chunkId: 'chk_demo_logger', filePath: 'src/shared/logger.ts', symbolQualifiedName: 'logger.info', semanticScore: 0.612, structuralRelation: null, combinedScore: 0.428 },
+  { chunkId: 'chk_demo_readme', filePath: 'src/shared/readme-snippet.ts', symbolQualifiedName: null, semanticScore: 0.587, structuralRelation: null, combinedScore: 0.411 },
+]
+
+/** Métricas demo con verdad de terreno externa (10 relevantes): SE y SEM difieren a propósito, sin ganador implícito. */
+const DEMO_RETRIEVAL_METRICS: Record<'SE' | 'SEM', RetrievalMetricsResponse> = {
+  SE: { precisionAt5: 0.6, recallAt5: 0.3, precisionAt10: 0.7, recallAt10: 0.7 },
+  SEM: { precisionAt5: 0.4, recallAt5: 0.2, precisionAt10: 0.6, recallAt10: 0.6 },
+}
+
 const contextTraces = new Map<string, MockContextTraceState>()
 /** Vista de contexto RAG simulada para un AnalysisRun PR-driven. */
 const analysisRunContextTraceId: Record<string, string> = { arun_checkout_pr45: 'trace_rag_order_total' }
@@ -245,6 +289,7 @@ function seed(): void {
   seedContextTraces()
   seedActionRequired()
   seedControlPlane()
+  seedRetrievalComparisons()
   seedFunctionalKnowledge()
 }
 
@@ -449,7 +494,11 @@ function seedControlPlane(): void {
       status: 'OBSOLETE', current: false, actionRequiredCount: 0, generatedTestsCount: 0,
       createdAt: '2026-09-11T09:00:00.000Z', updatedAt: '2026-09-11T09:40:00.000Z', completedAt: null,
       attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: 'f9e8d7c', indexDeltaBaseSha: 'c1c1c1c',
-      symbols: [{ language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'DiscountEngine', filePath: 'src/domain/DiscountEngine.ts', changeKind: 'DIRECTLY_CHANGED' }],
+      symbols: [
+        { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'DiscountEngine', filePath: 'src/domain/DiscountEngine.ts', changeKind: 'DIRECTLY_CHANGED' },
+        // OE2 (WI-CONSOLE-014): un Run OBSOLETE con símbolo METHOD elegible en archivo propio (no altera la trazabilidad de DiscountEngine ni los conteos de Runs).
+        { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'LateFeePolicy.evaluate', filePath: 'src/domain/LateFeePolicy.ts', changeKind: 'DIRECTLY_CHANGED' },
+      ],
       functionalBehaviorValidated: false, resultSummary: 'Un HEAD nuevo llegó a PR#17 mientras se resolvía el contexto funcional — este Run quedó obsoleto y no se reanuda.', detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr17',
     },
     {
@@ -727,6 +776,8 @@ export function resetMockBackend(): void {
   versions.clear()
   experiments.clear()
   runComparisons.clear()
+  retrievalComparisons.clear()
+  retrievalComparisonByIdempotencyKey.clear()
   contextTraces.clear()
   actionRequiredRuns.clear()
   repositoryBindings.clear()
@@ -945,6 +996,196 @@ export async function mockListRunComparisons(analysisRunId: string): Promise<Run
     .filter((state) => state.operation.analysisRunId === analysisRunId)
     .map((state) => state.operation.status === 'COMPLETED' ? state.operation : { ...state.operation, result: undefined })
   return { items: clone(items), nextCursor: null }
+}
+
+/* ---- INTEROP-2.7 §6.15 (WI-CONSOLE-014, OE2 SE vs SEM). DEMO · DATOS SIMULADOS: no son evidencia de tesis ni de producción. ---- */
+
+function buildRetrievalMode(comparisonId: string, mode: 'SE' | 'SEM', metrics: RetrievalMetricsResponse | null): RetrievalModeResultResponse {
+  const isSE = mode === 'SE'
+  const ordered = [...DEMO_RETRIEVAL_CANDIDATES].sort((left, right) => (isSE ? (right.combinedScore ?? 0) - (left.combinedScore ?? 0) : (right.semanticScore ?? 0) - (left.semanticScore ?? 0)))
+  const candidates: RetrievalCandidateResponse[] = ordered.map((candidate, index) => ({
+    rank: index + 1,
+    chunkId: candidate.chunkId,
+    filePath: candidate.filePath,
+    symbolQualifiedName: candidate.symbolQualifiedName,
+    semanticScore: candidate.semanticScore,
+    structuralRelation: isSE ? candidate.structuralRelation : null,
+    combinedScore: isSE ? candidate.combinedScore : null,
+    selected: index < 10,
+  }))
+  return {
+    mode,
+    retrievalId: `ret_${comparisonId}_${mode.toLowerCase()}`,
+    config: { semanticTopK: 20, finalTopK: 10, semanticWeight: isSE ? 0.7 : null, structuralWeight: isSE ? 0.3 : null, embeddingModel: 'demo-embedding-v1' },
+    candidates,
+    metrics: metrics ? clone(metrics) : null,
+  }
+}
+
+function buildRetrievalResults(state: MockRetrievalComparisonState, completedAt: string): RetrievalComparisonResultsResponse {
+  const { operation, withMetrics } = state
+  return {
+    retrievalComparisonId: operation.id,
+    analysisRunId: operation.analysisRunId,
+    projectVersionId: operation.projectVersionId,
+    symbol: clone(operation.symbol),
+    modes: [
+      buildRetrievalMode(operation.id, 'SE', withMetrics ? DEMO_RETRIEVAL_METRICS.SE : null),
+      buildRetrievalMode(operation.id, 'SEM', withMetrics ? DEMO_RETRIEVAL_METRICS.SEM : null),
+    ],
+    completedAt,
+  }
+}
+
+function retrievalFingerprint(analysisRunId: string, filePath: string, qualifiedName: string): string {
+  return [analysisRunId, filePath, qualifiedName].join('|')
+}
+
+function requireRetrievalComparison(retrievalComparisonId: string): MockRetrievalComparisonState {
+  const state = retrievalComparisons.get(retrievalComparisonId)
+  if (!state || isProjectDeleted(state.projectId)) notFound(`No existe la comparación de retrieval demo "${retrievalComparisonId}".`, 'RETRIEVAL_COMPARISON_NOT_FOUND')
+  return state
+}
+
+/** Cada GET de estado avanza una comparación en curso: PENDING → RUNNING → estado final (los seeds estáticos no avanzan). */
+function advanceRetrievalComparison(state: MockRetrievalComparisonState): void {
+  const current = state.operation.status
+  if (!state.advances || current === 'COMPLETED' || current === 'FAILED') return
+  state.polls += 1
+  if (state.polls === 1) {
+    state.operation = { ...state.operation, status: 'RUNNING', startedAt: state.operation.startedAt ?? nowIso() }
+    return
+  }
+  const completedAt = nowIso()
+  if (state.finalStatus === 'FAILED') {
+    state.operation = { ...state.operation, status: 'FAILED', failureCode: 'DEMO_RETRIEVAL_FAILED', failureMessage: 'Demo: la comparación terminó sin resultados.', completedAt }
+    return
+  }
+  state.results = buildRetrievalResults(state, completedAt)
+  state.operation = { ...state.operation, status: 'COMPLETED', completedAt }
+}
+
+/** `POST /retrieval-comparisons`. Sin ganador, sin estadística y sin `RUN_NOT_ELIGIBLE`: OE2 no usa los gates de OE5. */
+export async function mockStartRetrievalComparison(analysisRunId: string, symbol: AnalysisSymbolResponse, idempotencyKey: string): Promise<RetrievalComparisonAcceptedResponse> {
+  await latency()
+  if (!idempotencyKey) throw new ApiError('Falta el encabezado Idempotency-Key.', 400, 'demo-correlation-id', 'IDEMPOTENCY_KEY_REQUIRED')
+  if (!RETRIEVAL_IDEMPOTENCY_KEY_PATTERN.test(idempotencyKey)) throw new ApiError('El encabezado Idempotency-Key debe ser un UUID.', 400, 'demo-correlation-id', 'INVALID_IDEMPOTENCY_KEY')
+  const run = findVisibleRun(analysisRunId)
+  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  requireProjectRole(run.projectId, 'WRITER')
+  const fingerprint = retrievalFingerprint(analysisRunId, symbol.filePath, symbol.qualifiedName)
+  const replayedId = retrievalComparisonByIdempotencyKey.get(idempotencyKey)
+  if (replayedId) {
+    const original = retrievalComparisons.get(replayedId)!
+    if (original.fingerprint !== fingerprint) throw new ApiError('Esa Idempotency-Key ya se usó para otra comparación.', 409, 'demo-correlation-id', 'IDEMPOTENCY_CONFLICT')
+    return { status: 'PENDING', pollAfterMs: 460, analysisRunId, retrievalComparisonId: replayedId, projectVersionId: original.operation.projectVersionId }
+  }
+  const inRun = run.symbols.find((item) => item.filePath === symbol.filePath && item.qualifiedName === symbol.qualifiedName)
+  if (!inRun) notFound(`El símbolo "${symbol.qualifiedName}" no pertenece a este Run.`, 'ANALYSIS_SYMBOL_NOT_FOUND')
+  if (inRun.changeKind !== 'DIRECTLY_CHANGED' || (inRun.kind !== 'METHOD' && inRun.kind !== 'FUNCTION')) {
+    throw new ApiError(`"${inRun.qualifiedName}" no es un METHOD/FUNCTION con cambio directo; no se puede comparar retrieval.`, 422, 'demo-correlation-id', 'UNSUPPORTED_SYMBOL_KIND')
+  }
+  sequence += 1
+  const retrievalComparisonId = `rcmp_demo_${sequence}`
+  const projectVersionId = `ver_${run.projectId}`
+  const state: MockRetrievalComparisonState = {
+    projectId: run.projectId,
+    advances: true,
+    finalStatus: 'COMPLETED',
+    withMetrics: false,
+    polls: 0,
+    fingerprint,
+    results: null,
+    operation: { id: retrievalComparisonId, analysisRunId, projectId: run.projectId, projectVersionId, symbol: clone(inRun), status: 'PENDING', failureCode: null, failureMessage: null, startedAt: null, completedAt: null },
+  }
+  retrievalComparisons.set(retrievalComparisonId, state)
+  retrievalComparisonByIdempotencyKey.set(idempotencyKey, retrievalComparisonId)
+  return { status: 'PENDING', pollAfterMs: 460, analysisRunId, retrievalComparisonId, projectVersionId }
+}
+
+/** `GET /retrieval-comparisons/{id}`: solo estado ligero, sin resultados. */
+export async function mockGetRetrievalComparison(retrievalComparisonId: string): Promise<RetrievalComparisonStatusResponse> {
+  await latency()
+  const state = requireRetrievalComparison(retrievalComparisonId)
+  advanceRetrievalComparison(state)
+  return clone(state.operation)
+}
+
+/** `GET /retrieval-comparisons/{id}/results`: 409 `RETRIEVAL_COMPARISON_NOT_FINISHED` antes de un estado terminal. */
+export async function mockGetRetrievalComparisonResults(retrievalComparisonId: string): Promise<RetrievalComparisonResultsResponse> {
+  await latency()
+  const state = requireRetrievalComparison(retrievalComparisonId)
+  const status = state.operation.status
+  // §6.15 no define resultados para FAILED: el mock responde 409 con un código del contrato (nunca un código inventado).
+  if (status !== 'COMPLETED' || !state.results) throw new ApiError('La comparación todavía no terminó con resultados.', 409, 'demo-correlation-id', 'RETRIEVAL_COMPARISON_NOT_FINISHED')
+  return clone(state.results)
+}
+
+/** `GET /analysis-runs/{analysisRunId}/retrieval-comparisons?cursor&limit`: lectura pura, solo estado; más recientes primero. */
+export async function mockListRetrievalComparisons(analysisRunId: string, cursor: string | null): Promise<RetrievalComparisonListPage> {
+  await latency()
+  const run = analysisRuns.get(analysisRunId)
+  if (!run || isProjectDeleted(run.projectId)) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  const all = Array.from(retrievalComparisons.values())
+    .filter((state) => state.operation.analysisRunId === analysisRunId)
+    .reverse()
+    .map((state) => clone(state.operation))
+  const start = cursor ? Number(cursor) : 0
+  const items = all.slice(start, start + RETRIEVAL_PAGE_SIZE)
+  const next = start + RETRIEVAL_PAGE_SIZE
+  return { items, nextCursor: next < all.length ? String(next) : null }
+}
+
+/** Semillas en `arun_checkout_pr49` (tres símbolos elegibles). No reemplazan ni tocan las semillas de HU48. */
+function seedRetrievalComparisons(): void {
+  const run = analysisRuns.get('arun_checkout_pr49')
+  if (!run) return
+  const symbolNamed = (qualifiedName: string) => run.symbols.find((item) => item.qualifiedName === qualifiedName)!
+  const calculateTotal = symbolNamed('OrderService.calculateTotal')
+  const createOrder = symbolNamed('OrderService.createOrder')
+  const formatCurrencySymbol = symbolNamed('formatCurrency')
+  const seed = (
+    id: string,
+    symbol: AnalysisSymbolResponse,
+    options: { status: RetrievalComparisonStatusResponse['status']; advances: boolean; finalStatus: 'COMPLETED' | 'FAILED'; withMetrics: boolean; failureCode?: string; failureMessage?: string },
+  ) => {
+    const terminal = options.status === 'COMPLETED' || options.status === 'FAILED'
+    const state: MockRetrievalComparisonState = {
+      projectId: run.projectId,
+      advances: options.advances,
+      finalStatus: options.finalStatus,
+      withMetrics: options.withMetrics,
+      polls: 0,
+      fingerprint: retrievalFingerprint(run.id, symbol.filePath, symbol.qualifiedName),
+      results: null,
+      operation: {
+        id,
+        analysisRunId: run.id,
+        projectId: run.projectId,
+        projectVersionId: `ver_${run.projectId}`,
+        symbol: clone(symbol),
+        status: options.status,
+        failureCode: options.failureCode ?? null,
+        failureMessage: options.failureMessage ?? null,
+        startedAt: options.status === 'PENDING' ? null : RETRIEVAL_SEED_STARTED_AT,
+        completedAt: terminal ? RETRIEVAL_SEED_COMPLETED_AT : null,
+      },
+    }
+    if (terminal && options.status === 'COMPLETED') state.results = buildRetrievalResults(state, RETRIEVAL_SEED_COMPLETED_AT)
+    retrievalComparisons.set(id, state)
+  }
+  // Previa en curso que se resuelve al consultarla (PENDING → RUNNING → COMPLETED).
+  seed('rcmp_demo_seed_pending', calculateTotal, { status: 'PENDING', advances: true, finalStatus: 'COMPLETED', withMetrics: false })
+  seed('rcmp_demo_seed_running', createOrder, { status: 'RUNNING', advances: true, finalStatus: 'COMPLETED', withMetrics: false })
+  // COMPLETED sin verdad de terreno: el único camino que la Console produce en este corte; métricas «no disponible».
+  seed('rcmp_demo_seed_completed_sin_metricas', calculateTotal, { status: 'COMPLETED', advances: false, finalStatus: 'COMPLETED', withMetrics: false })
+  // COMPLETED con métricas: demo de una comparación creada con verdad de terreno externa; la UI no permite cargarla en este corte.
+  seed('rcmp_demo_seed_completed_con_metricas', createOrder, { status: 'COMPLETED', advances: false, finalStatus: 'COMPLETED', withMetrics: true })
+  seed('rcmp_demo_seed_failed', formatCurrencySymbol, {
+    status: 'FAILED', advances: false, finalStatus: 'FAILED', withMetrics: false,
+    failureCode: 'DEMO_EMBEDDING_INDEX_UNAVAILABLE',
+    failureMessage: 'Demo: el índice de embeddings no respondió; la comparación no produjo resultados.',
+  })
 }
 
 function defaultCaptureNextPrState(projectId: string): CaptureNextPrState {

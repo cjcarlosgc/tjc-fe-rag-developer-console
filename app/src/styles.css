@@ -30,6 +30,8 @@ h2 { font-size: 19px; }
 .button { border: 1px solid transparent; border-radius: 8px; min-height: 42px; padding: 0 16px; font-weight: 750; cursor: pointer; transition: transform .15s, background .15s; }
 .button:hover:not(:disabled) { transform: translateY(-1px); }
 .button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid rgba(201,180,250,.42); outline-offset: 2px; }
+/* WI-CONSOLE-014 (corrección 1, B2): el CTA de la página del Run usa el mismo foco sólido que la página destino (≈2.7:1 con el anillo global). */
+.run-heading-actions .button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .button.primary { color: #100626; background: var(--accent); }
 .button.secondary { color: #eae7f7; border-color: var(--border-subtle); background: #0f0f14; }
 .button.secondary:hover:not(:disabled) { border-color: var(--border); }
@@ -485,3 +487,34 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .fk-chain li[aria-current="step"] { border-left-color: var(--accent); }
 .fk-chain-rule { flex: 1 1 280px; line-height: 1.5; }
 .fk-chain-note { font-weight: 700; }
+
+/* WI-CONSOLE-014 (Corte B): comparación de retrieval SE vs SEM (modo experimental). Texto #eae7f7 / #bcbac9 sobre --surface-1 #0b0b0d (AA). No usa --text-dim para texto informativo. */
+.retrieval-page .demo-stamp { align-self: flex-start; }
+.retrieval-page .button:focus-visible, .retrieval-page select:focus-visible, .retrieval-page .retrieval-table-wrap:focus-visible, .retrieval-result-heading:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.retrieval-page .run-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 16px; }
+.retrieval-page .run-actions .field-hint { color: #bcbac9; }
+.retrieval-page .button:disabled { opacity: 1; color: #bcbac9; background: var(--surface-3); border-color: var(--border-subtle); cursor: not-allowed; }
+.retrieval-page .field-hint { color: #bcbac9; font-size: 13px; }
+.retrieval-page .experiment-progress { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-bottom: 24px; color: #eae7f7; }
+.retrieval-result-heading { outline: none; }
+.retrieval-modes { display: grid; grid-template-columns: 1fr; gap: 24px; margin-top: 20px; }
+@media (min-width: 900px) { .retrieval-modes { grid-template-columns: 1fr 1fr; } }
+.retrieval-mode { min-width: 0; border: 1px solid var(--border-subtle); border-radius: 12px; background: var(--surface-2); padding: 20px; }
+.retrieval-mode h3 { margin: 0 0 12px; font-size: 16px; color: #eae7f7; }
+.retrieval-table-wrap { overflow-x: auto; max-width: 100%; }
+.retrieval-table-wrap table { width: 100%; min-width: 520px; border-collapse: collapse; text-align: left; }
+.retrieval-table-wrap caption { text-align: left; color: #bcbac9; font-size: 13px; padding-bottom: 8px; }
+.retrieval-table-wrap th, .retrieval-table-wrap td { padding: 8px; border-bottom: 1px solid var(--border-subtle); color: #eae7f7; font-size: 13px; vertical-align: top; }
+.retrieval-table-wrap th[scope="col"] { color: #bcbac9; font-weight: 700; }
+.retrieval-table-wrap td code { color: #bcbac9; font-size: 12px; overflow-wrap: anywhere; }
+.retrieval-config, .retrieval-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0 0; }
+.retrieval-config div, .retrieval-metrics div { min-width: 0; border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px; background: var(--surface-1); }
+.retrieval-config dt, .retrieval-metrics dt { color: #bcbac9; font: 700 11px 'JetBrains Mono', ui-monospace, monospace; text-transform: uppercase; letter-spacing: .06em; }
+.retrieval-config dd, .retrieval-metrics dd { margin: 4px 0 0; color: #eae7f7; font-weight: 600; overflow-wrap: anywhere; }
+.retrieval-metrics .retrieval-metric-key { border-color: #5b4d86; }
+.retrieval-metrics .retrieval-metric-key dd { font-size: 17px; }
+.retrieval-previous { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 12px; }
+.retrieval-previous li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px; color: #eae7f7; }
+.retrieval-previous li > span { min-width: 0; overflow-wrap: anywhere; }
+.retrieval-page .role-note { color: #eae7f7; }
+@media (max-width: 680px) { .retrieval-page .page-heading { align-items: stretch; } .retrieval-config, .retrieval-metrics { grid-template-columns: 1fr; } }

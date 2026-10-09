@@ -20,6 +20,12 @@ const codeMessages: Record<string, string> = {
   PROJECT_NOT_FOUND: 'El proyecto ya no existe.',
   WORKSPACE_NOT_FOUND: 'Ese workspace ya no está disponible. Actualiza la lista de workspaces y vuelve a elegirlo.',
   WORKSPACE_ADMIN_REQUIRED: 'Solo un owner activo de la organización puede crear Projects en ese workspace.',
+  // WI-CONSOLE-014 (INTEROP-2.7 §6.15, OE2 SE vs SEM): mensajes propios, sin semántica de ganador ni de OE5.
+  ANALYSIS_SYMBOL_NOT_FOUND: 'Ese símbolo ya no pertenece a este Run. Actualiza el Run y vuelve a elegirlo.',
+  UNSUPPORTED_SYMBOL_KIND: 'Solo se pueden comparar métodos o funciones con cambio directo en este Run.',
+  RETRIEVAL_COMPARISON_NOT_FOUND: 'Esa comparación de retrieval ya no existe o no está disponible.',
+  RETRIEVAL_COMPARISON_NOT_FINISHED: 'La comparación todavía no terminó; los resultados aparecerán cuando termine.',
+  IDEMPOTENCY_CONFLICT: 'Esa clave de idempotencia ya se usó para otra comparación. Inicia la comparación de nuevo desde la página.',
 }
 
 const serverErrorMessage = 'RAG Core no pudo completar la operación. Inténtalo de nuevo en unos minutos.'

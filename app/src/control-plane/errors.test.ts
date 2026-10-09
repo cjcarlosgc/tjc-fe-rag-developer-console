@@ -71,3 +71,26 @@ it.each(['GITHUB_ACCOUNT_REQUIRED', 'GITHUB_USER_TOKEN_INVALID'])('401 %s es de 
   expect(isGitHubAccessRenewalRequired(new ApiError('x', 401, 'c', 'AUTH_REQUIRED'))).toBe(false)
   expect(isGitHubAccessRenewalRequired(new Error('x'))).toBe(false)
 })
+
+it('WI-CONSOLE-014 (INTEROP-2.7 §6.15): los errores de comparación de retrieval tienen mensaje propio en español', () => {
+  const cases: Array<[number, string]> = [
+    [404, 'ANALYSIS_SYMBOL_NOT_FOUND'],
+    [422, 'UNSUPPORTED_SYMBOL_KIND'],
+    [404, 'RETRIEVAL_COMPARISON_NOT_FOUND'],
+    [409, 'RETRIEVAL_COMPARISON_NOT_FINISHED'],
+    [409, 'IDEMPOTENCY_CONFLICT'],
+  ]
+  for (const [status, code] of cases) {
+    const message = bindingErrorMessage(new ApiError('mensaje crudo de Core', status, 'corr-rc', code))
+    expect(message).not.toBe('mensaje crudo de Core')
+    expect(message).not.toMatch(/ganador|mejor|peor/i)
+    expect(errorCorrelationId(new ApiError('x', status, 'corr-rc', code))).toBe('corr-rc')
+  }
+  expect(bindingErrorMessage(new ApiError('x', 422, 'c', 'UNSUPPORTED_SYMBOL_KIND'))).toBe('Solo se pueden comparar métodos o funciones con cambio directo en este Run.')
+  expect(bindingErrorMessage(new ApiError('x', 409, 'c', 'IDEMPOTENCY_CONFLICT'))).toMatch(/clave de idempotencia/)
+})
+
+it('WI-CONSOLE-014: un 403 de rol en comparaciones usa el mensaje de rol con requiredRole/currentRole', () => {
+  expect(bindingErrorMessage(new ApiError('x', 403, 'c', 'PROJECT_ROLE_INSUFFICIENT', { requiredRole: 'WRITER', currentRole: 'READER' })))
+    .toBe('Tu rol actual (READER) no alcanza para esta acción; se requiere WRITER.')
+})

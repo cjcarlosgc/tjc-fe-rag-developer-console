@@ -168,3 +168,18 @@ test('HU53 (INTEROP-2.1 §6.10, definido/no implementado): el historial de trans
   expect(screen.getByText('Snapshot indexado, análisis iniciado')).toBeInTheDocument()
   expect(screen.getByText('Generación completada')).toBeInTheDocument()
 })
+
+test('WI-CONSOLE-014: el CTA «Comparar retrieval SE vs SEM» aparece con rol Writer y navega a la ruta nueva', async () => {
+  renderDetail('arun_checkout_pr49', 'prj_checkout_demo')
+
+  const cta = await screen.findByRole('link', { name: 'Comparar retrieval SE vs SEM' })
+  expect(cta).toHaveAttribute('href', '/projects/prj_checkout_demo/runs/arun_checkout_pr49/retrieval-comparison')
+  expect(screen.getByRole('link', { name: 'Run comparison →' })).toBeInTheDocument()
+})
+
+test('WI-CONSOLE-014: un Reader no ve el CTA de comparación de retrieval', async () => {
+  renderDetail('arun_org_metrics_pr15', 'prj_org_metrics_demo')
+
+  expect(await screen.findByRole('heading', { level: 1 })).toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Comparar retrieval SE vs SEM' })).not.toBeInTheDocument()
+})
