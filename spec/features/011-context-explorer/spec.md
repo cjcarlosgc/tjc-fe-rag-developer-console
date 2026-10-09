@@ -56,10 +56,9 @@ simplificación deliberada respecto al diseño completo de arriba — no son
 nodos/paneles nuevos dentro del árbol de contexto (RagGraph/RagSidePanel
 siguen intactos, HU17 sin tocar), sino un panel de lista aparte, debajo del
 grafo, dentro del mismo `ContextSection` de `AnalysisRunDetailPage`:
-`context-explorer/speculative/contextProvenance.ts` deriva qué reglas de
-Functional Knowledge `ACTIVE` y qué evidencia de tests existentes
-comparten símbolo con el Run, y los lista con el badge `.proposal-stamp`.
-`ProposedCapabilityError` en modo live — sigue sin contrato real. Integrar
+el panel especulativo «Qué más alimentó este contexto» (`contextProvenance.ts`)
+se retiró en `WI-CONSOLE-015`; la procedencia por Run la aportará
+`WI-CONSOLE-016` con `functionalRuleIds` del trace. Integrar
 esto al árbol como nodos propios (el diseño original) queda pendiente si
 Core llega a definir una forma.
 
@@ -78,4 +77,4 @@ Core llega a definir una forma.
 
 ## Nota SMART V3 (SDD 2026-10-08)
 
-El trace operativo de nueve enlaces del `AnalysisRun` (`INTEROP-2.7` §6.16, `WI-CONSOLE-016`) y la procedencia de Functional Knowledge (`WI-CONSOLE-015`) no se representan como nodos de este Context Explorer experimental: viven en el detalle del Run. Las implementaciones especulativas actuales (`speculative/contextProvenance.ts`) se reemplazan por datos live cuando Core entregue el contrato, o se retiran.
+El trace operativo de nueve enlaces del `AnalysisRun` (`INTEROP-2.7` §6.16, `WI-CONSOLE-016`) y la procedencia de Functional Knowledge (`WI-CONSOLE-015`) no se representan como nodos de este Context Explorer experimental: viven en el detalle del Run. La implementación especulativa `speculative/contextProvenance.ts` se retiró en `WI-CONSOLE-015`; la procedencia por Run llega con `WI-CONSOLE-016`.

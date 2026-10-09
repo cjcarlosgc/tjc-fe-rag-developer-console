@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '../api/client'
 import { resetMockBackend } from '../api/mockBackend'
-import { setDataSourceForTests } from '../api/dataSource'
+import { PendingContractError, setDataSourceForTests } from '../api/dataSource'
 import { getAnalysisRun, listTestProposals } from '../control-plane/api'
 import { getContextQuestionSet, listActionRequired, listAllActionRequired, listFunctionalKnowledge, submitFunctionalAnswer } from './api'
 
@@ -146,17 +146,35 @@ describe('action-required api (mock) — HU51, conflicto de Functional Knowledge
 })
 
 describe('action-required api (mock) — HU35/HU36 Functional Knowledge', () => {
-  it('lista las reglas de un proyecto, ordenadas por más reciente primero', async () => {
+  it('lista las reglas de un proyecto, ordenadas por más reciente primero (7 reglas en prj_checkout_demo)', async () => {
     const page = await listFunctionalKnowledge('prj_checkout_demo')
-    expect(page.items.map((item) => item.id)).toEqual(['fk_coupon_expiry', 'fk_rounding_v2', 'fk_shipping_zone', 'fk_rounding_v1'])
+    expect(page.items.map((item) => item.id)).toEqual(['fk_total_empty_cart', 'fk_coupon_expiry', 'fk_rounding_v2', 'fk_shipping_zone', 'fk_import_tax', 'fk_rounding_v1', 'fk_rounding_v0'])
   })
 
-  it('filtra por status', async () => {
+  it('filtra por status: 5 ACTIVE y 2 SUPERSEDED en prj_checkout_demo', async () => {
     const active = await listFunctionalKnowledge('prj_checkout_demo', 'ACTIVE')
-    expect(active.items.map((item) => item.id).sort()).toEqual(['fk_coupon_expiry', 'fk_rounding_v2', 'fk_shipping_zone'])
+    expect(active.items.map((item) => item.id).sort()).toEqual(['fk_coupon_expiry', 'fk_import_tax', 'fk_rounding_v2', 'fk_shipping_zone', 'fk_total_empty_cart'])
 
     const superseded = await listFunctionalKnowledge('prj_checkout_demo', 'SUPERSEDED')
-    expect(superseded.items.map((item) => item.id)).toEqual(['fk_rounding_v1'])
+    expect(superseded.items.map((item) => item.id).sort()).toEqual(['fk_rounding_v0', 'fk_rounding_v1'])
+  })
+
+  it('varias ACTIVE pueden compartir target: OrderService.calculateTotal tiene 2 ACTIVE con escenarios distintos', async () => {
+    const active = await listFunctionalKnowledge('prj_checkout_demo', 'ACTIVE')
+    const onTotal = active.items.filter((item) => item.targetRef === 'OrderService.calculateTotal')
+    expect(onTotal.map((item) => [item.id, item.scenarioKind]).sort()).toEqual([
+      ['fk_rounding_v2', 'BOUNDARY'],
+      ['fk_total_empty_cart', 'EXPECTED_RESULT'],
+    ])
+  })
+
+  it('INTEROP-2.7: el mock expone procedencia y escenario; las reglas históricas llegan con nulls', async () => {
+    const page = await listFunctionalKnowledge('prj_checkout_demo')
+    const byId = new Map(page.items.map((item) => [item.id, item]))
+    expect(byId.get('fk_rounding_v1')).toMatchObject({ scenarioKind: 'BOUNDARY', scenarioKey: 'order.calculateTotal.rounding', confirmedByUserId: null, confirmedRole: null, originHeadSha: null, sourceRef: null })
+    expect(byId.get('fk_rounding_v2')).toMatchObject({ confirmedByUserId: 'usr_demo_admin', confirmedRole: 'ADMIN', originHeadSha: '9f8e7d6c5b4a39281706f5e4d3c2b1a098765432', sourceRef: null })
+    expect(byId.get('fk_import_tax')).toMatchObject({ source: 'APPROVED_IMPORT', sourceRef: 'docs/reglas-negocio.md#L12' })
+    expect(page.items.filter((item) => item.source === 'APPROVED_IMPORT')).toHaveLength(1)
   })
 
   it('la regla ACTIVE de rounding referencia a la que reemplaza vía supersedesId', async () => {
@@ -220,10 +238,11 @@ describe('action-required api (live) — HU35-38, Core ya lo implementó (INTERO
     expect((error as ApiError).details).toEqual(conflict)
   })
 
-  it('listFunctionalKnowledge pide GET /projects/{id}/functional-knowledge con status opcional', async () => {
-    const page = { items: [], nextCursor: null }
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(page), { status: 200 }))
-    await expect(listFunctionalKnowledge('prj_real', 'ACTIVE')).resolves.toEqual(page)
-    expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/\/projects\/prj_real\/functional-knowledge\?status=ACTIVE$/), expect.anything())
+  it('INTEROP-2.7: listFunctionalKnowledge live responde PendingContractError sin llamar a Core (procedencia y escenarios no publicados)', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+    const error = await listFunctionalKnowledge('prj_real', 'ACTIVE').catch((reason: unknown) => reason)
+    expect(error).toBeInstanceOf(PendingContractError)
+    expect((error as Error).message).toContain('las reglas de Functional Knowledge con procedencia y escenarios')
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })

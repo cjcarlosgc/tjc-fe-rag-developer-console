@@ -56,11 +56,12 @@ export function submitFunctionalAnswer(analysisRunId: string, questionId: string
   })
 }
 
-/** HU35/HU36 (implementado y desplegado en Core): `GET /projects/{projectId}/functional-knowledge?status&cursor&limit`. */
+/**
+ * HU35/HU36 · INTEROP-2.7 §6.11: `GET /projects/{projectId}/functional-knowledge?status&cursor&limit`.
+ * La forma con procedencia y escenario (`scenarioKind`, `confirmedByUserId`, …) está definida pero Core
+ * todavía no la publica (WI-CORE-019/020). Hasta WI-CONSOLE-020 el modo live no usa campos no publicados.
+ */
 export function listFunctionalKnowledge(projectId: string, status?: FunctionalKnowledgeStatus): Promise<FunctionalKnowledgeListPage> {
   if (getDataSource() === 'mock') return mockListFunctionalKnowledge(projectId, status)
-  const params = new URLSearchParams()
-  if (status) params.set('status', status)
-  const query = params.toString()
-  return apiRequest<FunctionalKnowledgeListPage>(`/projects/${encodeURIComponent(projectId)}/functional-knowledge${query ? `?${query}` : ''}`)
+  return Promise.reject(new PendingContractError('las reglas de Functional Knowledge con procedencia y escenarios (INTEROP-2.7)'))
 }

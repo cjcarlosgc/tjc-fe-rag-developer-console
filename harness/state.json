@@ -3012,6 +3012,379 @@
         ]
       },
       "closedAt": "2026-10-08T21:45:00.000Z"
+    },
+    {
+      "id": "WI-CONSOLE-015",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "storyIds": [
+        "HU07",
+        "HU09"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-017"
+      ],
+      "caseIds": [],
+      "sprint": "SMART V3",
+      "status": "W-DONE",
+      "priority": "P1",
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/013-pr-driven-control-plane/plan.md",
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/features/011-context-explorer/spec.md",
+        "spec/features/011-context-explorer/plan.md",
+        "spec/features/011-context-explorer/tasks.md"
+      ],
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md",
+        "spec/transversal/accessibility/spec.md"
+      ],
+      "syncScopePaths": [],
+      "approved": true,
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [
+          "DEC-INF-001",
+          "DEC-VAL-001"
+        ],
+        "approvedApplicableDecisionIds": [
+          "DEC-FK-001",
+          "DEC-FK-003",
+          "DEC-FK-004"
+        ],
+        "checkedAt": "2026-10-08T21:55:00.000Z"
+      },
+      "execution": {
+        "leaderAgent": "leader",
+        "analysisAgent": "sdd-analyst",
+        "implementationAgent": "implementer",
+        "contractReviewAgent": "contract-reviewer",
+        "reviewAgent": "human-reviewer",
+        "uxReviewAgent": "ux-reviewer",
+        "handoffs": [
+          {
+            "agent": "sdd-analyst",
+            "executedBy": {
+              "agent": "sdd-analyst",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "claude-sonnet-5-5",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "SUFFICIENT; blockingDecisionIds []; un corte para el implementer; adapter live debe pasar a PendingContractError segun AC."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "harness/reports/wi-console-015-sdd-verification.md"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-015-sdd-verification.md"
+            ],
+            "recommendedNextStep": "Delegar a implementer en un corte."
+          },
+          {
+            "agent": "implementer",
+            "executedBy": {
+              "agent": "implementer",
+              "configuredModel": "claude-haiku-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Corte unico: tipos INTEROP-2.7, agrupacion por scenarioKind, bloque Procedencia, cadena SUPERSEDED, mock con varias ACTIVE, live PendingContractError, retiro de contextProvenance."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/action-required/knowledgeScenarios.ts",
+              "app/src/action-required/FunctionalKnowledgePage.tsx",
+              "app/src/action-required/FunctionalKnowledgeDetailPage.tsx",
+              "app/src/api/mockBackend.ts",
+              "app/src/control-plane/AnalysisRunDetailPage.tsx"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-015-implementation.md"
+            ],
+            "recommendedNextStep": "Revision contractual y UX."
+          },
+          {
+            "agent": "contract-reviewer",
+            "executedBy": {
+              "agent": "contract-reviewer",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Tipos y mock conformes a INTEROP-2.7 §6.11; 409 por targetRef aceptable hasta WI-CORE-020; notas menores (spec 011 y scenarioKey del mock) corregidas por el leader."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/action-required/types.ts",
+              "app/src/api/mockBackend.ts",
+              "spec/features/011-context-explorer/spec.md"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-015-contract-review.md"
+            ],
+            "recommendedNextStep": "Revision UX."
+          },
+          {
+            "agent": "ux-reviewer",
+            "executedBy": {
+              "agent": "ux-reviewer",
+              "configuredModel": "sonnet",
+              "servedModel": "claude-sonnet-5-5",
+              "effort": "medium"
+            },
+            "status": "CHANGES_REQUESTED",
+            "findings": [
+              "B1: «Regla actual» marcaba la regla vista, no la vigente; N2, N3, N5, N6 menores."
+            ],
+            "blockers": [
+              "B1"
+            ],
+            "filesAffected": [
+              "app/src/action-required/FunctionalKnowledgeDetailPage.tsx"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-015-ux-review.md"
+            ],
+            "recommendedNextStep": "Correccion 1."
+          },
+          {
+            "agent": "implementer",
+            "executedBy": {
+              "agent": "implementer",
+              "configuredModel": "claude-haiku-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Correccion 1: «Estás viendo esta regla»/«Vigente», clave de escenario, SHA accesible, vacio con role=status."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/action-required/FunctionalKnowledgeDetailPage.tsx",
+              "app/src/action-required/FunctionalKnowledgePage.tsx",
+              "app/src/styles.css"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-015-implementation.md"
+            ],
+            "recommendedNextStep": "Re-revision UX."
+          },
+          {
+            "agent": "ux-reviewer",
+            "executedBy": {
+              "agent": "ux-reviewer",
+              "configuredModel": "sonnet",
+              "servedModel": "claude-sonnet-5-5",
+              "effort": "medium"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "B1 resuelto y verificado en navegador (color computado real); observaciones O1/O2/N1/N4 fuera del WI."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/action-required/FunctionalKnowledgeDetailPage.tsx"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-015-ux-review-2.md"
+            ],
+            "recommendedNextStep": "Revision del usuario."
+          },
+          {
+            "agent": "human-reviewer",
+            "status": "APPROVED",
+            "findings": [
+              "Aprobado por el usuario tras verlo en el mock (ciclo de correccion 1 de 2). Observaciones no bloqueantes registradas en el cierre."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/action-required/FunctionalKnowledgePage.tsx",
+              "app/src/action-required/FunctionalKnowledgeDetailPage.tsx",
+              "app/src/action-required/knowledgeScenarios.ts",
+              "app/src/api/mockBackend.ts",
+              "app/src/control-plane/AnalysisRunDetailPage.tsx"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-015-user-review.md",
+              "harness/reports/wi-console-015-closure.md"
+            ],
+            "recommendedNextStep": "Cerrar el WI y liberar state.json; no publicar sin una solicitud explicita del usuario."
+          }
+        ],
+        "reviewCycles": 1,
+        "maxReviewCycles": 2
+      },
+      "gates": {
+        "sddVerified": "G-PASSED",
+        "implementationCompleted": "G-PASSED",
+        "uxReviewed": "G-PASSED",
+        "contractReviewed": "G-NOT_APPLICABLE",
+        "canonicalContractSynced": "G-NOT_APPLICABLE",
+        "contractSyncPublished": "G-NOT_APPLICABLE",
+        "independentReviewPassed": "G-PASSED",
+        "technicalChecksPassed": "G-PASSED",
+        "interopSyncChecked": "G-PASSED",
+        "noMocksPresentedAsLive": "G-PASSED",
+        "noBlockingDecisions": "G-PASSED",
+        "retryLimitRespected": "G-PASSED"
+      },
+      "coordination": {
+        "contractImpact": false,
+        "publishesContract": false,
+        "uiImpact": true,
+        "pullCheckpoints": [
+          {
+            "checkpoint": "start",
+            "workItem": "WI-CONSOLE-015",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [],
+            "checkedAt": "2026-10-08T21:46:24.460Z"
+          },
+          {
+            "checkpoint": "implementation-delivery",
+            "workItem": "WI-CONSOLE-015",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-08T22:21:54.373Z"
+          },
+          {
+            "checkpoint": "before-review",
+            "workItem": "WI-CONSOLE-015",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-08T22:21:54.529Z"
+          },
+          {
+            "checkpoint": "before-done",
+            "workItem": "WI-CONSOLE-015",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-09T01:22:42.270Z"
+          }
+        ],
+        "publishedSyncIds": [],
+        "pendingRelevantSyncIds": [],
+        "knownIncompatibilities": []
+      },
+      "evidence": [
+        "harness/reports/wi-console-015-contract-sync-scope-review.md",
+        "harness/reports/wi-console-015-sdd-verification.md",
+        "harness/reports/wi-console-015-implementation.md",
+        "harness/reports/wi-console-015-contract-review.md",
+        "harness/reports/wi-console-015-ux-review.md",
+        "harness/reports/wi-console-015-ux-review-2.md",
+        "harness/reports/wi-console-015-user-review.md",
+        "harness/reports/wi-console-015-closure.md"
+      ],
+      "blockedReason": null,
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-015 solo muestra procedencia y reglas de Functional Knowledge.",
+          "report": "harness/reports/wi-console-015-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas; WI-CONSOLE-015 solo muestra procedencia y reglas de Functional Knowledge.",
+          "report": "harness/reports/wi-console-015-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-015 solo muestra procedencia y reglas de Functional Knowledge.",
+          "report": "harness/reports/wi-console-015-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre workspaces, membresia y eventos organizacionales; WI-CONSOLE-015 solo muestra procedencia y reglas de Functional Knowledge.",
+          "report": "harness/reports/wi-console-015-contract-sync-scope-review.md"
+        }
+      ],
+      "gateEvidence": {
+        "sddVerified": [
+          "harness/reports/wi-console-015-sdd-verification.md"
+        ],
+        "noBlockingDecisions": [
+          "harness/reports/wi-console-015-sdd-verification.md"
+        ],
+        "implementationCompleted": [
+          "harness/reports/wi-console-015-implementation.md"
+        ],
+        "noMocksPresentedAsLive": [
+          "harness/reports/wi-console-015-implementation.md"
+        ],
+        "technicalChecksPassed": [
+          "harness/reports/wi-console-015-closure.md"
+        ],
+        "interopSyncChecked": [
+          "harness/reports/wi-console-015-contract-sync-scope-review.md"
+        ],
+        "uxReviewed": [
+          "harness/reports/wi-console-015-ux-review.md",
+          "harness/reports/wi-console-015-ux-review-2.md"
+        ],
+        "retryLimitRespected": [
+          "harness/reports/wi-console-015-user-review.md"
+        ],
+        "independentReviewPassed": [
+          "harness/reports/wi-console-015-user-review.md"
+        ]
+      },
+      "closedAt": "2026-10-09T01:25:00.000Z"
     }
   ],
   "activeWorkItem": null

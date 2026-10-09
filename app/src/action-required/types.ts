@@ -89,6 +89,7 @@ export interface ActionRequiredListPage {
 export type FunctionalKnowledgeSource = 'HUMAN_ANSWER' | 'APPROVED_IMPORT'
 export type FunctionalKnowledgeStatus = 'ACTIVE' | 'SUPERSEDED'
 
+/** INTEROP-2.7 §6.11: regla de Functional Knowledge con procedencia y escenario. Console no calcula ni edita `scenarioKey`. */
 export interface FunctionalKnowledgeResponse {
   id: string
   projectId: string
@@ -101,6 +102,18 @@ export interface FunctionalKnowledgeResponse {
   status: FunctionalKnowledgeStatus
   supersedesId: string | null
   createdAt: string
+  /** INTEROP-2.7 (DEC-FK-004): escenario derivado por Core; solo lectura en la Console. */
+  scenarioKind: ScenarioKind
+  /** INTEROP-2.7 (DEC-FK-004): clave determinista derivada por Core; nunca la escribe una persona. */
+  scenarioKey: string
+  /** INTEROP-2.7: id de quien confirmó la regla. Solo el id: la Console no lo resuelve a nombre ni correo. `null` en reglas históricas. */
+  confirmedByUserId: string | null
+  /** INTEROP-2.7: rol con el que se confirmó. `null` en reglas históricas. */
+  confirmedRole: ConfirmingRole | null
+  /** INTEROP-2.7: commit de origen de la confirmación. Es procedencia, no vencimiento: no se compara con el HEAD actual. */
+  originHeadSha: string | null
+  /** INTEROP-2.7: referencia de importación; solo tiene sentido si `source` es `APPROVED_IMPORT`. */
+  sourceRef: string | null
 }
 
 /** `GET /projects/{projectId}/functional-knowledge?status&cursor&limit` -> `Page<FunctionalKnowledgeResponse>`. */

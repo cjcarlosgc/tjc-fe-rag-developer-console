@@ -100,12 +100,13 @@ test('el Run de PR#45 muestra el contexto RAG recolectado (grafo target→candid
   expect(await screen.findByRole('heading', { name: 'formatCurrency' })).toBeInTheDocument()
 })
 
-test('HU54 (especulativo): junto al contexto RAG muestra qué FK y qué test existente lo alimentaron', async () => {
+test('HU54 retirado: el bloque especulativo «Qué más alimentó este contexto» ya no aparece junto al contexto RAG', async () => {
   renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
 
-  expect(await screen.findByText('Qué más alimentó este contexto')).toBeInTheDocument()
-  expect(screen.getByText('El total calculado redondea al centavo más cercano (no trunca).')).toBeInTheDocument()
-  expect(screen.getByText('src/domain/OrderService.spec.ts')).toBeInTheDocument()
+  expect(await screen.findByText('Contexto recolectado')).toBeInTheDocument()
+  expect(screen.queryByText('Qué más alimentó este contexto')).not.toBeInTheDocument()
+  expect(screen.queryByText('Test existente')).not.toBeInTheDocument()
+  expect(screen.queryByText('src/domain/OrderService.spec.ts')).not.toBeInTheDocument()
 })
 
 test('un Run sin traza de contexto mockeada no muestra la sección "Contexto recolectado"', async () => {

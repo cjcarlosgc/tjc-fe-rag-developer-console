@@ -3,7 +3,6 @@ import type { AgentTrajectoryStep, ContextTraceDetail, ContextTracePage, Context
 import type { ExperimentAccepted, ExperimentOperation, ExperimentResultViewModel } from '../experiments/types'
 import type { RunComparisonAccepted, RunComparisonListPage, RunComparisonOperation } from '../run-comparison/types'
 import type { CaptureNextPrState } from '../run-comparison/speculative/captureNextPr'
-import type { ContextProvenance } from '../context-explorer/speculative/contextProvenance'
 import type { PriorCoverageLevel } from '../control-plane/speculative/priorCoverage'
 import type { TestInventoryResponse } from '../inventory/types'
 import type { AnalysisHistoryItem, CreateProjectInput, Project, ProjectRole, UpdateProjectInput, Workspace, WorkspaceListResponse } from '../projects/types'
@@ -603,7 +602,20 @@ function seedControlPlane(): void {
   }
 }
 
-/** HU35/HU36: 4 reglas sobre los dos proyectos demo — 3 ACTIVE y un par ACTIVE/SUPERSEDED sobre el mismo target (OrderService.calculateTotal) para demostrar la supersesión del handoff. */
+/** Shas de demo de 40 caracteres hexadecimales (procedencia; el contrato exige el valor completo). */
+const MOCK_SHA_A = 'a1b2c3d4e5f60718293a4b5c6d7e8f9012345678'
+const MOCK_SHA_B = '9f8e7d6c5b4a39281706f5e4d3c2b1a098765432'
+const MOCK_SHA_C = 'b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8091a2b'
+const MOCK_MAINTAINER_USER_ID = 'usr_demo_maintainer'
+
+/**
+ * HU35/HU36 · INTEROP-2.7: reglas de Functional Knowledge de demo, rotuladas DEMO · DATOS SIMULADOS.
+ * - `prj_checkout_demo`: varias ACTIVE sobre `OrderService.calculateTotal` con escenarios distintos, una cadena
+ *   SUPERSEDED de 3 eslabones (fk_rounding_v0 → v1 → v2) con reglas históricas sin procedencia (nulls) y una ACTIVE
+ *   importada desde un documento aprobado (APPROVED_IMPORT con sourceRef).
+ * - Proyectos de organización (orders, writer, metrics) con una ACTIVE cada uno para validar roles.
+ * Los ids y targets de fk_coupon_expiry, fk_shipping_zone y fk_discount_engine se conservan para las pruebas existentes.
+ */
 function seedFunctionalKnowledge(): void {
   const items: FunctionalKnowledgeResponse[] = [
     {
@@ -612,6 +624,8 @@ function seedFunctionalKnowledge(): void {
       originalAnswer: 'Sí',
       normalizedRule: 'Un cupón vencido nunca debe aplicarse, incluso si el pedido ya está marcado como pagado.',
       source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-12T18:22:00.000Z',
+      scenarioKind: 'EXCEPTION', scenarioKey: 'coupon.apply.expired-paid-order',
+      confirmedByUserId: MOCK_ACTOR_USER_ID, confirmedRole: 'ADMIN', originHeadSha: MOCK_SHA_A, sourceRef: null,
     },
     {
       id: 'fk_shipping_zone', projectId: 'prj_checkout_demo', scope: 'METHOD', targetRef: 'ShippingAddressValidator.validate',
@@ -619,6 +633,8 @@ function seedFunctionalKnowledge(): void {
       originalAnswer: 'Sí',
       normalizedRule: 'Ninguna dirección fuera de las zonas de envío habilitadas debe pasar "validate", sin excepciones por tipo de cliente.',
       source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-10T14:00:00.000Z',
+      scenarioKind: 'EXPECTED_RESULT', scenarioKey: 'shipping.validate.zones',
+      confirmedByUserId: MOCK_MAINTAINER_USER_ID, confirmedRole: 'MAINTAINER', originHeadSha: MOCK_SHA_C, sourceRef: null,
     },
     {
       id: 'fk_discount_engine', projectId: 'prj_billing_demo', scope: 'METHOD', targetRef: 'DiscountEngine.applyDiscount',
@@ -626,13 +642,26 @@ function seedFunctionalKnowledge(): void {
       originalAnswer: 'No',
       normalizedRule: 'El descuento aplicado nunca debe dejar el total del pedido en negativo.',
       source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-11T09:50:00.000Z',
+      scenarioKind: 'BOUNDARY', scenarioKey: 'discount.applyDiscount.negative-total',
+      confirmedByUserId: MOCK_ACTOR_USER_ID, confirmedRole: 'ADMIN', originHeadSha: MOCK_SHA_B, sourceRef: null,
+    },
+    {
+      id: 'fk_rounding_v0', projectId: 'prj_checkout_demo', scope: 'METHOD', targetRef: 'OrderService.calculateTotal',
+      originalQuestion: '¿Cómo se redondea el total de "calculateTotal"?',
+      originalAnswer: 'Sin redondeo explícito',
+      normalizedRule: 'El total calculado conserva los decimales sin redondeo explícito.',
+      source: 'HUMAN_ANSWER', status: 'SUPERSEDED', supersedesId: null, createdAt: '2026-07-15T10:00:00.000Z',
+      scenarioKind: 'BOUNDARY', scenarioKey: 'order.calculateTotal.rounding',
+      confirmedByUserId: null, confirmedRole: null, originHeadSha: null, sourceRef: null,
     },
     {
       id: 'fk_rounding_v1', projectId: 'prj_checkout_demo', scope: 'METHOD', targetRef: 'OrderService.calculateTotal',
       originalQuestion: '¿El redondeo de "calculateTotal" debe truncar o redondear al centavo más cercano?',
       originalAnswer: 'Trunca al centavo inferior',
       normalizedRule: 'El total calculado trunca al centavo inferior; no redondea.',
-      source: 'HUMAN_ANSWER', status: 'SUPERSEDED', supersedesId: null, createdAt: '2026-08-20T10:00:00.000Z',
+      source: 'HUMAN_ANSWER', status: 'SUPERSEDED', supersedesId: 'fk_rounding_v0', createdAt: '2026-08-20T10:00:00.000Z',
+      scenarioKind: 'BOUNDARY', scenarioKey: 'order.calculateTotal.rounding',
+      confirmedByUserId: null, confirmedRole: null, originHeadSha: null, sourceRef: null,
     },
     {
       id: 'fk_rounding_v2', projectId: 'prj_checkout_demo', scope: 'METHOD', targetRef: 'OrderService.calculateTotal',
@@ -640,6 +669,53 @@ function seedFunctionalKnowledge(): void {
       originalAnswer: 'Redondea al centavo más cercano',
       normalizedRule: 'El total calculado redondea al centavo más cercano (no trunca).',
       source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: 'fk_rounding_v1', createdAt: '2026-09-12T09:05:00.000Z',
+      scenarioKind: 'BOUNDARY', scenarioKey: 'order.calculateTotal.rounding',
+      confirmedByUserId: MOCK_ACTOR_USER_ID, confirmedRole: 'ADMIN', originHeadSha: MOCK_SHA_B, sourceRef: null,
+    },
+    {
+      id: 'fk_total_empty_cart', projectId: 'prj_checkout_demo', scope: 'METHOD', targetRef: 'OrderService.calculateTotal',
+      originalQuestion: '¿Cuál es el total de un carrito sin líneas en "calculateTotal"?',
+      originalAnswer: 'Cero, sin error',
+      normalizedRule: 'Un carrito sin líneas produce un total de 0,00 sin lanzar error.',
+      source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-13T08:00:00.000Z',
+      scenarioKind: 'EXPECTED_RESULT', scenarioKey: 'order.calculateTotal.empty-cart',
+      confirmedByUserId: MOCK_MAINTAINER_USER_ID, confirmedRole: 'MAINTAINER', originHeadSha: MOCK_SHA_C, sourceRef: null,
+    },
+    {
+      id: 'fk_import_tax', projectId: 'prj_checkout_demo', scope: 'METHOD', targetRef: 'TaxCalculator.rate',
+      originalQuestion: 'Regla importada desde un documento de negocio aprobado.',
+      originalAnswer: 'Importada (sin respuesta humana original)',
+      normalizedRule: 'La tasa de impuesto se calcula solo con la zona fiscal confirmada del pedido.',
+      source: 'APPROVED_IMPORT', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-01T12:00:00.000Z',
+      scenarioKind: 'FUNCTIONAL_PRECONDITION', scenarioKey: 'tax.rate.fiscal-zone',
+      confirmedByUserId: MOCK_ACTOR_USER_ID, confirmedRole: 'ADMIN', originHeadSha: null, sourceRef: 'docs/reglas-negocio.md#L12',
+    },
+    {
+      id: 'fk_org_orders_rule', projectId: 'prj_org_orders_demo', scope: 'METHOD', targetRef: 'OrderFulfillment.dispatch',
+      originalQuestion: '¿"dispatch" debe despachar pedidos con pago pendiente?',
+      originalAnswer: 'No',
+      normalizedRule: 'Ningún pedido con pago pendiente pasa a "dispatch".',
+      source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-14T10:00:00.000Z',
+      scenarioKind: 'EXPECTED_RESULT', scenarioKey: 'fulfillment.dispatch.unpaid',
+      confirmedByUserId: MOCK_MAINTAINER_USER_ID, confirmedRole: 'MAINTAINER', originHeadSha: MOCK_SHA_A, sourceRef: null,
+    },
+    {
+      id: 'fk_org_writer_rule', projectId: 'prj_org_writer_demo', scope: 'METHOD', targetRef: 'PaymentRetryPolicy.schedule',
+      originalQuestion: '¿"schedule" debe limitar los reintentos de un plan anual?',
+      originalAnswer: 'Sí, a tres intentos',
+      normalizedRule: 'Un plan anual admite como máximo tres reintentos de cobro.',
+      source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-16T11:00:00.000Z',
+      scenarioKind: 'BOUNDARY', scenarioKey: 'payments.retry.annual-plan-limit',
+      confirmedByUserId: MOCK_ACTOR_USER_ID, confirmedRole: 'ADMIN', originHeadSha: MOCK_SHA_B, sourceRef: null,
+    },
+    {
+      id: 'fk_org_metrics_rule', projectId: 'prj_org_metrics_demo', scope: 'METHOD', targetRef: 'MetricsRange.toUtc',
+      originalQuestion: '¿"toUtc" debe interpretar el rango en la zona horaria del proyecto?',
+      originalAnswer: 'Sí',
+      normalizedRule: 'El rango de métricas se interpreta en la zona horaria del proyecto antes de convertir a UTC.',
+      source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-13T10:30:00.000Z',
+      scenarioKind: 'FUNCTIONAL_PRECONDITION', scenarioKey: 'metrics.range.timezone',
+      confirmedByUserId: MOCK_MAINTAINER_USER_ID, confirmedRole: 'MAINTAINER', originHeadSha: MOCK_SHA_C, sourceRef: null,
     },
   ]
   for (const item of items) functionalKnowledge.set(item.id, item)
@@ -974,22 +1050,6 @@ export async function mockGetAnalysisRunContextTrace(analysisRunId: string): Pro
   return clone(state.detail)
 }
 
-/** PROPUESTA — HU54, ver context-explorer/speculative/contextProvenance.ts. */
-export async function mockGetContextProvenance(analysisRunId: string): Promise<ContextProvenance> {
-  await latency()
-  const run = findVisibleRun(analysisRunId)
-  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
-  const symbolNames = new Set(run.symbols.map((symbol) => symbol.qualifiedName))
-  const functionalKnowledgeRefs = Array.from(functionalKnowledge.values())
-    .filter((item) => item.projectId === run.projectId && item.status === 'ACTIVE' && item.targetRef !== null && symbolNames.has(item.targetRef))
-    .map((item) => ({ id: item.id, normalizedRule: item.normalizedRule }))
-  const existingTestEvidence = run.symbols.slice(0, 2).map((symbol) => ({
-    filePath: symbol.filePath.replace(/\.ts$/, '.spec.ts'),
-    testName: `${symbol.qualifiedName} — comportamiento existente`,
-  }))
-  return clone({ functionalKnowledgeRefs, existingTestEvidence })
-}
-
 const DISCOVERED_FILES_PAGE_SIZE = 50
 
 export async function mockListDiscoveredFiles(traceId: string, step: number, cursor: string | null): Promise<DiscoveredFilePage> {
@@ -1094,6 +1154,10 @@ export async function mockSubmitFunctionalAnswer(analysisRunId: string, question
       originalQuestion: question.question, originalAnswer: input.answer?.trim() || input.choice,
       normalizedRule: `Regla propuesta a partir de la respuesta: "${input.answer?.trim() || question.question}".`,
       source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: conflicting.id, createdAt: nowIso(),
+      // INTEROP-2.7: el escenario lo deriva Core de la pregunta; la Console no lo escribe.
+      scenarioKind: question.scenarioKind, scenarioKey: question.scenarioKey,
+      confirmedByUserId: MOCK_ACTOR_USER_ID, confirmedRole: project.role === 'ADMIN' ? 'ADMIN' : 'MAINTAINER',
+      originHeadSha: question.headSha, sourceRef: null,
     })
   }
 

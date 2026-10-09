@@ -947,7 +947,7 @@
     {
       "component": "CONSOLE",
       "workItemType": "PRODUCT",
-      "status": "W-PLANNED",
+      "status": "W-DONE",
       "priority": "P1",
       "sprint": "SMART V3",
       "caseIds": [],
@@ -1001,7 +1001,37 @@
         },
         "verifiedAt": "2026-10-08T16:50:00.000Z",
         "verifiedBy": "leader"
-      }
+      },
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-015 solo muestra procedencia y reglas de Functional Knowledge.",
+          "report": "harness/reports/wi-console-015-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas; WI-CONSOLE-015 solo muestra procedencia y reglas de Functional Knowledge.",
+          "report": "harness/reports/wi-console-015-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-015 solo muestra procedencia y reglas de Functional Knowledge.",
+          "report": "harness/reports/wi-console-015-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre workspaces, membresia y eventos organizacionales; WI-CONSOLE-015 solo muestra procedencia y reglas de Functional Knowledge.",
+          "report": "harness/reports/wi-console-015-contract-sync-scope-review.md"
+        }
+      ]
     },
     {
       "component": "CONSOLE",
