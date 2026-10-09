@@ -8,6 +8,7 @@ import {
   disconnectRepository,
   enableRepository,
   getAnalysisRun,
+  getAnalysisRunTrace,
   getGitHubAppAccess,
   getGitHubAppInfo,
   getRepositoryBinding,
@@ -18,6 +19,7 @@ import {
   listTestProposals,
   verifyGitHubAppAccess,
 } from './api'
+import { isTraceNotFinished, shouldRetryOperationalTrace } from './operationalTraceErrors'
 import type { AnalysisRunStatus, CreateRepositoryBindingRequest, CreateTestPublicationRequest, VerifyGitHubAppAccessRequest } from './types'
 
 export const controlPlaneKeys = {
@@ -30,6 +32,7 @@ export const controlPlaneKeys = {
   allRuns: ['control-plane', 'runs', 'all'] as const,
   run: (analysisRunId: string) => ['control-plane', 'run', analysisRunId] as const,
   proposals: (analysisRunId: string) => ['control-plane', 'proposals', analysisRunId] as const,
+  trace: (analysisRunId: string) => ['control-plane', 'trace', analysisRunId] as const,
 }
 
 export function useRepositoryBinding(projectId: string) {
@@ -119,6 +122,20 @@ export function useAnalysisRun(analysisRunId: string) {
     queryKey: controlPlaneKeys.run(analysisRunId),
     queryFn: () => getAnalysisRun(analysisRunId),
     enabled: Boolean(analysisRunId),
+  })
+}
+
+/**
+ * HU15 / INTEROP-2.7 §6.16: mientras el Run está en `QUEUED`/`PROCESSING` la traza responde `409 EVIDENCE_NOT_FINISHED`;
+ * se reintenta por polling y se detiene con cualquier otro resultado (éxito, 404, error o contrato pendiente).
+ */
+export function useAnalysisRunTrace(analysisRunId: string) {
+  return useQuery({
+    queryKey: controlPlaneKeys.trace(analysisRunId),
+    queryFn: () => getAnalysisRunTrace(analysisRunId),
+    enabled: Boolean(analysisRunId),
+    retry: shouldRetryOperationalTrace,
+    refetchInterval: (query) => (isTraceNotFinished(query.state.error) ? (import.meta.env.MODE === 'test' ? 10 : 900) : false),
   })
 }
 

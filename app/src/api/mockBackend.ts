@@ -30,6 +30,7 @@ import type {
   TestPublicationResponse,
   VerifyGitHubAppAccessRequest,
 } from '../control-plane/types'
+import type { AnalysisRunTraceResponse, TraceTargetResponse, TracePublicationResponse } from '../control-plane/operationalTraceTypes'
 import { ApiError } from './client'
 
 interface MockVersionState {
@@ -127,6 +128,28 @@ const repositoryBindings = new Map<string, ProjectRepositoryBindingResponse | nu
 /** HU30 user-centric (INTEROP-2.3 §6.8): intentos de verificación de acceso de la App por repo, para simular NOT_AUTHORIZED->revalidar->AUTHORIZED. */
 const githubAppAccessVerifications = new Map<string, number>()
 const analysisRuns = new Map<string, AnalysisRunDetailResponse>()
+const traceOnlyRuns = new Map<string, AnalysisRunDetailResponse>()
+function traceOnlyRunSeeds(): AnalysisRunDetailResponse[] {
+  const pr = (repositoryId: string, repositoryName: string, number: number, title: string, headRef: string, headSha: string, actorLogin: string) => ({ repositoryId, repositoryName, number, title, baseRef: 'develop', headRef, baseSha: 'c1c1c1c', headSha, draft: false, state: 'OPEN' as const, actorLogin })
+  return [
+    {
+      id: 'arun_checkout_pr53', projectId: 'prj_checkout_demo',
+      pullRequest: pr('repo_checkout', 'acme/checkout-service', 53, 'Ajuste de redondeo en CouponPolicy', 'feature/coupon-rounding', 'b7b7b7b', 'devA'),
+      status: 'QUEUED', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
+      createdAt: '2026-10-07T10:00:00.000Z', updatedAt: '2026-10-07T10:00:00.000Z', completedAt: null,
+      attemptCount: 0, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: 'b7b7b7b', indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [], functionalBehaviorValidated: false, resultSummary: null, detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr53',
+    },
+    {
+      id: 'arun_billing_pr25', projectId: 'prj_billing_demo',
+      pullRequest: pr('repo_billing', 'acme/billing-engine', 25, 'Refactor de DiscountEngine para tasas escalonadas', 'feature/tiered-discount', '3c3c3c3', 'devD'),
+      status: 'PROCESSING', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
+      createdAt: '2026-10-07T11:00:00.000Z', updatedAt: '2026-10-07T11:02:00.000Z', completedAt: null,
+      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: '3c3c3c3', indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [], functionalBehaviorValidated: false, resultSummary: null, detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr25',
+    },
+  ]
+}
 const testProposals = new Map<string, GeneratedTestProposalResponse[]>()
 const testPublications = new Map<string, TestPublicationResponse>()
 const functionalKnowledge = new Map<string, FunctionalKnowledgeResponse>()
@@ -649,6 +672,8 @@ function seedControlPlane(): void {
     analysisRuns.set(run.id, run)
     if (__proposals) testProposals.set(run.id, __proposals)
   }
+  // WI-CONSOLE-016: runs en curso solo para el trace operativo. Fuera de `analysisRuns` para no alterar listados, contadores ni 'último run' de los demás escenarios.
+  for (const run of traceOnlyRunSeeds()) traceOnlyRuns.set(run.id, run)
 }
 
 /** Shas de demo de 40 caracteres hexadecimales (procedencia; el contrato exige el valor completo). */
@@ -783,6 +808,7 @@ export function resetMockBackend(): void {
   repositoryBindings.clear()
   githubAppAccessVerifications.clear()
   analysisRuns.clear()
+  traceOnlyRuns.clear()
   testProposals.clear()
   testPublications.clear()
   functionalKnowledge.clear()
@@ -1629,9 +1655,135 @@ function deriveRunHistory(run: AnalysisRunDetailResponse): AnalysisRunTransition
 /** HU32: `GET /analysis-runs/{analysisRunId}`. */
 export async function mockGetAnalysisRun(analysisRunId: string): Promise<AnalysisRunDetailResponse> {
   await latency()
-  const run = findVisibleRun(analysisRunId)
+  // WI-CONSOLE-016: los runs solo-trace (QUEUED/PROCESSING) también se resuelven aquí, pero no aparecen en listados ni contadores.
+  const run = findVisibleRun(analysisRunId) ?? findVisibleTraceOnlyRun(analysisRunId)
   if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   return { ...clone(run), history: deriveRunHistory(run) }
+}
+
+// INTEROP-2.7 §6.16 — trace operativo demo. Los ids `ret_demo_*`, `ctx_demo_*` y `exec_demo_*` son simulados y se rotulan como tales.
+// `fk_rounding_v2` y `fk_coupon_expiry` existen (ver seeds de functionalKnowledge); `fk_demo_regla_inexistente` no existe a propósito, para probar la degradación.
+const TRACE_EXECUTION_PROFILE = 'demo-sandbox-node'
+const TRACE_SYMBOL_CALCULATE_TOTAL: AnalysisSymbolResponse = { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' }
+const TRACE_SYMBOL_FORMAT_CURRENCY: AnalysisSymbolResponse = { language: 'TYPESCRIPT', kind: 'FUNCTION', qualifiedName: 'formatCurrency', filePath: 'src/shared/money.ts', changeKind: 'POTENTIALLY_IMPACTED' }
+const TRACE_SYMBOL_COUPON_APPLY: AnalysisSymbolResponse = { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'CouponPolicy.apply', filePath: 'src/domain/CouponPolicy.ts', changeKind: 'DIRECTLY_CHANGED' }
+
+function notApplicableTarget(symbol: AnalysisSymbolResponse): TraceTargetResponse {
+  return {
+    symbol,
+    retrieval: { status: 'NOT_APPLICABLE', retrievalId: null },
+    context: { status: 'NOT_APPLICABLE', contextId: null, functionalRuleIds: [] },
+    generation: { status: 'NOT_APPLICABLE', proposalIds: [] },
+    executions: { status: 'NOT_APPLICABLE', items: [] },
+  }
+}
+
+/** Trazas por Run demo. Un Run sin entrada explícita hereda `NOT_APPLICABLE` en sus enlaces de target (no se inventan eslabones). */
+const TRACE_TARGETS_BY_RUN: Record<string, () => TraceTargetResponse[]> = {
+  // SUCCESS: dos targets, todos los enlaces PRESENT. El segundo referencia una regla FK inexistente (degradación).
+  arun_checkout_pr45: () => [
+    {
+      symbol: TRACE_SYMBOL_CALCULATE_TOTAL,
+      retrieval: { status: 'PRESENT', retrievalId: 'ret_demo_pr45_total' },
+      context: { status: 'PRESENT', contextId: 'ctx_demo_pr45_total', functionalRuleIds: ['fk_rounding_v2'] },
+      generation: { status: 'PRESENT', proposalIds: ['prop_pr45_1', 'prop_pr45_2'] },
+      executions: {
+        status: 'PRESENT',
+        items: [
+          { executionId: 'exec_demo_pr45_1', proposalId: 'prop_pr45_1', attempt: 1, executionProfile: TRACE_EXECUTION_PROFILE, outcome: 'VALIDATED' },
+          { executionId: 'exec_demo_pr45_2', proposalId: 'prop_pr45_2', attempt: 1, executionProfile: TRACE_EXECUTION_PROFILE, outcome: 'VALIDATED' },
+        ],
+      },
+    },
+    {
+      symbol: TRACE_SYMBOL_FORMAT_CURRENCY,
+      retrieval: { status: 'PRESENT', retrievalId: 'ret_demo_pr45_money' },
+      context: { status: 'PRESENT', contextId: 'ctx_demo_pr45_money', functionalRuleIds: ['fk_demo_regla_inexistente'] },
+      generation: { status: 'PRESENT', proposalIds: ['prop_pr45_3'] },
+      executions: { status: 'PRESENT', items: [{ executionId: 'exec_demo_pr45_3', proposalId: 'prop_pr45_3', attempt: 2, executionProfile: TRACE_EXECUTION_PROFILE, outcome: 'VALIDATED' }] },
+    },
+  ],
+  // BEHAVIORAL_MISMATCH: un target con la prueba generada contradiciendo el comportamiento observado.
+  arun_checkout_pr46: () => [
+    {
+      symbol: TRACE_SYMBOL_COUPON_APPLY,
+      retrieval: { status: 'PRESENT', retrievalId: 'ret_demo_pr46_coupon' },
+      context: { status: 'PRESENT', contextId: 'ctx_demo_pr46_coupon', functionalRuleIds: ['fk_coupon_expiry'] },
+      generation: { status: 'PRESENT', proposalIds: ['prop_pr46_1'] },
+      executions: { status: 'PRESENT', items: [{ executionId: 'exec_demo_pr46_1', proposalId: 'prop_pr46_1', attempt: 1, executionProfile: TRACE_EXECUTION_PROFILE, outcome: 'BEHAVIORAL_MISMATCH' }] },
+    },
+  ],
+  // NO_ADDITIONAL_TESTS_REQUIRED: hubo retrieval y contexto, pero no hubo generación ni ejecuciones.
+  arun_checkout_pr47: () => [
+    {
+      symbol: TRACE_SYMBOL_FORMAT_CURRENCY,
+      retrieval: { status: 'PRESENT', retrievalId: 'ret_demo_pr47_money' },
+      context: { status: 'PRESENT', contextId: 'ctx_demo_pr47_money', functionalRuleIds: [] },
+      generation: { status: 'NOT_APPLICABLE', proposalIds: [] },
+      executions: { status: 'NOT_APPLICABLE', items: [] },
+    },
+  ],
+  // ACTION_REQUIRED: el flujo se detuvo esperando contexto funcional; los enlaces posteriores constan NOT_APPLICABLE.
+  arun_checkout_pr42: () => [notApplicableTarget(TRACE_SYMBOL_CALCULATE_TOTAL), notApplicableTarget(TRACE_SYMBOL_COUPON_APPLY)],
+  // NO_TEST_RELEVANT_CHANGES: sin targets; el changeset existe con 0 símbolos.
+  arun_billing_pr22: () => [],
+}
+
+function traceTargetsFor(run: AnalysisRunDetailResponse): TraceTargetResponse[] {
+  const fixture = TRACE_TARGETS_BY_RUN[run.id]
+  if (fixture) return fixture()
+  return run.symbols.map(notApplicableTarget)
+}
+
+function traceFor(run: AnalysisRunDetailResponse): AnalysisRunTraceResponse {
+  const targets = traceTargetsFor(run)
+  const publication = Array.from(testPublications.values())
+    .filter((item) => item.analysisRunId === run.id)
+    .sort((left, right) => right.createdAt.localeCompare(left.createdAt))[0]
+  const tracePublication: TracePublicationResponse = publication
+    ? {
+        status: 'PRESENT',
+        // El mock no modela un check de GitHub: el id no se inventa.
+        checkId: null,
+        companionBranch: publication.branchName,
+        companionPullRequestUrl: publication.companionPullRequestUrl,
+        sourceHeadSha: publication.sourceHeadSha,
+        freshness: publication.sourceHeadSha === run.pullRequest.headSha ? 'CURRENT' : 'STALE',
+      }
+    : { status: 'NOT_APPLICABLE', checkId: null, companionBranch: null, companionPullRequestUrl: null, sourceHeadSha: null, freshness: null }
+  return {
+    analysisRunId: run.id,
+    repositoryName: run.pullRequest.repositoryName,
+    pullRequestNumber: run.pullRequest.number,
+    headSha: run.pullRequest.headSha,
+    changeset: { status: 'PRESENT', targetCount: targets.length },
+    targets,
+    publication: tracePublication,
+  }
+}
+
+function findVisibleTraceOnlyRun(analysisRunId: string): AnalysisRunDetailResponse | undefined {
+  const run = traceOnlyRuns.get(analysisRunId)
+  return run && !isProjectDeleted(run.projectId) ? run : undefined
+}
+
+/** INTEROP-2.7 §6.16: `GET /analysis-runs/{analysisRunId}/trace` (Reader). 404 genérico si no es visible; 409 `EVIDENCE_NOT_FINISHED` mientras el Run está en `QUEUED`/`PROCESSING`. */
+export async function mockGetAnalysisRunTrace(analysisRunId: string): Promise<AnalysisRunTraceResponse> {
+  await latency()
+  const run = findVisibleRun(analysisRunId) ?? findVisibleTraceOnlyRun(analysisRunId)
+  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (run.status === 'QUEUED' || run.status === 'PROCESSING') {
+    throw new ApiError('La evidencia de este Analysis Run todavía no está disponible: el Run sigue en proceso.', 409, 'demo-correlation-id', 'EVIDENCE_NOT_FINISHED')
+  }
+  return clone(traceFor(run))
+}
+
+/** Solo para pruebas: cambia estado o HEAD de un Run sembrado para simular el paso de QUEUED/PROCESSING a terminal o un push nuevo. */
+export function setMockAnalysisRunForTests(analysisRunId: string, patch: { status?: AnalysisRunStatus; headSha?: string }): void {
+  const run = analysisRuns.get(analysisRunId) ?? traceOnlyRuns.get(analysisRunId)
+  if (!run) throw new Error(`No existe el Analysis Run demo "${analysisRunId}".`)
+  if (patch.status) run.status = patch.status
+  if (patch.headSha) run.pullRequest = { ...run.pullRequest, headSha: patch.headSha }
 }
 
 const PRIOR_COVERAGE_FIXTURES: Record<string, PriorCoverageLevel> = {

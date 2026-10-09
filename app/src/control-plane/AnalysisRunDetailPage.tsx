@@ -10,6 +10,7 @@ import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
 import { RepoChip } from '../ui/RepoChip'
 import { getTestPublication } from './api'
+import { OperationalTraceSection } from './OperationalTraceSection'
 import { useAnalysisRun, usePublishTests, useTestProposals } from './queries'
 import { ANALYSIS_RUN_STATUS_LABELS, analysisRunStatusClass } from './status'
 import { getPriorCoverage, PRIOR_COVERAGE_LABELS } from './speculative/priorCoverage'
@@ -222,6 +223,8 @@ export function AnalysisRunDetailPage() {
     {run.status === 'BEHAVIORAL_MISMATCH' && <PublishSection analysisRunId={run.id} projectId={run.projectId} targetBranch={run.pullRequest.headRef} />}
 
     {run.status === 'SUCCESS' && <PublishSection analysisRunId={run.id} projectId={run.projectId} targetBranch={run.pullRequest.headRef} />}
+
+    <OperationalTraceSection analysisRunId={run.id} projectId={run.projectId} />
 
     <ContextSection analysisRunId={run.id} />
   </section>

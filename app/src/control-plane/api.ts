@@ -5,13 +5,14 @@ import {
   listGitHubUserRepositories as listUserRepositoriesDirect,
   verifyGitHubAppAccess as verifyGitHubAppAccessDirect,
 } from './githubIntegrationApi'
-import { getDataSource } from '../api/dataSource'
+import { getDataSource, PendingContractError } from '../api/dataSource'
 import {
   mockCreateRepositoryBinding,
   mockCreateTestPublication,
   mockDisconnectRepository,
   mockEnableRepository,
   mockGetAnalysisRun,
+  mockGetAnalysisRunTrace,
   mockGetRepositoryBinding,
   mockGetTestPublication,
   mockListAnalysisRuns,
@@ -21,6 +22,7 @@ import {
   mockPeekGitHubAppAccess,
   mockVerifyGitHubAppAccess,
 } from '../api/mockBackend'
+import type { AnalysisRunTraceResponse } from './operationalTraceTypes'
 import type {
   AnalysisRunDetailResponse,
   AnalysisRunListPage,
@@ -153,6 +155,15 @@ export async function listAllAnalysisRuns(): Promise<AnalysisRunSummaryResponse[
 export function getAnalysisRun(analysisRunId: string): Promise<AnalysisRunDetailResponse> {
   if (getDataSource() === 'mock') return mockGetAnalysisRun(analysisRunId)
   return apiRequest<AnalysisRunDetailResponse>(`/analysis-runs/${encodeURIComponent(analysisRunId)}`)
+}
+
+/**
+ * INTEROP-2.7 §6.16 (HU15, WI-CONSOLE-016): trace operativo de nueve enlaces. Lectura Reader.
+ * Live pendiente hasta WI-CONSOLE-020: el contrato existe pero Core aún no lo expone en este cliente.
+ */
+export function getAnalysisRunTrace(analysisRunId: string): Promise<AnalysisRunTraceResponse> {
+  if (getDataSource() === 'mock') return mockGetAnalysisRunTrace(analysisRunId)
+  return Promise.reject(new PendingContractError('el trace operativo de un Analysis Run'))
 }
 
 // HU39/HU40 — Checks, propuestas y companion PR (INTEROP-2.2 §6.12, implementado y desplegado en Core).
