@@ -57,8 +57,23 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
   return apiRequestTo<T>(baseUrl, path, init)
 }
 
+/**
+ * Texto crudo de Core (p. ej. exportación de evidencia): no re-serializa el cuerpo, para que lo descargado sea
+ * exactamente lo que devolvió Core. Mismo manejo de errores y credenciales que `apiRequest`.
+ */
+export async function apiRequestText(path: string, init?: RequestInit): Promise<string> {
+  const response = await fetchChecked(baseUrl, path, init)
+  return response.text()
+}
+
 /** Transporte común para Core y servicios directos; ambos reutilizan el access token de la sesión sin guardarlo. */
 export async function apiRequestTo<T>(serviceBaseUrl: string, path: string, init?: RequestInit): Promise<T> {
+  const response = await fetchChecked(serviceBaseUrl, path, init)
+  if (response.status === 204) return undefined as T
+  return response.json() as Promise<T>
+}
+
+async function fetchChecked(serviceBaseUrl: string, path: string, init?: RequestInit): Promise<Response> {
   const correlationId = crypto.randomUUID()
   const accessToken = authTokenProvider?.() ?? null
   const response = await fetch(`${serviceBaseUrl.replace(/\/$/, '')}${path}`, {
@@ -85,6 +100,5 @@ export async function apiRequestTo<T>(serviceBaseUrl: string, path: string, init
     )
   }
 
-  if (response.status === 204) return undefined as T
-  return response.json() as Promise<T>
+  return response
 }

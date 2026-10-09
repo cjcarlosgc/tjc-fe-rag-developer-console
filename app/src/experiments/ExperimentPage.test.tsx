@@ -92,3 +92,14 @@ test('HU19 (live): envía el target real, sondea y presenta el resultado real', 
     expect.objectContaining({ method: 'POST', headers: expect.objectContaining({ 'Idempotency-Key': expect.any(String) }), body: JSON.stringify({ projectId: 'p-1', targetId: 'target-1' }) }),
   )
 })
+
+test('WI-CONSOLE-017: la descarga de evidencia no aparece mientras el experimento corre y sí al completarse', async () => {
+  setDataSourceForTests('mock')
+  const user = userEvent.setup()
+  renderApp(<ExperimentPage />, { initialEntry: '/projects/prj_checkout_demo/experimental', routePath: '/projects/:projectId/experimental' })
+  await user.click(await screen.findByRole('button', { name: 'Ejecutar comparación' }))
+  expect(screen.queryByRole('button', { name: 'Descargar evidencia (JSON)' })).not.toBeInTheDocument()
+
+  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 2000 })).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: 'Descargar evidencia (JSON)' })).toBeInTheDocument()
+})

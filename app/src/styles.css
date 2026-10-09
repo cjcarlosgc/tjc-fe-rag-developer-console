@@ -560,3 +560,13 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
   .trace-fields { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { .copy-button { transition: none; } }
+
+/* WI-CONSOLE-017 (Corte B): descarga de evidencia versionada. Tokens Black Glass; el estado se lee como texto, no solo por color. */
+.evidence-panel { margin-top: 18px; }
+.evidence-download { display: grid; gap: 10px; }
+.evidence-download-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.evidence-button { min-width: 40px; min-height: 40px; }
+.evidence-button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.evidence-download .demo-stamp { font-size: 12px; }
+.evidence-status { color: var(--accent); font-size: 14px; min-height: 1.5em; }
+.evidence-download .field-hint { margin: 0; }

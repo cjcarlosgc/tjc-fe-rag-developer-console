@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { apiRequest, setAuthErrorHandler, setAuthTokenProvider } from './client'
+import { apiRequest, apiRequestText, setAuthErrorHandler, setAuthTokenProvider } from './client'
 
 afterEach(() => {
   setAuthTokenProvider(null)
@@ -98,5 +98,18 @@ describe('apiRequest — interceptor HU29', () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ message: 'No', code: 'FORBIDDEN' }), { status: 403 }))
     await expect(apiRequest('/secure')).rejects.toMatchObject({ status: 403 })
     expect(handler).not.toHaveBeenCalled()
+  })
+})
+
+describe('apiRequestText — texto crudo (INTEROP-2.7 §6.16 evidencia)', () => {
+  it('devuelve el cuerpo tal cual lo envió Core, sin re-serializar', async () => {
+    const raw = '{\n  "schemaVersion":  "1",\n  "big": 12345678901234567890\n}'
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(raw, { status: 200 }))
+    await expect(apiRequestText('/analysis-runs/x/evidence')).resolves.toBe(raw)
+  })
+
+  it('mismo manejo de error que apiRequest', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ message: 'Sin rol', code: 'PROJECT_ROLE_INSUFFICIENT' }), { status: 403 }))
+    await expect(apiRequestText('/analysis-runs/x/evidence')).rejects.toMatchObject({ status: 403, code: 'PROJECT_ROLE_INSUFFICIENT' })
   })
 })

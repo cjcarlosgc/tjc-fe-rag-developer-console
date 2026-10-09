@@ -247,3 +247,17 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     expect(screen.getByRole('list', { name: 'Comparaciones previas del Run' })).toBeInTheDocument()
   })
 })
+
+describe('WI-CONSOLE-017: descarga de evidencia en la comparación de retrieval', () => {
+  it('no aparece antes de un estado terminal y sí al completarse la comparación', async () => {
+    const user = userEvent.setup()
+    renderPage(MULTI_RUN)
+    const select = await screen.findByLabelText('Símbolo a comparar')
+    await user.selectOptions(select, FORMAT_CURRENCY)
+    await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
+    expect(screen.queryByRole('button', { name: 'Descargar evidencia (JSON)' })).not.toBeInTheDocument()
+
+    expect(await screen.findByRole('heading', { name: /Resultado de/ }, { timeout: 3000 })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Descargar evidencia (JSON)' })).toBeInTheDocument()
+  })
+})

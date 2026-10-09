@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, test } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
-import { resetMockBackend } from '../api/mockBackend'
+import { resetMockBackend, setMockAnalysisRunForTests } from '../api/mockBackend'
 import { clickGraphNode, renderApp } from '../test/render'
 import { AnalysisRunDetailPage } from './AnalysisRunDetailPage'
 
@@ -182,4 +182,26 @@ test('WI-CONSOLE-014: un Reader no ve el CTA de comparación de retrieval', asyn
 
   expect(await screen.findByRole('heading', { level: 1 })).toBeInTheDocument()
   expect(screen.queryByRole('link', { name: 'Comparar retrieval SE vs SEM' })).not.toBeInTheDocument()
+})
+
+test('WI-CONSOLE-017: la descarga de evidencia aparece en estado terminal, incluidos ACTION_REQUIRED, SUCCESS y el rol Reader', async () => {
+  renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
+  expect(await screen.findByRole('button', { name: 'Descargar evidencia (JSON)' })).toBeInTheDocument()
+})
+
+test('WI-CONSOLE-017: un Run ACTION_REQUIRED también ofrece la descarga', async () => {
+  renderDetail('arun_checkout_pr42', 'prj_checkout_demo')
+  expect(await screen.findByRole('button', { name: 'Descargar evidencia (JSON)' })).toBeInTheDocument()
+})
+
+test('WI-CONSOLE-017: un Reader puede ver el control de descarga de evidencia', async () => {
+  renderDetail('arun_org_metrics_pr15', 'prj_org_metrics_demo')
+  expect(await screen.findByRole('button', { name: 'Descargar evidencia (JSON)' })).toBeInTheDocument()
+})
+
+test.each(['QUEUED', 'PROCESSING'] as const)('WI-CONSOLE-017: un Run %s no muestra el control de evidencia', async (status) => {
+  setMockAnalysisRunForTests('arun_checkout_pr45', { status })
+  renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
+  expect(await screen.findByText('PR #45', { selector: '.pr-number' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Descargar evidencia (JSON)' })).not.toBeInTheDocument()
 })

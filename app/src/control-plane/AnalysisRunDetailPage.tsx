@@ -18,6 +18,7 @@ import { findEligibleSymbol } from '../run-comparison/types'
 import type { AnalysisRunTransitionReason } from './types'
 import { useProject } from '../projects/queries'
 import { bindingErrorMessage, errorCorrelationId } from './errors'
+import { EvidenceDownload } from '../evidence/EvidenceDownload'
 
 const FAILURE_STATUSES = new Set(['BASELINE_FAILED', 'TECHNICAL_GENERATION_FAILURE', 'INFRASTRUCTURE_FAILURE'])
 
@@ -223,6 +224,13 @@ export function AnalysisRunDetailPage() {
     {run.status === 'BEHAVIORAL_MISMATCH' && <PublishSection analysisRunId={run.id} projectId={run.projectId} targetBranch={run.pullRequest.headRef} />}
 
     {run.status === 'SUCCESS' && <PublishSection analysisRunId={run.id} projectId={run.projectId} targetBranch={run.pullRequest.headRef} />}
+
+    {run.status !== 'QUEUED' && run.status !== 'PROCESSING' && (
+      <div className="panel evidence-panel">
+        <div className="section-heading"><div><h2>Evidencia versionada</h2><p>Descarga el paquete técnico de este Run tal como lo devuelve Core.</p></div></div>
+        <EvidenceDownload kind="ANALYSIS_RUN" subjectId={run.id} terminal />
+      </div>
+    )}
 
     <OperationalTraceSection analysisRunId={run.id} projectId={run.projectId} />
 

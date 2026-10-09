@@ -13,6 +13,7 @@ import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorNote, ErrorState, LoadingState } from '../ui/Feedback'
 import { RepoChip } from '../ui/RepoChip'
 import { findEligibleSymbols } from '../run-comparison/types'
+import { EvidenceDownload } from '../evidence/EvidenceDownload'
 import { retrievalComparisonKeys, useRetrievalComparison, useRetrievalComparisonResults, useRetrievalComparisons, useStartRetrievalComparison } from './queries'
 import {
   NOT_APPLICABLE_LABEL,
@@ -210,6 +211,11 @@ export function RetrievalComparisonPage() {
       <div className="retrieval-modes">
         {results.modes.map((mode) => <RetrievalModeView key={mode.mode} mode={mode} />)}
       </div>
+    </div>}
+
+    {activeId && terminal && detail?.id === activeId && <div className="panel evidence-panel">
+      <div className="section-heading"><div><h2>Evidencia versionada</h2><p>Descarga el paquete técnico de esta comparación tal como lo devuelve Core.</p></div></div>
+      <EvidenceDownload kind="RETRIEVAL_COMPARISON" subjectId={activeId} terminal />
     </div>}
 
     <h2>Comparaciones previas del Run</h2>

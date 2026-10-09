@@ -31,6 +31,7 @@ import type {
   VerifyGitHubAppAccessRequest,
 } from '../control-plane/types'
 import type { AnalysisRunTraceResponse, TraceTargetResponse, TracePublicationResponse } from '../control-plane/operationalTraceTypes'
+import type { EvidenceBundleResponse, EvidenceKind } from '../evidence/types'
 import { ApiError } from './client'
 
 interface MockVersionState {
@@ -1786,6 +1787,98 @@ export async function mockGetAnalysisRunTrace(analysisRunId: string): Promise<An
     throw new ApiError('La evidencia de este Analysis Run todavía no está disponible: el Run sigue en proceso.', 409, 'demo-correlation-id', 'EVIDENCE_NOT_FINISHED')
   }
   return clone(traceFor(run))
+}
+
+/** Mock de INTEROP-2.7 §6.16 `GET .../evidence` (Reader). Datos DEMO · DATOS SIMULADOS: la UI rotula; el bundle conserva la forma del contrato sin campos extra. 409 `EVIDENCE_NOT_FINISHED` hasta el estado terminal. */
+const DEMO_EVIDENCE_NOT_FINISHED = 'La evidencia de este sujeto todavía no está disponible: el proceso sigue en curso.'
+const DEMO_RANDOMIZATION_SEED = 'demo-seed-no-core'
+
+function evidenceAnalysisRun(run: AnalysisRunDetailResponse, generatedAt: string): EvidenceBundleResponse {
+  return {
+    schemaVersion: '1',
+    kind: 'ANALYSIS_RUN',
+    subjectId: run.id,
+    generatedAt,
+    correlationId: 'demo-correlation-id',
+    analysisRun: {
+      analysisRunId: run.id,
+      repositoryName: run.pullRequest.repositoryName,
+      pullRequestNumber: run.pullRequest.number,
+      headSha: run.pullRequest.headSha,
+      projectVersionId: projects.get(run.projectId)?.currentVersionId ?? '',
+      snapshotRef: `demo-snapshot:${run.id}`,
+      targets: clone(run.symbols),
+      createdAt: run.createdAt,
+    },
+    retrieval: [],
+    context: [],
+    generation: [],
+    agentExploration: [],
+    sandbox: [],
+    experimental: [],
+    publication: traceFor(run).publication,
+  }
+}
+
+export async function mockGetEvidence(kind: EvidenceKind, subjectId: string): Promise<EvidenceBundleResponse> {
+  await latency()
+  const generatedAt = nowIso()
+  if (kind === 'ANALYSIS_RUN') {
+    const run = findVisibleRun(subjectId) ?? findVisibleTraceOnlyRun(subjectId)
+    if (!run) notFound(`No existe el Analysis Run demo "${subjectId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+    if (run.status === 'QUEUED' || run.status === 'PROCESSING') throw new ApiError(DEMO_EVIDENCE_NOT_FINISHED, 409, 'demo-correlation-id', 'EVIDENCE_NOT_FINISHED')
+    return clone(evidenceAnalysisRun(run, generatedAt))
+  }
+  if (kind === 'EXPERIMENT') {
+    const state = experiments.get(subjectId)
+    if (!state || isProjectDeleted(state.projectId)) notFound(`No existe el experimento demo "${subjectId}".`, 'INVALID_REQUEST')
+    const { status, result } = state.operation
+    if (status === 'PENDING' || status === 'RUNNING') throw new ApiError(DEMO_EVIDENCE_NOT_FINISHED, 409, 'demo-correlation-id', 'EVIDENCE_NOT_FINISHED')
+    const experimental: EvidenceBundleResponse['experimental'] = []
+    for (const repetition of result?.repetitions ?? []) {
+      if (repetition.pairId === null || repetition.pairPosition === null || repetition.attempt === null) continue
+      experimental.push({ experimentId: subjectId, strategy: repetition.strategy, repetition: repetition.repetition, pairId: repetition.pairId, pairPosition: repetition.pairPosition, attempt: repetition.attempt, randomizationSeed: DEMO_RANDOMIZATION_SEED })
+    }
+    return clone({
+      schemaVersion: '1',
+      kind: 'EXPERIMENT',
+      subjectId,
+      generatedAt,
+      correlationId: 'demo-correlation-id',
+      analysisRun: null,
+      retrieval: [],
+      context: [],
+      generation: [],
+      agentExploration: [],
+      sandbox: [],
+      experimental,
+      publication: null,
+    })
+  }
+  const state = requireRetrievalComparison(subjectId)
+  const status = state.operation.status
+  if (status === 'PENDING' || status === 'RUNNING') throw new ApiError(DEMO_EVIDENCE_NOT_FINISHED, 409, 'demo-correlation-id', 'EVIDENCE_NOT_FINISHED')
+  const retrieval: EvidenceBundleResponse['retrieval'] = (state.results?.modes ?? []).map((mode) => ({
+    retrievalId: mode.retrievalId,
+    mode: mode.mode,
+    config: mode.config,
+    candidates: mode.candidates,
+  }))
+  return clone({
+    schemaVersion: '1',
+    kind: 'RETRIEVAL_COMPARISON',
+    subjectId,
+    generatedAt,
+    correlationId: 'demo-correlation-id',
+    analysisRun: null,
+    retrieval,
+    context: [],
+    generation: [],
+    agentExploration: [],
+    sandbox: [],
+    experimental: [],
+    publication: null,
+  })
 }
 
 /** Solo para pruebas: cambia estado o HEAD de un Run sembrado para simular el paso de QUEUED/PROCESSING a terminal o un push nuevo. */

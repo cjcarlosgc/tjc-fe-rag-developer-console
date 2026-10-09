@@ -276,5 +276,5 @@ test('la sección se monta en el detalle con rótulo de datos simulados en mock'
 
   expect(await screen.findByRole('region', { name: 'Trace operativo' })).toBeInTheDocument()
   expect(screen.getByText(/Datos simulados: los ids de esta sección son de demo/)).toBeInTheDocument()
-  expect(screen.getByText('DEMO · DATOS SIMULADOS')).toBeInTheDocument()
+  expect(screen.getAllByText('DEMO · DATOS SIMULADOS').length).toBeGreaterThanOrEqual(1)
 })

@@ -1155,7 +1155,7 @@
     {
       "component": "CONSOLE",
       "workItemType": "PRODUCT",
-      "status": "W-PLANNED",
+      "status": "W-DONE",
       "priority": "P1",
       "sprint": "SMART V3",
       "caseIds": [],
@@ -1211,7 +1211,37 @@
         },
         "verifiedAt": "2026-10-08T16:50:00.000Z",
         "verifiedBy": "leader"
-      }
+      },
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-017 solo descarga evidencia JSON versionada de Run, experimento y comparacion de retrieval.",
+          "report": "harness/reports/wi-console-017-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas; WI-CONSOLE-017 solo descarga evidencia JSON versionada de Run, experimento y comparacion de retrieval.",
+          "report": "harness/reports/wi-console-017-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-017 solo descarga evidencia JSON versionada de Run, experimento y comparacion de retrieval.",
+          "report": "harness/reports/wi-console-017-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre workspaces, membresia y eventos organizacionales; WI-CONSOLE-017 solo descarga evidencia JSON versionada de Run, experimento y comparacion de retrieval.",
+          "report": "harness/reports/wi-console-017-contract-sync-scope-review.md"
+        }
+      ]
     },
     {
       "component": "CONSOLE",
@@ -1397,7 +1427,8 @@
         "Cada adapter de SMART V3 (roles y abstención UNKNOWN, Functional Knowledge con procedencia y escenarios, OE2, metadata de OE5, trace operativo y evidencia) deja de responder con el error de contrato pendiente y consume la ruta live de Core ya implementada, usando solo campos publicados en INTEROP-2.7.",
         "Se verifica cada flujo contra Core real o contra su suite de contrato (no solo con mocks): UNKNOWN con outcome ABSTAINED, 403 PROJECT_ROLE_INSUFFICIENT de Writer, reglas ACTIVE múltiples con procedencia, comparación OE2, pares de OE5 con el modelo y esfuerzo registrados, trace de nueve enlaces y descarga de evidencia; las diferencias con el contrato se registran como Contract Sync y no se corrigen en Core desde este WI.",
         "Los mocks permanecen rotulados DEMO · DATOS SIMULADOS y no se presentan como evidencia; no hay cambios visibles nuevos, y si los hubiera interviene ux-reviewer; lint, pruebas, build y validadores SDD/Harness pasan antes de la revisión humana.",
-        "Dependencia externa abierta de WI-CONSOLE-014 (harness/reports/wi-console-014-core-request-correlationid.md): cuando Core publique correlationId en el DTO de estado de la comparación de retrieval (INTEROP-2.7 §6.15), el adapter live lo mapea y RetrievalComparisonPage lo muestra en el ErrorNote de FAILED; además se confirma con Core el código de error de resultados de una comparación FAILED (el mock usa 409 RETRIEVAL_COMPARISON_NOT_FINISHED) y se ajustan errors.ts y el mock. El criterio «FAILED muestra correlationId» del AC4 de WI-CONSOLE-014 queda pendiente hasta entonces, no cumplido."
+        "Dependencia externa abierta de WI-CONSOLE-014 (harness/reports/wi-console-014-core-request-correlationid.md): cuando Core publique correlationId en el DTO de estado de la comparación de retrieval (INTEROP-2.7 §6.15), el adapter live lo mapea y RetrievalComparisonPage lo muestra en el ErrorNote de FAILED; además se confirma con Core el código de error de resultados de una comparación FAILED (el mock usa 409 RETRIEVAL_COMPARISON_NOT_FINISHED) y se ajustan errors.ts y el mock. El criterio «FAILED muestra correlationId» del AC4 de WI-CONSOLE-014 queda pendiente hasta entonces, no cumplido.",
+        "Dependencia externa abierta de WI-CONSOLE-017 (harness/reports/wi-console-017-implementation.md y wi-console-017-user-review.md): preguntas para Core que se confirman al activar la evidencia live y, si hay diferencias, se registran como Contract Sync sin corregir Core desde este WI: (A) analysisRun.projectVersionId es no nulo pero AnalysisRunDetailResponse no lo expone (el mock usa currentVersionId ?? ''); (B) en la evidencia de EXPERIMENT y RETRIEVAL_COMPARISON analysisRun queda null y el contrato no dice si se rellena con el Run de origen; (C) randomizationSeed del mock es el texto fijo demo-seed-no-core; (D) pairPosition/attempt solo se rellenan si el mock los tiene; (E) el orden de claves y los espacios de los bytes de Core no estan definidos y la Console entrega response.text() sin reserializar. Ademas se limpia el hook useEvidence si sigue sin uso."
       ],
       "specPaths": [
         "spec/features/013-pr-driven-control-plane/spec.md",
