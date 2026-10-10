@@ -71,3 +71,22 @@ Los prefijos `H-`, `O-`, `T-`, `D-`, `C-` y `G-` identifican estados de otros ni
 `handoffs[]` (agentes IA) incluyen `executedBy: { agent, configuredModel, servedModel, effort }`; `servedModel` puede ser `unknown` si no se observó. Ver `harness/WORKFLOW.md`, «Trazabilidad de modelo». Es informativo y el validador no lo exige.
 
 Cuando el leader hace un cambio mínimo en lugar de delegarlo, su handoff declara `executedBy.agent: leader` con `reason: "cambio mínimo"` y los archivos y líneas tocados (`filesAffected`). Ver `harness/WORKFLOW.md`, «Delegación de implementación». Es informativo y el validador no lo exige.
+
+## Modo fuera de casa (`awayMode`)
+
+Campo opcional de primer nivel de `harness/state.json`. Ausente o `enabled: false` significa desactivado (valor por defecto). Solo el usuario lo activa o desactiva, expresamente en chat; el leader nunca lo activa por inferencia.
+
+```json
+"awayMode": {
+  "enabled": true,
+  "activatedBy": "user",
+  "activatedAt": "2026-10-09T00:00:00.000Z",
+  "quote": "cita breve y literal del usuario"
+}
+```
+
+Al desactivarse se conserva el registro con `enabled: false`, `deactivatedAt` y `deactivationQuote`. Mientras `enabled` sea `true`, la revisión independiente la hace el agente `reviewer` (`execution.reviewAgent: "reviewer"`, handoff con `executedBy`); no sustituye decisiones `DEC` ni aprobaciones de alcance o contrato, no autoriza push/PR/infraestructura externa y no relaja gates. El validador exige la forma del campo cuando existe.
+
+## Merge reviewer
+
+La fusión de una rama de tercero o de integración se revisa con el agente `merge-reviewer` antes de entrar en una línea compartida o de publicarla; su veredicto vive en `harness/reports/merge-review-<scope>.md` y no es un gate de `W-DONE` de un WI ni lo sustituye `awayMode`. No añade campos a `harness/state.json`.

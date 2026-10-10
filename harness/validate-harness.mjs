@@ -20,7 +20,7 @@ if (contractSyncCliTests.status !== 0) failures.push(contractSyncCliTests.stderr
 if (contractSyncLifecycleTests.status !== 0) failures.push(contractSyncLifecycleTests.stderr.trim() || contractSyncLifecycleTests.stdout.trim() || contractSyncLifecycleTests.error?.message || 'Contract Sync lifecycle tests failed');
 const assignmentTests = spawnSync(process.execPath, ['--test', path.join(root, 'harness/agent-assignment.test.mjs')], { cwd: root, encoding: 'utf8' });
 if (assignmentTests.status !== 0) failures.push(assignmentTests.stderr.trim() || assignmentTests.stdout.trim() || assignmentTests.error?.message || 'agent assignment tests failed');
-const roles = ['leader.md', 'sdd-analyst.md', 'implementer.md', 'contract-reviewer.md', 'human-reviewer.md', 'ux-reviewer.md', 'reviewer.md'];
+const roles = ['leader.md', 'sdd-analyst.md', 'implementer.md', 'contract-reviewer.md', 'human-reviewer.md', 'ux-reviewer.md', 'reviewer.md', 'merge-reviewer.md'];
 const handoffFields = ['status', 'findings', 'blockers', 'filesAffected', 'evidence', 'recommendedNextStep'];
 const statuses = new Set(['W-PLANNED', 'W-READY', 'W-SELECTED', 'W-SPEC_VERIFIED', 'W-AWAITING_APPROVAL', 'W-IN_PROGRESS', 'W-IN_REVIEW', 'W-DONE', 'W-BLOCKED', 'W-DECISION_REQUIRED', 'W-CANCELLED']);
 const gateValues = new Set(['G-PASSED', 'G-FAILED', 'G-NOT_APPLICABLE', 'G-NOT_RUN']);
@@ -38,7 +38,7 @@ function hasHandoff(item, role) { return item.execution?.handoffs?.some((handoff
 for (const role of roles) assert(fs.existsSync(path.join(root, 'harness/roles', role)), `missing role: ${role}`);
 for (const deprecated of ['analyst.md', 'design-reviewer.md', 'stitch-reader.md', 'stitch-analyst.md']) assert(!fs.existsSync(path.join(root, 'harness/roles', deprecated)), `deprecated permanent role remains: ${deprecated}`);
 
-for (const agent of ['leader', 'sdd-analyst', 'implementer', 'implementer-high', 'contract-reviewer']) {
+for (const agent of ['leader', 'sdd-analyst', 'implementer', 'implementer-high', 'contract-reviewer', 'reviewer', 'merge-reviewer']) {
   assert(fs.existsSync(path.join(root, '.claude/agents', `${agent}.md`)), `missing Claude agent profile: ${agent}`);
 }
 const agentProfiles = fs.readFileSync(path.join(root, 'harness/agent-profiles.yaml'), 'utf8');
@@ -50,6 +50,15 @@ for (const directory of ['harness/contract-sync/inbox', 'harness/contract-sync/o
 const state = readJson('harness/state.json');
 const registry = readJson('harness/work-items.json');
 if (state) {
+  if (state.awayMode !== undefined) {
+    const away = state.awayMode;
+    assert(away && typeof away.enabled === 'boolean', 'awayMode.enabled must be boolean');
+    if (away?.enabled === true) {
+      assert(away.activatedBy === 'user', 'awayMode must be activated by user');
+      assert(typeof away.activatedAt === 'string' && away.activatedAt.length > 0, 'awayMode.activatedAt is required');
+      assert(typeof away.quote === 'string' && away.quote.length > 0, 'awayMode.quote is required');
+    }
+  }
   assert(state.schemaVersion === 4, 'state.schemaVersion must be 4');
   assert(state.sddVersion === '3.0', 'Core/Console state.sddVersion must be 3.0');
   assert(Array.isArray(state.allowedStatuses) && [...statuses].every((status) => state.allowedStatuses.includes(status)), 'state allowedStatuses is incomplete');
