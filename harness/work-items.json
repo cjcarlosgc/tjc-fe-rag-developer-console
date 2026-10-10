@@ -1460,11 +1460,13 @@
         }
       ],
       "externalDependencyGate": {
-        "status": "G-NOT_RUN",
-        "evidenceReport": null,
-        "verifiedAt": null,
-        "verifiedBy": null,
-        "sourceRevisions": {}
+        "status": "G-PASSED",
+        "evidenceReport": "harness/reports/wi-console-020-external-dependency-gate.md",
+        "sourceRevisions": {
+          "CORE": "129a9ab23886ade532071de389e5129a1e64f61f"
+        },
+        "verifiedAt": "2026-10-10T15:30:00.000Z",
+        "verifiedBy": "leader"
       },
       "syncScopePaths": [
         "spec/contracts/interoperability-contract.md"
