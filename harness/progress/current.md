@@ -1,5 +1,10 @@
 # Progreso actual — CONSOLE
 
+## Siguiente corte (2026-10-10)
+
+Core cerró `WI-CORE-018` a `026` y `030`; `WI-CORE-027` sigue `W-IN_REVIEW`. Los 13 eventos de Core están importados y acusados. Orden: 1) `WI-CONSOLE-021` (P0, `W-READY`): refresca los espejos SYSTEM, INTEROP y GH-INTEROP desde Core y adopta lo ya implementado (guardas de `null`, `failureCode` abierto, límites y errores de OE2, validación del trace); 2) `WI-CONSOLE-020` (P0, `W-PLANNED`): `/evidence`, tasas `number | null` y activación live; espera a `WI-CORE-027` en `W-DONE` y a `WI-CONSOLE-021`. Después, los P2 (`004` a `007`).
+
+
 ## Secuencia vigente SMART V3 (2026-10-08)
 
 El usuario aprobó el alcance de `WI-CONSOLE-011` a `WI-CONSOLE-019` (`harness/reports/smart-v3-scope-approval.md`). El Leader los toma por prioridad y dependencias, sin pedir aprobación por corte; los cambios visibles exigen `ux-reviewer`.

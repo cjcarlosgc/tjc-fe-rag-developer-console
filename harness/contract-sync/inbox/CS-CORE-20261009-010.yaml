@@ -11,4 +11,5 @@ requiredAction:
   - Console debe tolerar cualquier valor desconocido de failureCode y mostrar un mensaje claro para los dos conocidos (EXPERIMENT_FAILED: el experimento fallo durante la ejecucion; EXPERIMENT_WORKER_LOST: se interrumpio el procesamiento y puede reanudarse), usando failureMessage como detalle. Sin cambio de tipos ni de rutas.
 sourceRevision: 0d64a63b42121da6bdf66edb1e0e9a969bbdd057
 consumerImportedAt: 2026-10-10T14:11:38.136Z
-status: C-PENDING
+status: C-ACKNOWLEDGED
+acknowledgementEvidence: harness/reports/wi-console-021-contract-sync-acknowledgement.md

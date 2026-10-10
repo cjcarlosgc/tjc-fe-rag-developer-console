@@ -11,4 +11,5 @@ requiredAction:
   - Refrescar la copia espejo de SYSTEM-2.6 con la frase corregida; sin cambios de codigo. Core no modifica Console ni GitHub Integration.
 sourceRevision: 68d4476ca249208ade51591746d53a0fdab68e2e
 consumerImportedAt: 2026-10-10T14:11:38.133Z
-status: C-PENDING
+status: C-ACKNOWLEDGED
+acknowledgementEvidence: harness/reports/wi-console-021-contract-sync-acknowledgement.md

@@ -11,4 +11,5 @@ requiredAction:
   - Console: refrescar el contrato desde sourceRevision y acusar; mostrar un guion cuando executionDurationMs sea null y el numero cuando haya una llamada fallida al Sandbox; sin otro cambio de codigo respecto de CS-CORE-20261009-008.
 sourceRevision: 400f55efce4ad886de548f8ded8600483dfa70a1
 consumerImportedAt: 2026-10-10T14:11:38.135Z
-status: C-PENDING
+status: C-ACKNOWLEDGED
+acknowledgementEvidence: harness/reports/wi-console-021-contract-sync-acknowledgement.md

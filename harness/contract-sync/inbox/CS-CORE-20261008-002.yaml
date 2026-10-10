@@ -11,4 +11,5 @@ requiredAction:
   - Console: importar el evento, acusarlo con su WI consumidor y adoptar outcome ABSTAINED (sin mostrar resuelto ni continuando), abstention, scenarioKind y scenarioKey cuando se adopte el contrato; no requiere cambio de Sandbox ni GitHub Integration.
 sourceRevision: 1c317f4ab5baad0214f2f6d3c003e7f9db68be24
 consumerImportedAt: 2026-10-10T14:11:38.129Z
-status: C-PENDING
+status: C-ACKNOWLEDGED
+acknowledgementEvidence: harness/reports/wi-console-021-contract-sync-acknowledgement.md

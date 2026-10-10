@@ -11,4 +11,5 @@ requiredAction:
   - Console (WI-CONSOLE-017/020): refrescar el contrato desde sourceRevision y acusar; tipar las tasas y las tres medias de duracion como number | null y los dos contadores como number; mostrar «sin datos» (no 0 % ni 0 ms) ante null y usar evaluableRepetitions/nonEvaluableRepetitions para indicar cuantas repeticiones sustentan la metrica; no derivar ganadores ni formatear null como 0.
 sourceRevision: 55e3ec9c12646213ab103d9fbe2bffd2cfe6a759
 consumerImportedAt: 2026-10-10T14:10:55.609Z
-status: C-PENDING
+status: C-ACKNOWLEDGED
+acknowledgementEvidence: harness/reports/wi-console-020-contract-sync-acknowledgement.md

@@ -11,4 +11,5 @@ requiredAction:
   - Console (WI-CONSOLE-014): implementar cliente y tipos segun los 6 checkpoints de contenido; tratar failureCode como string abierto; limitar groundTruth a 200; manejar 409 RETRIEVAL_COMPARISON_FAILED leyendo el detalle del status sin reintentar, 409 NOT_FINISHED con polling por pollAfterMs, 409 ANALYSIS_NOT_FINISHED y 422 UNSUPPORTED_PROJECT con mensaje de UI propio.
 sourceRevision: d3829fc58e2a2d8133e5a22c34924aa468718b26
 consumerImportedAt: 2026-10-10T14:11:38.136Z
-status: C-PENDING
+status: C-ACKNOWLEDGED
+acknowledgementEvidence: harness/reports/wi-console-021-contract-sync-acknowledgement.md

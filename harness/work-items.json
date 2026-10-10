@@ -1418,24 +1418,26 @@
         "WI-CONSOLE-015",
         "WI-CONSOLE-016",
         "WI-CONSOLE-017",
-        "WI-CONSOLE-018"
+        "WI-CONSOLE-018",
+        "WI-CONSOLE-021"
       ],
-      "contractImpact": false,
+      "contractImpact": true,
       "publishesContract": false,
       "scopeApprovalReport": "harness/reports/smart-v3-scope-approval.md",
       "acceptanceCriteria": [
-        "Cada adapter de SMART V3 (roles y abstención UNKNOWN, Functional Knowledge con procedencia y escenarios, OE2, metadata de OE5, trace operativo y evidencia) deja de responder con el error de contrato pendiente y consume la ruta live de Core ya implementada, usando solo campos publicados en INTEROP-2.7.",
-        "Se verifica cada flujo contra Core real o contra su suite de contrato (no solo con mocks): UNKNOWN con outcome ABSTAINED, 403 PROJECT_ROLE_INSUFFICIENT de Writer, reglas ACTIVE múltiples con procedencia, comparación OE2, pares de OE5 con el modelo y esfuerzo registrados, trace de nueve enlaces y descarga de evidencia; las diferencias con el contrato se registran como Contract Sync y no se corrigen en Core desde este WI.",
-        "Los mocks permanecen rotulados DEMO · DATOS SIMULADOS y no se presentan como evidencia; no hay cambios visibles nuevos, y si los hubiera interviene ux-reviewer; lint, pruebas, build y validadores SDD/Harness pasan antes de la revisión humana.",
-        "Dependencia externa abierta de WI-CONSOLE-014 (harness/reports/wi-console-014-core-request-correlationid.md): cuando Core publique correlationId en el DTO de estado de la comparación de retrieval (INTEROP-2.7 §6.15), el adapter live lo mapea y RetrievalComparisonPage lo muestra en el ErrorNote de FAILED; además se confirma con Core el código de error de resultados de una comparación FAILED (el mock usa 409 RETRIEVAL_COMPARISON_NOT_FINISHED) y se ajustan errors.ts y el mock. El criterio «FAILED muestra correlationId» del AC4 de WI-CONSOLE-014 queda pendiente hasta entonces, no cumplido.",
-        "Dependencia externa abierta de WI-CONSOLE-017 (harness/reports/wi-console-017-implementation.md y wi-console-017-user-review.md): preguntas para Core que se confirman al activar la evidencia live y, si hay diferencias, se registran como Contract Sync sin corregir Core desde este WI: (A) analysisRun.projectVersionId es no nulo pero AnalysisRunDetailResponse no lo expone (el mock usa currentVersionId ?? ''); (B) en la evidencia de EXPERIMENT y RETRIEVAL_COMPARISON analysisRun queda null y el contrato no dice si se rellena con el Run de origen; (C) randomizationSeed del mock es el texto fijo demo-seed-no-core; (D) pairPosition/attempt solo se rellenan si el mock los tiene; (E) el orden de claves y los espacios de los bytes de Core no estan definidos y la Console entrega response.text() sin reserializar. Ademas se limpia el hook useEvidence si sigue sin uso."
+        "La evidencia (/evidence) se tipa y se mockea contra el bloque congelado de INTEROP-2.7 §6.16 (EvidenceBundleResponse schemaVersion \"1\"): todo valor | null es «sin dato» y nunca 0; no se infieren CF/CO ni validez a partir de technicallyEvaluable; no se espera excerpt, contenido de código, testCases, groundTruth, knowledgeId, URLs ni claves de storage; se tolera retrieval: [] en una comparación FAILED y secciones vacías según kind; snapshotRef es una cadena opaca.",
+        "Las tasas y las tres medias de duración de StrategyMetricsResponse se tipan como number | null y los dos contadores como number; ante null se muestra «sin datos» (no 0 % ni 0 ms) y evaluableRepetitions/nonEvaluableRepetitions indican cuántas repeticiones sustentan la métrica; no se derivan ganadores.",
+        "Cada adapter de SMART V3 (roles y abstención UNKNOWN, Functional Knowledge, OE2, metadata de OE5, trace y evidencia) deja de responder con el error de contrato pendiente y consume la ruta live de Core ya implementada, usando solo campos publicados.",
+        "Se verifica cada flujo contra Core real o su suite de contrato, no solo con mocks; las diferencias con el contrato se registran como Contract Sync y no se corrigen en Core desde este WI. Al completar se emite un CS-CONSOLE-… dirigido a Core.",
+        "Los eventos CS-CORE-20261009-014 y -015 pasan a C-ACKNOWLEDGED y C-RESOLVED con evidencia; los mocks permanecen rotulados DEMO · DATOS SIMULADOS; ux-reviewer, lint, pruebas, build y validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
       ],
       "specPaths": [
-        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/contracts/interoperability-contract.md",
         "spec/features/013-pr-driven-control-plane/plan.md",
+        "spec/features/013-pr-driven-control-plane/spec.md",
         "spec/features/013-pr-driven-control-plane/tasks.md",
-        "spec/features/014-analysisrun-experiments/spec.md",
         "spec/features/014-analysisrun-experiments/plan.md",
+        "spec/features/014-analysisrun-experiments/spec.md",
         "spec/features/014-analysisrun-experiments/tasks.md"
       ],
       "externalDependencies": [
@@ -1449,6 +1451,7 @@
             "WI-CORE-022",
             "WI-CORE-025",
             "WI-CORE-026",
+            "WI-CORE-030",
             "WI-CORE-027"
           ],
           "requiredStatus": "W-DONE",
@@ -1462,6 +1465,84 @@
         "verifiedAt": null,
         "verifiedBy": null,
         "sourceRevisions": {}
+      },
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md"
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-021",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-READY",
+      "priority": "P0",
+      "sprint": "SMART V3",
+      "title": "Adoptar el contrato implementado por Core (espejos y ajustes de UI)",
+      "storyIds": [
+        "HU05",
+        "HU07",
+        "HU12",
+        "HU15",
+        "HU17"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-023"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": true,
+      "publishesContract": false,
+      "scopeApprovalReport": "harness/reports/smart-v3-scope-approval.md",
+      "syncScopePaths": [
+        "spec/contracts/system-contract.md",
+        "spec/contracts/interoperability-contract.md"
+      ],
+      "acceptanceCriteria": [
+        "Los espejos SYSTEM-2.6, INTEROP-2.7 y GH-INTEROP-1.3 quedan byte por byte iguales a la fuente canónica de Core en la revisión que registra el líder (se anotan los SHA-256); si WI-CORE-027 modifica el contrato antes de cerrar, el refresco se repite en WI-CONSOLE-020. Los eventos CS-CORE-20261008-002 a -007, CS-CORE-20261009-008 a -011 y -013 pasan a C-ACKNOWLEDGED y C-RESOLVED con evidencia.",
+        "OE5 (CS-CORE-20261009-008 y -009): una executionDurationMs null se muestra con un guion (no 0) y el número cuando hubo una llamada fallida al Sandbox, sin formatear ni sumar sin guardas; la UI tolera null en model, budget, executionProfile, runnerHint, randomizationSeed, pairId y pairPosition, muestra technicallyEvaluable=false y attempt=2 sin declarar ganador.",
+        "failureCode (CS-CORE-20261009-010) se trata como cadena abierta: cualquier valor desconocido se tolera y EXPERIMENT_FAILED («el experimento falló durante la ejecución») y EXPERIMENT_WORKER_LOST («se interrumpió el procesamiento y puede reanudarse») tienen mensaje propio, con failureMessage como detalle.",
+        "OE2 (CS-CORE-20261009-011): cliente y tipos según los seis checkpoints de contenido del evento; groundTruth se limita a 200; 409 RETRIEVAL_COMPARISON_FAILED lee el detalle del estado sin reintentar, 409 NOT_FINISHED usa polling por pollAfterMs y 409 ANALYSIS_NOT_FINISHED y 422 UNSUPPORTED_PROJECT tienen mensaje propio.",
+        "Trace (CS-CORE-20261009-013): se valida contra los DTO reales (mapeo de NOT_APPLICABLE, freshness y checkId nulos y el 409 antes del estado terminal); /evidence y las tasas permanecen en mock hasta WI-CONSOLE-020. WRITER, abstención y escenarios (CS-CORE-20261008-002, -003 y -005) se verifican contra el contrato implementado sin cambiar lo ya hecho.",
+        "ux-reviewer, lint, pruebas, build y validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
+      ],
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/013-pr-driven-control-plane/plan.md",
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/features/014-analysisrun-experiments/spec.md",
+        "spec/features/014-analysisrun-experiments/plan.md",
+        "spec/features/014-analysisrun-experiments/tasks.md",
+        "CHANGELOG.md",
+        "spec/contracts/system-contract.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/github-integration-contract.md"
+      ],
+      "externalDependencies": [
+        {
+          "component": "CORE",
+          "repository": "tjc-be-rag-core-api",
+          "workItemIds": [
+            "WI-CORE-018",
+            "WI-CORE-019",
+            "WI-CORE-020",
+            "WI-CORE-022",
+            "WI-CORE-025",
+            "WI-CORE-026",
+            "WI-CORE-030"
+          ],
+          "requiredStatus": "W-DONE",
+          "requiredContractSync": "imported-and-acknowledged",
+          "verification": "manual-cross-repository"
+        }
+      ],
+      "externalDependencyGate": {
+        "status": "G-PASSED",
+        "evidenceReport": "harness/reports/wi-console-021-external-dependency-gate.md",
+        "sourceRevisions": {
+          "CORE": "3f06f44543b5899d98232b757310ce6d481624ea"
+        },
+        "verifiedAt": "2026-10-10T15:00:00.000Z",
+        "verifiedBy": "leader"
       }
     }
   ]

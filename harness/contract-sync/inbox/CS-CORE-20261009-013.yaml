@@ -11,4 +11,5 @@ requiredAction:
   - Importar y acusar el evento; actualizar el espejo byte por byte de interoperability-contract.md; validar contra los DTOs reales (mapeo de NOT_APPLICABLE, freshness y checkId nullable, y el 409 antes de estado terminal); mantener /evidence en mock hasta WI-CORE-027; avisar con CS-CONSOLE-... al completar WI-CONSOLE-020. Nada mas debe cambiar.
 sourceRevision: 8c8839c1a7b6b298867b1aec8dd5994cd001d1bd
 consumerImportedAt: 2026-10-10T14:10:55.606Z
-status: C-PENDING
+status: C-ACKNOWLEDGED
+acknowledgementEvidence: harness/reports/wi-console-021-contract-sync-acknowledgement.md

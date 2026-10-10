@@ -11,4 +11,5 @@ requiredAction:
   - Console: refrescar espejos SYSTEM e INTEROP byte por byte. GitHub Integration: refrescar espejo SYSTEM. Sin cambio funcional ni de codigo; acusar al importar.
 sourceRevision: 2b0e89ae5763b6923227504f466e1e44a9d2fb8a
 consumerImportedAt: 2026-10-10T14:11:38.134Z
-status: C-PENDING
+status: C-ACKNOWLEDGED
+acknowledgementEvidence: harness/reports/wi-console-021-contract-sync-acknowledgement.md
