@@ -37,7 +37,7 @@ export function setAuthErrorHandler(handler: ((event: AuthErrorEvent) => void) |
 
 /**
  * Un `401` cierra la sesión solo si es de sesión/identidad. Los `401 GITHUB_ACCOUNT_REQUIRED` y `GITHUB_USER_TOKEN_INVALID`
- * (rutas de usuario GitHub, GH-INTEROP-1.2) hablan del token OAuth de GitHub, no de la sesión de la Console: no se confunden con
+ * (rutas de usuario GitHub, GH-INTEROP-1.3) hablan del token OAuth de GitHub, no de la sesión de la Console: no se confunden con
  * un token expirado y se propagan como error normal (la UI ofrece «Renovar acceso a GitHub»).
  */
 const SESSION_ENDING_401_CODES: ReadonlySet<string> = new Set(['AUTH_REQUIRED', 'INVALID_ACCESS_TOKEN', 'GITHUB_IDENTITY_REQUIRED'])

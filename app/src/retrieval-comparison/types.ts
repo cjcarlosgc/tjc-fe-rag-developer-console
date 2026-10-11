@@ -1,9 +1,9 @@
 import type { AnalysisSymbolResponse } from '../control-plane/types'
 
 /**
- * INTEROP-2.7 §6.15 (WI-CONSOLE-014, Corte A) — **definido, pendiente de implementar en Core** (WI-CORE-022).
+ * INTEROP-2.7 §6.15 (WI-CONSOLE-014) — **implementado en Core (WI-CORE-022); el adapter live sigue pendiente de WI-CONSOLE-020.**
  * Comparación de retrieval OE2 (SE vs SEM): capacidad experimental, separada de OE5 y del producto operativo.
- * Los tipos reproducen §6.15 sin campos extra. La Console nunca envía `groundTruth` en este corte.
+ * Los tipos reproducen §6.15 sin campos extra. La Console nunca envía `groundTruth` desde la UI.
  */
 
 export { findEligibleSymbols } from '../run-comparison/types'
@@ -14,7 +14,7 @@ export type StructuralRelation = 'IMPORTS' | 'IMPORTED_BY' | 'SAME_NAMESPACE' | 
 
 export type RetrievalComparisonStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED'
 
-/** Etiquetas en español centralizadas. Las relaciones PHP no se prometen en esta UI: su implementación queda diferida (WI-CORE-028). */
+/** Etiquetas en español centralizadas: fuente única también para Context Explorer (`context-explorer/rag/ragLabels.ts`). Incluye las relaciones PHP (WI-CORE-028, DEC-PHP-RET-001). */
 export const STRUCTURAL_RELATION_LABELS: Record<StructuralRelation, string> = {
   IMPORTS: 'Importa',
   IMPORTED_BY: 'Importado por',
@@ -61,12 +61,15 @@ export interface RetrievalComparisonAcceptedResponse {
   projectVersionId: string
 }
 
+/** §6.15: `groundTruth` admite hasta 200 elementos; más, o elementos mal formados, responden 400 en Core. */
+export const MAX_GROUND_TRUTH_ITEMS = 200
+
 export interface RetrievalGroundTruthItem {
   filePath: string
   symbolQualifiedName: string
 }
 
-/** `groundTruth` existe en el contrato, pero la Console no lo envía en este corte (AC3 de WI-CONSOLE-014). */
+/** `groundTruth` existe en el contrato, pero la UI no lo envía (AC3 de WI-CONSOLE-014). El tope local se aplica si un llamador lo pasa. */
 export interface CreateRetrievalComparisonRequest {
   analysisRunId: string
   symbolFilePath: string

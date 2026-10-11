@@ -1,4 +1,5 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { ApiError } from '../api/client'
 import type { AnalysisSymbolResponse } from '../control-plane/types'
 import { getRetrievalComparison, getRetrievalComparisonResults, listRetrievalComparisons, startRetrievalComparison } from './api'
 import { isTerminalRetrievalStatus, type RetrievalComparisonStatusResponse } from './types'
@@ -46,12 +47,35 @@ export function useRetrievalComparison(retrievalComparisonId: string | null, pol
   })
 }
 
+/**
+ * Reintentos de `/results` (§6.15). `RETRIEVAL_COMPARISON_FAILED` no se reintenta: es terminal y su detalle se lee del status
+ * (`failureCode`/`failureMessage`). `RETRIEVAL_COMPARISON_NOT_FINISHED` no se reintenta aquí: se sondea con `pollAfterMs`.
+ * Los 404/422 tampoco. Otros errores transitorios conservan dos reintentos.
+ */
+export function shouldRetryRetrievalResults(failureCount: number, error: unknown): boolean {
+  if (error instanceof ApiError) {
+    if (error.code === 'RETRIEVAL_COMPARISON_FAILED' || error.code === 'RETRIEVAL_COMPARISON_NOT_FINISHED') return false
+    if (error.status === 404 || error.status === 422) return false
+  }
+  return failureCount < 2
+}
+
+/** Sondeo de `/results` solo mientras responde `RETRIEVAL_COMPARISON_NOT_FINISHED`; con `pollAfterMs` ausente usa el fallback. */
+export function retrievalResultsRefetchInterval(error: unknown, pollAfterMs?: number): number | false {
+  if (error instanceof ApiError && error.code === 'RETRIEVAL_COMPARISON_NOT_FINISHED') {
+    return pollAfterMs && pollAfterMs > 0 ? pollAfterMs : RETRIEVAL_FALLBACK_POLL_MS
+  }
+  return false
+}
+
 /** Resultados: solo se habilita cuando el estado ya es `COMPLETED` (en `FAILED` no hay resultados que pedir). */
-export function useRetrievalComparisonResults(retrievalComparisonId: string | null, status: RetrievalComparisonStatusResponse['status'] | undefined) {
+export function useRetrievalComparisonResults(retrievalComparisonId: string | null, status: RetrievalComparisonStatusResponse['status'] | undefined, pollAfterMs?: number) {
   return useQuery({
     queryKey: retrievalComparisonKeys.results(retrievalComparisonId ?? ''),
     queryFn: () => getRetrievalComparisonResults(retrievalComparisonId!),
     enabled: Boolean(retrievalComparisonId) && status === 'COMPLETED',
+    retry: shouldRetryRetrievalResults,
+    refetchInterval: (query) => retrievalResultsRefetchInterval(query.state.error, pollAfterMs),
   })
 }
 

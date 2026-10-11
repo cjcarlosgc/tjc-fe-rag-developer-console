@@ -6,9 +6,17 @@ import type { ExperimentConfiguration, ExperimentResultViewModel, StrategyMetric
 const rateRows: Array<[string, keyof StrategyMetrics]> = [['Válidas', 'validRate'], ['Compilan', 'compilationRate'], ['Ejecutan', 'executionRate'], ['Pasan', 'passedRate']]
 
 const UNAVAILABLE = 'no disponible'
+/** Tasa o media `null` (CS-CORE-20261009-015): sin datos evaluables. Nunca 0 %, 0 ms ni «null ms». */
+const NO_DATA = 'sin datos'
 
 function strategyLabel(strategy: StrategyMetrics['strategy']): string {
   return strategy === 'GENERALIST_AGENT' ? 'AGENTE GENERALISTA' : strategy
+}
+
+/** Sin delta cuando algún lado es `null`: no se resta ni se divide contra un valor inventado. */
+function absoluteDelta(baseline: number | null, rag: number | null, format: (value: number) => string): string {
+  if (baseline === null || rag === null) return 'n/d'
+  return format(rag - baseline)
 }
 
 function relativeDelta(baseline: number | null, rag: number | null): string {
@@ -35,18 +43,31 @@ function formatInteger(value: number): string {
   return value.toLocaleString('es-PE')
 }
 
+/** Respaldo de evaluabilidad (CS-CORE-20261009-015). Sin contadores (respuestas previas) no se muestra nada. */
+function evaluabilityNote(metrics: StrategyMetrics): string | null {
+  const { evaluableRepetitions, nonEvaluableRepetitions } = metrics
+  const allRatesNull = [metrics.validRate, metrics.compilationRate, metrics.executionRate, metrics.passedRate].every((value) => value === null)
+  const counts = evaluableRepetitions !== undefined && nonEvaluableRepetitions !== undefined
+    ? `${evaluableRepetitions} evaluables · ${nonEvaluableRepetitions} no evaluables`
+    : null
+  if (evaluableRepetitions === 0 || allRatesNull) return counts ? `sin datos evaluables · ${counts}` : 'sin datos evaluables'
+  return counts
+}
+
 function ConfigurationBlock({ configuration }: { configuration: ExperimentConfiguration | null | undefined }) {
   const c = configuration
   const items: Array<[string, string]> = [
-    ['Proveedor y modelo', `${orUnavailable(c?.model.provider)} · ${orUnavailable(c?.model.model)}`],
-    ['Versión del modelo', orUnavailable(c?.model.modelVersion)],
-    ['Esfuerzo de razonamiento', orUnavailable(c?.model.reasoningEffort)],
-    ['Temperatura', orUnavailable(c?.model.temperature, String)],
-    ['Máximo de tokens de salida', orUnavailable(c?.model.maxOutputTokens, formatInteger)],
-    ['Tope de tool calls', orUnavailable(c?.budget.toolCallCap, formatInteger)],
-    ['Presupuesto de contexto', orUnavailable(c?.budget.contextTokenBudget, (v) => `${formatInteger(v)} tokens`)],
-    ['Duración máxima', orUnavailable(c?.budget.maxDurationMs, formatDuration)],
+    ['Proveedor y modelo', `${orUnavailable(c?.model?.provider)} · ${orUnavailable(c?.model?.model)}`],
+    ['Versión del modelo', orUnavailable(c?.model?.modelVersion)],
+    ['Esfuerzo de razonamiento', orUnavailable(c?.model?.reasoningEffort)],
+    ['Temperatura', orUnavailable(c?.model?.temperature, String)],
+    ['Máximo de tokens de salida', orUnavailable(c?.model?.maxOutputTokens, formatInteger)],
+    ['Tope de tool calls', orUnavailable(c?.budget?.toolCallCap, formatInteger)],
+    ['Presupuesto de contexto', orUnavailable(c?.budget?.contextTokenBudget, (v) => `${formatInteger(v)} tokens`)],
+    ['Duración máxima', orUnavailable(c?.budget?.maxDurationMs, formatDuration)],
     ['Perfil de ejecución', orUnavailable(c?.executionProfile)],
+    // CS-CORE-20261009-018: runnerHint es una cadena abierta (p. ej. PHPUNIT); se muestra tal cual.
+    ['Runner', orUnavailable(c?.runnerHint)],
     ['Semilla de aleatorización', orUnavailable(c?.randomizationSeed)],
   ]
   return (
@@ -66,35 +87,33 @@ function ConfigurationBlock({ configuration }: { configuration: ExperimentConfig
 
 export function ExperimentComparison({ result, projectId, experimentId }: { result: ExperimentResultViewModel; projectId: string; experimentId: string }) {
   const failures = Array.from(new Set([...Object.keys(result.baseline.failures), ...Object.keys(result.rag.failures)]))
-  const durationDelta = result.rag.totalDurationMs - result.baseline.totalDurationMs
   const tokenDelta = result.rag.totalTokens !== null && result.baseline.totalTokens !== null ? result.rag.totalTokens - result.baseline.totalTokens : null
   const costDelta = result.rag.estimatedCost !== null && result.baseline.estimatedCost !== null ? result.rag.estimatedCost - result.baseline.estimatedCost : null
   return (
     <div className="experiment-results">
       <div className="strategy-head">
-        <div><span className="strategy-mark baseline-mark">G</span><strong>Agente generalista</strong><small>Explora sus propias referencias</small></div>
+        <div><span className="strategy-mark baseline-mark">G</span><strong>Agente generalista</strong><small>Explora sus propias referencias</small>{evaluabilityNote(result.baseline) && <small className="evaluability-note">{evaluabilityNote(result.baseline)}</small>}</div>
         <span className="versus">VS</span>
-        <div><span className="strategy-mark rag-mark">R</span><strong>RAG</strong><small>Contexto recuperado</small></div>
+        <div><span className="strategy-mark rag-mark">R</span><strong>RAG</strong><small>Contexto recuperado</small>{evaluabilityNote(result.rag) && <small className="evaluability-note">{evaluabilityNote(result.rag)}</small>}</div>
       </div>
       <div className="comparison-table" role="table" aria-label="Comparación de estrategias">
         {rateRows.map(([label, key]) => {
-          const baseline = result.baseline[key] as number
-          const rag = result.rag[key] as number
-          const delta = (rag - baseline) * 100
+          const baseline = result.baseline[key] as number | null
+          const rag = result.rag[key] as number | null
           return (
             <div className="comparison-row" role="row" key={label}>
               <strong>{label}</strong>
-              <span>{formatPercent(baseline)}</span>
-              <span className="rate-delta">{delta >= 0 ? '+' : ''}{delta.toFixed(1)} pp</span>
-              <span>{formatPercent(rag)}</span>
+              <span>{baseline === null ? NO_DATA : formatPercent(baseline)}</span>
+              <span className="rate-delta">{absoluteDelta(baseline, rag, (value) => `${value >= 0 ? '+' : ''}${(value * 100).toFixed(1)} pp`)}</span>
+              <span>{rag === null ? NO_DATA : formatPercent(rag)}</span>
             </div>
           )
         })}
         <div className="comparison-row">
           <strong>Tiempo total</strong>
-          <span>{formatDuration(result.baseline.totalDurationMs)}</span>
-          <span>Δ {signedNumber(durationDelta)} ms · {relativeDelta(result.baseline.totalDurationMs, result.rag.totalDurationMs)}</span>
-          <span>{formatDuration(result.rag.totalDurationMs)}</span>
+          <span>{result.baseline.totalDurationMs === null ? NO_DATA : formatDuration(result.baseline.totalDurationMs)}</span>
+          <span>Δ {absoluteDelta(result.baseline.totalDurationMs, result.rag.totalDurationMs, (value) => `${signedNumber(value)} ms`)} · {relativeDelta(result.baseline.totalDurationMs, result.rag.totalDurationMs)}</span>
+          <span>{result.rag.totalDurationMs === null ? NO_DATA : formatDuration(result.rag.totalDurationMs)}</span>
         </div>
         <div className="comparison-row">
           <strong>Tokens</strong>
@@ -166,6 +185,7 @@ export function ExperimentComparison({ result, projectId, experimentId }: { resu
                 <th scope="col">Evaluable</th>
                 <th scope="col">Failure type</th>
                 <th scope="col">Duración</th>
+                <th scope="col">Ejecución en Sandbox</th>
                 <th scope="col">Tokens</th>
                 <th scope="col"><span className="visually-hidden">Contexto</span></th>
               </tr>
@@ -188,7 +208,8 @@ export function ExperimentComparison({ result, projectId, experimentId }: { resu
                     <code>{item.failureType}</code>
                     {item.errorSummary && <div className="structured-error repetition-error-summary"><p>{item.errorSummary}</p></div>}
                   </td>
-                  <td>{formatDuration(item.durationMs)}</td>
+                  <td>{item.totalDurationMs === null ? '—' : formatDuration(item.totalDurationMs)}</td>
+                  <td>{item.executionDurationMs === null ? '—' : formatDuration(item.executionDurationMs)}</td>
                   <td>{item.totalTokens ?? '—'}</td>
                   <td>
                     <Link className="target-action" to={`/projects/${projectId}/experimental/${experimentId}/context?strategy=${item.strategy}&repetition=${item.repetition}`}>Ver contexto →</Link>

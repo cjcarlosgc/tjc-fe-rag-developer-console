@@ -1,6 +1,6 @@
 import type { ActionRequiredListPage, FunctionalAnswerAcceptedResponse, FunctionalKnowledgeConflictResponse, FunctionalKnowledgeListPage, FunctionalKnowledgeResponse, FunctionalKnowledgeStatus, FunctionalQuestionResponse, FunctionalQuestionSetResponse, SubmitFunctionalAnswerRequest } from '../action-required/types'
 import type { AgentTrajectoryStep, ContextTraceDetail, ContextTracePage, ContextTraceSummary, DiscoveredFilePage, ExperimentContextTraceFilters, RagCandidateNode, RagContextTraceDetail, SourceExcerpt } from '../context-explorer/types'
-import type { ExperimentAccepted, ExperimentOperation, ExperimentResultViewModel } from '../experiments/types'
+import type { ExperimentAccepted, ExperimentConfiguration, ExperimentOperation, ExperimentResultViewModel, RepetitionResult, StrategyMetrics } from '../experiments/types'
 import type { RunComparisonAccepted, RunComparisonListPage, RunComparisonOperation } from '../run-comparison/types'
 import type { RetrievalCandidateResponse, RetrievalComparisonAcceptedResponse, RetrievalComparisonListPage, RetrievalComparisonResultsResponse, RetrievalComparisonStatusResponse, RetrievalMetricsResponse, RetrievalModeResultResponse } from '../retrieval-comparison/types'
 import type { CaptureNextPrState } from '../run-comparison/speculative/captureNextPr'
@@ -42,6 +42,8 @@ interface MockVersionState {
 interface MockExperimentState {
   operation: ExperimentOperation
   polls: number
+  /** Escenarios DEMO de experimento: estado fijo, sin polling (WI-CONSOLE-021). */
+  fixed?: boolean
   /** Para ocultar el experimento cuando su Project se borra (HU56). */
   projectId: string
 }
@@ -91,6 +93,8 @@ interface MockRetrievalComparisonState {
   results: RetrievalComparisonResultsResponse | null
   /** Huella del cuerpo original: misma key con otro cuerpo responde 409 IDEMPOTENCY_CONFLICT. */
   fingerprint: string
+  /** DEMO · candidatos propios de la semilla (p. ej. PHP). Sin valor, se usan los candidatos TypeScript. */
+  candidates?: DemoRetrievalCandidate[]
 }
 const retrievalComparisons = new Map<string, MockRetrievalComparisonState>()
 const retrievalComparisonByIdempotencyKey = new Map<string, string>()
@@ -99,8 +103,10 @@ const RETRIEVAL_PAGE_SIZE = 20
 const RETRIEVAL_SEED_COMPLETED_AT = '2026-10-07T10:00:00.000Z'
 const RETRIEVAL_SEED_STARTED_AT = '2026-10-07T09:58:00.000Z'
 
-/** Candidatos demo TypeScript (sin relaciones PHP). `symbolQualifiedName: null` y `semanticScore` distinto por modo son intencionales. */
-const DEMO_RETRIEVAL_CANDIDATES: Array<Omit<RetrievalCandidateResponse, 'rank' | 'selected'>> = [
+type DemoRetrievalCandidate = Omit<RetrievalCandidateResponse, 'rank' | 'selected'>
+
+/** Candidatos demo TypeScript. `symbolQualifiedName: null` y `semanticScore` distinto por modo son intencionales. */
+const DEMO_RETRIEVAL_CANDIDATES: DemoRetrievalCandidate[] = [
   { chunkId: 'chk_demo_calc', filePath: 'src/domain/OrderService.ts', symbolQualifiedName: 'OrderService.calculateTotal', semanticScore: 0.912, structuralRelation: 'DECLARING_CLASS', combinedScore: 0.861 },
   { chunkId: 'chk_demo_create', filePath: 'src/domain/OrderService.ts', symbolQualifiedName: 'OrderService.createOrder', semanticScore: 0.874, structuralRelation: null, combinedScore: 0.812 },
   { chunkId: 'chk_demo_tax', filePath: 'src/domain/TaxCalculator.ts', symbolQualifiedName: 'TaxCalculator.compute', semanticScore: 0.851, structuralRelation: 'IMPORTS', combinedScore: 0.836 },
@@ -114,6 +120,17 @@ const DEMO_RETRIEVAL_CANDIDATES: Array<Omit<RetrievalCandidateResponse, 'rank' |
   { chunkId: 'chk_demo_logger', filePath: 'src/shared/logger.ts', symbolQualifiedName: 'logger.info', semanticScore: 0.612, structuralRelation: null, combinedScore: 0.428 },
   { chunkId: 'chk_demo_readme', filePath: 'src/shared/readme-snippet.ts', symbolQualifiedName: null, semanticScore: 0.587, structuralRelation: null, combinedScore: 0.411 },
 ]
+
+/** DEMO · candidatos de un símbolo PHP (DEC-PHP-RET-001, CS-CORE-20261009-017): las tres relaciones nuevas, solo y junto a semántica. */
+const DEMO_RETRIEVAL_PHP_CANDIDATES: DemoRetrievalCandidate[] = [
+  { chunkId: 'chk_demo_php_apply', filePath: 'app/Services/CouponService.php', symbolQualifiedName: 'CouponService::apply', semanticScore: 0.903, structuralRelation: 'DECLARING_CLASS', combinedScore: 0.872 },
+  { chunkId: 'chk_demo_php_ns', filePath: 'app/Services/CouponRepository.php', symbolQualifiedName: 'CouponRepository::findActive', semanticScore: 0.842, structuralRelation: 'SAME_NAMESPACE', combinedScore: 0.829 },
+  { chunkId: 'chk_demo_php_fqn', filePath: 'app/Http/Controllers/CheckoutController.php', symbolQualifiedName: 'CheckoutController::store', semanticScore: 0.781, structuralRelation: 'FULLY_QUALIFIED_REFERENCE', combinedScore: 0.764 },
+  { chunkId: 'chk_demo_php_semantic', filePath: 'app/Support/Money.php', symbolQualifiedName: 'Money::format', semanticScore: 0.713, structuralRelation: null, combinedScore: 0.498 },
+]
+
+/** DEMO · id de la semilla PHP de OE2 (`rcmp_demo_seed_php`): COMPLETED con relaciones SAME_NAMESPACE, FULLY_QUALIFIED_REFERENCE y DECLARING_CLASS. Vive en el Run `arun_checkout_pr49` porque el mock no tiene proyecto PHP. */
+export const DEMO_RETRIEVAL_PHP_COMPARISON_ID = 'rcmp_demo_seed_php'
 
 /** Métricas demo con verdad de terreno externa (10 relevantes): SE y SEM difieren a propósito, sin ganador implícito. */
 const DEMO_RETRIEVAL_METRICS: Record<'SE' | 'SEM', RetrievalMetricsResponse> = {
@@ -903,8 +920,8 @@ export async function mockGetTestInventory(projectVersionId: string): Promise<Te
 function experimentResult(target: string): ExperimentResultViewModel {
   return {
     // Agregados derivados de las 6 repeticiones (denominador 3 por brazo): válida = passed; compila = failureType distinto de COMPILATION/INFRASTRUCTURE; ejecuta = NONE o TEST_ASSERTION.
-    baseline: { strategy: 'GENERALIST_AGENT', validRate: 1 / 3, compilationRate: 1 / 3, executionRate: 1 / 3, passedRate: 1 / 3, totalDurationMs: 4_820, totalTokens: 2_940, estimatedCost: .018, failures: { COMPILATION: 1, INFRASTRUCTURE: 1 }, toolCalls: 6, filesInspected: 4 },
-    rag: { strategy: 'RAG', validRate: 2 / 3, compilationRate: 1, executionRate: 1, passedRate: 2 / 3, totalDurationMs: 5_460, totalTokens: 4_180, estimatedCost: .027, failures: { TEST_ASSERTION: 1 }, retrievedChunks: 24, selectedChunks: 7, contextTokens: 2_180 },
+    baseline: { strategy: 'GENERALIST_AGENT', validRate: 1 / 3, compilationRate: 1 / 3, executionRate: 1 / 3, passedRate: 1 / 3, generationDurationMs: 3_900, executionDurationMs: 920, totalDurationMs: 4_820, totalTokens: 2_940, estimatedCost: .018, failures: { COMPILATION: 1, INFRASTRUCTURE: 1 }, toolCalls: 6, filesInspected: 4 },
+    rag: { strategy: 'RAG', validRate: 2 / 3, compilationRate: 1, executionRate: 1, passedRate: 2 / 3, generationDurationMs: 4_610, executionDurationMs: 850, totalDurationMs: 5_460, totalTokens: 4_180, estimatedCost: .027, failures: { TEST_ASSERTION: 1 }, retrievedChunks: 24, selectedChunks: 7, contextTokens: 2_180 },
     // DEMO · DATOS SIMULADOS: configuración ilustrativa, no es un valor medido.
     configuration: {
       model: { provider: 'OpenAI', model: 'gpt-6-luna', modelVersion: null, reasoningEffort: 'high', temperature: null, maxOutputTokens: null },
@@ -915,14 +932,146 @@ function experimentResult(target: string): ExperimentResultViewModel {
     },
     // Tres pares (RAG + GA por repetición). Dentro de cada par, la posición 1 y 2 ocupan brazos distintos.
     repetitions: [
-      { target, repetition: 1, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'COMPILATION', durationMs: 810, totalTokens: 480, errorSummary: 'jest.config.js: Cannot find module ts-jest', pairId: 'pair-1', pairPosition: 2, attempt: 1, technicallyEvaluable: true },
-      { target, repetition: 2, strategy: 'GENERALIST_AGENT', valid: true, failureType: 'NONE', durationMs: 760, totalTokens: 470, errorSummary: null, pairId: 'pair-2', pairPosition: 1, attempt: 1, technicallyEvaluable: true },
-      { target, repetition: 3, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'INFRASTRUCTURE', durationMs: 840, totalTokens: 520, errorSummary: 'DEMO: fallo de infraestructura en el segundo intento', pairId: 'pair-3', pairPosition: 2, attempt: 2, technicallyEvaluable: false },
-      { target, repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', durationMs: 910, totalTokens: 680, errorSummary: null, pairId: 'pair-1', pairPosition: 1, attempt: 1, technicallyEvaluable: true },
-      { target, repetition: 2, strategy: 'RAG', valid: true, failureType: 'NONE', durationMs: 890, totalTokens: 700, errorSummary: null, pairId: 'pair-2', pairPosition: 2, attempt: 2, technicallyEvaluable: true },
-      { target, repetition: 3, strategy: 'RAG', valid: false, failureType: 'TEST_ASSERTION', durationMs: 930, totalTokens: 710, errorSummary: 'Expected discount to be 20, received 15.', pairId: 'pair-3', pairPosition: 1, attempt: 1, technicallyEvaluable: true },
+      { target, repetition: 1, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'COMPILATION', ...timedRepetition(810), totalTokens: 480, errorSummary: 'jest.config.js: Cannot find module ts-jest', pairId: 'pair-1', pairPosition: 2, attempt: 1, technicallyEvaluable: true },
+      { target, repetition: 2, strategy: 'GENERALIST_AGENT', valid: true, failureType: 'NONE', ...timedRepetition(760), totalTokens: 470, errorSummary: null, pairId: 'pair-2', pairPosition: 1, attempt: 1, technicallyEvaluable: true },
+      { target, repetition: 3, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'INFRASTRUCTURE', ...timedRepetition(840), totalTokens: 520, errorSummary: 'DEMO: fallo de infraestructura en el segundo intento', pairId: 'pair-3', pairPosition: 2, attempt: 2, technicallyEvaluable: false },
+      { target, repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', ...timedRepetition(910), totalTokens: 680, errorSummary: null, pairId: 'pair-1', pairPosition: 1, attempt: 1, technicallyEvaluable: true },
+      { target, repetition: 2, strategy: 'RAG', valid: true, failureType: 'NONE', ...timedRepetition(890), totalTokens: 700, errorSummary: null, pairId: 'pair-2', pairPosition: 2, attempt: 2, technicallyEvaluable: true },
+      { target, repetition: 3, strategy: 'RAG', valid: false, failureType: 'TEST_ASSERTION', ...timedRepetition(930), totalTokens: 710, errorSummary: 'Expected discount to be 20, received 15.', pairId: 'pair-3', pairPosition: 1, attempt: 1, technicallyEvaluable: true },
     ],
   }
+}
+
+/** DEMO · DATOS SIMULADOS: duración de una repetición ejecutada (la llamada al Sandbox es ~30 % del total). */
+function timedRepetition(totalDurationMs: number): Pick<RepetitionResult, 'generationDurationMs' | 'executionDurationMs' | 'totalDurationMs'> {
+  const executionDurationMs = Math.round(totalDurationMs * .3)
+  return { generationDurationMs: totalDurationMs - executionDurationMs, executionDurationMs, totalDurationMs }
+}
+
+/**
+ * DEMO · DATOS SIMULADOS: escenarios de experimento que el mock no genera solo (WI-CONSOLE-021, corte B1).
+ * Se activan con `startExperiment(projectId, 'demo-scenario-<nombre>')` o con `mockGetExperiment('exp_demo_scenario_<nombre>')`.
+ * El selector de la página solo lista targets reales del inventario; estos escenarios se alcanzan desde tests o desde la consola.
+ */
+export const DEMO_EXPERIMENT_SCENARIOS = ['legacy', 'mixed-sandbox', 'no-evaluable', 'phpunit', 'failed-experiment-failed', 'failed-worker-lost', 'failed-unknown'] as const
+export type DemoExperimentScenario = typeof DEMO_EXPERIMENT_SCENARIOS[number]
+
+/** DEMO · opciones del selector de experimentos (solo con mock): escenarios de B1 y errores de creación. Ids que `startExperiment` reconoce. */
+export const DEMO_EXPERIMENT_SELECTOR_OPTIONS: ReadonlyArray<{ id: string; label: string }> = [
+  { id: 'demo-scenario-legacy', label: 'DEMO · corrida previa sin datos OE5' },
+  { id: 'demo-scenario-mixed-sandbox', label: 'DEMO · Sandbox mixto y configuración parcial' },
+  { id: 'demo-scenario-no-evaluable', label: 'DEMO · sin datos evaluables' },
+  { id: 'demo-scenario-phpunit', label: 'DEMO · proyecto PHP con PHPUnit' },
+  { id: 'demo-scenario-failed-experiment-failed', label: 'DEMO · FAILED EXPERIMENT_FAILED' },
+  { id: 'demo-scenario-failed-worker-lost', label: 'DEMO · FAILED EXPERIMENT_WORKER_LOST' },
+  { id: 'demo-scenario-failed-unknown', label: 'DEMO · FAILED código desconocido' },
+  { id: 'demo-error-reasoning-effort', label: 'DEMO · error 422 REASONING_EFFORT_UNSUPPORTED' },
+  { id: 'demo-error-unsupported-project', label: 'DEMO · error 422 UNSUPPORTED_PROJECT' },
+  { id: 'demo-error-llm-unavailable', label: 'DEMO · error 503 LLM_PROVIDER_UNAVAILABLE (reintentable)' },
+]
+
+const DEMO_SCENARIO_TARGET = 'DEMO · escenario'
+
+function demoScenarioOperation(scenario: DemoExperimentScenario, experimentId: string): ExperimentOperation {
+  const base = { id: experimentId, failureCode: null, failureMessage: null }
+  const repetition = (partial: Partial<RepetitionResult> & Pick<RepetitionResult, 'repetition' | 'strategy'>): RepetitionResult => ({
+    target: DEMO_SCENARIO_TARGET, valid: false, failureType: 'NONE', generationDurationMs: null, executionDurationMs: null, totalDurationMs: null, totalTokens: null,
+    errorSummary: null, pairId: null, pairPosition: null, attempt: null, technicallyEvaluable: null, ...partial,
+  })
+  const metrics = (partial: Partial<StrategyMetrics> & Pick<StrategyMetrics, 'strategy'>): StrategyMetrics => ({
+    validRate: null, compilationRate: null, executionRate: null, passedRate: null, generationDurationMs: null, executionDurationMs: null, totalDurationMs: null,
+    totalTokens: null, estimatedCost: null, failures: {}, ...partial,
+  })
+  switch (scenario) {
+    case 'legacy': {
+      // (a) Corrida previa a OE5: configuración, pareado y executionDurationMs en null.
+      const configuration: ExperimentConfiguration = { model: null, budget: null, executionProfile: null, runnerHint: null, randomizationSeed: null }
+      return {
+        ...base, status: 'COMPLETED', progress: 100, configuration,
+        result: {
+          baseline: metrics({ strategy: 'GENERALIST_AGENT', validRate: 1 / 3, passedRate: 1 / 3, compilationRate: 2 / 3, executionRate: 1 / 3, generationDurationMs: 3_100, totalDurationMs: 3_100, failures: { TEST_ASSERTION: 2 } }),
+          rag: metrics({ strategy: 'RAG', validRate: 2 / 3, passedRate: 2 / 3, compilationRate: 1, executionRate: 2 / 3, generationDurationMs: 3_600, totalDurationMs: 3_600, failures: { TEST_ASSERTION: 1 } }),
+          repetitions: [
+            repetition({ repetition: 1, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'TEST_ASSERTION', generationDurationMs: 3_100, totalDurationMs: 3_100, totalTokens: null }),
+            repetition({ repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', generationDurationMs: 3_600, totalDurationMs: 3_600, totalTokens: null }),
+          ],
+          configuration,
+        },
+      }
+    }
+    case 'mixed-sandbox': {
+      // (b) Configuración parcial (budget y runnerHint ausentes) y una llamada fallida al Sandbox (7 ms medidos) junto a otra sin invocar (null).
+      const configuration: ExperimentConfiguration = {
+        model: { provider: 'OpenAI', model: 'gpt-6-luna', modelVersion: null, reasoningEffort: 'high', temperature: null, maxOutputTokens: null },
+        budget: null, executionProfile: 'sandbox-demo-standard', runnerHint: null, randomizationSeed: 'demo-seed-partial',
+      }
+      return {
+        ...base, status: 'COMPLETED', progress: 100, configuration,
+        result: {
+          baseline: metrics({ strategy: 'GENERALIST_AGENT', validRate: 1 / 2, passedRate: 1 / 2, compilationRate: 1, executionRate: 1 / 2, generationDurationMs: 2_400, executionDurationMs: 412, totalDurationMs: 2_812, totalTokens: 1_020, estimatedCost: .011, failures: { TEST_ASSERTION: 1 }, evaluableRepetitions: 2, nonEvaluableRepetitions: 0 }),
+          rag: metrics({ strategy: 'RAG', validRate: 1 / 2, passedRate: 1 / 2, compilationRate: 1 / 2, executionRate: 1 / 2, generationDurationMs: 1_900, executionDurationMs: 7, totalDurationMs: 1_907, totalTokens: 850, estimatedCost: .009, failures: { INFRASTRUCTURE: 1 }, evaluableRepetitions: 1, nonEvaluableRepetitions: 1 }),
+          repetitions: [
+            repetition({ repetition: 1, strategy: 'RAG', valid: false, failureType: 'INFRASTRUCTURE', generationDurationMs: 1_900, executionDurationMs: 7, totalDurationMs: 1_907, totalTokens: 430, errorSummary: 'DEMO: la llamada al Sandbox falló tras 7 ms.', pairId: 'pair-mixed-1', pairPosition: 1, attempt: 2, technicallyEvaluable: false }),
+            repetition({ repetition: 2, strategy: 'RAG', valid: false, failureType: 'COMPILATION', generationDurationMs: 1_400, executionDurationMs: null, totalDurationMs: 1_400, totalTokens: 420, errorSummary: 'DEMO: no compiló; el Sandbox no se invocó.', pairId: 'pair-mixed-2', pairPosition: 2, attempt: 1, technicallyEvaluable: true }),
+            repetition({ repetition: 1, strategy: 'GENERALIST_AGENT', valid: true, failureType: 'NONE', generationDurationMs: 2_400, executionDurationMs: 412, totalDurationMs: 2_812, totalTokens: 1_020, pairId: 'pair-mixed-1', pairPosition: 2, attempt: 1, technicallyEvaluable: true }),
+          ],
+          configuration,
+        },
+      }
+    }
+    case 'no-evaluable': {
+      // (c) El agente generalista no tiene repeticiones evaluables: tasas y medias en null, contadores 0 / 3.
+      const configuration: ExperimentConfiguration = {
+        model: { provider: 'OpenAI', model: 'gpt-6-luna', modelVersion: null, reasoningEffort: 'high', temperature: null, maxOutputTokens: null },
+        budget: { toolCallCap: 8, contextTokenBudget: 12_000, maxDurationMs: 60_000 }, executionProfile: 'sandbox-demo-standard', runnerHint: 'demo-runner', randomizationSeed: 'demo-seed-no-evaluable',
+      }
+      return {
+        ...base, status: 'COMPLETED', progress: 100, configuration,
+        result: {
+          baseline: metrics({ strategy: 'GENERALIST_AGENT', evaluableRepetitions: 0, nonEvaluableRepetitions: 3, failures: {} }),
+          rag: metrics({ strategy: 'RAG', validRate: 1, compilationRate: 1, executionRate: 1, passedRate: 2 / 3, generationDurationMs: 1_800, executionDurationMs: 640, totalDurationMs: 2_440, totalTokens: 1_500, estimatedCost: .014, failures: { TEST_ASSERTION: 1 }, evaluableRepetitions: 3, nonEvaluableRepetitions: 0 }),
+          repetitions: [
+            repetition({ repetition: 1, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'INFRASTRUCTURE', generationDurationMs: 800, executionDurationMs: 9, totalDurationMs: 809, errorSummary: 'DEMO: fallo externo en el segundo intento.', pairId: 'pair-ne-1', pairPosition: 2, attempt: 2, technicallyEvaluable: false }),
+            repetition({ repetition: 2, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'INFRASTRUCTURE', generationDurationMs: 900, executionDurationMs: 11, totalDurationMs: 911, pairId: 'pair-ne-2', pairPosition: 1, attempt: 2, technicallyEvaluable: false }),
+            repetition({ repetition: 3, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'INFRASTRUCTURE', generationDurationMs: 700, totalDurationMs: 700, pairId: 'pair-ne-3', pairPosition: 2, attempt: 2, technicallyEvaluable: false }),
+            repetition({ repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', ...timedRepetition(2_300), totalTokens: 500, pairId: 'pair-ne-1', pairPosition: 1, attempt: 1, technicallyEvaluable: true }),
+          ],
+          configuration,
+        },
+      }
+    }
+    case 'phpunit': {
+      // (f) Proyecto PHP con PHPUnit (CS-CORE-20261009-018): runnerHint y perfil se muestran tal cual; una respuesta sin <?php es INVALID/COMPILATION sin reintento.
+      const configuration: ExperimentConfiguration = {
+        model: { provider: 'OpenAI', model: 'gpt-6-luna', modelVersion: null, reasoningEffort: 'medium', temperature: null, maxOutputTokens: null },
+        budget: { toolCallCap: 8, contextTokenBudget: 12_000, maxDurationMs: 60_000 }, executionProfile: 'PHP_LARAVEL_PHPUNIT', runnerHint: 'PHPUNIT', randomizationSeed: 'demo-seed-phpunit',
+      }
+      return {
+        ...base, status: 'COMPLETED', progress: 100, configuration,
+        result: {
+          baseline: metrics({ strategy: 'GENERALIST_AGENT', validRate: .5, compilationRate: .5, executionRate: .5, passedRate: .5, generationDurationMs: 2_000, executionDurationMs: 380, totalDurationMs: 2_380, totalTokens: 1_300, failures: { COMPILATION: 1 }, evaluableRepetitions: 2, nonEvaluableRepetitions: 0 }),
+          rag: metrics({ strategy: 'RAG', validRate: 1, compilationRate: 1, executionRate: 1, passedRate: 1, generationDurationMs: 1_700, executionDurationMs: 520, totalDurationMs: 2_220, totalTokens: 1_100, failures: {}, evaluableRepetitions: 2, nonEvaluableRepetitions: 0 }),
+          repetitions: [
+            repetition({ repetition: 1, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'COMPILATION', ...timedRepetition(2_000), errorSummary: 'DEMO: respuesta sin marca <?php; registrada como INVALID/COMPILATION sin reintento.', pairId: 'pair-php-1', pairPosition: 2, attempt: 1, technicallyEvaluable: false }),
+            repetition({ repetition: 2, strategy: 'GENERALIST_AGENT', valid: true, failureType: 'NONE', ...timedRepetition(2_760), totalTokens: 1_300, pairId: 'pair-php-2', pairPosition: 1, attempt: 1, technicallyEvaluable: true }),
+            repetition({ repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', ...timedRepetition(2_220), totalTokens: 1_100, pairId: 'pair-php-1', pairPosition: 1, attempt: 1, technicallyEvaluable: true }),
+            repetition({ repetition: 2, strategy: 'RAG', valid: true, failureType: 'NONE', ...timedRepetition(2_180), totalTokens: 1_100, pairId: 'pair-php-2', pairPosition: 2, attempt: 1, technicallyEvaluable: true }),
+          ],
+          configuration,
+        },
+      }
+    }
+    case 'failed-experiment-failed':
+      return { ...base, status: 'FAILED', progress: 34, configuration: null, failureCode: 'EXPERIMENT_FAILED', failureMessage: 'DEMO: excepción capturada durante la repetición 2.' }
+    case 'failed-worker-lost':
+      return { ...base, status: 'FAILED', progress: 50, configuration: null, failureCode: 'EXPERIMENT_WORKER_LOST', failureMessage: 'DEMO: el worker dejó de responder y la cola agotó los intentos.' }
+    case 'failed-unknown':
+      return { ...base, status: 'FAILED', progress: 17, configuration: null, failureCode: 'DEMO_UNKNOWN_FAILURE', failureMessage: 'DEMO: código que la Console no conoce; se muestra genérico.' }
+  }
+}
+
+function demoScenarioExperimentId(scenario: DemoExperimentScenario): string {
+  return `exp_demo_scenario_${scenario}`
 }
 
 const DISCOVERED_FILES_TOTAL = 146
@@ -976,21 +1125,32 @@ function seedExperimentContextTraces(experimentId: string, projectVersionId: str
 export async function mockStartExperiment(projectId: string, targetId: string): Promise<ExperimentAccepted> {
   await latency()
   const project = requireProjectRole(projectId, 'WRITER')
+  // DEMO · errores de creación (WI-CONSOLE-021, INTEROP-2.7 §6.5.1). Ninguno crea el experimento.
+  if (targetId === 'demo-error-reasoning-effort') throw new ApiError('El modelo no admite el esfuerzo de razonamiento pedido (DEMO).', 422, 'demo-correlation-id', 'REASONING_EFFORT_UNSUPPORTED', { supportedEfforts: ['low', 'medium'] })
+  if (targetId === 'demo-error-unsupported-project') throw new ApiError('El proyecto no tiene framework JEST, VITEST o PHPUNIT detectado (DEMO).', 422, 'demo-correlation-id', 'UNSUPPORTED_PROJECT')
+  if (targetId === 'demo-error-llm-unavailable') throw new ApiError('El modelo de experimentos no está disponible (DEMO).', 503, 'demo-correlation-id', 'LLM_PROVIDER_UNAVAILABLE')
+  const scenario = DEMO_EXPERIMENT_SCENARIOS.find((name) => targetId === `demo-scenario-${name}`)
+  if (scenario) {
+    const scenarioId = demoScenarioExperimentId(scenario)
+    experiments.set(scenarioId, { projectId, polls: 0, fixed: true, operation: demoScenarioOperation(scenario, scenarioId) })
+    return { analysisRunId: projectId, experimentId: scenarioId, projectVersionId: project.currentVersionId ?? 'demo-project-version', status: 'PENDING', pollAfterMs: 460 }
+  }
   const inventory = project.currentVersionId ? versions.get(project.currentVersionId)?.inventory : undefined
   const target = inventory?.targets.find((item) => item.id === targetId)
   if (!target) notFound('El TestTarget no existe o no pertenece a este Project.', 'UNRESOLVABLE_TARGET')
   const label = target?.methodName ?? target?.symbolName ?? targetId
   sequence += 1
   const experimentId = `exp_demo_${sequence}`
-  experiments.set(experimentId, { projectId, polls: 0, operation: { id: experimentId, status: 'PENDING', progress: 0, result: experimentResult(label) } })
+  experiments.set(experimentId, { projectId, polls: 0, operation: { id: experimentId, status: 'PENDING', progress: 0, failureCode: null, failureMessage: null, result: experimentResult(label) } })
   if (project.currentVersionId) seedExperimentContextTraces(experimentId, project.currentVersionId, targetId, target?.filePath ?? 'src/domain/OrderService.ts', target?.methodName ?? target?.symbolName ?? null)
-  return { experimentId, status: 'PENDING', pollAfterMs: 460 }
+  return { analysisRunId: projectId, experimentId, projectVersionId: project.currentVersionId ?? 'demo-project-version', status: 'PENDING', pollAfterMs: 460 }
 }
 
 export async function mockGetExperiment(experimentId: string): Promise<ExperimentOperation> {
   await latency()
   const state = experiments.get(experimentId)
   if (!state || isProjectDeleted(state.projectId)) notFound(`No existe el experimento demo "${experimentId}".`, 'INVALID_REQUEST')
+  if (state.fixed) return clone(state.operation)
   state.polls += 1
   if (state.polls === 1) state.operation = { ...state.operation, status: 'RUNNING', progress: 34 }
   else if (state.polls === 2) state.operation = { ...state.operation, status: 'RUNNING', progress: 72 }
@@ -1037,9 +1197,9 @@ export async function mockListRunComparisons(analysisRunId: string): Promise<Run
 
 /* ---- INTEROP-2.7 §6.15 (WI-CONSOLE-014, OE2 SE vs SEM). DEMO · DATOS SIMULADOS: no son evidencia de tesis ni de producción. ---- */
 
-function buildRetrievalMode(comparisonId: string, mode: 'SE' | 'SEM', metrics: RetrievalMetricsResponse | null): RetrievalModeResultResponse {
+function buildRetrievalMode(comparisonId: string, mode: 'SE' | 'SEM', metrics: RetrievalMetricsResponse | null, pool: DemoRetrievalCandidate[] = DEMO_RETRIEVAL_CANDIDATES): RetrievalModeResultResponse {
   const isSE = mode === 'SE'
-  const ordered = [...DEMO_RETRIEVAL_CANDIDATES].sort((left, right) => (isSE ? (right.combinedScore ?? 0) - (left.combinedScore ?? 0) : (right.semanticScore ?? 0) - (left.semanticScore ?? 0)))
+  const ordered = [...pool].sort((left, right) => (isSE ? (right.combinedScore ?? 0) - (left.combinedScore ?? 0) : (right.semanticScore ?? 0) - (left.semanticScore ?? 0)))
   const candidates: RetrievalCandidateResponse[] = ordered.map((candidate, index) => ({
     rank: index + 1,
     chunkId: candidate.chunkId,
@@ -1067,8 +1227,8 @@ function buildRetrievalResults(state: MockRetrievalComparisonState, completedAt:
     projectVersionId: operation.projectVersionId,
     symbol: clone(operation.symbol),
     modes: [
-      buildRetrievalMode(operation.id, 'SE', withMetrics ? DEMO_RETRIEVAL_METRICS.SE : null),
-      buildRetrievalMode(operation.id, 'SEM', withMetrics ? DEMO_RETRIEVAL_METRICS.SEM : null),
+      buildRetrievalMode(operation.id, 'SE', withMetrics ? DEMO_RETRIEVAL_METRICS.SE : null, state.candidates),
+      buildRetrievalMode(operation.id, 'SEM', withMetrics ? DEMO_RETRIEVAL_METRICS.SEM : null, state.candidates),
     ],
     completedAt,
   }
@@ -1095,7 +1255,7 @@ function advanceRetrievalComparison(state: MockRetrievalComparisonState): void {
   }
   const completedAt = nowIso()
   if (state.finalStatus === 'FAILED') {
-    state.operation = { ...state.operation, status: 'FAILED', failureCode: 'DEMO_RETRIEVAL_FAILED', failureMessage: 'Demo: la comparación terminó sin resultados.', completedAt }
+    state.operation = { ...state.operation, status: 'FAILED', failureCode: 'RETRIEVAL_COMPARISON_FAILED', failureMessage: 'DEMO · la comparación terminó sin resultados.', completedAt }
     return
   }
   state.results = buildRetrievalResults(state, completedAt)
@@ -1107,6 +1267,8 @@ export async function mockStartRetrievalComparison(analysisRunId: string, symbol
   await latency()
   if (!idempotencyKey) throw new ApiError('Falta el encabezado Idempotency-Key.', 400, 'demo-correlation-id', 'IDEMPOTENCY_KEY_REQUIRED')
   if (!RETRIEVAL_IDEMPOTENCY_KEY_PATTERN.test(idempotencyKey)) throw new ApiError('El encabezado Idempotency-Key debe ser un UUID.', 400, 'demo-correlation-id', 'INVALID_IDEMPOTENCY_KEY')
+  // DEMO · errores de creación (§6.15): ninguno crea la comparación.
+  if (analysisRunId === DEMO_RETRIEVAL_NOT_FINISHED_RUN_ID) throw new ApiError('DEMO · el Run todavía no terminó de analizarse.', 409, 'demo-correlation-id', 'ANALYSIS_NOT_FINISHED')
   const run = findVisibleRun(analysisRunId)
   if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   requireProjectRole(run.projectId, 'WRITER')
@@ -1148,15 +1310,21 @@ export async function mockGetRetrievalComparison(retrievalComparisonId: string):
   return clone(state.operation)
 }
 
-/** `GET /retrieval-comparisons/{id}/results`: 409 `RETRIEVAL_COMPARISON_NOT_FINISHED` antes de un estado terminal. */
+/**
+ * `GET /retrieval-comparisons/{id}/results` (§6.15): 409 `RETRIEVAL_COMPARISON_NOT_FINISHED` en PENDING/RUNNING y
+ * 409 `RETRIEVAL_COMPARISON_FAILED` en FAILED (el detalle se lee del status, no de aquí). DEMO · simulado.
+ */
 export async function mockGetRetrievalComparisonResults(retrievalComparisonId: string): Promise<RetrievalComparisonResultsResponse> {
   await latency()
   const state = requireRetrievalComparison(retrievalComparisonId)
   const status = state.operation.status
-  // §6.15 no define resultados para FAILED: el mock responde 409 con un código del contrato (nunca un código inventado).
+  if (status === 'FAILED') throw new ApiError('DEMO · la comparación falló; consulta failureCode y failureMessage del estado.', 409, 'demo-correlation-id', 'RETRIEVAL_COMPARISON_FAILED')
   if (status !== 'COMPLETED' || !state.results) throw new ApiError('La comparación todavía no terminó con resultados.', 409, 'demo-correlation-id', 'RETRIEVAL_COMPARISON_NOT_FINISHED')
   return clone(state.results)
 }
+
+/** DEMO · id de Run que solo sirve para el error de creación de OE2 409 ANALYSIS_NOT_FINISHED. No aparece en listados. */
+export const DEMO_RETRIEVAL_NOT_FINISHED_RUN_ID = 'arun_demo_retrieval_not_finished'
 
 /** `GET /analysis-runs/{analysisRunId}/retrieval-comparisons?cursor&limit`: lectura pura, solo estado; más recientes primero. */
 export async function mockListRetrievalComparisons(analysisRunId: string, cursor: string | null): Promise<RetrievalComparisonListPage> {
@@ -1184,7 +1352,7 @@ function seedRetrievalComparisons(): void {
   const seed = (
     id: string,
     symbol: AnalysisSymbolResponse,
-    options: { status: RetrievalComparisonStatusResponse['status']; advances: boolean; finalStatus: 'COMPLETED' | 'FAILED'; withMetrics: boolean; failureCode?: string; failureMessage?: string },
+    options: { status: RetrievalComparisonStatusResponse['status']; advances: boolean; finalStatus: 'COMPLETED' | 'FAILED'; withMetrics: boolean; failureCode?: string; failureMessage?: string; candidates?: DemoRetrievalCandidate[] },
   ) => {
     const terminal = options.status === 'COMPLETED' || options.status === 'FAILED'
     const state: MockRetrievalComparisonState = {
@@ -1195,6 +1363,7 @@ function seedRetrievalComparisons(): void {
       polls: 0,
       fingerprint: retrievalFingerprint(run.id, symbol.filePath, symbol.qualifiedName),
       results: null,
+      candidates: options.candidates,
       operation: {
         id,
         analysisRunId: run.id,
@@ -1218,10 +1387,14 @@ function seedRetrievalComparisons(): void {
   seed('rcmp_demo_seed_completed_sin_metricas', calculateTotal, { status: 'COMPLETED', advances: false, finalStatus: 'COMPLETED', withMetrics: false })
   // COMPLETED con métricas: demo de una comparación creada con verdad de terreno externa; la UI no permite cargarla en este corte.
   seed('rcmp_demo_seed_completed_con_metricas', createOrder, { status: 'COMPLETED', advances: false, finalStatus: 'COMPLETED', withMetrics: true })
+  // DEMO · proyecto PHP (CS-CORE-20261009-017): la comparación ya no devuelve 422 por lenguaje; semilla con símbolo PHP.
+  seed(DEMO_RETRIEVAL_PHP_COMPARISON_ID, {
+    language: 'PHP', kind: 'METHOD', qualifiedName: 'CouponService::apply', filePath: 'app/Services/CouponService.php', changeKind: 'DIRECTLY_CHANGED',
+  } as AnalysisSymbolResponse, { status: 'COMPLETED', advances: false, finalStatus: 'COMPLETED', withMetrics: false, candidates: DEMO_RETRIEVAL_PHP_CANDIDATES })
   seed('rcmp_demo_seed_failed', formatCurrencySymbol, {
     status: 'FAILED', advances: false, finalStatus: 'FAILED', withMetrics: false,
-    failureCode: 'DEMO_EMBEDDING_INDEX_UNAVAILABLE',
-    failureMessage: 'Demo: el índice de embeddings no respondió; la comparación no produjo resultados.',
+    failureCode: 'RETRIEVAL_COMPARISON_FAILED',
+    failureMessage: 'DEMO · el índice de embeddings no respondió; la comparación no produjo resultados.',
   })
 }
 
@@ -1701,8 +1874,8 @@ const TRACE_TARGETS_BY_RUN: Record<string, () => TraceTargetResponse[]> = {
       executions: {
         status: 'PRESENT',
         items: [
-          { executionId: 'exec_demo_pr45_1', proposalId: 'prop_pr45_1', attempt: 1, executionProfile: TRACE_EXECUTION_PROFILE, outcome: 'VALIDATED' },
-          { executionId: 'exec_demo_pr45_2', proposalId: 'prop_pr45_2', attempt: 1, executionProfile: TRACE_EXECUTION_PROFILE, outcome: 'VALIDATED' },
+          { executionId: 'exec_demo_pr45_1', proposalId: 'prop_pr45_1', attempt: 1, executionProfile: TRACE_EXECUTION_PROFILE, outcome: 'SUCCESS' },
+          { executionId: 'exec_demo_pr45_2', proposalId: 'prop_pr45_2', attempt: 1, executionProfile: TRACE_EXECUTION_PROFILE, outcome: 'SUCCESS' },
         ],
       },
     },
@@ -1711,7 +1884,7 @@ const TRACE_TARGETS_BY_RUN: Record<string, () => TraceTargetResponse[]> = {
       retrieval: { status: 'PRESENT', retrievalId: 'ret_demo_pr45_money' },
       context: { status: 'PRESENT', contextId: 'ctx_demo_pr45_money', functionalRuleIds: ['fk_demo_regla_inexistente'] },
       generation: { status: 'PRESENT', proposalIds: ['prop_pr45_3'] },
-      executions: { status: 'PRESENT', items: [{ executionId: 'exec_demo_pr45_3', proposalId: 'prop_pr45_3', attempt: 2, executionProfile: TRACE_EXECUTION_PROFILE, outcome: 'VALIDATED' }] },
+      executions: { status: 'PRESENT', items: [{ executionId: 'exec_demo_pr45_3', proposalId: 'prop_pr45_3', attempt: 2, executionProfile: TRACE_EXECUTION_PROFILE, outcome: 'SUCCESS' }] },
     },
   ],
   // BEHAVIORAL_MISMATCH: un target con la prueba generada contradiciendo el comportamiento observado.
@@ -1735,7 +1908,8 @@ const TRACE_TARGETS_BY_RUN: Record<string, () => TraceTargetResponse[]> = {
     },
   ],
   // ACTION_REQUIRED: el flujo se detuvo esperando contexto funcional; los enlaces posteriores constan NOT_APPLICABLE.
-  arun_checkout_pr42: () => [notApplicableTarget(TRACE_SYMBOL_CALCULATE_TOTAL), notApplicableTarget(TRACE_SYMBOL_COUPON_APPLY)],
+  // Orden de §6.16: filePath asc (`src/domain/CouponPolicy.ts` antes que `src/domain/OrderService.ts`).
+  arun_checkout_pr42: () => [notApplicableTarget(TRACE_SYMBOL_COUPON_APPLY), notApplicableTarget(TRACE_SYMBOL_CALCULATE_TOTAL)],
   // NO_TEST_RELEVANT_CHANGES: sin targets; el changeset existe con 0 símbolos.
   arun_billing_pr22: () => [],
 }
@@ -1745,6 +1919,9 @@ function traceTargetsFor(run: AnalysisRunDetailResponse): TraceTargetResponse[] 
   if (fixture) return fixture()
   return run.symbols.map(notApplicableTarget)
 }
+
+/** DEMO · Runs con Check de GitHub pero sin publicación de pruebas: PRESENT con rama/PR y `freshness` null y `checkId` null (GitHub responde 204). */
+const TRACE_CHECK_ONLY_RUN_IDS = new Set(['arun_checkout_pr47'])
 
 function traceFor(run: AnalysisRunDetailResponse): AnalysisRunTraceResponse {
   const targets = traceTargetsFor(run)
@@ -1761,7 +1938,9 @@ function traceFor(run: AnalysisRunDetailResponse): AnalysisRunTraceResponse {
         sourceHeadSha: publication.sourceHeadSha,
         freshness: publication.sourceHeadSha === run.pullRequest.headSha ? 'CURRENT' : 'STALE',
       }
-    : { status: 'NOT_APPLICABLE', checkId: null, companionBranch: null, companionPullRequestUrl: null, sourceHeadSha: null, freshness: null }
+    : TRACE_CHECK_ONLY_RUN_IDS.has(run.id)
+      ? { status: 'PRESENT', checkId: null, companionBranch: null, companionPullRequestUrl: null, sourceHeadSha: null, freshness: null }
+      : { status: 'NOT_APPLICABLE', checkId: null, companionBranch: null, companionPullRequestUrl: null, sourceHeadSha: null, freshness: null }
   return {
     analysisRunId: run.id,
     repositoryName: run.pullRequest.repositoryName,
@@ -1791,7 +1970,6 @@ export async function mockGetAnalysisRunTrace(analysisRunId: string): Promise<An
 
 /** Mock de INTEROP-2.7 §6.16 `GET .../evidence` (Reader). Datos DEMO · DATOS SIMULADOS: la UI rotula; el bundle conserva la forma del contrato sin campos extra. 409 `EVIDENCE_NOT_FINISHED` hasta el estado terminal. */
 const DEMO_EVIDENCE_NOT_FINISHED = 'La evidencia de este sujeto todavía no está disponible: el proceso sigue en curso.'
-const DEMO_RANDOMIZATION_SEED = 'demo-seed-no-core'
 
 function evidenceAnalysisRun(run: AnalysisRunDetailResponse, generatedAt: string): EvidenceBundleResponse {
   return {
@@ -1805,7 +1983,7 @@ function evidenceAnalysisRun(run: AnalysisRunDetailResponse, generatedAt: string
       repositoryName: run.pullRequest.repositoryName,
       pullRequestNumber: run.pullRequest.number,
       headSha: run.pullRequest.headSha,
-      projectVersionId: projects.get(run.projectId)?.currentVersionId ?? '',
+      projectVersionId: projects.get(run.projectId)?.currentVersionId ?? null,
       snapshotRef: `demo-snapshot:${run.id}`,
       targets: clone(run.symbols),
       createdAt: run.createdAt,
@@ -1817,6 +1995,57 @@ function evidenceAnalysisRun(run: AnalysisRunDetailResponse, generatedAt: string
     sandbox: [],
     experimental: [],
     publication: traceFor(run).publication,
+  }
+}
+
+/**
+ * DEMO · DATOS SIMULADOS: una repetición de experimento en el bundle §6.16. Un dato no persistido (corrida previa a OE5 o
+ * ejecución sin Sandbox) es `null`, nunca 0. `attempt` y `technicallyEvaluable` del contrato no admiten null: sin dato,
+ * el mock usa 1 y `false` (pendiente de confirmar con Core; ver el reporte de WI-CONSOLE-021, corte C).
+ */
+function evidenceExperimentRepetition(subjectId: string, configuration: ExperimentConfiguration | null, rep: RepetitionResult): {
+  generation: EvidenceBundleResponse['generation'][number]
+  sandbox: EvidenceBundleResponse['sandbox'][number]
+  experimental: EvidenceBundleResponse['experimental'][number]
+} {
+  const executed = rep.executionDurationMs !== null
+  const executionId = executed ? `demo-exec-${subjectId}-${rep.strategy}-${rep.repetition}` : null
+  return {
+    generation: {
+      strategy: rep.strategy,
+      repetition: rep.repetition,
+      attempt: rep.attempt,
+      provider: configuration?.model?.provider ?? null,
+      model: configuration?.model?.model ?? null,
+      modelVersion: configuration?.model?.modelVersion ?? null,
+      reasoningEffort: configuration?.model?.reasoningEffort ?? null,
+      inputTokens: null,
+      outputTokens: null,
+      durationMs: rep.generationDurationMs,
+      artifactHash: executed ? fakeSha256(`artifact:${subjectId}:${rep.strategy}:${rep.repetition}`) : null,
+    },
+    sandbox: {
+      executionId,
+      strategy: rep.strategy,
+      repetition: rep.repetition,
+      executionProfile: configuration?.executionProfile ?? null,
+      runnerHint: configuration?.runnerHint ?? null,
+      attempt: rep.attempt ?? 1,
+      facts: { executionProfile: configuration?.executionProfile ?? null, failureCategory: rep.failureType === 'NONE' ? null : rep.failureType, failureMessage: rep.errorSummary },
+      durationMs: rep.executionDurationMs,
+      requestId: executionId,
+      correlationId: executed ? 'demo-correlation-id' : null,
+    },
+    experimental: {
+      experimentId: subjectId,
+      strategy: rep.strategy,
+      repetition: rep.repetition,
+      pairId: rep.pairId,
+      pairPosition: rep.pairPosition,
+      attempt: rep.attempt ?? 1,
+      randomizationSeed: configuration?.randomizationSeed ?? null,
+      technicallyEvaluable: rep.technicallyEvaluable === true,
+    },
   }
 }
 
@@ -1832,13 +2061,9 @@ export async function mockGetEvidence(kind: EvidenceKind, subjectId: string): Pr
   if (kind === 'EXPERIMENT') {
     const state = experiments.get(subjectId)
     if (!state || isProjectDeleted(state.projectId)) notFound(`No existe el experimento demo "${subjectId}".`, 'INVALID_REQUEST')
-    const { status, result } = state.operation
+    const { status, result, configuration } = state.operation
     if (status === 'PENDING' || status === 'RUNNING') throw new ApiError(DEMO_EVIDENCE_NOT_FINISHED, 409, 'demo-correlation-id', 'EVIDENCE_NOT_FINISHED')
-    const experimental: EvidenceBundleResponse['experimental'] = []
-    for (const repetition of result?.repetitions ?? []) {
-      if (repetition.pairId === null || repetition.pairPosition === null || repetition.attempt === null) continue
-      experimental.push({ experimentId: subjectId, strategy: repetition.strategy, repetition: repetition.repetition, pairId: repetition.pairId, pairPosition: repetition.pairPosition, attempt: repetition.attempt, randomizationSeed: DEMO_RANDOMIZATION_SEED })
-    }
+    const rows = (result?.repetitions ?? []).map((rep) => evidenceExperimentRepetition(subjectId, configuration ?? null, rep))
     return clone({
       schemaVersion: '1',
       kind: 'EXPERIMENT',
@@ -1848,21 +2073,23 @@ export async function mockGetEvidence(kind: EvidenceKind, subjectId: string): Pr
       analysisRun: null,
       retrieval: [],
       context: [],
-      generation: [],
+      generation: rows.map((row) => row.generation),
       agentExploration: [],
-      sandbox: [],
-      experimental,
+      sandbox: rows.map((row) => row.sandbox),
+      experimental: rows.map((row) => row.experimental),
       publication: null,
     })
   }
   const state = requireRetrievalComparison(subjectId)
   const status = state.operation.status
   if (status === 'PENDING' || status === 'RUNNING') throw new ApiError(DEMO_EVIDENCE_NOT_FINISHED, 409, 'demo-correlation-id', 'EVIDENCE_NOT_FINISHED')
+  // §6.16: una comparación FAILED responde 200 con retrieval: [] (state.results es null).
   const retrieval: EvidenceBundleResponse['retrieval'] = (state.results?.modes ?? []).map((mode) => ({
     retrievalId: mode.retrievalId,
     mode: mode.mode,
-    config: mode.config,
-    candidates: mode.candidates,
+    config: { semanticTopK: mode.config.semanticTopK, finalTopK: mode.config.finalTopK, semanticWeight: mode.config.semanticWeight, structuralWeight: mode.config.structuralWeight, embeddingModel: mode.config.embeddingModel },
+    candidates: mode.candidates.map((candidate) => ({ ...candidate })),
+    metrics: mode.metrics,
   }))
   return clone({
     schemaVersion: '1',
@@ -1879,6 +2106,13 @@ export async function mockGetEvidence(kind: EvidenceKind, subjectId: string): Pr
     experimental: [],
     publication: null,
   })
+}
+
+/** Solo tests: fija la procedencia de escenario de una regla demo (p. ej. `scenarioKey: 'LEGACY'` o `scenarioKind: null`). */
+export function setMockFunctionalKnowledgeScenarioForTests(knowledgeId: string, patch: { scenarioKind?: FunctionalKnowledgeResponse['scenarioKind'] | null; scenarioKey?: string | null }): void {
+  const item = functionalKnowledge.get(knowledgeId)
+  if (!item) throw new Error(`No existe la regla demo "${knowledgeId}".`)
+  functionalKnowledge.set(knowledgeId, { ...item, ...patch } as FunctionalKnowledgeResponse)
 }
 
 /** Solo para pruebas: cambia estado o HEAD de un Run sembrado para simular el paso de QUEUED/PROCESSING a terminal o un push nuevo. */

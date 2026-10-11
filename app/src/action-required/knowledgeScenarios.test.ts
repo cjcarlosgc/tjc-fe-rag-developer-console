@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { FunctionalKnowledgeResponse } from './types'
-import { confirmingRoleLabel, groupByScenarioKind, scenarioLabel, SCENARIO_KIND_LABELS, SCENARIO_KIND_ORDER, shortSha, supersessionChain, UNKNOWN_SCENARIO_LABEL } from './knowledgeScenarios'
+import { confirmingRoleLabel, displayScenarioKey, groupByScenarioKind, scenarioLabel, SCENARIO_KIND_LABELS, SCENARIO_KIND_ORDER, shortSha, supersessionChain, UNKNOWN_SCENARIO_LABEL } from './knowledgeScenarios'
 
 function rule(overrides: Partial<FunctionalKnowledgeResponse> & Pick<FunctionalKnowledgeResponse, 'id'>): FunctionalKnowledgeResponse {
   return {
@@ -107,5 +107,13 @@ describe('knowledgeScenarios — cadena de supersesión', () => {
     const a = rule({ id: 'a', supersedesId: 'b' })
     const b = rule({ id: 'b', supersedesId: 'a' })
     expect(supersessionChain([a, b], 'a').map((item) => item.id).sort()).toEqual(['a', 'b'])
+  })
+})
+
+describe('estado vacío de escenario y clave (INTEROP-2.7 §6.11)', () => {
+  it('displayScenarioKey: null y LEGACY no son claves visibles; una clave real sí', () => {
+    expect(displayScenarioKey(null)).toBeNull()
+    expect(displayScenarioKey('LEGACY')).toBeNull()
+    expect(displayScenarioKey('order.calculateTotal.rounding')).toBe('order.calculateTotal.rounding')
   })
 })

@@ -28,6 +28,17 @@ function isScenarioKind(value: string): value is ScenarioKind {
   return (SCENARIO_KIND_ORDER as readonly string[]).includes(value)
 }
 
+/** Sin escenario registrado (p. ej. `scenarioKind` ausente): estado vacío, no la categoría «Otros». */
+export const MISSING_SCENARIO_LABEL = 'sin escenario registrado'
+/** INTEROP-2.7 §6.11: las reglas históricas llegan con `scenarioKey: 'LEGACY'`; no es una clave de escenario real. */
+export const LEGACY_SCENARIO_KEY = 'LEGACY'
+export const MISSING_SCENARIO_KEY_LABEL = 'sin clave de escenario (regla histórica)'
+
+/** `scenarioKey` para mostrar: `null` o `LEGACY` se presentan como estado vacío, nunca como una clave. */
+export function displayScenarioKey(key: string | null): string | null {
+  return key && key !== LEGACY_SCENARIO_KEY ? key : null
+}
+
 export function scenarioLabel(kind: string): string {
   return isScenarioKind(kind) ? SCENARIO_KIND_LABELS[kind] : UNKNOWN_SCENARIO_LABEL
 }

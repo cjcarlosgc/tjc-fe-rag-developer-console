@@ -9,9 +9,10 @@ import type { ExperimentConfiguration, ExperimentOperation, ExperimentResultView
 
 export interface ExperimentStatusResponse {
   id: string
+  analysisRunId: string
   projectId: string
   projectVersionId: string
-  targetId: string
+  symbol: import('../control-plane/types').AnalysisSymbolResponse
   status: 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED'
   completedRepetitions: number
   totalRepetitions: number
@@ -19,12 +20,12 @@ export interface ExperimentStatusResponse {
   failureMessage: string | null
   startedAt: string | null
   completedAt: string | null
-  /** INTEROP-2.7 §6.5.1, opcionales: Core aún puede no enviarlos. */
-  model?: ExperimentModelConfigResponse
-  budget?: ExperimentBudgetResponse
-  executionProfile?: string
-  runnerHint?: string
-  randomizationSeed?: string
+  /** INTEROP-2.7 §6.5.1, opcionales y nullables: corridas previas a OE5 los emiten en `null` o no los envían. */
+  model?: ExperimentModelConfigResponse | null
+  budget?: ExperimentBudgetResponse | null
+  executionProfile?: string | null
+  runnerHint?: string | null
+  randomizationSeed?: string | null
 }
 
 interface ExperimentModelConfigResponse {
@@ -44,13 +45,14 @@ interface ExperimentBudgetResponse {
 
 interface StrategyMetricsResponse {
   strategy: ExperimentStrategy
-  validRate: number
-  compilationRate: number
-  executionRate: number
-  passedRate: number
-  generationDurationMs: number
-  executionDurationMs: number
-  totalDurationMs: number
+  /** CS-CORE-20261009-015: `null` si la estrategia no tiene repeticiones evaluables. */
+  validRate: number | null
+  compilationRate: number | null
+  executionRate: number | null
+  passedRate: number | null
+  generationDurationMs: number | null
+  executionDurationMs: number | null
+  totalDurationMs: number | null
   inputTokens: number | null
   outputTokens: number | null
   totalTokens: number | null
@@ -61,6 +63,8 @@ interface StrategyMetricsResponse {
   toolCalls: number | null
   filesInspected: number | null
   failures: Partial<Record<FailureType, number>>
+  evaluableRepetitions?: number
+  nonEvaluableRepetitions?: number
 }
 
 interface ExperimentRepetitionResponse {
@@ -68,6 +72,9 @@ interface ExperimentRepetitionResponse {
   strategy: ExperimentStrategy
   valid: boolean
   failureType: FailureType
+  generationDurationMs?: number | null
+  /** CS-CORE-20261009-008/-009: `null` si el Sandbox no se invocó; número si la llamada falló tras medirse. */
+  executionDurationMs?: number | null
   totalDurationMs: number
   totalTokens: number | null
   errorSummary: string | null
@@ -80,8 +87,9 @@ interface ExperimentRepetitionResponse {
 
 export interface ExperimentResultsResponse {
   experimentId: string
+  analysisRunId: string
   projectVersionId: string
-  targetId: string
+  symbol: import('../control-plane/types').AnalysisSymbolResponse
   repetitionsPerStrategy: 3
   strategies: StrategyMetricsResponse[]
   repetitions: ExperimentRepetitionResponse[]
@@ -91,11 +99,13 @@ export interface ExperimentResultsResponse {
 function toStrategyMetrics(metrics: StrategyMetricsResponse): StrategyMetrics {
   return {
     strategy: metrics.strategy,
-    validRate: metrics.validRate,
-    compilationRate: metrics.compilationRate,
-    executionRate: metrics.executionRate,
-    passedRate: metrics.passedRate,
-    totalDurationMs: metrics.totalDurationMs,
+    validRate: metrics.validRate ?? null,
+    compilationRate: metrics.compilationRate ?? null,
+    executionRate: metrics.executionRate ?? null,
+    passedRate: metrics.passedRate ?? null,
+    generationDurationMs: metrics.generationDurationMs ?? null,
+    executionDurationMs: metrics.executionDurationMs ?? null,
+    totalDurationMs: metrics.totalDurationMs ?? null,
     totalTokens: metrics.totalTokens,
     estimatedCost: metrics.estimatedCost,
     failures: metrics.failures,
@@ -104,28 +114,38 @@ function toStrategyMetrics(metrics: StrategyMetricsResponse): StrategyMetrics {
     contextTokens: metrics.contextTokens,
     toolCalls: metrics.toolCalls,
     filesInspected: metrics.filesInspected,
+    evaluableRepetitions: metrics.evaluableRepetitions,
+    nonEvaluableRepetitions: metrics.nonEvaluableRepetitions,
   }
 }
 
-/** Solo devuelve configuración si están todos los campos requeridos; nunca inventa valores. */
+const isPresent = (value: unknown): boolean => value !== undefined && value !== null
+
+/**
+ * Configuración INTEROP-2.7 §6.5.1. Devuelve `null` solo si Core no trajo ninguno de los campos (corrida previa a OE5).
+ * Si trae algunos, la configuración es parcial: cada campo ausente queda `null` y la UI lo marca «no disponible» por separado.
+ * Nunca inventa valores.
+ */
 export function toExperimentConfiguration(status: ExperimentStatusResponse): ExperimentConfiguration | null {
   const { model, budget, executionProfile, runnerHint, randomizationSeed } = status
-  if (!model?.provider || !model.model) return null
-  if (!budget || budget.toolCallCap == null || budget.contextTokenBudget == null || budget.maxDurationMs == null) return null
-  if (executionProfile == null || runnerHint == null || randomizationSeed == null) return null
+  if (![model, budget, executionProfile, runnerHint, randomizationSeed].some(isPresent)) return null
   return {
-    model: {
-      provider: model.provider,
-      model: model.model,
+    model: model ? {
+      provider: model.provider ?? null,
+      model: model.model ?? null,
       modelVersion: model.modelVersion ?? null,
       reasoningEffort: model.reasoningEffort ?? null,
       temperature: model.temperature ?? null,
       maxOutputTokens: model.maxOutputTokens ?? null,
-    },
-    budget: { toolCallCap: budget.toolCallCap, contextTokenBudget: budget.contextTokenBudget, maxDurationMs: budget.maxDurationMs },
-    executionProfile,
-    runnerHint,
-    randomizationSeed,
+    } : null,
+    budget: budget ? {
+      toolCallCap: budget.toolCallCap ?? null,
+      contextTokenBudget: budget.contextTokenBudget ?? null,
+      maxDurationMs: budget.maxDurationMs ?? null,
+    } : null,
+    executionProfile: executionProfile ?? null,
+    runnerHint: runnerHint ?? null,
+    randomizationSeed: randomizationSeed ?? null,
   }
 }
 
@@ -143,7 +163,9 @@ export function toExperimentResultViewModel(results: ExperimentResultsResponse, 
       strategy: repetition.strategy,
       valid: repetition.valid,
       failureType: repetition.failureType,
-      durationMs: repetition.totalDurationMs,
+      generationDurationMs: repetition.generationDurationMs ?? null,
+      executionDurationMs: repetition.executionDurationMs ?? null,
+      totalDurationMs: repetition.totalDurationMs,
       totalTokens: repetition.totalTokens,
       errorSummary: repetition.errorSummary,
       pairId: repetition.pairId ?? null,
@@ -163,5 +185,7 @@ export function toExperimentOperation(status: ExperimentStatusResponse, results:
     progress: status.totalRepetitions > 0 ? Math.round(status.completedRepetitions / status.totalRepetitions * 100) : 0,
     result: results ? toExperimentResultViewModel(results, targetLabel, configuration) : undefined,
     configuration,
+    failureCode: status.failureCode ?? null,
+    failureMessage: status.failureMessage ?? null,
   }
 }

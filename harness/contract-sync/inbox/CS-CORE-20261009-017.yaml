@@ -11,4 +11,6 @@ requiredAction:
   - Console: sincronizar el espejo INTEROP-2.7 byte a byte; Context Explorer debe tolerar y etiquetar las tres relaciones nuevas; la comparación de retrieval ya no devuelve 422 para PHP.
 sourceRevision: 8f4ddd1
 consumerImportedAt: 2026-10-10T22:56:44.308Z
-status: C-PENDING
+status: C-RESOLVED
+acknowledgementEvidence: harness/reports/wi-console-021-contract-sync-php-acknowledgement.md
+resolutionEvidence: harness/reports/wi-console-021-implementation.md

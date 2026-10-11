@@ -42,7 +42,7 @@ for (const agent of ['leader', 'sdd-analyst', 'implementer', 'implementer-high',
   assert(fs.existsSync(path.join(root, '.claude/agents', `${agent}.md`)), `missing Claude agent profile: ${agent}`);
 }
 const agentProfiles = fs.readFileSync(path.join(root, 'harness/agent-profiles.yaml'), 'utf8');
-for (const modelId of ['claude-sonnet-5-5', 'claude-haiku-5-5']) {
+for (const modelId of ['claude-sonnet-5-5', 'claude-haiku-5-5', 'gpt-6-luna']) {
   assert(agentProfiles.includes(modelId), `agent-profiles.yaml missing exactModelId: ${modelId}`);
 }
 for (const directory of ['harness/contract-sync/inbox', 'harness/contract-sync/outbox']) assert(fs.existsSync(path.join(root, directory)), `missing CONTRACT_SYNC directory: ${directory}`);

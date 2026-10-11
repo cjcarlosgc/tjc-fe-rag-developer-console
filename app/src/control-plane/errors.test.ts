@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest'
 import { ApiError } from '../api/client'
-import { bindingErrorMessage, errorCorrelationId, isGitHubAccessRenewalRequired, isProjectNotFound, isVerificationUnavailable, reactivateErrorMessage } from './errors'
+import { bindingErrorMessage, errorCorrelationId, isGitHubAccessRenewalRequired, isLlmProviderUnavailable, isProjectNotFound, isVerificationUnavailable, reactivateErrorMessage } from './errors'
 
 it('mapea los códigos de dominio de binding y de Project a un mensaje propio', () => {
   expect(bindingErrorMessage(new ApiError('x', 409, 'c', 'REPOSITORY_ALREADY_BOUND'))).toBe('Este repositorio ya está vinculado a otro proyecto. Elige otro repositorio.')
@@ -93,4 +93,36 @@ it('WI-CONSOLE-014 (INTEROP-2.7 §6.15): los errores de comparación de retrieva
 it('WI-CONSOLE-014: un 403 de rol en comparaciones usa el mensaje de rol con requiredRole/currentRole', () => {
   expect(bindingErrorMessage(new ApiError('x', 403, 'c', 'PROJECT_ROLE_INSUFFICIENT', { requiredRole: 'WRITER', currentRole: 'READER' })))
     .toBe('Tu rol actual (READER) no alcanza para esta acción; se requiere WRITER.')
+})
+
+it('WI-CONSOLE-021: REASONING_EFFORT_UNSUPPORTED lista details.supportedEfforts cuando es string[]', () => {
+  expect(bindingErrorMessage(new ApiError('crudo', 422, 'c', 'REASONING_EFFORT_UNSUPPORTED', { supportedEfforts: ['low', 'medium'] }))).toBe(
+    'El modelo no admite el esfuerzo de razonamiento configurado; el experimento no se creó. Esfuerzos admitidos: low, medium.',
+  )
+})
+
+it.each([
+  ['details ausente', undefined],
+  ['supportedEfforts no es lista', { supportedEfforts: 'high' }],
+  ['supportedEfforts con no cadenas', { supportedEfforts: ['low', 3] }],
+  ['supportedEfforts vacío', { supportedEfforts: [] }],
+])('WI-CONSOLE-021: REASONING_EFFORT_UNSUPPORTED tolera %s sin inventar esfuerzos', (_label, details) => {
+  const message = bindingErrorMessage(new ApiError('crudo', 422, 'c', 'REASONING_EFFORT_UNSUPPORTED', details))
+  expect(message).toBe('El modelo no admite el esfuerzo de razonamiento configurado; el experimento no se creó.')
+  expect(message).not.toMatch(/Esfuerzos admitidos/)
+})
+
+it('WI-CONSOLE-021: 422 UNSUPPORTED_PROJECT, 503 LLM_PROVIDER_UNAVAILABLE indicando reintento, y los 409 de OE2 tienen mensaje propio', () => {
+  expect(bindingErrorMessage(new ApiError('crudo', 422, 'c', 'UNSUPPORTED_PROJECT'))).toBe('Este proyecto no tiene framework JEST, VITEST o PHPUNIT detectado.')
+  const llm = bindingErrorMessage(new ApiError('crudo', 503, 'c', 'LLM_PROVIDER_UNAVAILABLE'))
+  expect(llm).toMatch(/Inténtalo de nuevo/)
+  expect(llm).not.toMatch(/no pudo completar/)
+  expect(bindingErrorMessage(new ApiError('crudo', 409, 'c', 'ANALYSIS_NOT_FINISHED'))).toMatch(/todavía no terminó/)
+  expect(bindingErrorMessage(new ApiError('crudo', 409, 'c', 'RETRIEVAL_COMPARISON_FAILED'))).toMatch(/detalle del estado/)
+})
+
+it('isLlmProviderUnavailable solo reconoce el 503 de la creación de experimentos', () => {
+  expect(isLlmProviderUnavailable(new ApiError('x', 503, 'c', 'LLM_PROVIDER_UNAVAILABLE'))).toBe(true)
+  expect(isLlmProviderUnavailable(new ApiError('x', 422, 'c', 'LLM_PROVIDER_UNAVAILABLE'))).toBe(false)
+  expect(isLlmProviderUnavailable(new Error('x'))).toBe(false)
 })

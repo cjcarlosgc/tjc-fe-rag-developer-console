@@ -127,6 +127,7 @@ export function AnalysisRunDetailPage() {
   const impactedCount = run.symbols.length - directCount
   const isLargeChangeset = run.symbols.length > 8
   const canCompare = run.status !== 'ACTION_REQUIRED' && Boolean(findEligibleSymbol(run.symbols))
+  const canCompareOe5 = canCompare && run.status !== 'OBSOLETE'
   // WI-CONSOLE-014: OE2 no usa el gate de ACTION_REQUIRED. Se muestra solo con rol Writer confirmado (nunca mientras carga).
   const canCompareRetrieval = !retrievalProjectQuery.isPending && hasRole(retrievalProjectQuery.data?.role, 'WRITER') && Boolean(findEligibleSymbol(run.symbols))
   return <section>
@@ -140,6 +141,7 @@ export function AnalysisRunDetailPage() {
       </div>
       <div className="run-heading-actions">
         {canCompare && <Link className="button secondary button-link" to={`/projects/${run.projectId}/runs/${run.id}/comparison`}>Run comparison →</Link>}
+        {canCompareOe5 && <Link className="button secondary button-link" to={`/projects/${run.projectId}/experimental?analysisRunId=${encodeURIComponent(run.id)}`}>Comparar RAG vs GA</Link>}
         {canCompareRetrieval && <Link className="button secondary button-link" to={`/projects/${run.projectId}/runs/${run.id}/retrieval-comparison`}>Comparar retrieval SE vs SEM</Link>}
         {mock && <span className="demo-stamp">DEMO · DATOS SIMULADOS</span>}
       </div>

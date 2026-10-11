@@ -5,7 +5,7 @@ import {
   listGitHubUserRepositories as listUserRepositoriesDirect,
   verifyGitHubAppAccess as verifyGitHubAppAccessDirect,
 } from './githubIntegrationApi'
-import { getDataSource, PendingContractError } from '../api/dataSource'
+import { getDataSource } from '../api/dataSource'
 import {
   mockCreateRepositoryBinding,
   mockCreateTestPublication,
@@ -40,7 +40,7 @@ import type {
   VerifyGitHubAppAccessRequest,
 } from './types'
 
-// GitHub App UI capabilities use GH-INTEROP-1.2 directly; domain and durable binding remain in Core.
+// GitHub App UI capabilities use GH-INTEROP-1.3 directly; domain and durable binding remain in Core.
 
 export function getGitHubAppInfo(): Promise<GitHubAppAccessResponse['app']> {
   return getGitHubAppInfoDirect()
@@ -159,11 +159,11 @@ export function getAnalysisRun(analysisRunId: string): Promise<AnalysisRunDetail
 
 /**
  * INTEROP-2.7 §6.16 (HU15, WI-CONSOLE-016): trace operativo de nueve enlaces. Lectura Reader.
- * Live pendiente hasta WI-CONSOLE-020: el contrato existe pero Core aún no lo expone en este cliente.
+ * Core expone la ruta publicada; los detalles de UI siguen siendo solo lectores.
  */
 export function getAnalysisRunTrace(analysisRunId: string): Promise<AnalysisRunTraceResponse> {
   if (getDataSource() === 'mock') return mockGetAnalysisRunTrace(analysisRunId)
-  return Promise.reject(new PendingContractError('el trace operativo de un Analysis Run'))
+  return apiRequest<AnalysisRunTraceResponse>(`/analysis-runs/${encodeURIComponent(analysisRunId)}/trace`)
 }
 
 // HU39/HU40 — Checks, propuestas y companion PR (INTEROP-2.2 §6.12, implementado y desplegado en Core).

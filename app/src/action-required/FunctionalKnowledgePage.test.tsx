@@ -1,8 +1,8 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, test } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
-import { resetMockBackend } from '../api/mockBackend'
+import { mockGetProject, resetMockBackend, setMockFunctionalKnowledgeScenarioForTests } from '../api/mockBackend'
 import { renderApp } from '../test/render'
 import { FunctionalKnowledgePage } from './FunctionalKnowledgePage'
 
@@ -104,6 +104,15 @@ test('HU07: la clave de escenario se etiqueta «Clave de escenario» en cada tar
   expect(screen.getAllByText('Clave de escenario')).toHaveLength(7)
 })
 
+test('WI-CONSOLE-021 C3: una regla histórica con scenarioKey LEGACY en la lista muestra la ausencia, no el valor crudo', async () => {
+  setMockFunctionalKnowledgeScenarioForTests('fk_rounding_v1', { scenarioKind: null, scenarioKey: 'LEGACY' })
+  renderPage('prj_checkout_demo')
+
+  await screen.findByRole('heading', { name: 'Resultado esperado' })
+  expect(screen.queryByText('LEGACY')).not.toBeInTheDocument()
+  expect(screen.getAllByText('sin clave de escenario (regla histórica)').length).toBeGreaterThan(0)
+})
+
 test('carga: muestra el estado de carga con role="status" antes de la respuesta', () => {
   renderPage('prj_checkout_demo')
 
@@ -118,11 +127,18 @@ test('error: un proyecto inexistente muestra el error con role="alert" y reinten
   expect(within(alert).getByRole('button', { name: 'Reintentar' })).toBeInTheDocument()
 })
 
-test('live: sin contrato publicado, la lista muestra el error de contrato pendiente de INTEROP-2.7', async () => {
+test('live: Functional Knowledge consume la ruta publicada y muestra vacío sin marcar datos DEMO', async () => {
+  const project = await mockGetProject('prj_checkout_demo')
   setDataSourceForTests('live')
+  const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+    const url = String(input)
+    const body = url.includes('/functional-knowledge') ? { items: [], nextCursor: null } : project
+    return new Response(JSON.stringify(body), { status: 200 })
+  })
   renderPage('prj_checkout_demo')
 
-  expect(await screen.findByText(/todavía no publicó el contrato live para las reglas de Functional Knowledge/)).toBeInTheDocument()
+  expect(await screen.findByText('Sin reglas')).toBeInTheDocument()
+  expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/\/projects\/prj_checkout_demo\/functional-knowledge$/), expect.anything())
   expect(screen.queryByText('DEMO · DATOS SIMULADOS')).not.toBeInTheDocument()
 })
 

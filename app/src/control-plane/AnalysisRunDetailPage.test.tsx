@@ -47,6 +47,21 @@ test('HU48: un Run resuelto con símbolo elegible enlaza a Run comparison', asyn
   expect(link).toHaveAttribute('href', '/projects/prj_checkout_demo/runs/arun_checkout_pr45/comparison')
 })
 
+test('WI-CONSOLE-020: el acceso OE5 conserva el AnalysisRun en la URL, para construir el payload live publicado', async () => {
+  renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
+
+  const link = await screen.findByRole('link', { name: 'Comparar RAG vs GA' })
+  expect(link).toHaveAttribute('href', '/projects/prj_checkout_demo/experimental?analysisRunId=arun_checkout_pr45')
+})
+
+test('WI-CONSOLE-020: un Run OBSOLETE no ofrece iniciar OE5', async () => {
+  renderDetail('arun_billing_pr17', 'prj_billing_demo')
+
+  await screen.findByText('Run obsoleto')
+  expect(screen.queryByRole('link', { name: 'Comparar RAG vs GA' })).not.toBeInTheDocument()
+  expect(screen.getByRole('link', { name: /Run comparison/ })).toBeInTheDocument()
+})
+
 test('HU48: un Run ACTION_REQUIRED no ofrece Run comparison todavía', async () => {
   renderDetail('arun_checkout_pr42', 'prj_checkout_demo')
 

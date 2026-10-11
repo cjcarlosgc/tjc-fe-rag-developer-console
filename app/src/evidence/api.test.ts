@@ -1,6 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '../api/client'
-import { PendingContractError, setDataSourceForTests } from '../api/dataSource'
+import { setDataSourceForTests } from '../api/dataSource'
 import { mockStartExperiment, mockGetExperiment, mockGetRetrievalComparison, resetMockBackend, setMockAnalysisRunForTests, mockGetEvidence } from '../api/mockBackend'
 import { getEvidence } from './api'
 
@@ -70,10 +70,64 @@ describe('getEvidence (modo mock)', () => {
   })
 })
 
+describe('getEvidence · forma de §6.16 (CS-CORE-20261009-014, WI-CONSOLE-021 corte C2)', () => {
+  it('los facts de Sandbox solo usan la allowlist cerrada de §6.16', async () => {
+    const { bundle } = await getEvidence('ANALYSIS_RUN', 'arun_checkout_pr45')
+    const allowed = new Set(['executionProfile', 'runner', 'compiled', 'executed', 'passed', 'totalTests', 'passedTests', 'failedTests', 'skippedTests', 'testCasesTruncated', 'failureStage', 'failureCategory', 'failureCode', 'failureMessage'])
+    for (const entry of bundle.sandbox) expect(Object.keys(entry.facts).every((key) => allowed.has(key))).toBe(true)
+  })
+
+  it('corrida previa a OE5 (DEMO legacy): todo dato no observado es null, nunca 0 ni cadena vacía', async () => {
+    const accepted = await mockStartExperiment('prj_checkout_demo', 'demo-scenario-legacy')
+    await mockGetExperiment(accepted.experimentId)
+    const { bundle } = await getEvidence('EXPERIMENT', accepted.experimentId)
+    expect(bundle.generation.length).toBeGreaterThan(0)
+    expect(bundle.generation.some((row) => row.provider === null && row.model === null)).toBe(true)
+    expect(bundle.sandbox.some((row) => row.executionId === null && row.requestId === null && row.durationMs === null && row.correlationId === null)).toBe(true)
+    expect(bundle.sandbox.every((row) => row.durationMs !== 0)).toBe(true)
+    expect(bundle.experimental.every((row) => typeof row.technicallyEvaluable === 'boolean')).toBe(true)
+    const raw = JSON.stringify(bundle)
+    expect(raw).not.toMatch(/""/)
+  })
+
+  it('comparación FAILED responde bundle con retrieval: []', async () => {
+    const { bundle } = await getEvidence('RETRIEVAL_COMPARISON', 'rcmp_demo_seed_failed')
+    expect(bundle.retrieval).toEqual([])
+  })
+
+  it('semilla PHP (DEC-PHP-RET-001): el bundle lleva SAME_NAMESPACE, FULLY_QUALIFIED_REFERENCE y DECLARING_CLASS en candidatos', async () => {
+    const { bundle } = await getEvidence('RETRIEVAL_COMPARISON', 'rcmp_demo_seed_php')
+    const relations = bundle.retrieval.flatMap((retrieval) => retrieval.candidates.map((candidate) => candidate.structuralRelation))
+    expect(relations).toEqual(expect.arrayContaining(['SAME_NAMESPACE', 'FULLY_QUALIFIED_REFERENCE', 'DECLARING_CLASS']))
+    expect(bundle.retrieval.every((retrieval) => retrieval.metrics === null)).toBe(true)
+  })
+
+  it('experimento PHPUnit (DEMO): el perfil y el runner viajan como cadenas abiertas', async () => {
+    const accepted = await mockStartExperiment('prj_checkout_demo', 'demo-scenario-phpunit')
+    const { bundle } = await getEvidence('EXPERIMENT', accepted.experimentId)
+    expect(bundle.sandbox.every((row) => row.executionProfile === 'PHP_LARAVEL_PHPUNIT' && row.runnerHint === 'PHPUNIT')).toBe(true)
+  })
+
+  it('ningún bundle incluye excerpt, testCases, groundTruth, knowledgeId ni claves de almacenamiento', async () => {
+    const samples = await Promise.all([
+      getEvidence('ANALYSIS_RUN', 'arun_checkout_pr45'),
+      getEvidence('RETRIEVAL_COMPARISON', 'rcmp_demo_seed_completed_con_metricas'),
+      getEvidence('RETRIEVAL_COMPARISON', 'rcmp_demo_seed_php'),
+    ])
+    for (const { raw } of samples) {
+      expect(raw).not.toMatch(/"(excerpt|testCases|groundTruth|knowledgeId|storageKey|signedUrl|downloadUrl)"/)
+    }
+  })
+})
+
 describe('getEvidence (modo live)', () => {
-  it('responde PendingContractError hasta WI-CONSOLE-020', async () => {
+  it('conserva el JSON crudo de las tres rutas live', async () => {
     setDataSourceForTests('live')
-    await expect(getEvidence('ANALYSIS_RUN', 'arun_checkout_pr45')).rejects.toBeInstanceOf(PendingContractError)
-    await expect(getEvidence('EXPERIMENT', 'exp_demo_1')).rejects.toBeInstanceOf(PendingContractError)
+    const raw = '{\n  "schemaVersion": "1", "kind": "ANALYSIS_RUN"\n}'
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(raw, { status: 200 }))
+    const result = await getEvidence('ANALYSIS_RUN', 'arun_checkout_pr45')
+    expect(result.raw).toBe(raw)
+    expect(result.bundle).toMatchObject({ schemaVersion: '1', kind: 'ANALYSIS_RUN' })
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/analysis-runs/arun_checkout_pr45/evidence'), expect.anything())
   })
 })

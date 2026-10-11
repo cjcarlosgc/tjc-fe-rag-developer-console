@@ -1396,7 +1396,7 @@
       "id": "WI-CONSOLE-020",
       "component": "CONSOLE",
       "workItemType": "PRODUCT",
-      "status": "W-PLANNED",
+      "status": "W-IN_PROGRESS",
       "priority": "P1",
       "sprint": "SMART V3",
       "title": "Activar y verificar los adapters live de SMART V3",
@@ -1422,13 +1422,13 @@
         "WI-CONSOLE-021"
       ],
       "contractImpact": true,
-      "publishesContract": false,
+      "publishesContract": true,
       "scopeApprovalReport": "harness/reports/smart-v3-scope-approval.md",
       "acceptanceCriteria": [
         "La evidencia (/evidence) se tipa y se mockea contra el bloque congelado de INTEROP-2.7 §6.16 (EvidenceBundleResponse schemaVersion \"1\"): todo valor | null es «sin dato» y nunca 0; no se infieren CF/CO ni validez a partir de technicallyEvaluable; no se espera excerpt, contenido de código, testCases, groundTruth, knowledgeId, URLs ni claves de storage; se tolera retrieval: [] en una comparación FAILED y secciones vacías según kind; snapshotRef es una cadena opaca.",
         "Las tasas y las tres medias de duración de StrategyMetricsResponse se tipan como number | null y los dos contadores como number; ante null se muestra «sin datos» (no 0 % ni 0 ms) y evaluableRepetitions/nonEvaluableRepetitions indican cuántas repeticiones sustentan la métrica; no se derivan ganadores.",
         "Cada adapter de SMART V3 (roles y abstención UNKNOWN, Functional Knowledge, OE2, metadata de OE5, trace y evidencia) deja de responder con el error de contrato pendiente y consume la ruta live de Core ya implementada, usando solo campos publicados.",
-        "Se verifica cada flujo contra Core real o su suite de contrato, no solo con mocks; las diferencias con el contrato se registran como Contract Sync y no se corrigen en Core desde este WI. Al completar se emite un CS-CONSOLE-… dirigido a Core.",
+        "Se verifica cada flujo contra Core real o su suite de contrato, no solo con mocks; una diferencia confirmada con el contrato se registra como Contract Sync dirigido a Core y no se corrige Core desde este WI. Si no hay diferencia contractual, no se publica un evento vacío.",
         "Los eventos CS-CORE-20261009-014 y -015 pasan a C-ACKNOWLEDGED y C-RESOLVED con evidencia; los mocks permanecen rotulados DEMO · DATOS SIMULADOS; ux-reviewer, lint, pruebas, build y validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
       ],
       "specPaths": [
@@ -1470,13 +1470,43 @@
       },
       "syncScopePaths": [
         "spec/contracts/interoperability-contract.md"
+      ],
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "WI-CONSOLE-020 no cambia el ciclo de vida de Project ni de bindings; activa solo los adapters SMART V3 y reutiliza la lectura existente de Project.",
+          "report": "harness/reports/wi-console-020-local-verification.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "WI-CONSOLE-020 no cambia login, workspaces ni la matriz de acceso; usa el Project/rol ya cargados y las guardas existentes.",
+          "report": "harness/reports/wi-console-020-local-verification.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "WI-CONSOLE-020 no modifica identidad GitHub, inicio de sesión ni el cliente de autenticación; las llamadas usan apiRequest existente.",
+          "report": "harness/reports/wi-console-020-local-verification.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "WI-CONSOLE-020 no cambia visibilidad de Projects, membresía ni roles; reutiliza las guardas existentes para crear OE2/OE5.",
+          "report": "harness/reports/wi-console-020-local-verification.md"
+        }
       ]
     },
     {
       "id": "WI-CONSOLE-021",
       "component": "CONSOLE",
       "workItemType": "PRODUCT",
-      "status": "W-READY",
+      "status": "W-DONE",
       "priority": "P0",
       "sprint": "SMART V3",
       "title": "Adoptar el contrato implementado por Core (espejos y ajustes de UI)",
@@ -1500,7 +1530,7 @@
         "spec/contracts/interoperability-contract.md"
       ],
       "acceptanceCriteria": [
-        "Los espejos SYSTEM-2.6, INTEROP-2.7 y GH-INTEROP-1.3 quedan byte por byte iguales a la fuente canónica de Core en la revisión que registra el líder (se anotan los SHA-256); si WI-CORE-027 modifica el contrato antes de cerrar, el refresco se repite en WI-CONSOLE-020. Los eventos CS-CORE-20261008-002 a -007, CS-CORE-20261009-008 a -011 y -013 pasan a C-ACKNOWLEDGED y C-RESOLVED con evidencia.",
+        "Los espejos SYSTEM-2.6, INTEROP-2.7 y GH-INTEROP-1.3 quedan byte por byte iguales a la fuente canónica de Core en la revisión que registra el líder (se anotan los SHA-256); si WI-CORE-027 modifica el contrato antes de cerrar, el refresco se repite en WI-CONSOLE-020. Los eventos CS-CORE-20261008-002 a -007, CS-CORE-20261009-008 a -011 y -013 a -015 pasan a C-ACKNOWLEDGED y C-RESOLVED con evidencia. (ampliado por el leader durante la ejecucion: CS-CORE-20261009-014 y -015 se resuelven aqui porque su contenido, ya presente en la fuente 3f06f44, se adopta en este WI y WI-CONSOLE-020 conserva solo la verificacion live; ver harness/reports/wi-console-021-sdd-verification.md)",
         "OE5 (CS-CORE-20261009-008 y -009): una executionDurationMs null se muestra con un guion (no 0) y el número cuando hubo una llamada fallida al Sandbox, sin formatear ni sumar sin guardas; la UI tolera null en model, budget, executionProfile, runnerHint, randomizationSeed, pairId y pairPosition, muestra technicallyEvaluable=false y attempt=2 sin declarar ganador.",
         "failureCode (CS-CORE-20261009-010) se trata como cadena abierta: cualquier valor desconocido se tolera y EXPERIMENT_FAILED («el experimento falló durante la ejecución») y EXPERIMENT_WORKER_LOST («se interrumpió el procesamiento y puede reanudarse») tienen mensaje propio, con failureMessage como detalle.",
         "OE2 (CS-CORE-20261009-011): cliente y tipos según los seis checkpoints de contenido del evento; groundTruth se limita a 200; 409 RETRIEVAL_COMPARISON_FAILED lee el detalle del estado sin reintentar, 409 NOT_FINISHED usa polling por pollAfterMs y 409 ANALYSIS_NOT_FINISHED y 422 UNSUPPORTED_PROJECT tienen mensaje propio.",
@@ -1545,7 +1575,37 @@
         },
         "verifiedAt": "2026-10-10T15:00:00.000Z",
         "verifiedBy": "leader"
-      }
+      },
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-021 adopta lo implementado por Core en experimentos OE5, comparacion OE2, trace y espejos, sin cambiar esas areas.",
+          "report": "harness/reports/wi-console-021-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso GitHub; WI-CONSOLE-021 adopta lo implementado por Core en experimentos OE5, comparacion OE2, trace y espejos, sin cambiar esas areas.",
+          "report": "harness/reports/wi-console-021-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-021 adopta lo implementado por Core en experimentos OE5, comparacion OE2, trace y espejos, sin cambiar esas areas.",
+          "report": "harness/reports/wi-console-021-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre workspaces, membresia y eventos organizacionales; WI-CONSOLE-021 adopta lo implementado por Core en experimentos OE5, comparacion OE2, trace y espejos, sin cambiar esas areas.",
+          "report": "harness/reports/wi-console-021-contract-sync-scope-review.md"
+        }
+      ]
     }
   ]
 }

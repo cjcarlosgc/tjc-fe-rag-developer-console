@@ -31,7 +31,9 @@ export interface SourceExcerpt {
   truncated: boolean
 }
 
-export type RagMatchedVia = 'SEMANTIC' | 'IMPORTS' | 'IMPORTED_BY'
+/** INTEROP-2.7 §6.15 / DEC-PHP-RET-001 (CS-CORE-20261009-017): relaciones estructurales TypeScript y PHP. */
+export type RagStructuralMatch = 'IMPORTS' | 'IMPORTED_BY' | 'SAME_NAMESPACE' | 'FULLY_QUALIFIED_REFERENCE' | 'DECLARING_CLASS'
+export type RagMatchedVia = 'SEMANTIC' | RagStructuralMatch
 export type RagCandidateDecision = 'SELECTED' | 'DISCARDED'
 export type RagDiscardReason = 'BELOW_MINIMUM_SCORE' | 'TOP_K_LIMIT' | 'TOKEN_BUDGET'
 
@@ -43,7 +45,7 @@ export interface RagCandidateNode {
   excerpt: SourceExcerpt
   tokenCount: number
   semanticScore: number | null
-  structuralMatch: 'IMPORTS' | 'IMPORTED_BY' | null
+  structuralMatch: RagStructuralMatch | null
   combinedScore: number
   matchedVia: RagMatchedVia[]
   decision: RagCandidateDecision

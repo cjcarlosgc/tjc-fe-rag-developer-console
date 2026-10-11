@@ -278,3 +278,22 @@ test('la sección se monta en el detalle con rótulo de datos simulados en mock'
   expect(screen.getByText(/Datos simulados: los ids de esta sección son de demo/)).toBeInTheDocument()
   expect(screen.getAllByText('DEMO · DATOS SIMULADOS').length).toBeGreaterThanOrEqual(1)
 })
+
+test('orden de targets en la UI: sigue el orden de §6.16 (filePath) también con ACTION_REQUIRED', async () => {
+  renderTrace('arun_checkout_pr42', 'prj_checkout_demo')
+
+  await screen.findByRole('heading', { name: 'Changeset' })
+  const targets = headingTexts().filter((text) => text.startsWith('Target:'))
+  expect(targets).toEqual(['Target: CouponPolicy.apply', 'Target: OrderService.calculateTotal'])
+})
+
+test('publicación solo con Check: sin dato en checkId, rama y freshness; sin conteos, omitidas ni knowledgeId', async () => {
+  renderTrace('arun_checkout_pr47', 'prj_checkout_demo')
+
+  await screen.findByRole('heading', { name: 'Changeset' })
+  expect(screen.getByText('checkId').nextElementSibling).toHaveTextContent('sin dato')
+  expect(screen.getByText('companionBranch').nextElementSibling).toHaveTextContent('sin dato')
+  expect(screen.getByText('Freshness').nextElementSibling).toHaveTextContent('sin dato')
+  expect(screen.queryByText(/omitid/i)).not.toBeInTheDocument()
+  expect(screen.queryByText(/knowledgeId/)).not.toBeInTheDocument()
+})

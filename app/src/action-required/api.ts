@@ -1,5 +1,6 @@
 import { apiRequest } from '../api/client'
-import { getDataSource, PendingContractError } from '../api/dataSource'
+import { getDataSource } from '../api/dataSource'
+import { createIdempotencyKey } from '../api/idempotency'
 import { mockGetContextQuestionSet, mockListActionRequired, mockListFunctionalKnowledge, mockSubmitFunctionalAnswer } from '../api/mockBackend'
 import type { ActionRequiredListPage, FunctionalAnswerAcceptedResponse, FunctionalKnowledgeListPage, FunctionalKnowledgeStatus, FunctionalQuestionSetResponse, SubmitFunctionalAnswerRequest } from './types'
 
@@ -43,25 +44,27 @@ export function getContextQuestionSet(analysisRunId: string): Promise<Functional
  * Un `409 FUNCTIONAL_KNOWLEDGE_CONFLICT` llega como `ApiError` con `details: FunctionalKnowledgeConflictResponse`
  * (`FocusModePage` ya lo consume así).
  */
-export function submitFunctionalAnswer(analysisRunId: string, questionId: string, input: SubmitFunctionalAnswerRequest): Promise<FunctionalAnswerAcceptedResponse> {
+export function submitFunctionalAnswer(analysisRunId: string, questionId: string, input: SubmitFunctionalAnswerRequest, idempotencyKey?: string): Promise<FunctionalAnswerAcceptedResponse> {
   if (getDataSource() === 'mock') return mockSubmitFunctionalAnswer(analysisRunId, questionId, input)
-  // INTEROP-2.7 §6.11 (WI-CORE-018 pendiente): la abstención UNKNOWN todavía no se publica como `outcome` en Core; no se envía como respuesta.
-  if (input.choice === 'UNKNOWN') return Promise.reject(new PendingContractError('la abstención de una pregunta funcional (INTEROP-2.7)'))
   const body: { choice: typeof input.choice; answer?: string; conflictResolution?: typeof input.conflictResolution } = { choice: input.choice }
   if (input.answer) body.answer = input.answer
   if (input.conflictResolution) body.conflictResolution = input.conflictResolution
   return apiRequest<FunctionalAnswerAcceptedResponse>(`/analysis-runs/${encodeURIComponent(analysisRunId)}/context-questions/${encodeURIComponent(questionId)}/answers`, {
     method: 'POST',
+    headers: { 'Idempotency-Key': idempotencyKey ?? createIdempotencyKey() },
     body: JSON.stringify(body),
   })
 }
 
 /**
  * HU35/HU36 · INTEROP-2.7 §6.11: `GET /projects/{projectId}/functional-knowledge?status&cursor&limit`.
- * La forma con procedencia y escenario (`scenarioKind`, `confirmedByUserId`, …) está definida pero Core
- * todavía no la publica (WI-CORE-019/020). Hasta WI-CONSOLE-020 el modo live no usa campos no publicados.
+ * Core publica la forma con procedencia y escenario (`scenarioKind`, `confirmedByUserId`, …).
+ * Console la muestra tal como llega, sin calcular `scenarioKey` ni autoridad.
  */
 export function listFunctionalKnowledge(projectId: string, status?: FunctionalKnowledgeStatus): Promise<FunctionalKnowledgeListPage> {
   if (getDataSource() === 'mock') return mockListFunctionalKnowledge(projectId, status)
-  return Promise.reject(new PendingContractError('las reglas de Functional Knowledge con procedencia y escenarios (INTEROP-2.7)'))
+  const params = new URLSearchParams()
+  if (status) params.set('status', status)
+  const query = params.toString()
+  return apiRequest<FunctionalKnowledgeListPage>(`/projects/${encodeURIComponent(projectId)}/functional-knowledge${query ? `?${query}` : ''}`)
 }

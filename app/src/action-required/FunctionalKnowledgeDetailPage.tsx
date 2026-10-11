@@ -6,7 +6,7 @@ import { useProject } from '../projects/queries'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
 import { RepoChip } from '../ui/RepoChip'
-import { confirmingRoleLabel, MISSING_PROVENANCE_LABEL, scenarioLabel, shortSha, supersessionChain } from './knowledgeScenarios'
+import { confirmingRoleLabel, displayScenarioKey, MISSING_PROVENANCE_LABEL, MISSING_SCENARIO_KEY_LABEL, MISSING_SCENARIO_LABEL, scenarioLabel, shortSha, supersessionChain } from './knowledgeScenarios'
 import { useFunctionalKnowledge } from './queries'
 import { getRuleUsage } from './speculative/ruleUsage'
 
@@ -49,8 +49,8 @@ export function FunctionalKnowledgeDetailPage() {
         <div><dt>Scope</dt><dd>{item.scope}</dd></div>
         <div><dt>Target</dt><dd><code>{item.targetRef ?? '—'}</code></dd></div>
         <div><dt>Creado</dt><dd>{new Date(item.createdAt).toLocaleString('es-PE')}</dd></div>
-        <div><dt>Escenario</dt><dd>{scenarioLabel(item.scenarioKind)}</dd></div>
-        <div><dt>Clave de escenario</dt><dd><code>{item.scenarioKey}</code></dd></div>
+        <div><dt>Escenario</dt><dd>{item.scenarioKind ? scenarioLabel(item.scenarioKind) : <span className="fk-missing">{MISSING_SCENARIO_LABEL}</span>}</dd></div>
+        <div><dt>Clave de escenario</dt><dd>{displayScenarioKey(item.scenarioKey) ? <code>{item.scenarioKey}</code> : <span className="fk-missing">{MISSING_SCENARIO_KEY_LABEL}</span>}</dd></div>
       </dl>
     </div>
 

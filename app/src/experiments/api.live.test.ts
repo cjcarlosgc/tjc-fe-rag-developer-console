@@ -2,17 +2,17 @@ import { expect, test, vi } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
 import { getExperiment, startExperiment } from './api'
 
-test('startExperiment live: envía Idempotency-Key y projectId/targetId', async () => {
+test('startExperiment live: envía Idempotency-Key y el símbolo anclado al AnalysisRun', async () => {
   setDataSourceForTests('live')
   const accepted = { experimentId: 'exp-1', projectVersionId: 'v-1', status: 'PENDING', pollAfterMs: 460 }
   const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(accepted), { status: 202 }))
 
-  const result = await startExperiment('p-1', 't-1', 'key-1')
+  const result = await startExperiment({ analysisRunId: 'arun-1', symbolFilePath: 'src/orders.ts', symbolQualifiedName: 'Order.total' }, 'key-1')
 
   expect(result).toMatchObject({ experimentId: 'exp-1' })
   expect(fetchMock).toHaveBeenCalledWith(
     expect.stringContaining('/experiments'),
-    expect.objectContaining({ method: 'POST', headers: expect.objectContaining({ 'Idempotency-Key': 'key-1' }), body: JSON.stringify({ projectId: 'p-1', targetId: 't-1' }) }),
+    expect.objectContaining({ method: 'POST', headers: expect.objectContaining({ 'Idempotency-Key': 'key-1' }), body: JSON.stringify({ analysisRunId: 'arun-1', symbolFilePath: 'src/orders.ts', symbolQualifiedName: 'Order.total' }) }),
   )
   setDataSourceForTests(null)
 })

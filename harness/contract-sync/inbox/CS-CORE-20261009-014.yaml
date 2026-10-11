@@ -11,5 +11,6 @@ requiredAction:
   - Console (WI-CONSOLE-017): tipar y mockear /evidence contra el bloque de 6.16 y tratar todo valor | null como sin dato, nunca como 0; no inferir CF/CO ni validez de technicallyEvaluable; no esperar excerpt, contenido de codigo, testCases, groundTruth, knowledgeId, URLs ni claves de storage; tolerar retrieval: [] en una comparacion FAILED y secciones vacias segun kind; tratar snapshotRef como cadena opaca; acusar con CS-CONSOLE-... cuando WI-CONSOLE-017 consuma esta version.
 sourceRevision: 275f687aa6571c41468b5c97f96f814dc420b903
 consumerImportedAt: 2026-10-10T14:10:55.609Z
-status: C-ACKNOWLEDGED
+status: C-RESOLVED
 acknowledgementEvidence: harness/reports/wi-console-020-contract-sync-acknowledgement.md
+resolutionEvidence: harness/reports/wi-console-021-implementation.md

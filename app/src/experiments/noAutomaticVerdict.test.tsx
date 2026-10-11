@@ -12,6 +12,7 @@ import { renderApp } from '../test/render'
 import { AppShell } from '../ui/AppShell'
 import { RunComparisonPage } from '../run-comparison/RunComparisonPage'
 import { ExperimentPage } from './ExperimentPage'
+import { ExperimentComparison } from './ExperimentComparison'
 import { EXPERIMENT_CONDITIONS_NOTE } from './ExperimentConditionsNote'
 import type { ExperimentResultViewModel } from './types'
 
@@ -102,4 +103,17 @@ test('la comparación de tasas no expone una insignia de resultado automático',
   await user.click(await screen.findByRole('button', { name: 'Ejecutar comparación' }))
   const table = await screen.findByRole('table', { name: 'Comparación de estrategias' })
   expect(within(table).queryByText(FORBIDDEN)).toBeNull()
+})
+
+test('sin datos evaluables (tasas y medias null, evaluableRepetitions 0): sin delta, sin 0 % y sin veredicto', () => {
+  harness.invert = false
+  const noData: ExperimentResultViewModel = {
+    baseline: { strategy: 'GENERALIST_AGENT', validRate: null, compilationRate: null, executionRate: null, passedRate: null, generationDurationMs: null, executionDurationMs: null, totalDurationMs: null, totalTokens: null, estimatedCost: null, failures: {}, evaluableRepetitions: 0, nonEvaluableRepetitions: 3 },
+    rag: { strategy: 'RAG', validRate: .5, compilationRate: .5, executionRate: .5, passedRate: .5, generationDurationMs: 100, executionDurationMs: null, totalDurationMs: 100, totalTokens: null, estimatedCost: null, failures: {}, evaluableRepetitions: 3, nonEvaluableRepetitions: 0 },
+    repetitions: [],
+  }
+  const { container } = render(<MemoryRouter><ExperimentComparison result={noData} projectId="prj_checkout_demo" experimentId="exp_demo" /></MemoryRouter>)
+  expect(screen.getByText('sin datos evaluables · 0 evaluables · 3 no evaluables')).toBeInTheDocument()
+  expect(screen.getAllByText('sin datos').length).toBeGreaterThan(0)
+  assertNoAutomaticVerdict(container)
 })

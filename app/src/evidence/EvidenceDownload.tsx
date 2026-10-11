@@ -27,7 +27,7 @@ const wait = (ms: number) => new Promise<void>((resolve) => { setTimeout(resolve
 
 /**
  * INTEROP-2.7 §6.16 (WI-CONSOLE-017, Corte B). Descarga de evidencia JSON versionada para cualquier rol de Project (Reader incluido).
- * La carga no usa la caché de React Query: el bundle puede contener fragmentos de código y se descarga y se descarta.
+ * La carga no usa la caché de React Query: el paquete se descarga y se descarta sin exponerlo en vistas intermedias.
  */
 export function EvidenceDownload({ kind, subjectId, terminal, mockLabel = DEFAULT_MOCK_LABEL }: EvidenceDownloadProps) {
   const [phase, setPhase] = useState<Phase>('idle')

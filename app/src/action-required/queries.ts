@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useIdempotencyKeys } from '../api/idempotency'
 import { getContextQuestionSet, listActionRequired, listAllActionRequired, listFunctionalKnowledge, submitFunctionalAnswer } from './api'
 import type { FunctionalKnowledgeStatus, SubmitFunctionalAnswerRequest } from './types'
 
@@ -47,10 +48,14 @@ export function useFunctionalKnowledge(projectId: string, status?: FunctionalKno
  */
 export function useSubmitFunctionalAnswer(analysisRunId: string) {
   const queryClient = useQueryClient()
+  const idempotency = useIdempotencyKeys()
   return useMutation({
-    mutationFn: ({ questionId, input }: { questionId: string; input: SubmitFunctionalAnswerRequest }) =>
-      submitFunctionalAnswer(analysisRunId, questionId, input),
-    onSuccess: () => {
+    mutationFn: ({ questionId, input }: { questionId: string; input: SubmitFunctionalAnswerRequest }) => {
+      const id = `${questionId}:${JSON.stringify(input)}`
+      return submitFunctionalAnswer(analysisRunId, questionId, input, idempotency.getOrCreate(id))
+    },
+    onSuccess: (_data, variables) => {
+      idempotency.clear(`${variables.questionId}:${JSON.stringify(variables.input)}`)
       void queryClient.invalidateQueries({ queryKey: actionRequiredKeys.questionSet(analysisRunId) })
       void queryClient.invalidateQueries({ queryKey: ['action-required', 'list'] })
     },

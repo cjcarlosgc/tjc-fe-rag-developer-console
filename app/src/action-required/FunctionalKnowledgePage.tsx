@@ -6,7 +6,7 @@ import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
 import { ProjectTabs } from '../ui/ProjectTabs'
 import { useFunctionalKnowledge } from './queries'
-import { groupByScenarioKind } from './knowledgeScenarios'
+import { displayScenarioKey, groupByScenarioKind, MISSING_SCENARIO_KEY_LABEL } from './knowledgeScenarios'
 import type { FunctionalKnowledgeStatus } from './types'
 
 type StatusFilter = 'ALL' | FunctionalKnowledgeStatus
@@ -65,7 +65,7 @@ export function FunctionalKnowledgePage() {
                       <span className={`status-badge ${item.status === 'ACTIVE' ? 'status-success' : 'status-muted'}`}>{item.status}</span>
                     </div>
                     <p>{item.normalizedRule}</p>
-                    <p className="fk-card-meta"><span>Clave de escenario </span><code>{item.scenarioKey}</code></p>
+                    <p className="fk-card-meta"><span>Clave de escenario </span>{displayScenarioKey(item.scenarioKey) ? <code>{item.scenarioKey}</code> : <span className="fk-missing">{MISSING_SCENARIO_KEY_LABEL}</span>}</p>
                     <span className="card-link">Ver detalle →</span>
                   </Link>
                 </li>

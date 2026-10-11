@@ -132,7 +132,8 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     renderPage(MULTI_RUN)
     const list = await screen.findByRole('list', { name: 'Comparaciones previas del Run' })
     const failed = within(list).getAllByRole('listitem').find((item) => item.textContent?.includes('rcmp_demo_seed_failed'))!
-    expect(within(failed).getByText('DEMO_EMBEDDING_INDEX_UNAVAILABLE')).toBeInTheDocument()
+    expect(within(failed).getByText('RETRIEVAL_COMPARISON_FAILED')).toBeInTheDocument()
+    expect(within(failed).getByText(/La comparación de retrieval falló/)).toBeInTheDocument()
     expect(within(failed).getByText(/el índice de embeddings no respondió/)).toBeInTheDocument()
   })
 
@@ -168,14 +169,43 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     const user = userEvent.setup()
     renderPage(MULTI_RUN)
     const list = await screen.findByRole('list', { name: 'Comparaciones previas del Run' })
-    expect(within(list).getAllByRole('listitem')).toHaveLength(5)
-    expect(within(list).getAllByRole('button', { name: /Ver resultado/ })).toHaveLength(2)
+    expect(within(list).getAllByRole('listitem')).toHaveLength(6)
+    expect(within(list).getAllByRole('button', { name: /Ver resultado/ })).toHaveLength(3)
     expect(screen.getByText('Estado: Fallida (FAILED)')).toBeInTheDocument()
 
     await user.selectOptions(screen.getByLabelText('Símbolo a comparar'), FORMAT_CURRENCY)
     await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
-    // La nueva comparación se añade a las cinco previas; ninguna se reemplaza.
-    await waitFor(() => expect(within(screen.getByRole('list', { name: 'Comparaciones previas del Run' })).getAllByRole('listitem')).toHaveLength(6), { timeout: 3000 })
+    // La nueva comparación se añade a las seis previas (incluida la semilla PHP); ninguna se reemplaza.
+    await waitFor(() => expect(within(screen.getByRole('list', { name: 'Comparaciones previas del Run' })).getAllByRole('listitem')).toHaveLength(7), { timeout: 3000 })
+  })
+
+  it.each([
+    [409, 'ANALYSIS_NOT_FINISHED', 'El Run todavía no terminó de analizarse; la comparación estará disponible cuando termine.'],
+    [422, 'UNSUPPORTED_PROJECT', 'Este proyecto no tiene framework JEST, VITEST o PHPUNIT detectado.'],
+  ])('creación con %i %s muestra el mensaje propio y no crea comparación', async (status, code, message) => {
+    overrides.start = async () => { throw new ApiError('crudo de Core', status, 'corr-create', code) }
+    const user = userEvent.setup()
+    renderPage(MULTI_RUN)
+    await user.selectOptions(await screen.findByLabelText('Símbolo a comparar'), FORMAT_CURRENCY)
+    await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
+    expect(await screen.findByText(message)).toBeInTheDocument()
+    expect(screen.queryByText('crudo de Core')).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { level: 2, name: /Resultado de/ })).not.toBeInTheDocument()
+  })
+
+  it('un FAILED con failureCode desconocido muestra el código tal cual, sin inventar causa', async () => {
+    overrides.start = async () => ({ status: 'PENDING', pollAfterMs: 10, analysisRunId: 'arun_checkout_pr49', retrievalComparisonId: 'rcmp_override_unknown', projectVersionId: 'ver_x' })
+    overrides.detail = async () => ({
+      id: 'rcmp_override_unknown', analysisRunId: 'arun_checkout_pr49', projectId: 'prj_checkout_demo', projectVersionId: 'ver_x',
+      symbol: { language: 'TYPESCRIPT', kind: 'FUNCTION', qualifiedName: 'formatCurrency', filePath: 'src/x.ts', changeKind: 'DIRECTLY_CHANGED' },
+      status: 'FAILED', failureCode: 'FUTURE_CODE', failureMessage: 'DEMO: código nuevo.', startedAt: null, completedAt: null,
+    })
+    const user = userEvent.setup()
+    renderPage(MULTI_RUN)
+    await user.selectOptions(await screen.findByLabelText('Símbolo a comparar'), FORMAT_CURRENCY)
+    await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('código FUTURE_CODE')
   })
 
   it('un FAILED muestra failureCode y failureMessage literales en role=alert y no pide resultados', async () => {
@@ -183,15 +213,16 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     overrides.detail = async () => ({
       id: 'rcmp_override_failed', analysisRunId: 'arun_checkout_pr49', projectId: 'prj_checkout_demo', projectVersionId: 'ver_x',
       symbol: { language: 'TYPESCRIPT', kind: 'FUNCTION', qualifiedName: 'formatCurrency', filePath: 'src/x.ts', changeKind: 'DIRECTLY_CHANGED' },
-      status: 'FAILED', failureCode: 'DEMO_EMBEDDING_INDEX_UNAVAILABLE', failureMessage: 'Demo: el índice de embeddings no respondió.', startedAt: null, completedAt: null,
+      status: 'FAILED', failureCode: 'RETRIEVAL_TARGET_UNRESOLVABLE', failureMessage: 'DEMO: el símbolo no existe en la versión.', startedAt: null, completedAt: null,
     })
     const user = userEvent.setup()
     renderPage(MULTI_RUN)
     await user.selectOptions(await screen.findByLabelText('Símbolo a comparar'), FORMAT_CURRENCY)
     await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
     const alert = await screen.findByRole('alert')
-    expect(alert).toHaveTextContent('DEMO_EMBEDDING_INDEX_UNAVAILABLE')
-    expect(alert).toHaveTextContent('Demo: el índice de embeddings no respondió.')
+    expect(alert).toHaveTextContent('RETRIEVAL_TARGET_UNRESOLVABLE')
+    expect(alert).toHaveTextContent('No se pudo resolver el símbolo elegido')
+    expect(alert).toHaveTextContent('DEMO: el símbolo no existe en la versión.')
     expect(screen.getByRole('status')).toBeInTheDocument()
     expect(screen.queryByRole('heading', { level: 2, name: /Resultado de/ })).not.toBeInTheDocument()
   })

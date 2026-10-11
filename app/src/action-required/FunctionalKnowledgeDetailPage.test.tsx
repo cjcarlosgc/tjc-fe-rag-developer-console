@@ -1,7 +1,7 @@
 import { screen, within } from '@testing-library/react'
 import { beforeEach, expect, test } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
-import { resetMockBackend } from '../api/mockBackend'
+import { resetMockBackend, setMockFunctionalKnowledgeScenarioForTests } from '../api/mockBackend'
 import { renderApp } from '../test/render'
 import { FunctionalKnowledgeDetailPage } from './FunctionalKnowledgeDetailPage'
 
@@ -127,4 +127,16 @@ test('HU52 (propuesta): sin coincidencias muestra el estado vacío en vez de la 
 
   expect(await screen.findByText('Runs que usaron esta regla')).toBeInTheDocument()
   expect(screen.getByText('Ningún Analysis Run demo tocó este símbolo todavía.')).toBeInTheDocument()
+})
+
+test('INTEROP-2.7 §6.11: escenario nulo o clave LEGACY muestran estado vacío, no la clave ni «Otros»', async () => {
+  setMockFunctionalKnowledgeScenarioForTests('fk_rounding_v1', { scenarioKind: null, scenarioKey: 'LEGACY' })
+  renderDetail('prj_checkout_demo', 'fk_rounding_v1')
+
+  await screen.findByRole('heading', { name: 'Procedencia' })
+  const dl = screen.getByText('Clave de escenario').closest('dl') as HTMLElement
+  expect(within(dl).getByText('sin escenario registrado')).toBeInTheDocument()
+  expect(within(dl).getByText('sin clave de escenario (regla histórica)')).toBeInTheDocument()
+  expect(within(dl).queryByText('LEGACY')).not.toBeInTheDocument()
+  expect(within(dl).queryByText('Otros')).not.toBeInTheDocument()
 })

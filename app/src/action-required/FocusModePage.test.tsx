@@ -1,6 +1,6 @@
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, expect, test } from 'vitest'
+import { beforeEach, expect, test, vi } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
 import { resetMockBackend } from '../api/mockBackend'
 import { renderApp } from '../test/render'
@@ -44,6 +44,46 @@ test('HU37/INTEROP-2.7: "No lo sé" (UNKNOWN) es una abstención: la pregunta pe
   expect(screen.queryByText('Contexto funcional confirmado')).not.toBeInTheDocument()
   expect(screen.queryByText(/resuelto|continuando|todas las preguntas respondidas/i)).not.toBeInTheDocument()
   expect(screen.queryByText(/usr_demo/)).not.toBeInTheDocument()
+})
+
+test('live: UNKNOWN reutiliza la misma Idempotency-Key UUID al reintentar la misma acción', async () => {
+  setDataSourceForTests('live')
+  const user = userEvent.setup()
+  const questionSet = {
+    analysisRunId: 'arun-live',
+    currentQuestion: {
+      id: 'fq-live', analysisRunId: 'arun-live', projectId: 'prj-live', repositoryName: 'acme/repo', pullRequestNumber: 12,
+      headSha: 'abc123', target: { language: 'TYPESCRIPT', kind: 'FUNCTION', qualifiedName: 'calculate', filePath: 'src/calculate.ts', changeKind: 'DIRECTLY_CHANGED' },
+      question: '¿Cuál es el comportamiento esperado?', rationale: 'Falta una regla funcional.', status: 'PENDING', visualAid: null,
+      scenarioKind: 'EXPECTED_RESULT', scenarioKey: 'calculate.result', abstention: null, createdAt: '2026-10-10T00:00:00.000Z',
+    },
+    functionalBehaviorValidated: false,
+  }
+  const project = { id: 'prj-live', name: 'Live', currentVersionId: null, workspace: { kind: 'PERSONAL', id: 'ws-live', login: 'person' }, role: 'ADMIN', createdAt: '2026-10-10T00:00:00.000Z', updatedAt: '2026-10-10T00:00:00.000Z' }
+  let posts = 0
+  const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+    const url = String(input)
+    if (url.endsWith('/answers') && init?.method === 'POST') {
+      posts += 1
+      return posts === 1
+        ? new Response(JSON.stringify({ code: 'TEMPORARY_FAILURE', message: 'Reintenta.' }), { status: 500 })
+        : new Response(JSON.stringify({ status: 'PENDING', pollAfterMs: 500, analysisRunId: 'arun-live', questionId: 'fq-live', outcome: 'ABSTAINED', continuationAttemptId: null, knowledgeId: null }), { status: 202 })
+    }
+    return new Response(JSON.stringify(url.includes('context-questions') ? questionSet : project), { status: 200 })
+  })
+
+  renderFocusMode('arun-live')
+  await user.click(await screen.findByRole('button', { name: 'No lo sé' }))
+  await screen.findByRole('alert')
+  await user.click(screen.getByRole('button', { name: 'No lo sé' }))
+  await waitFor(() => expect(posts).toBe(2))
+
+  const keys = fetchMock.mock.calls
+    .filter(([, init]) => init?.method === 'POST')
+    .map(([, init]) => new Headers(init?.headers).get('Idempotency-Key'))
+  expect(keys).toHaveLength(2)
+  expect(keys[0]).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
+  expect(keys[1]).toBe(keys[0])
 })
 
 test('INTEROP-2.7: una segunda abstención incrementa el contador sin avanzar', async () => {

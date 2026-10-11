@@ -11,4 +11,6 @@ requiredAction:
   - Console: sincronizar el espejo INTEROP-2.7 byte a byte; sin cambio funcional requerido (failureKind no se expone en DTOs de Console).
 sourceRevision: 123f8ed
 consumerImportedAt: 2026-10-10T22:56:44.307Z
-status: C-PENDING
+status: C-RESOLVED
+acknowledgementEvidence: harness/reports/wi-console-021-contract-sync-php-acknowledgement.md
+resolutionEvidence: harness/reports/wi-console-021-implementation.md

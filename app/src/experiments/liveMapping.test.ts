@@ -5,7 +5,8 @@ const status: ExperimentStatusResponse = {
   id: 'exp-1',
   projectId: 'p-1',
   projectVersionId: 'v-1',
-  targetId: 't-1',
+  analysisRunId: 'arun-1',
+  symbol: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'Order.total', filePath: 'src/orders.ts', changeKind: 'DIRECTLY_CHANGED' },
   status: 'RUNNING',
   completedRepetitions: 3,
   totalRepetitions: 6,
@@ -25,7 +26,8 @@ test('separa las métricas de RAG y GENERALIST_AGENT en baseline/rag', () => {
   const results: ExperimentResultsResponse = {
     experimentId: 'exp-1',
     projectVersionId: 'v-1',
-    targetId: 't-1',
+    analysisRunId: 'arun-1',
+    symbol: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'Order.total', filePath: 'src/orders.ts', changeKind: 'DIRECTLY_CHANGED' },
     repetitionsPerStrategy: 3,
     completedAt: '2026-09-07T00:05:00.000Z',
     strategies: [
@@ -44,7 +46,7 @@ test('separa las métricas de RAG y GENERALIST_AGENT en baseline/rag', () => {
   expect(operation.result?.rag).toMatchObject({ strategy: 'RAG', validRate: .83, totalTokens: 700 })
   expect(operation.result?.baseline).toMatchObject({ strategy: 'GENERALIST_AGENT', toolCalls: 5, filesInspected: 3 })
   expect(operation.result?.repetitions).toHaveLength(2)
-  expect(operation.result?.repetitions[0]).toMatchObject({ target: 'calculateTotal', strategy: 'RAG', durationMs: 350, errorSummary: null })
+  expect(operation.result?.repetitions[0]).toMatchObject({ target: 'calculateTotal', strategy: 'RAG', totalDurationMs: 350, executionDurationMs: null, errorSummary: null })
 })
 
 const configuredStatus: ExperimentStatusResponse = {
@@ -61,7 +63,8 @@ const configuredStatus: ExperimentStatusResponse = {
 const resultsWith27: ExperimentResultsResponse = {
   experimentId: 'exp-1',
   projectVersionId: 'v-1',
-  targetId: 't-1',
+  analysisRunId: 'arun-1',
+  symbol: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'Order.total', filePath: 'src/orders.ts', changeKind: 'DIRECTLY_CHANGED' },
   repetitionsPerStrategy: 3,
   completedAt: '2026-09-07T00:05:00.000Z',
   strategies: [
@@ -99,10 +102,69 @@ test('sin campos INTEROP-2.7 la configuración queda null y las repeticiones en 
   expect(operation.result?.repetitions[1].attempt).not.toBe(0)
 })
 
-test('si falta un campo requerido de configuración, configuration queda null sin valores inventados', () => {
+test('configuración parcial: cada campo ausente queda null por separado, sin perder el resto del bloque', () => {
   const partial = { ...configuredStatus, budget: { toolCallCap: 8, contextTokenBudget: 12000, maxDurationMs: undefined } } as unknown as ExperimentStatusResponse
   const operation = toExperimentOperation(partial, resultsWith27, 'calculateTotal')
+  expect(operation.configuration?.budget).toEqual({ toolCallCap: 8, contextTokenBudget: 12000, maxDurationMs: null })
+  expect(operation.configuration?.model?.provider).toBe('OpenAI')
+  expect(operation.configuration?.executionProfile).toBe('sandbox-standard')
+})
+
+test('corrida previa con model, budget, executionProfile, runnerHint y randomizationSeed en null: configuración null, sin valores inventados', () => {
+  const legacy: ExperimentStatusResponse = { ...status, status: 'COMPLETED', completedRepetitions: 6, model: null, budget: null, executionProfile: null, runnerHint: null, randomizationSeed: null }
+  const operation = toExperimentOperation(legacy, resultsWith27, 'calculateTotal')
   expect(operation.configuration).toBeNull()
+  expect(operation.result?.configuration).toBeNull()
+})
+
+test('una configuración con algunos null conserva los campos informados', () => {
+  const mixed: ExperimentStatusResponse = { ...status, status: 'COMPLETED', completedRepetitions: 6, model: { provider: 'OpenAI', model: 'gpt-6-luna' }, budget: null, executionProfile: 'p', runnerHint: null, randomizationSeed: null }
+  const operation = toExperimentOperation(mixed, resultsWith27, 'calculateTotal')
+  expect(operation.configuration).toMatchObject({ budget: null, executionProfile: 'p', runnerHint: null, randomizationSeed: null })
+})
+
+test('corrida previa con executionDurationMs null: el guion se conserva como null y nunca se convierte en 0', () => {
+  const operation = toExperimentOperation({ ...status, status: 'COMPLETED', completedRepetitions: 6 }, resultsWith27, 'calculateTotal')
+  expect(operation.result?.repetitions[1]).toMatchObject({ executionDurationMs: null, generationDurationMs: null, totalDurationMs: 500 })
+  expect(operation.result?.repetitions[0].executionDurationMs).toBeNull()
+})
+
+test('executionDurationMs numérico tras llamada fallida al Sandbox se mapea tal cual, incluso pequeño', () => {
+  const withExecution: ExperimentResultsResponse = {
+    ...resultsWith27,
+    repetitions: [
+      { repetition: 1, strategy: 'RAG', valid: false, failureType: 'INFRASTRUCTURE', generationDurationMs: 300, executionDurationMs: 7, totalDurationMs: 307, totalTokens: null, errorSummary: null, pairId: 'pair-1', pairPosition: 1, attempt: 2, technicallyEvaluable: false },
+      { repetition: 2, strategy: 'RAG', valid: false, failureType: 'COMPILATION', executionDurationMs: null, totalDurationMs: 400, totalTokens: null, errorSummary: null },
+    ],
+  }
+  const operation = toExperimentOperation(configuredStatus, withExecution, 'calculateTotal')
+  expect(operation.result?.repetitions[0]).toMatchObject({ executionDurationMs: 7, totalDurationMs: 307 })
+  expect(operation.result?.repetitions[1].executionDurationMs).toBeNull()
+})
+
+test('tasas y medias null de una estrategia se mapean como null y los contadores de evaluabilidad se conservan', () => {
+  const noEval: ExperimentResultsResponse = {
+    ...resultsWith27,
+    strategies: [
+      { ...resultsWith27.strategies[0] },
+      { ...resultsWith27.strategies[1], validRate: null, compilationRate: null, executionRate: null, passedRate: null, generationDurationMs: null, executionDurationMs: null, totalDurationMs: null, evaluableRepetitions: 0, nonEvaluableRepetitions: 3 },
+    ],
+  }
+  const operation = toExperimentOperation(configuredStatus, noEval, 'calculateTotal')
+  expect(operation.result?.baseline).toMatchObject({ validRate: null, passedRate: null, totalDurationMs: null, executionDurationMs: null, evaluableRepetitions: 0, nonEvaluableRepetitions: 3 })
+  expect(operation.result?.baseline.validRate).not.toBe(0)
+  expect(operation.result?.rag.evaluableRepetitions).toBeUndefined()
+})
+
+test('un experimento FAILED mapea failureCode y failureMessage sin descartarlos', () => {
+  const failed = toExperimentOperation({ ...status, status: 'FAILED', failureCode: 'EXPERIMENT_WORKER_LOST', failureMessage: 'worker caído' }, null, 'calculateTotal')
+  expect(failed).toMatchObject({ status: 'FAILED', failureCode: 'EXPERIMENT_WORKER_LOST', failureMessage: 'worker caído', result: undefined })
+})
+
+test('un código desconocido se conserva como cadena abierta', () => {
+  const unknown = toExperimentOperation({ ...status, status: 'FAILED', failureCode: 'DEMO_UNKNOWN_FAILURE', failureMessage: null }, null, 'calculateTotal')
+  expect(unknown.failureCode).toBe('DEMO_UNKNOWN_FAILURE')
+  expect(unknown.failureMessage).toBeNull()
 })
 
 test('los nulos internos de modelo se preservan como null, nunca como 0', () => {

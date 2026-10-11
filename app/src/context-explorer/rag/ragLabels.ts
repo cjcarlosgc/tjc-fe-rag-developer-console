@@ -1,4 +1,10 @@
-import type { RagCandidateNode } from '../types'
+import type { RagCandidateNode, RagStructuralMatch } from '../types'
+import { STRUCTURAL_RELATION_LABELS } from '../../retrieval-comparison/types'
+
+/** Única fuente de etiquetas de relación estructural (compartida con la comparación de retrieval OE2). */
+export function structuralRelationName(relation: RagStructuralMatch): string {
+  return STRUCTURAL_RELATION_LABELS[relation]
+}
 
 export const discardReasonLabel: Record<string, string> = {
   BELOW_MINIMUM_SCORE: 'Descartado: por debajo del score mínimo',
@@ -19,9 +25,9 @@ export function ragSignalKind(candidate: RagCandidateNode): RagSignalKind {
 
 export function ragSignalLabel(candidate: RagCandidateNode): string {
   const kind = ragSignalKind(candidate)
-  if (kind === 'DUAL') return `Señal dual · semántica + ${candidate.structuralMatch === 'IMPORTS' ? 'importa' : 'es importado por'}`
+  if (kind === 'DUAL' && candidate.structuralMatch) return `Señal dual · semántica + ${structuralRelationName(candidate.structuralMatch).toLowerCase()}`
   if (kind === 'SEMANTIC') return 'Señal semántica'
-  if (kind === 'STRUCTURAL') return candidate.structuralMatch === 'IMPORTS' ? 'Señal estructural · importa' : 'Señal estructural · es importado por'
+  if (kind === 'STRUCTURAL' && candidate.structuralMatch) return `Señal estructural · ${structuralRelationName(candidate.structuralMatch)}`
   return 'Sin señal'
 }
 

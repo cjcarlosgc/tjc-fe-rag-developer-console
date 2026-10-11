@@ -26,6 +26,26 @@ const codeMessages: Record<string, string> = {
   RETRIEVAL_COMPARISON_NOT_FOUND: 'Esa comparación de retrieval ya no existe o no está disponible.',
   RETRIEVAL_COMPARISON_NOT_FINISHED: 'La comparación todavía no terminó; los resultados aparecerán cuando termine.',
   IDEMPOTENCY_CONFLICT: 'Esa clave de idempotencia ya se usó para otra comparación. Inicia la comparación de nuevo desde la página.',
+  // WI-CONSOLE-021 (INTEROP-2.7 §6.5.1 y §6.15): errores de creación de experimento (OE5) y de comparación de retrieval (OE2).
+  // Ninguno crea el recurso; `UNSUPPORTED_PROJECT` vale para ambos y solo significa que no hay framework JEST, VITEST o PHPUNIT detectado (CS-CORE-20261009-017/-018).
+  UNSUPPORTED_PROJECT: 'Este proyecto no tiene framework JEST, VITEST o PHPUNIT detectado.',
+  // Reintentable: el experimento no se creó, así que volver a intentarlo es seguro.
+  LLM_PROVIDER_UNAVAILABLE: 'El modelo de experimentos no está disponible ahora. Inténtalo de nuevo en unos minutos.',
+  ANALYSIS_NOT_FINISHED: 'El Run todavía no terminó de analizarse; la comparación estará disponible cuando termine.',
+  RETRIEVAL_COMPARISON_FAILED: 'La comparación de retrieval falló. Revisa el detalle del estado de la comparación.',
+}
+
+/** INTEROP-2.7 §6.5.1: `422 REASONING_EFFORT_UNSUPPORTED` trae `details.supportedEfforts: string[]`; si falta o no es una lista de cadenas, el mensaje no la menciona. */
+function reasoningEffortMessage(details: unknown): string {
+  const base = 'El modelo no admite el esfuerzo de razonamiento configurado; el experimento no se creó.'
+  const supported = (details as { supportedEfforts?: unknown } | null | undefined)?.supportedEfforts
+  if (!Array.isArray(supported) || !supported.every((item) => typeof item === 'string') || supported.length === 0) return base
+  return `${base} Esfuerzos admitidos: ${supported.join(', ')}.`
+}
+
+/** `503 LLM_PROVIDER_UNAVAILABLE` en la creación de experimentos: reintentable, sin experimento creado. */
+export function isLlmProviderUnavailable(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 503 && error.code === 'LLM_PROVIDER_UNAVAILABLE'
 }
 
 const serverErrorMessage = 'RAG Core no pudo completar la operación. Inténtalo de nuevo en unos minutos.'
@@ -39,6 +59,7 @@ export function bindingErrorMessage(error: unknown): string {
       }
       return 'Tu rol actual no permite esta acción en el Project.'
     }
+    if (error.code === 'REASONING_EFFORT_UNSUPPORTED') return reasoningEffortMessage(error.details)
     if (error.code && codeMessages[error.code]) return codeMessages[error.code]
     if (error.status >= 500) return serverErrorMessage
   }

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '../api/client'
 import { resetMockBackend } from '../api/mockBackend'
-import { PendingContractError, setDataSourceForTests } from '../api/dataSource'
+import { setDataSourceForTests } from '../api/dataSource'
 import { getAnalysisRun, listTestProposals } from '../control-plane/api'
 import { getContextQuestionSet, listActionRequired, listAllActionRequired, listFunctionalKnowledge, submitFunctionalAnswer } from './api'
 
@@ -229,6 +229,19 @@ describe('action-required api (live) — HU35-38, Core ya lo implementó (INTERO
     )
   })
 
+  it.each([
+    ['UNKNOWN', null],
+    ['YES', null],
+  ] as const)('submitFunctionalAnswer envía una Idempotency-Key UUID para %s', async (choice, answer) => {
+    const accepted = { status: 'PENDING', pollAfterMs: 500, analysisRunId: 'arun_real', questionId: 'fq_1', continuationAttemptId: null, knowledgeId: null }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(accepted), { status: 202 }))
+    await submitFunctionalAnswer('arun_real', 'fq_1', { choice, answer })
+
+    const init = fetchMock.mock.calls[0][1]
+    const headers = new Headers(init?.headers)
+    expect(headers.get('Idempotency-Key')).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
+  })
+
   it('submitFunctionalAnswer: un 409 FUNCTIONAL_KNOWLEDGE_CONFLICT llega como ApiError con details', async () => {
     const conflict = { conflictId: 'fq_1', analysisRunId: 'arun_real', questionId: 'fq_1', conflictingKnowledge: { id: 'fk_1' }, proposedNormalizedRule: 'x' }
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ code: 'FUNCTIONAL_KNOWLEDGE_CONFLICT', message: 'x', details: conflict }), { status: 409 }))
@@ -238,11 +251,10 @@ describe('action-required api (live) — HU35-38, Core ya lo implementó (INTERO
     expect((error as ApiError).details).toEqual(conflict)
   })
 
-  it('INTEROP-2.7: listFunctionalKnowledge live responde PendingContractError sin llamar a Core (procedencia y escenarios no publicados)', async () => {
-    const fetchMock = vi.spyOn(globalThis, 'fetch')
-    const error = await listFunctionalKnowledge('prj_real', 'ACTIVE').catch((reason: unknown) => reason)
-    expect(error).toBeInstanceOf(PendingContractError)
-    expect((error as Error).message).toContain('las reglas de Functional Knowledge con procedencia y escenarios')
-    expect(fetchMock).not.toHaveBeenCalled()
+  it('INTEROP-2.7: listFunctionalKnowledge live consume la ruta publicada con el filtro', async () => {
+    const page = { items: [], nextCursor: null }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(page), { status: 200 }))
+    await expect(listFunctionalKnowledge('prj_real', 'ACTIVE')).resolves.toEqual(page)
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/\/projects\/prj_real\/functional-knowledge\?status=ACTIVE$/), expect.anything())
   })
 })

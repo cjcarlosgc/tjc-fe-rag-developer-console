@@ -11,5 +11,6 @@ requiredAction:
   - Importar y acusar; agregar WRITER a tipos, comparaciones de rol y UI de permisos; habilitar para Writer vincular, pausar, reactivar, publicar tests y crear experimentos; deshabilitar o explicar responder y UNKNOWN para Writer y Reader; mapear el 403 con details.requiredRole y details.currentRole; mostrar la procedencia de las reglas con estado vacio para null. Sin cambios en Sandbox ni GitHub Integration.
 sourceRevision: 11d396ef9e35ca8a1f73bc14a07d9915b6a699b4
 consumerImportedAt: 2026-10-10T14:11:38.132Z
-status: C-ACKNOWLEDGED
+status: C-RESOLVED
 acknowledgementEvidence: harness/reports/wi-console-021-contract-sync-acknowledgement.md
+resolutionEvidence: harness/reports/wi-console-021-implementation.md

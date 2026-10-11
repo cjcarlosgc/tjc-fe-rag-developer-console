@@ -14,6 +14,7 @@ import { ErrorNote, ErrorState, LoadingState } from '../ui/Feedback'
 import { RepoChip } from '../ui/RepoChip'
 import { findEligibleSymbols } from '../run-comparison/types'
 import { EvidenceDownload } from '../evidence/EvidenceDownload'
+import { retrievalFailureText } from './failureMessages'
 import { retrievalComparisonKeys, useRetrievalComparison, useRetrievalComparisonResults, useRetrievalComparisons, useStartRetrievalComparison } from './queries'
 import {
   NOT_APPLICABLE_LABEL,
@@ -62,7 +63,7 @@ export function RetrievalComparisonPage() {
 
   const detailQuery = useRetrievalComparison(activeId, pollAfterMs)
   const detail: RetrievalComparisonStatusResponse | undefined = detailQuery.data
-  const resultsQuery = useRetrievalComparisonResults(activeId, detail?.status)
+  const resultsQuery = useRetrievalComparisonResults(activeId, detail?.status, pollAfterMs)
 
   // B1: al llegar a un estado terminal, la previa de esa comparación cambia en Core; la lista ya no es fiable y se vuelve a pedir.
   const detailId = detail?.id
@@ -202,8 +203,9 @@ export function RetrievalComparisonPage() {
       <span>{statusMessage}</span>
       {activeId && detail && (detail.status === 'PENDING' || detail.status === 'RUNNING') && <strong>{STATUS_TEXT[detail.status]}</strong>}
     </div>
-    {detail?.status === 'FAILED' && <ErrorNote message={`Comparación fallida. failureCode: ${detail.failureCode ?? 'sin código'} · failureMessage: ${detail.failureMessage ?? 'sin mensaje'}`} />}
+    {detail?.status === 'FAILED' && <ErrorNote message={`Comparación fallida. ${retrievalFailureText(detail.failureCode)} failureCode: ${detail.failureCode ?? 'sin código'} · failureMessage: ${detail.failureMessage ?? 'sin mensaje'}`} />}
     {detailQuery.isError && <ErrorNote message={bindingErrorMessage(detailQuery.error)} correlationId={errorCorrelationId(detailQuery.error)} />}
+    {/* Un 409 RETRIEVAL_COMPARISON_FAILED de /results no se reintenta: el detalle es el del status (bloque de arriba). */}
     {resultsQuery.isError && <ErrorNote message={bindingErrorMessage(resultsQuery.error)} correlationId={errorCorrelationId(resultsQuery.error)} />}
 
     {results && <div className="panel">
@@ -227,7 +229,7 @@ export function RetrievalComparisonPage() {
         {previous.map((item) => <li key={item.id}>
           <span><strong>{item.symbol.qualifiedName}</strong> · <code>{item.id}</code></span>
           <span>Estado: {STATUS_TEXT[item.status]} ({item.status})</span>
-          {item.status === 'FAILED' && <span>failureCode: <code>{item.failureCode ?? 'sin código'}</code> · failureMessage: {item.failureMessage ?? 'sin mensaje'}</span>}
+          {item.status === 'FAILED' && <span>{retrievalFailureText(item.failureCode)} failureCode: <code>{item.failureCode ?? 'sin código'}</code> · failureMessage: {item.failureMessage ?? 'sin mensaje'}</span>}
           {item.status === 'COMPLETED' && <button type="button" className="button secondary" onClick={() => onViewResult(item)}>Ver resultado<span className="visually-hidden"> de {item.symbol.qualifiedName}</span></button>}
         </li>)}
       </ul>}
