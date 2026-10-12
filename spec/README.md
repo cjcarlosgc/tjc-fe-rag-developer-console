@@ -6,7 +6,7 @@ Orden de lectura: `contracts/system-contract.md` -> `contracts/interoperability-
 
 ## Contratos entre servicios
 
-- [`contracts/system-contract.md`](contracts/system-contract.md): copia espejo byte por byte `SYSTEM-2.8` del contrato canónico de RAG Core.
+- [`contracts/system-contract.md`](contracts/system-contract.md): copia espejo byte por byte `SYSTEM-2.9` del contrato canónico de RAG Core.
 - [`contracts/interoperability-contract.md`](contracts/interoperability-contract.md): copia espejo byte por byte `INTEROP-2.8` con rutas, DTOs, estados, errores y transporte universales.
 - [`contracts/github-integration-contract.md`](contracts/github-integration-contract.md): copia espejo byte por byte `GH-INTEROP-1.7`; Console usa sus rutas de usuario para App info, discovery, verificación GitHub y ramas, y conserva Core para dominio/RAG.
 

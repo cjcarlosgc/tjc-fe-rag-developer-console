@@ -1,6 +1,6 @@
 # 013 — Subtareas actuales
 
-- [ ] **ST-CONSOLE-004 · T-BACKLOGGED · WI-CONSOLE-004 · HU03–HU16:** especificar la experiencia de OC01–OC15 desde happy paths; subcasos y evidencia se agregan solo tras aprobación.
+- [ ] **ST-CONSOLE-004 · T-READY · WI-CONSOLE-004 · HU03–HU16:** especificar la experiencia de OC01–OC15 desde happy paths; subcasos y evidencia se agregan solo tras aprobación.
 - [x] **ST-CONSOLE-014 [T-DONE] · WI-CONSOLE-012 · HU12, HU14:** reproducir la prueba reportada como rota de `RunsPage`, registrar comando y mensaje, determinar su causa y corregir la causa (no el conteo de aserciones) o cerrar con evidencia si no reproduce.
 - [x] **ST-CONSOLE-015 [T-DONE] · WI-CONSOLE-013 · HU07, HU08, HU14:** rol `WRITER` y abstención `UNKNOWN` en Focus Mode y Action Required según `DEC-FK-002` y `DEC-ORG-003`; la pregunta sigue pendiente y no se muestra como resuelta.
 - [x] **ST-CONSOLE-017 [T-DONE] · WI-CONSOLE-015 · HU07, HU09:** mostrar varias reglas `ACTIVE` por target agrupadas por escenario y su procedencia, y retirar el panel especulativo de procedencia.
@@ -14,5 +14,7 @@
 - [x] **ST-CONSOLE-025 · T-DONE · WI-CONSOLE-023 · HU14, HU15:** adoptar los espejos canónicos SYSTEM/GH-INTEROP-1.6 de Core y resolver `CS-CORE-20261011-005`; no implementar el comportamiento 422/reconciliación en Console ni cambiar UI, DTOs, endpoints, selectores o despliegue.
 
 - [x] **ST-CONSOLE-026 · T-DONE · WI-CONSOLE-024 · HU14, HU15:** adoptar SYSTEM-2.8/GH-INTEROP-1.7 desde Core y registrar `CS-CORE-20261011-006`; sin UI, DTOs, endpoints ni código de producto.
+
+- [x] **ST-CONSOLE-027 · T-DONE · WI-CONSOLE-025 · HU11:** espejar SYSTEM-2.9 e INTEROP-2.8 de Core; sin UI, producto ni GCE.
 
 La implementación antigua y sus IDs HU se conservan en `CHANGELOG.md`, `harness/reports/` y Git, no como backlog ejecutable actual.

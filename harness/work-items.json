@@ -194,7 +194,7 @@
       "id": "WI-CONSOLE-004",
       "component": "CONSOLE",
       "workItemType": "PRODUCT",
-      "status": "W-PLANNED",
+      "status": "W-AWAITING_APPROVAL",
       "priority": "P2",
       "sprint": "P2",
       "title": "Formalizar casos operativos",
@@ -240,9 +240,16 @@
       "contractImpact": false,
       "publishesContract": false,
       "specPaths": [
-        "spec/features/015-sdd-harness-transition/spec.md",
-        "spec/features/015-sdd-harness-transition/plan.md",
-        "spec/features/015-sdd-harness-transition/tasks.md"
+        "spec/operational-cases.md",
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/013-pr-driven-control-plane/plan.md",
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "harness/reports/wi-console-004-sdd-analysis.md"
+      ],
+      "acceptanceCriteria": [
+        "Los 15 casos tienen un happy path especificado y trazado a sus HU y a la Feature 013 vigente.",
+        "Cada happy path declara precondiciones o entrada, resultado observable o salida, invariantes y prueba propuesta, sin afirmar cobertura implementada.",
+        "No se agregan subcasos OCxx.a, comportamiento no aprobado, cambios de app/, UI, API, infraestructura ni contratos."
       ]
     },
     {
@@ -1825,6 +1832,220 @@
           "report": "harness/reports/wi-console-022-contract-sync-scope-review.md"
         }
       ]
+    },
+    {
+      "id": "WI-CONSOLE-025",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "title": "Sincronizar SYSTEM-2.9 y estado INTEROP-2.8 sin cambios de producto",
+      "storyIds": [
+        "HU11"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-027"
+      ],
+      "caseIds": [],
+      "dependsOn": [
+        "WI-CONSOLE-024"
+      ],
+      "contractImpact": true,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/system-contract.md",
+        "spec/contracts/interoperability-contract.md"
+      ],
+      "acceptanceCriteria": [
+        "SYSTEM-2.9 e INTEROP-2.8 coinciden byte a byte con Core 76053463e1b073364861d417bc9c2217dccd11a2.",
+        "CS-CORE-20261012-001 se resuelve solo con evidencia local.",
+        "Sin UI, producto, GCE, despliegue ni selector de raíces."
+      ],
+      "specPaths": [
+        "spec/contracts/system-contract.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/README.md",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-025-contract-review-cycle-1.md",
+        "harness/reports/wi-console-025-contract-review.md",
+        "harness/reports/wi-console-025-review.md",
+        "harness/reports/wi-console-025-closure.md"
+      ],
+      "approved": true,
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-10-12T08:47:30.735Z",
+        "note": "Corte documental de Contract Sync; no hay decisiones Blocks aplicables."
+      },
+      "execution": {
+        "leaderAgent": "leader",
+        "analysisAgent": "leader",
+        "implementationAgent": "leader",
+        "contractReviewAgent": "contract-reviewer",
+        "reviewAgent": "reviewer",
+        "uxReviewAgent": null,
+        "reviewCycles": 2,
+        "maxReviewCycles": 2,
+        "handoffs": [
+          {
+            "agent": "contract-reviewer",
+            "executedBy": {
+              "agent": "contract-reviewer",
+              "configuredModel": "gpt-6-luna",
+              "servedModel": "unknown",
+              "effort": "high"
+            },
+            "status": "CHANGES_REQUESTED",
+            "findings": [
+              "Espejos byte exactos; README y CHANGELOG desalineados con SYSTEM-2.9."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "spec/README.md",
+              "CHANGELOG.md"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-025-contract-review-cycle-1.md"
+            ],
+            "recommendedNextStep": "Revisión contractual del ajuste documental."
+          },
+          {
+            "agent": "contract-reviewer",
+            "executedBy": {
+              "agent": "contract-reviewer",
+              "configuredModel": "gpt-6-luna",
+              "servedModel": "unknown",
+              "effort": "high"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Espejos y documentación alineados; Contract Sync resuelto con evidencia."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "spec/contracts/system-contract.md",
+              "spec/contracts/interoperability-contract.md",
+              "spec/README.md",
+              "CHANGELOG.md"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-025-contract-review.md"
+            ],
+            "recommendedNextStep": "Revisión independiente."
+          },
+          {
+            "agent": "reviewer",
+            "executedBy": {
+              "agent": "reviewer",
+              "configuredModel": "gpt-6-luna",
+              "servedModel": "unknown",
+              "effort": "xhigh"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Revisión independiente aprobada; corte documental exacto."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "spec/contracts/system-contract.md",
+              "spec/contracts/interoperability-contract.md",
+              "spec/README.md",
+              "CHANGELOG.md"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-025-review.md"
+            ],
+            "recommendedNextStep": "Checkpoint before-done y cierre."
+          }
+        ]
+      },
+      "gates": {
+        "sddVerified": "G-PASSED",
+        "implementationCompleted": "G-PASSED",
+        "canonicalContractSynced": "G-PASSED",
+        "technicalChecksPassed": "G-PASSED",
+        "noMocksPresentedAsLive": "G-PASSED",
+        "noBlockingDecisions": "G-PASSED",
+        "uxReviewed": "G-NOT_APPLICABLE",
+        "contractReviewed": "G-PASSED",
+        "independentReviewPassed": "G-PASSED",
+        "interopSyncChecked": "G-PASSED",
+        "retryLimitRespected": "G-PASSED"
+      },
+      "evidence": [
+        "harness/reports/wi-console-025-implementation.md",
+        "harness/reports/wi-console-025-contract-review-cycle-1.md",
+        "harness/reports/wi-console-025-contract-review.md",
+        "harness/reports/wi-console-025-review.md",
+        "harness/reports/wi-console-025-closure.md"
+      ],
+      "gateEvidence": {
+        "sddVerified": [
+          "harness/reports/wi-console-025-implementation.md"
+        ],
+        "implementationCompleted": [
+          "harness/reports/wi-console-025-implementation.md"
+        ],
+        "canonicalContractSynced": [
+          "harness/reports/wi-console-025-implementation.md"
+        ],
+        "technicalChecksPassed": [
+          "harness/reports/wi-console-025-implementation.md"
+        ],
+        "noMocksPresentedAsLive": [
+          "harness/reports/wi-console-025-implementation.md"
+        ],
+        "noBlockingDecisions": [
+          "harness/reports/wi-console-025-implementation.md"
+        ],
+        "contractReviewed": [
+          "harness/reports/wi-console-025-contract-review.md"
+        ],
+        "interopSyncChecked": [
+          "harness/reports/wi-console-025-implementation.md",
+          "harness/reports/wi-console-025-contract-review.md"
+        ],
+        "independentReviewPassed": [
+          "harness/reports/wi-console-025-review.md"
+        ],
+        "retryLimitRespected": [
+          "harness/reports/wi-console-025-review.md"
+        ]
+      },
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Cubre lifecycle de binding; WI-CONSOLE-023 solo adopta contratos de Check sin cambiar bindings, UI ni endpoints.",
+          "report": "harness/reports/wi-console-022-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Cubre workspaces y roles; WI-CONSOLE-023 solo adopta contratos de Check sin cambiar autorización o interfaz.",
+          "report": "harness/reports/wi-console-022-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Cubre autenticación; WI-CONSOLE-023 no cambia login, sesión, tokens ni el cliente HTTP.",
+          "report": "harness/reports/wi-console-022-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Cubre membresía y eventos organizacionales; WI-CONSOLE-023 no altera Projects ni visibilidad.",
+          "report": "harness/reports/wi-console-022-contract-sync-scope-review.md"
+        }
+      ],
+      "closedAt": "2026-10-12T08:50:11.985Z"
     }
   ]
 }
