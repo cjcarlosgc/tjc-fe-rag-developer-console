@@ -1,5 +1,7 @@
 # Progreso actual — CONSOLE
 
+**WI-CONSOLE-004 en curso (2026-10-12, W-IN_PROGRESS, parcial):** happy paths OC01, OC03–OC09, OC12, OC13 y OC15 formalizados en la Feature 013; OC02, OC10, OC11 y OC14 en `DECISION_REQUIRED`. Solo documentación; nada implementado ni cubierto. Falta: decisión del usuario sobre esos cuatro casos, revisión humana, checkpoints `implementation-delivery`, `before-review` y `before-done`. Pausado por orden del usuario a favor de un WI mínimo de correcciones de experimentos.
+
 ## Siguiente corte (2026-10-10)
 
 Core cerró `WI-CORE-018` a `026` y `030`; `WI-CORE-027` ya está `W-DONE` y la puerta de `WI-CONSOLE-020` pasó. Los 13 eventos de Core están importados y acusados. Orden: 1) `WI-CONSOLE-021` (P0, `W-READY`): refresca los espejos SYSTEM, INTEROP y GH-INTEROP desde Core y adopta lo ya implementado (guardas de `null`, `failureCode` abierto, límites y errores de OE2, validación del trace); 2) `WI-CONSOLE-020` (P0, `W-PLANNED`): `/evidence`, tasas `number | null` y activación live; solo espera a que `WI-CONSOLE-021` esté `W-DONE`. Después, los P2 (`004` a `007`).

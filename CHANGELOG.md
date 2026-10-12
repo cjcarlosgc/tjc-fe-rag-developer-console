@@ -4,6 +4,8 @@ Todos los cambios notables de la línea base SDD se registran aquí. El contenid
 
 ## [Unreleased]
 
+- **WI-CONSOLE-004:** los happy paths OC01–OC15 quedan formalizados en la Feature 013 (entrada, salida, invariantes, prueba propuesta y fuente); OC02, OC10, OC11 y OC14 quedan `DECISION_REQUIRED`. Solo documentación: sin `app/`, UI, API ni contratos; sin subcasos; no implica implementación ni cobertura, y los casos siguen `O-CATALOGUED`.
+
 - **WI-CONSOLE-025 / CS-CORE-20261012-001:** los espejos SYSTEM-2.9 e INTEROP-2.8 se adoptan byte a byte desde Core. Se registra el estado operativo de reutilización de infraestructura de Sandbox; Console no cambia UI, API, DTOs, producto, despliegue ni GCE.
 
 - **WI-CONSOLE-024 / CS-CORE-20261011-006:** los espejos SYSTEM-2.8 y GH-INTEROP-1.7 se adoptan byte a byte desde Core; la coordinación de Checks pasa a una única instancia activa con mutex efímero. Console no cambia UI, API, DTOs ni implementación de Checks.

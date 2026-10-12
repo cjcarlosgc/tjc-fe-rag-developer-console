@@ -7299,7 +7299,7 @@
     "id": "WI-CONSOLE-004",
     "component": "CONSOLE",
     "workItemType": "PRODUCT",
-    "status": "W-AWAITING_APPROVAL",
+    "status": "W-IN_PROGRESS",
     "priority": "P2",
     "sprint": "P2",
     "title": "Formalizar casos operativos",
@@ -7362,7 +7362,7 @@
       "spec/constitution/planning-model.md",
       "spec/constitution/delivery-workflow.md"
     ],
-    "approved": false,
+    "approved": true,
     "decisionGate": {
       "checked": true,
       "blockingDecisionIds": [],
@@ -7373,7 +7373,7 @@
     "execution": {
       "leaderAgent": "leader",
       "analysisAgent": "sdd-analyst",
-      "implementationAgent": null,
+      "implementationAgent": "implementer",
       "contractReviewAgent": null,
       "reviewAgent": null,
       "uxReviewAgent": null,
@@ -7401,6 +7401,32 @@
             "harness/reports/wi-console-004-sdd-analysis.md"
           ],
           "recommendedNextStep": "Solicitar aprobación humana del alcance propuesto."
+        },
+        {
+          "agent": "implementer",
+          "executedBy": {
+            "agent": "implementer",
+            "configuredModel": "claude-haiku-5-5",
+            "servedModel": "unknown",
+            "effort": "low"
+          },
+          "status": "DECISION_REQUIRED",
+          "findings": [
+            "OC01, OC03-OC09, OC12, OC13 y OC15 formalizados en la Feature 013; OC02, OC10, OC11 y OC14 quedan DECISION_REQUIRED sin rellenar."
+          ],
+          "blockers": [
+            "Cuatro decisiones de usuario pendientes (OC02, OC10, OC11, OC14)."
+          ],
+          "filesAffected": [
+            "spec/features/013-pr-driven-control-plane/spec.md",
+            "spec/operational-cases.md",
+            "CHANGELOG.md"
+          ],
+          "evidence": [
+            "harness/reports/wi-console-004-contract-sync-scope-review.md",
+            "harness/reports/wi-console-004-scope-approval.md"
+          ],
+          "recommendedNextStep": "El usuario decide OC02, OC10, OC11 y OC14 y revisa el diff; sin cierre mientras haya DECISION_REQUIRED."
         }
       ],
       "reviewCycles": 0,
@@ -7448,7 +7474,9 @@
       "knownIncompatibilities": []
     },
     "evidence": [
-      "harness/reports/wi-console-004-sdd-analysis.md"
+      "harness/reports/wi-console-004-sdd-analysis.md",
+      "harness/reports/wi-console-004-scope-approval.md",
+      "harness/reports/wi-console-004-contract-sync-scope-review.md"
     ],
     "gateEvidence": {
       "sddVerified": [
@@ -7457,7 +7485,6 @@
       "noBlockingDecisions": [
         "harness/reports/wi-console-004-sdd-analysis.md"
       ]
-    },
-    "blockedReason": "Awaiting human approval: formalize only OC01–OC15 happy paths in Feature 013, with no app/UI/API/infrastructure/contract changes or new subcases."
+    }
   }
 }

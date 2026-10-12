@@ -194,7 +194,7 @@
       "id": "WI-CONSOLE-004",
       "component": "CONSOLE",
       "workItemType": "PRODUCT",
-      "status": "W-AWAITING_APPROVAL",
+      "status": "W-IN_PROGRESS",
       "priority": "P2",
       "sprint": "P2",
       "title": "Formalizar casos operativos",
@@ -250,6 +250,10 @@
         "Los 15 casos tienen un happy path especificado y trazado a sus HU y a la Feature 013 vigente.",
         "Cada happy path declara precondiciones o entrada, resultado observable o salida, invariantes y prueba propuesta, sin afirmar cobertura implementada.",
         "No se agregan subcasos OCxx.a, comportamiento no aprobado, cambios de app/, UI, API, infraestructura ni contratos."
+      ],
+      "approved": true,
+      "evidence": [
+        "harness/reports/wi-console-004-scope-approval.md"
       ]
     },
     {
