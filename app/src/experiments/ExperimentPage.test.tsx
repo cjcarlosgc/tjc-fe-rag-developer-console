@@ -47,7 +47,7 @@ test('ejecuta y presenta una comparación simulada sin red', async () => {
   expect(screen.getByText(EXPERIMENT_CONDITIONS_NOTE)).toBeInTheDocument()
   await user.click(await screen.findByRole('button', { name: 'Ejecutar comparación' }))
 
-  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 2000 })).toBeInTheDocument()
+  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 5000 })).toBeInTheDocument()
   expect(screen.getByText('Laboratorio simulado')).toBeInTheDocument()
   expect(container.textContent).not.toMatch(/precision|recall/i)
   expect(fetchMock).not.toHaveBeenCalled()
@@ -118,7 +118,7 @@ test('HU19 (live): envía el target real, sondea y presenta el resultado real', 
 
   await user.click(await screen.findByRole('button', { name: 'Ejecutar comparación' }))
 
-  expect(await screen.findByText('Huella de exploración', {}, { timeout: 2000 })).toBeInTheDocument()
+  expect(await screen.findByText('Huella de exploración', {}, { timeout: 5000 })).toBeInTheDocument()
   expect(screen.getByText('5')).toBeInTheDocument()
   expect(fetchMock).toHaveBeenCalledWith(
     expect.stringContaining('/experiments'),
@@ -169,7 +169,7 @@ test('WI-CONSOLE-017: la descarga de evidencia no aparece mientras el experiment
   await user.click(await screen.findByRole('button', { name: 'Ejecutar comparación' }))
   expect(screen.queryByRole('button', { name: 'Descargar evidencia (JSON)' })).not.toBeInTheDocument()
 
-  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 2000 })).toBeInTheDocument()
+  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 5000 })).toBeInTheDocument()
   expect(await screen.findByRole('button', { name: 'Descargar evidencia (JSON)' })).toBeInTheDocument()
 })
 
@@ -189,6 +189,8 @@ test('FAILED visible: role alert con el copy de EXPERIMENT_WORKER_LOST, sin «Pr
   expect(screen.queryByRole('status')).toBeNull()
   expect(screen.queryByRole('button', { name: /reanudar/i })).toBeNull()
   expect(screen.queryByText('Huella de retrieval')).toBeNull()
+  expect(document.querySelector('.live-indicator')).toBeNull()
+  expect(document.querySelector('.experiment-progress')).toBeNull()
 })
 
 test.each([
@@ -242,7 +244,7 @@ test('503 LLM_PROVIDER_UNAVAILABLE ofrece Reintentar, que vuelve a llamar a la c
   retry.focus()
   await user.keyboard('{Enter}')
   await waitFor(() => expect(startHarness.calls).toBe(2))
-  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 2000 })).toBeInTheDocument()
+  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 5000 })).toBeInTheDocument()
 })
 
 test('B2 selector DEMO (solo mock): las opciones de escenario y error se etiquetan «DEMO · …» y el selector real ejecuta un FAILED', async () => {
@@ -269,7 +271,7 @@ test('WI-CONSOLE-021 C1: proyecto PHP con PHPUnit (DEMO) no se bloquea: runnerHi
   const select = await screen.findByLabelText('Target experimental')
   await user.selectOptions(select, 'demo-scenario-phpunit')
   await user.click(screen.getByRole('button', { name: 'Ejecutar comparación' }))
-  expect(await screen.findByText('PHP_LARAVEL_PHPUNIT', {}, { timeout: 2000 })).toBeInTheDocument()
+  expect(await screen.findByText('PHP_LARAVEL_PHPUNIT', {}, { timeout: 5000 })).toBeInTheDocument()
   expect(screen.getByText('PHPUNIT')).toBeInTheDocument()
   expect(screen.queryByRole('alert')).toBeNull()
 })

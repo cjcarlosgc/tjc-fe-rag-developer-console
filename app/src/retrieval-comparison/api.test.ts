@@ -218,6 +218,7 @@ describe('retrieval-comparison api — INTEROP-2.7 §6.15 (WI-CONSOLE-014, Corte
       expect(retrievalFailureText('RETRIEVAL_TARGET_UNRESOLVABLE')).toMatch(/símbolo elegido/)
       expect(retrievalFailureText('RETRIEVAL_COMPARISON_FAILED')).toMatch(/falló/)
       expect(retrievalFailureText('RETRIEVAL_COMPARISON_WORKER_LOST')).toMatch(/interrumpió/)
+      expect(retrievalFailureText('RETRIEVAL_COMPARISON_WORKER_LOST')).toMatch(/vuelve a crearla/)
       expect(retrievalFailureText('FUTURE_CODE')).toBe('La comparación terminó con un error no reconocido (código FUTURE_CODE).')
       expect(retrievalFailureText(null)).toMatch(/sin código/)
     })

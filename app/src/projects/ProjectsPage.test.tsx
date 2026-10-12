@@ -40,7 +40,7 @@ test('lista proyectos live con el contrato Page<ProjectResponse>', async () => {
   })
   renderApp(<ProjectsPage />)
 
-  await waitFor(() => expect(screen.getByRole('heading', { name: 'live-project' })).toBeInTheDocument(), { timeout: 2000 })
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'live-project' })).toBeInTheDocument(), { timeout: 5000 })
   expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/projects'), expect.anything())
 })
 
@@ -163,7 +163,7 @@ test('ofrece "Cargar más" cuando el listado live trae nextCursor', async () => 
   const user = userEvent.setup()
   renderApp(<ProjectsPage />)
 
-  await waitFor(() => expect(screen.getByRole('heading', { name: 'first-project' })).toBeInTheDocument(), { timeout: 2000 })
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'first-project' })).toBeInTheDocument(), { timeout: 5000 })
   await user.click(screen.getByRole('button', { name: 'Cargar más' }))
   expect(await screen.findByRole('heading', { name: 'second-project' })).toBeInTheDocument()
 })

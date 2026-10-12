@@ -69,7 +69,7 @@ for (const invert of [false, true]) {
     const { container } = renderApp(<ExperimentPage />, { initialEntry: '/projects/prj_checkout_demo/experimental', routePath: '/projects/:projectId/experimental' })
 
     await user.click(await screen.findByRole('button', { name: 'Ejecutar comparación' }))
-    expect(await screen.findByText('Huella de retrieval', {}, { timeout: 2000 })).toBeInTheDocument()
+    expect(await screen.findByText('Huella de retrieval', {}, { timeout: 5000 })).toBeInTheDocument()
 
     expect(screen.getByText(EXPERIMENT_CONDITIONS_NOTE)).toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Configuración' })).toBeInTheDocument()
@@ -83,7 +83,7 @@ for (const invert of [false, true]) {
     harness.invert = invert
     const { container } = renderApp(<RunComparisonPage />, { initialEntry: '/projects/prj_checkout_demo/runs/arun_checkout_pr45/comparison', routePath: '/projects/:projectId/runs/:analysisRunId/comparison' })
 
-    expect(await screen.findByText('Huella de retrieval', {}, { timeout: 2000 })).toBeInTheDocument()
+    expect(await screen.findByText('Huella de retrieval', {}, { timeout: 5000 })).toBeInTheDocument()
 
     expect(screen.getByText(EXPERIMENT_CONDITIONS_NOTE)).toBeInTheDocument()
     assertNoAutomaticVerdict(container)

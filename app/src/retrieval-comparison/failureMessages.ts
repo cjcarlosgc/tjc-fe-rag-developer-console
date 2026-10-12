@@ -5,7 +5,7 @@
 const KNOWN_FAILURE_MESSAGES: Record<string, string> = {
   RETRIEVAL_TARGET_UNRESOLVABLE: 'No se pudo resolver el símbolo elegido en la versión del proyecto de este Run.',
   RETRIEVAL_COMPARISON_FAILED: 'La comparación de retrieval falló y no produjo resultados.',
-  RETRIEVAL_COMPARISON_WORKER_LOST: 'Se interrumpió el procesamiento de la comparación antes de terminar.',
+  RETRIEVAL_COMPARISON_WORKER_LOST: 'La comparación se interrumpió; vuelve a crearla.',
 }
 
 /** Mensaje legible para un `failureCode` del estado; `null` código → «sin código». Nunca muestra trazas: `failureMessage` va aparte. */

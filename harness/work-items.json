@@ -2284,6 +2284,259 @@
         ]
       },
       "closedAt": "2026-10-12T19:35:21.000Z"
+    },
+    {
+      "id": "WI-CONSOLE-027",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P2",
+      "sprint": "SMART V3",
+      "title": "Corregir el estado FAILED de experimentos y estabilizar la suite de pruebas",
+      "storyIds": [
+        "HU12",
+        "HU15",
+        "HU17"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-029"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "specPaths": [
+        "spec/features/014-analysisrun-experiments/spec.md",
+        "spec/features/014-analysisrun-experiments/plan.md",
+        "spec/features/014-analysisrun-experiments/tasks.md",
+        "harness/reports/wi-console-027-scope-approval.md",
+        "harness/reports/wi-console-027-contract-sync-scope-review.md",
+        "harness/reports/wi-console-027-sdd-verification.md"
+      ],
+      "acceptanceCriteria": [
+        "Un experimento FAILED muestra una alerta (role=alert) con el mensaje por failureCode de failureMessages.ts, sin «Preparando experimento», sin spinner, sin promesa de reanudación, sin botón de reanudar y sin ganador; las pruebas lo cubren.",
+        "RETRIEVAL_COMPARISON_WORKER_LOST tiene un texto coherente con EXPERIMENT_WORKER_LOST y su prueba se actualiza.",
+        "El hook useEvidence se elimina solo si no tiene consumidores en app/src; si algo lo usa, se conserva y se reporta.",
+        "La suite completa de Vitest pasa de forma estable, con y sin límite de workers, tras una corrección mínima de configuración y/o pruebas con diagnóstico documentado, sin debilitar aserciones, sin skip y sin ocultar fallos.",
+        "Sin cambios de contratos, DTO, API ni adapters live; ux-reviewer (contraste con color computado real en el navegador), lint, tsc -b --noEmit, pruebas, build y validadores SDD/Harness pasan antes de la revisión independiente; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-027-scope-approval.md",
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true,
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-10-12T19:38:48.000Z",
+        "note": "Ninguna decision PENDING/PROPOSED con Blocks alcanza este WI; el usuario aprobo el alcance en el chat."
+      },
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-027 solo cambia el copy de un error de OE2, retira un hook sin uso y ajusta configuracion y pruebas de Vitest, sin tocar contratos, binding, identidad ni seguridad.",
+          "report": "harness/reports/wi-console-027-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso GitHub; WI-CONSOLE-027 solo cambia el copy de un error de OE2, retira un hook sin uso y ajusta configuracion y pruebas de Vitest, sin tocar contratos, binding, identidad ni seguridad.",
+          "report": "harness/reports/wi-console-027-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-027 solo cambia el copy de un error de OE2, retira un hook sin uso y ajusta configuracion y pruebas de Vitest, sin tocar contratos, binding, identidad ni seguridad.",
+          "report": "harness/reports/wi-console-027-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre workspaces, membresia y eventos organizacionales; WI-CONSOLE-027 solo cambia el copy de un error de OE2, retira un hook sin uso y ajusta configuracion y pruebas de Vitest, sin tocar contratos, binding, identidad ni seguridad.",
+          "report": "harness/reports/wi-console-027-contract-sync-scope-review.md"
+        }
+      ],
+      "execution": {
+        "leaderAgent": "leader",
+        "analysisAgent": "sdd-analyst",
+        "implementationAgent": "implementer",
+        "contractReviewAgent": null,
+        "reviewAgent": "reviewer",
+        "uxReviewAgent": "ux-reviewer",
+        "handoffs": [
+          {
+            "agent": "sdd-analyst",
+            "executedBy": {
+              "agent": "sdd-analyst",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "B1 ya implementado desde WI-CONSOLE-026; solo verificar (opcional aserción de ausencia de spinner).",
+              "B2 pendiente: «La comparación se interrumpió; vuelve a crearla.».",
+              "B3 factible: único consumidor de useEvidence es su prueba.",
+              "D: vite.config.ts sin timeouts ni límite de workers; diagnosticar con evidencia."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/retrieval-comparison/failureMessages.ts",
+              "app/src/retrieval-comparison/api.test.ts",
+              "app/src/evidence/queries.ts",
+              "app/src/evidence/queries.test.tsx",
+              "app/vite.config.ts"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-027-sdd-verification.md"
+            ],
+            "recommendedNextStep": "Delegar B2, B3 y D al implementer."
+          },
+          {
+            "agent": "implementer",
+            "executedBy": {
+              "agent": "implementer",
+              "configuredModel": "claude-haiku-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "B1 verificado (ya implementado en WI-026) con aserciones extra de ausencia de spinner/progreso; B2 texto «La comparación se interrumpió; vuelve a crearla.»; B3 useEvidence y evidenceKeys retirados (sin consumidores); D: asyncUtilTimeout 5000, testTimeout 15000, timeouts explícitos <5000 subidos a 5000 y esperas de la selección por defecto en ContextExplorer; suite 723/723 estable.",
+              "Hallazgo de producto aparte, no corregido: updateParams/setSearchParams en ContextExplorerPage puede pisar view=list bajo carga."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/retrieval-comparison/failureMessages.ts",
+              "app/src/retrieval-comparison/api.test.ts",
+              "app/src/evidence/queries.ts",
+              "app/src/evidence/queries.test.tsx",
+              "app/src/experiments/ExperimentPage.test.tsx",
+              "app/src/test/setup.ts",
+              "app/vite.config.ts",
+              "app/src/context-explorer/ContextExplorerPage.test.tsx",
+              "app/src/projects/ProjectDetailPage.test.tsx"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-027-implementation.md"
+            ],
+            "recommendedNextStep": "Revision independiente del reviewer."
+          },
+          {
+            "agent": "ux-reviewer",
+            "executedBy": {
+              "agent": "ux-reviewer",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "FAILED muestra role=alert sin Preparando/spinner/reanudar/ganador en los tres escenarios; contraste computado >= 9.5:1; DEMO presente; sin desborde a 375 px.",
+              "B2 no alcanzable en el mock; cubierto por prueba."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/experiments/ExperimentPage.tsx",
+              "app/src/retrieval-comparison/failureMessages.ts"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-027-ux-review.md"
+            ],
+            "recommendedNextStep": "Revision independiente del reviewer."
+          },
+          {
+            "agent": "reviewer",
+            "executedBy": {
+              "agent": "reviewer",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "medium"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "B1-B3 y D verificados sin debilitar aserciones; lint, tsc y vitest 723/723 reejecutados.",
+              "F1 (seguimiento, producto aparte): updateParams/setSearchParams en ContextExplorerPage puede perder view=list; la prueba espera la seleccion por defecto.",
+              "F2: timeouts globales alargan el fallo real; reducir si se corrige F1."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/retrieval-comparison/failureMessages.ts",
+              "app/src/evidence/queries.ts",
+              "app/src/test/setup.ts",
+              "app/vite.config.ts"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-027-review.md"
+            ],
+            "recommendedNextStep": "Cerrar el WI; decidir aparte un WI de producto para F1; sin push."
+          }
+        ],
+        "reviewCycles": 1,
+        "maxReviewCycles": 2
+      },
+      "gates": {
+        "sddVerified": "G-PASSED",
+        "implementationCompleted": "G-PASSED",
+        "uxReviewed": "G-PASSED",
+        "independentReviewPassed": "G-PASSED",
+        "technicalChecksPassed": "G-PASSED",
+        "interopSyncChecked": "G-PASSED",
+        "noMocksPresentedAsLive": "G-PASSED",
+        "noBlockingDecisions": "G-PASSED",
+        "retryLimitRespected": "G-PASSED",
+        "contractReviewed": "G-NOT_APPLICABLE",
+        "canonicalContractSynced": "G-NOT_APPLICABLE",
+        "contractSyncPublished": "G-NOT_APPLICABLE"
+      },
+      "evidence": [
+        "harness/reports/wi-console-027-scope-approval.md",
+        "harness/reports/wi-console-027-sdd-verification.md",
+        "harness/reports/wi-console-027-contract-sync-scope-review.md",
+        "harness/reports/wi-console-027-implementation.md",
+        "harness/reports/wi-console-027-ux-review.md",
+        "harness/reports/wi-console-027-review.md",
+        "harness/reports/wi-console-027-closure.md"
+      ],
+      "gateEvidence": {
+        "sddVerified": [
+          "harness/reports/wi-console-027-sdd-verification.md"
+        ],
+        "noBlockingDecisions": [
+          "harness/reports/wi-console-027-sdd-verification.md"
+        ],
+        "implementationCompleted": [
+          "harness/reports/wi-console-027-implementation.md"
+        ],
+        "technicalChecksPassed": [
+          "harness/reports/wi-console-027-implementation.md",
+          "harness/reports/wi-console-027-closure.md"
+        ],
+        "interopSyncChecked": [
+          "harness/reports/wi-console-027-contract-sync-scope-review.md"
+        ],
+        "noMocksPresentedAsLive": [
+          "harness/reports/wi-console-027-ux-review.md"
+        ],
+        "uxReviewed": [
+          "harness/reports/wi-console-027-ux-review.md"
+        ],
+        "independentReviewPassed": [
+          "harness/reports/wi-console-027-review.md"
+        ],
+        "retryLimitRespected": [
+          "harness/reports/wi-console-027-review.md"
+        ]
+      },
+      "closedAt": "2026-10-12T20:28:02.000Z"
     }
   ]
 }

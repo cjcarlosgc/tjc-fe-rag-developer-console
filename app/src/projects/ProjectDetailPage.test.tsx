@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, expect, test } from 'vitest'
@@ -134,7 +134,8 @@ test('HU56: confirmar la eliminación borra el proyecto, navega a la lista con e
   observer.observe(document.body, { childList: true, subtree: true, characterData: true })
   await user.click(screen.getByRole('button', { name: 'Eliminar checkout-service' }))
 
-  expect(await screen.findByRole('heading', { name: 'Proyectos', level: 1 })).toHaveFocus()
+  const heading = await screen.findByRole('heading', { name: 'Proyectos', level: 1 })
+  await waitFor(() => expect(heading).toHaveFocus())
   expect(await screen.findByText('Proyecto «checkout-service» eliminado')).toBeInTheDocument()
   expect(await screen.findByRole('heading', { name: 'billing-engine' })).toBeInTheDocument()
   expect(screen.queryByRole('heading', { name: 'checkout-service' })).not.toBeInTheDocument()

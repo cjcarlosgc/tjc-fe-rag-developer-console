@@ -17,6 +17,8 @@ Fecha: 2026-10-12. Recoge las observaciones no bloqueantes y pendientes que los 
 
 ## B. Comportamiento de la UI
 
+> Actualización 2026-10-12: B (FAILED de experimentos, texto OE2 worker lost, `useEvidence`) y D (suite intermitente) cerrados por WI-CONSOLE-027; queda un seguimiento de producto sobre `setSearchParams` en ContextExplorer.
+
 - Un experimento `FAILED` sigue mostrando «Preparando experimento» sin mensaje de fallo (previo a SMART V3). (017)
 - `RETRIEVAL_COMPARISON_WORKER_LOST` no dice «vuelve a crearlo» (fuera del alcance de WI-026). (026)
 - «sin procedencia registrada» se repite tres veces en reglas históricas. (015)

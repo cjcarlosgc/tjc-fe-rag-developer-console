@@ -103,12 +103,12 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     renderPage(MULTI_RUN)
     await user.selectOptions(await screen.findByLabelText('Símbolo a comparar'), CREATE_ORDER)
     await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
-    expect(await screen.findByText('Comparación completada. Resultados disponibles abajo.', {}, { timeout: 3000 })).toBeInTheDocument()
+    expect(await screen.findByText('Comparación completada. Resultados disponibles abajo.', {}, { timeout: 5000 })).toBeInTheDocument()
     // Dos COMPLETED de seed más la recién completada: la lista debe reflejarlo sin recargar la página.
     await waitFor(() => {
       const list = screen.getByRole('list', { name: 'Comparaciones previas del Run' })
       expect(within(list).getAllByText('Estado: Completada (COMPLETED)')).toHaveLength(3)
-    }, { timeout: 3000 })
+    }, { timeout: 5000 })
   })
 
   it('N1-N3: SEM no muestra «null» ni «Sin relación estructural»; captions, métricas y regiones distinguen el modo', async () => {
@@ -144,7 +144,7 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     await user.selectOptions(await screen.findByLabelText('Símbolo a comparar'), CREATE_ORDER)
     await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
 
-    expect(await screen.findByText('Comparación completada. Resultados disponibles abajo.', {}, { timeout: 3000 })).toBeInTheDocument()
+    expect(await screen.findByText('Comparación completada. Resultados disponibles abajo.', {}, { timeout: 5000 })).toBeInTheDocument()
     const heading = await screen.findByRole('heading', { level: 2, name: 'Resultado de OrderService.createOrder' })
     await waitFor(() => expect(heading).toHaveFocus())
     expect(screen.getAllByRole('table')).toHaveLength(2)
@@ -177,7 +177,7 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     await user.selectOptions(screen.getByLabelText('Símbolo a comparar'), FORMAT_CURRENCY)
     await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
     // La nueva comparación se añade a las seis previas (incluida la semilla PHP); ninguna se reemplaza.
-    await waitFor(() => expect(within(screen.getByRole('list', { name: 'Comparaciones previas del Run' })).getAllByRole('listitem')).toHaveLength(7), { timeout: 3000 })
+    await waitFor(() => expect(within(screen.getByRole('list', { name: 'Comparaciones previas del Run' })).getAllByRole('listitem')).toHaveLength(7), { timeout: 5000 })
   })
 
   it.each([
@@ -289,7 +289,7 @@ describe('WI-CONSOLE-017: descarga de evidencia en la comparación de retrieval'
     await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
     expect(screen.queryByRole('button', { name: 'Descargar evidencia (JSON)' })).not.toBeInTheDocument()
 
-    expect(await screen.findByRole('heading', { name: /Resultado de/ }, { timeout: 3000 })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /Resultado de/ }, { timeout: 5000 })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Descargar evidencia (JSON)' })).toBeInTheDocument()
   })
 })

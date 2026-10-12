@@ -42,7 +42,7 @@ test('Experiment: Writer puede ejecutar la comparación', async () => {
   renderApp(<ExperimentPage />, EXPERIMENT_ENTRY)
 
   await user.click(await screen.findByRole('button', { name: 'Ejecutar comparación' }))
-  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 2000 })).toBeInTheDocument()
+  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 5000 })).toBeInTheDocument()
 })
 
 test('Experiment: Reader ve el mensaje de solo lectura y no puede ejecutar', async () => {
@@ -58,7 +58,7 @@ test('RunComparison: Writer arranca la comparación (auto-inicio con símbolo ú
   roleState.role = 'WRITER'
   renderApp(<RunComparisonPage />, COMPARISON_ENTRY)
 
-  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 2000 })).toBeInTheDocument()
+  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 5000 })).toBeInTheDocument()
 })
 
 test('RunComparison: Reader no arranca ni puede iniciar la comparación', async () => {

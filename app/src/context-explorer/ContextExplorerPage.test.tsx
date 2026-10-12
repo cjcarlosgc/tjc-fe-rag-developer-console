@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
@@ -23,6 +23,11 @@ async function renderExperiment(search = '') {
   })
 }
 
+// El efecto que fija el nodo por defecto (setSearchParams) puede asentarse después del primer findBy; esperar a la selección evita pisar un clic de toggle.
+async function waitForDefaultSelection() {
+  await waitFor(() => expect(screen.getAllByRole('button').some((button) => button.className.includes('graph-node') && button.getAttribute('aria-pressed') === 'true')).toBe(true))
+}
+
 describe('ContextExplorerPage', () => {
   it('muestra por defecto la traza RAG del experimento', async () => {
     await renderExperiment()
@@ -34,9 +39,11 @@ describe('ContextExplorerPage', () => {
     const user = userEvent.setup()
     await renderExperiment()
     await screen.findByRole('button', { name: /calculateTotal/ })
+    await waitForDefaultSelection()
     const graphNodeCount = screen.getAllByRole('button').filter((button) => button.className.includes('graph-node')).length
 
     await user.click(screen.getByRole('button', { name: 'Vista de lista' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Vista de lista' })).toHaveAttribute('aria-pressed', 'true'))
     const table = await screen.findByRole('table')
     expect(within(table).getAllByRole('row').slice(1)).toHaveLength(graphNodeCount)
   })
@@ -45,7 +52,7 @@ describe('ContextExplorerPage', () => {
     await renderExperiment()
     await screen.findByRole('button', { name: /calculateTotal/ })
     clickGraphNode(screen.getByRole('button', { name: /formatCurrency/ }))
-    const panel = screen.getByRole('complementary', { name: 'Detalle del candidato' })
+    const panel = await screen.findByRole('complementary', { name: 'Detalle del candidato' })
     expect(within(panel).getByText('Hash del contenido')).toBeInTheDocument()
     expect(within(panel).getByText(/no representa una probabilidad/)).toBeInTheDocument()
   })
@@ -60,6 +67,7 @@ describe('ContextExplorerPage', () => {
     const user = userEvent.setup()
     await renderExperiment('?strategy=RAG&repetition=1')
     expect(await screen.findByRole('button', { name: /calculateTotal/ })).toBeInTheDocument()
+    await waitForDefaultSelection()
     await user.click(screen.getByRole('button', { name: /Agente · rep 1/ }))
     expect(await screen.findByRole('button', { name: /Listar archivos/ })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /calculateTotal/ })).not.toBeInTheDocument()
