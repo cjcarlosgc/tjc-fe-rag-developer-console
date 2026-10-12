@@ -2537,6 +2537,255 @@
         ]
       },
       "closedAt": "2026-10-12T20:28:02.000Z"
+    },
+    {
+      "id": "WI-CONSOLE-028",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P2",
+      "sprint": "P2",
+      "title": "Corregir contraste, foco y desbordes diferidos de la interfaz",
+      "storyIds": [
+        "HU12",
+        "HU14",
+        "HU15"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-030"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "specPaths": [
+        "spec/transversal/accessibility/spec.md",
+        "spec/transversal/accessibility/plan.md",
+        "spec/transversal/accessibility/tasks.md",
+        "spec/transversal/design-system/spec.md",
+        "harness/reports/wi-console-028-scope-approval.md",
+        "harness/reports/wi-console-028-contract-sync-scope-review.md",
+        "harness/reports/wi-console-028-sdd-verification.md"
+      ],
+      "acceptanceCriteria": [
+        "El anillo de foco global alcanza al menos 3:1 sobre los fondos reales (contraste computado en el navegador antes y después).",
+        "El texto «VS» de la cabecera de estrategias alcanza 4.5:1; separadores de breadcrumbs y repo-sep quedan documentados (decorativos ocultos o ≥3:1) y los bordes de evidencia y P@10/R@10 se evalúan contra WCAG 1.4.11 con la decisión documentada.",
+        "No hay desborde horizontal a 375 px ni de 13 px a 1024 px en las pantallas afectadas; sin quitar contenido; las tablas con scroll son operables por teclado; los sellos DEMO y PROPUESTA no se estiran a 375 px.",
+        "El foco se restaura en onError y al llegar ABSTAINED por resolveConflict; el estado vacío de Functional Knowledge conserva role=status al cargar; el detalle del Run no tiene H3 antes de H2; las celdas Intento/Evaluable sin dato en corrida mixta muestran «—».",
+        "Sin cambios de contratos, DTO, API ni adapters live; ux-reviewer (contraste computado real, 375/768/1024 px y teclado), lint, tsc -b --noEmit, pruebas, build y validadores SDD/Harness pasan antes de la revisión independiente; WI-CONSOLE-005 y 006 permanecen W-PLANNED."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-028-scope-approval.md",
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true,
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-10-12T20:29:52.000Z",
+        "note": "Ninguna decision PENDING/PROPOSED con Blocks alcanza este WI; el usuario aprobo el alcance en el chat."
+      },
+      "execution": {
+        "leaderAgent": "leader",
+        "analysisAgent": "sdd-analyst",
+        "implementationAgent": "implementer",
+        "contractReviewAgent": null,
+        "reviewAgent": "reviewer",
+        "uxReviewAgent": "ux-reviewer",
+        "handoffs": [
+          {
+            "agent": "sdd-analyst",
+            "executedBy": {
+              "agent": "sdd-analyst",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Foco global rgba(...,.42) ~2.7:1 en styles.css 32, 51, 333, 395; corregir a var(--accent); revisar textarea.",
+              "Contraste: .versus (--text-dim 4.02:1) a --muted; .breadcrumbs-sep (--border 1.45:1) a --text-dim; .repo-sep (--text-dim 3.89:1) a --muted; bordes de evidencia y P@10/R@10 sin cambio por WCAG 1.4.11 (la etiqueta de texto identifica el control).",
+              "Desbordes: .analysis-run-summary, .run-heading-actions, .symbol-list, .test-proposal-item, .status-badge, tabla de experimentos y sellos.",
+              "Comportamiento: foco en onError y resolveConflict ABSTAINED (FocusModePage), role=status fijo (FunctionalKnowledgePage), h3 a h2 (AnalysisRunDetailPage), «—» en Intento/Evaluable de corrida mixta.",
+              "storyIds HU12, HU14, HU15 por instruccion del usuario; WI-005/006 no se alteran."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/styles.css",
+              "app/src/action-required/FocusModePage.tsx",
+              "app/src/action-required/FunctionalKnowledgePage.tsx",
+              "app/src/control-plane/AnalysisRunDetailPage.tsx",
+              "app/src/experiments/ExperimentComparison.tsx"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-028-sdd-verification.md"
+            ],
+            "recommendedNextStep": "Delegar el corte al implementer."
+          },
+          {
+            "agent": "implementer",
+            "executedBy": {
+              "agent": "implementer",
+              "configuredModel": "claude-haiku-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Corte A: foco a var(--accent), contraste de VS/breadcrumbs/repo-sep, desbordes, foco en onError/ABSTAINED, role=status fijo, h3 a h2 y «—» en Intento/Evaluable, con pruebas.",
+              "Corte B (ciclo 1, tras M1 del ux-reviewer): flex-wrap en .topbar-inner y .topbar-badges; scrollWidth = clientWidth a 375/768/1024/1440."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/styles.css",
+              "app/src/action-required/FocusModePage.tsx",
+              "app/src/action-required/FunctionalKnowledgePage.tsx",
+              "app/src/control-plane/AnalysisRunDetailPage.tsx",
+              "app/src/experiments/ExperimentComparison.tsx"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-028-implementation.md"
+            ],
+            "recommendedNextStep": "Revision UX y revision independiente."
+          },
+          {
+            "agent": "ux-reviewer",
+            "executedBy": {
+              "agent": "ux-reviewer",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Contraste computado antes/despues: foco 2.70 a 10.6:1, VS 4.17 a 10.68:1, repo-sep 3.89 a 9.95:1, breadcrumbs-sep 1.45 a 4.17:1.",
+              "M1 (cabecera desbordaba a 768/1024 px) cerrado por el Corte B; sin desborde a 375/768/1024/1440.",
+              "Foco a la tarjeta no reproducible en el mock; cubierto por RTL con mutacion verificada."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/styles.css"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-028-ux-review.md"
+            ],
+            "recommendedNextStep": "Revision independiente del reviewer."
+          },
+          {
+            "agent": "reviewer",
+            "executedBy": {
+              "agent": "reviewer",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "medium"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Criterios verificados contra diff y evidencia medida; pruebas no tautologicas; decisiones de bordes admisibles.",
+              "ContextExplorerPage 'alterna entre vista de grafo y lista' intermitente: preexistente (F1 de WI-027), no tocado."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/styles.css",
+              "app/src/action-required/FocusModePage.tsx",
+              "app/src/control-plane/AnalysisRunDetailPage.tsx"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-028-review.md"
+            ],
+            "recommendedNextStep": "Cerrar el WI; sin push."
+          }
+        ],
+        "reviewCycles": 1,
+        "maxReviewCycles": 2
+      },
+      "gates": {
+        "sddVerified": "G-PASSED",
+        "implementationCompleted": "G-PASSED",
+        "uxReviewed": "G-PASSED",
+        "independentReviewPassed": "G-PASSED",
+        "technicalChecksPassed": "G-PASSED",
+        "interopSyncChecked": "G-PASSED",
+        "noMocksPresentedAsLive": "G-PASSED",
+        "noBlockingDecisions": "G-PASSED",
+        "retryLimitRespected": "G-PASSED",
+        "contractReviewed": "G-NOT_APPLICABLE",
+        "canonicalContractSynced": "G-NOT_APPLICABLE",
+        "contractSyncPublished": "G-NOT_APPLICABLE"
+      },
+      "evidence": [
+        "harness/reports/wi-console-028-scope-approval.md",
+        "harness/reports/wi-console-028-sdd-verification.md",
+        "harness/reports/wi-console-028-contract-sync-scope-review.md",
+        "harness/reports/wi-console-028-implementation.md",
+        "harness/reports/wi-console-028-ux-review.md",
+        "harness/reports/wi-console-028-review.md",
+        "harness/reports/wi-console-028-closure.md"
+      ],
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-028 solo corrige CSS de foco, contraste y desbordes, comportamiento accesible de cuatro pantallas y un marcador «—», sin tocar contratos, binding, identidad ni seguridad.",
+          "report": "harness/reports/wi-console-028-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso GitHub; WI-CONSOLE-028 solo corrige CSS de foco, contraste y desbordes, comportamiento accesible de cuatro pantallas y un marcador «—», sin tocar contratos, binding, identidad ni seguridad.",
+          "report": "harness/reports/wi-console-028-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-028 solo corrige CSS de foco, contraste y desbordes, comportamiento accesible de cuatro pantallas y un marcador «—», sin tocar contratos, binding, identidad ni seguridad.",
+          "report": "harness/reports/wi-console-028-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre workspaces, membresia y eventos organizacionales; WI-CONSOLE-028 solo corrige CSS de foco, contraste y desbordes, comportamiento accesible de cuatro pantallas y un marcador «—», sin tocar contratos, binding, identidad ni seguridad.",
+          "report": "harness/reports/wi-console-028-contract-sync-scope-review.md"
+        }
+      ],
+      "gateEvidence": {
+        "sddVerified": [
+          "harness/reports/wi-console-028-sdd-verification.md"
+        ],
+        "noBlockingDecisions": [
+          "harness/reports/wi-console-028-sdd-verification.md"
+        ],
+        "implementationCompleted": [
+          "harness/reports/wi-console-028-implementation.md"
+        ],
+        "technicalChecksPassed": [
+          "harness/reports/wi-console-028-implementation.md",
+          "harness/reports/wi-console-028-closure.md"
+        ],
+        "interopSyncChecked": [
+          "harness/reports/wi-console-028-contract-sync-scope-review.md"
+        ],
+        "noMocksPresentedAsLive": [
+          "harness/reports/wi-console-028-ux-review.md"
+        ],
+        "uxReviewed": [
+          "harness/reports/wi-console-028-ux-review.md"
+        ],
+        "independentReviewPassed": [
+          "harness/reports/wi-console-028-review.md"
+        ],
+        "retryLimitRespected": [
+          "harness/reports/wi-console-028-review.md"
+        ]
+      },
+      "closedAt": "2026-10-12T20:59:43.306Z"
     }
   ]
 }

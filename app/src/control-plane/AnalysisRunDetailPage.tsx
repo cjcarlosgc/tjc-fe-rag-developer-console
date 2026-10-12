@@ -164,7 +164,7 @@ export function AnalysisRunDetailPage() {
         <div><dt>Intentos</dt><dd>{run.attemptCount}</dd></div>
       </dl>
       {run.symbols.length > 0 && <>
-        <h3>Símbolos cambiados</h3>
+        <h2>Símbolos cambiados</h2>
         {isLargeChangeset && <p className="empty-inline-note">Changeset grande: {directCount} símbolo(s) con cambio directo, {impactedCount} potencialmente impactado(s).</p>}
         <ul className="symbol-list">
           {run.symbols.map((symbol) => {

@@ -67,7 +67,8 @@ export function FocusModePage() {
         if (result.outcome !== 'ABSTAINED') setAnswerText('')
         else cardRef.current?.focus()
         setPendingAnswer(null)
-      } },
+      },
+        onError: () => cardRef.current?.focus() },
     )
   }
 
@@ -76,7 +77,12 @@ export function FocusModePage() {
     if (!pendingAnswer || !conflict) return
     submitAnswer.mutate(
       { questionId: pendingAnswer.questionId, input: { choice: pendingAnswer.choice, answer: pendingAnswer.answer, conflictResolution: { conflictId: conflict.conflictId, action } } },
-      { onSuccess: (result) => { if (result.outcome !== 'ABSTAINED') setAnswerText(''); setPendingAnswer(null) } },
+      { onSuccess: (result) => {
+        if (result.outcome !== 'ABSTAINED') setAnswerText('')
+        else cardRef.current?.focus()
+        setPendingAnswer(null)
+      },
+        onError: () => cardRef.current?.focus() },
     )
   }
 

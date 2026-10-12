@@ -266,3 +266,23 @@ test('sin delta cuando un lado de la duración de Sandbox no existe; la media de
   expect(timeRow).toHaveTextContent('Δ n/d · n/d')
   expect(timeRow).not.toHaveTextContent('+')
 })
+
+test('corrida mixta: una repetición sin intento ni evaluabilidad muestra «—», y las columnas siguen porque otra sí trae datos', async () => {
+  const user = userEvent.setup()
+  const mixed: ExperimentResultViewModel = {
+    ...result,
+    repetitions: [
+      sandboxRep({ target: 'Mixed.a', repetition: 1, attempt: 1, technicallyEvaluable: true }),
+      sandboxRep({ target: 'Mixed.b', repetition: 2, attempt: null, technicallyEvaluable: null }),
+    ],
+  }
+  renderWithRouter(<ExperimentComparison result={mixed} projectId="prj1" experimentId="exp1" />)
+  await user.click(screen.getByText('Ver detalle por target y repetición'))
+  const table = screen.getByRole('table', { name: 'Tabla de repeticiones por target' })
+  expect(within(table).getByRole('columnheader', { name: 'Intento' })).toBeInTheDocument()
+  expect(within(table).getByRole('columnheader', { name: 'Evaluable' })).toBeInTheDocument()
+  const cells = rowCells('Mixed.b')
+  expect(cells[6]).toHaveTextContent('—')
+  expect(cells[7]).toHaveTextContent('—')
+  expect(rowCells('Mixed.a')[6]).toHaveTextContent('1.º')
+})

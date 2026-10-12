@@ -197,10 +197,10 @@ export function ExperimentComparison({ result, projectId, experimentId }: { resu
                   <td>{item.valid ? 'Sí' : 'No'}</td>
                   <td>{item.pairId === null ? UNAVAILABLE : <code>{item.pairId}</code>}</td>
                   <td>{orUnavailable(item.pairPosition, (p) => `${p}.º en el par`)}</td>
-                  {showRunColumns && <td>{item.attempt === null ? '' : `${item.attempt}.º`}</td>}
+                  {showRunColumns && <td>{item.attempt === null ? '—' : `${item.attempt}.º`}</td>}
                   {showRunColumns && (
                     <td>
-                      {item.technicallyEvaluable === null ? '' : item.technicallyEvaluable ? 'Sí' : 'No'}
+                      {item.technicallyEvaluable === null ? '—' : item.technicallyEvaluable ? 'Sí' : 'No'}
                       {item.technicallyEvaluable === false && <span className="evaluability-mark">técnicamente no evaluable</span>}
                     </td>
                   )}

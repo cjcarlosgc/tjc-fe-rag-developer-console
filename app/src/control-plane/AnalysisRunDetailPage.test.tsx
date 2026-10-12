@@ -220,3 +220,15 @@ test.each(['QUEUED', 'PROCESSING'] as const)('WI-CONSOLE-017: un Run %s no muest
   expect(await screen.findByText('PR #45', { selector: '.pr-number' })).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Descargar evidencia (JSON)' })).not.toBeInTheDocument()
 })
+
+test('accesibilidad: «Símbolos cambiados» es h2 y ningún encabezado salta más de un nivel', async () => {
+  renderDetail('arun_checkout_pr42', 'prj_checkout_demo')
+
+  expect(await screen.findByRole('heading', { name: 'Símbolos cambiados', level: 2 })).toBeInTheDocument()
+  const levels = screen.getAllByRole('heading').map((heading) => Number(heading.tagName.slice(1)))
+  expect(levels[0]).toBe(1)
+  expect(levels[1]).toBe(2)
+  for (let index = 1; index < levels.length; index += 1) {
+    expect(levels[index] - levels[index - 1]).toBeLessThanOrEqual(1)
+  }
+})

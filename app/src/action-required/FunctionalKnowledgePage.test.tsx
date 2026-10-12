@@ -116,7 +116,16 @@ test('WI-CONSOLE-021 C3: una regla histórica con scenarioKey LEGACY en la lista
 test('carga: muestra el estado de carga con role="status" antes de la respuesta', () => {
   renderPage('prj_checkout_demo')
 
-  expect(screen.getByRole('status')).toHaveTextContent('Cargando reglas…')
+  expect(screen.getAllByRole('status').map((node) => node.textContent)).toContain('Cargando reglas…')
+})
+
+test('accesibilidad: la región role="status" existe durante la carga aunque aún no haya reglas', async () => {
+  renderPage('prj_checkout_demo')
+
+  const statuses = screen.getAllByRole('status')
+  expect(statuses.some((node) => node.textContent === '')).toBe(true)
+  await screen.findByRole('heading', { name: 'Resultado esperado' })
+  expect(screen.getByRole('status')).toBeEmptyDOMElement()
 })
 
 test('error: un proyecto inexistente muestra el error con role="alert" y reintento', async () => {

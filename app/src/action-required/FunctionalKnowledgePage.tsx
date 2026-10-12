@@ -49,7 +49,7 @@ export function FunctionalKnowledgePage() {
 
     {knowledgeQuery.isPending && <LoadingState label="Cargando reglas…" />}
     {knowledgeQuery.isError && <ErrorState message={knowledgeQuery.error.message} onRetry={() => void knowledgeQuery.refetch()} />}
-    <div role={knowledgeQuery.isSuccess ? 'status' : undefined}>
+    <div role="status">
       {knowledgeQuery.data && groups.length === 0 && <div className="empty-inline"><strong>Sin reglas</strong><p>Todavía no hay conocimiento funcional persistido para este filtro.</p></div>}
     </div>
     {knowledgeQuery.data && groups.map((group) => (

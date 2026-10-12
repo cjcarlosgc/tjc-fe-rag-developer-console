@@ -4,6 +4,8 @@ Fecha: 2026-10-12. Recoge las observaciones no bloqueantes y pendientes que los 
 
 ## A. Interfaz y accesibilidad (candidatos a WI-CONSOLE-005 / WI-CONSOLE-006)
 
+> Actualización 2026-10-12 (WI-CONSOLE-028): CORREGIDO — anillo de foco (10.6:1), «VS», `breadcrumbs-sep`, `repo-sep`, desbordes de `.analysis-run-summary`/`symbol-list`/`test-proposal-item`/`status-badge`/tabla de experimentos/cabecera a 768-1024 px, sellos DEMO/PROPUESTA, foco en `onError`/ABSTAINED, `role="status"`, jerarquía H3→H2 y «—» en Intento/Evaluable. PENDIENTE — borde del botón de evidencia (1.15:1) y P@10/R@10 (`#5b4d86`, ≈2.7:1) por decisión WCAG 1.4.11, hex fuera de tokens para WI-CONSOLE-005; `summary` con outline UA 1px (3.29:1); dos regiones `status` durante la carga de Functional Knowledge; lector de pantalla real sin verificar.
+
 - Anillo de foco global ≈2.7:1 (<3:1). Transversal, previo a SMART V3. (013, 014, 017)
 - Separadores de bajo contraste: breadcrumbs 1.45:1, `repo-sep` 3.89:1. (014)
 - Desbordes horizontales: `.analysis-run-summary` a 375 px y 13 px a 1024 px por un botón de cabecera; `symbol-list`, `test-proposal-item`, `status-badge` a 375 px; la tabla de experimentos desborda con datos. (014, 016, 026)
@@ -49,6 +51,8 @@ Fecha: 2026-10-12. Recoge las observaciones no bloqueantes y pendientes que los 
 - Alinear `sourceRevision` de CS-CORE-20261009-016/-017/-018 (Cross ya lo pidió; los eventos -002 a -004 de 2026-10-12 lo corrigen).
 
 ## F. Harness y procesos
+
+- F1 de WI-CONSOLE-027: `ContextExplorerPage.updateParams` puede perder `view=list` bajo carga; hace intermitente `ContextExplorerPage.test.tsx` («alterna entre vista de grafo y lista») sin límite de workers. Pendiente de decisión del usuario (WI de producto aparte); los timeouts globales deberían reducirse si se corrige.
 
 - Acusar o clasificar con un WI documental de sync: CS-CORE-20261012-002/-003/-004 y los C-PENDING anteriores (CS-CORE-20261009-012, 20261010-001/-002, 20261011-002/-003).
 - Reanudar WI-CONSOLE-004 (pausado en W-READY): re-seleccionar, volver a registrar la aprobación y correr `start`; el usuario debe decidir OC02, OC10, OC11 y OC14.

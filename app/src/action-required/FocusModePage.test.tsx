@@ -230,3 +230,65 @@ test('INTEROP-2.7 (comportamiento provisional del mock): «No lo sé» con HEAD 
   expect(screen.queryByText(/Abstención registrada/)).not.toBeInTheDocument()
   expect(screen.queryByText('¿"DiscountEngine.applyDiscount" puede dejar el total en negativo si el cupón excede el subtotal?')).not.toBeInTheDocument()
 })
+
+const LIVE_QUESTION = '¿Cuál es el comportamiento esperado?'
+
+function liveFetch(answerResponses: Array<() => Response>) {
+  const questionSet = {
+    analysisRunId: 'arun-live',
+    currentQuestion: {
+      id: 'fq-live', analysisRunId: 'arun-live', projectId: 'prj-live', repositoryName: 'acme/repo', pullRequestNumber: 12,
+      headSha: 'abc123', target: { language: 'TYPESCRIPT', kind: 'FUNCTION', qualifiedName: 'calculate', filePath: 'src/calculate.ts', changeKind: 'DIRECTLY_CHANGED' },
+      question: LIVE_QUESTION, rationale: 'Falta una regla funcional.', status: 'PENDING', visualAid: null,
+      scenarioKind: 'EXPECTED_RESULT', scenarioKey: 'calculate.result', abstention: null, createdAt: '2026-10-10T00:00:00.000Z',
+    },
+    functionalBehaviorValidated: false,
+  }
+  const project = { id: 'prj-live', name: 'Live', currentVersionId: null, workspace: { kind: 'PERSONAL', id: 'ws-live', login: 'person' }, role: 'ADMIN', createdAt: '2026-10-10T00:00:00.000Z', updatedAt: '2026-10-10T00:00:00.000Z' }
+  let posts = 0
+  return vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+    const url = String(input)
+    if (url.endsWith('/answers') && init?.method === 'POST') {
+      const respond = answerResponses[Math.min(posts, answerResponses.length - 1)]
+      posts += 1
+      return respond()
+    }
+    return new Response(JSON.stringify(url.includes('context-questions') ? questionSet : project), { status: 200 })
+  })
+}
+
+test('accesibilidad: si el envío falla con 5xx, el foco vuelve al contenedor de la pregunta', async () => {
+  setDataSourceForTests('live')
+  const user = userEvent.setup()
+  liveFetch([() => new Response(JSON.stringify({ code: 'TEMPORARY_FAILURE', message: 'Reintenta.' }), { status: 500 })])
+
+  renderFocusMode('arun-live')
+  await user.click(await screen.findByRole('button', { name: 'Sí' }))
+
+  await screen.findByRole('alert')
+  expect(screen.getByText(LIVE_QUESTION).closest('.focus-mode-card')).toHaveFocus()
+})
+
+test('accesibilidad: si el conflicto se resuelve con ABSTAINED, el foco vuelve al contenedor de la pregunta', async () => {
+  setDataSourceForTests('live')
+  const user = userEvent.setup()
+  const conflictBody = {
+    code: 'FUNCTIONAL_KNOWLEDGE_CONFLICT', message: 'Conflicto.',
+    details: {
+      conflictId: 'conflict-live', analysisRunId: 'arun-live', questionId: 'fq-live',
+      conflictingKnowledge: { id: 'fk-old', targetRef: 'calculate', normalizedRule: 'Regla vigente anterior.' },
+      proposedNormalizedRule: 'Regla propuesta.',
+    },
+  }
+  liveFetch([
+    () => new Response(JSON.stringify(conflictBody), { status: 409 }),
+    () => new Response(JSON.stringify({ status: 'PENDING', pollAfterMs: 500, analysisRunId: 'arun-live', questionId: 'fq-live', outcome: 'ABSTAINED', continuationAttemptId: null, knowledgeId: null }), { status: 202 }),
+  ])
+
+  renderFocusMode('arun-live')
+  await user.click(await screen.findByRole('button', { name: 'Sí' }))
+  await user.click(await screen.findByRole('button', { name: 'Reemplazar regla vigente' }))
+
+  await waitFor(() => expect(screen.getByText(LIVE_QUESTION).closest('.focus-mode-card')).toHaveFocus())
+  expect(screen.queryByText('Esta respuesta contradice una regla vigente')).not.toBeInTheDocument()
+})
