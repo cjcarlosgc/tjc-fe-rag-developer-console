@@ -131,16 +131,17 @@ test('marca visible «técnicamente no evaluable» en texto y sin recalcular la 
   expect(cells[7]).toContainElement(mark)
 })
 
-test('null en par, posición, intento y evaluable se muestra como «no disponible», nunca como 0', async () => {
+test('null en par y posición se muestra como «no disponible», nunca como 0; sin datos de corrida, no hay columnas Intento ni Evaluable', async () => {
   const user = userEvent.setup()
   renderWithRouter(<ExperimentComparison result={withNulls} projectId="prj1" experimentId="exp1" />)
   await user.click(screen.getByText('Ver detalle por target y repetición'))
+  const table = screen.getByRole('table', { name: 'Tabla de repeticiones por target' })
+  expect(within(table).queryByRole('columnheader', { name: 'Intento' })).toBeNull()
+  expect(within(table).queryByRole('columnheader', { name: 'Evaluable' })).toBeNull()
   const cells = rowCells('Cart.total')
   expect(cells[4].textContent).toBe('no disponible')
   expect(cells[5].textContent).toBe('no disponible')
-  expect(cells[6].textContent).toBe('no disponible')
-  expect(cells[7].textContent).toBe('no disponible')
-  for (const cell of cells.slice(4, 8)) expect(cell.textContent).not.toMatch(/\b0\b/)
+  for (const cell of cells.slice(4, 6)) expect(cell.textContent).not.toMatch(/\b0\b/)
   expect(screen.queryByText('técnicamente no evaluable')).toBeNull()
 })
 

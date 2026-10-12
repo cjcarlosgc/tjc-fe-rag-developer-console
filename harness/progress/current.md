@@ -1,6 +1,8 @@
 # Progreso actual — CONSOLE
 
-**WI-CONSOLE-004 en pausa (2026-10-12, `W-READY`, `activeWorkItem: null`):** happy paths OC01, OC03–OC09, OC12, OC13 y OC15 formalizados en la Feature 013 (`c4379ec`); OC02, OC10, OC11 y OC14 en `DECISION_REQUIRED`. Solo documentación; nada implementado ni cubierto. Pausado por orden del usuario; al reanudar hay que re-seleccionar, re-registrar la aprobación y correr de nuevo el `start`. Ver `harness/reports/wi-console-004-pause.md`. **Siguiente WI:** el mínimo de correcciones de experimentos, que abrirá otro Leader.
+**WI-CONSOLE-026 cerrado (2026-10-12, `W-DONE`, `activeWorkItem: null`):** copy de `EXPERIMENT_WORKER_LOST` sin promesa de reanudación, `UNSUPPORTED_PROJECT` con una única constante compartida y omisión de `attempt`/`technicallyEvaluable` en corridas antiguas del mock (aprobado por el usuario; desviación respecto de INTEROP §6.16 solo del mock). Ver `harness/reports/wi-console-026-closure.md`. **Siguientes:** 1) WI documental de sync para acusar `CS-CORE-20261012-002/-003/-004` y otros `C-PENDING` relevantes; 2) reanudar `WI-CONSOLE-004` con las decisiones del usuario sobre OC02, OC10, OC11 y OC14. No se abre ni selecciona otro WI.
+
+**WI-CONSOLE-004 en pausa (2026-10-12, `W-READY`, `activeWorkItem: null`):** happy paths OC01, OC03–OC09, OC12, OC13 y OC15 formalizados en la Feature 013 (`c4379ec`); OC02, OC10, OC11 y OC14 en `DECISION_REQUIRED`. Solo documentación; nada implementado ni cubierto. Pausado por orden del usuario; al reanudar hay que re-seleccionar, re-registrar la aprobación y correr de nuevo el `start`. Ver `harness/reports/wi-console-004-pause.md`. El mínimo de correcciones de experimentos (`WI-CONSOLE-026`) ya está cerrado.
 
 ## Siguiente corte (2026-10-10)
 

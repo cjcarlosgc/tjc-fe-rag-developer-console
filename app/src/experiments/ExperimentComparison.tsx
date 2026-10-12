@@ -35,10 +35,6 @@ function orUnavailable<T>(value: T | null | undefined, format: (value: T) => str
   return value === null || value === undefined ? UNAVAILABLE : format(value)
 }
 
-function evaluableText(value: boolean | null | undefined): string {
-  return orUnavailable(value, (v) => (v ? 'Sí' : 'No'))
-}
-
 function formatInteger(value: number): string {
   return value.toLocaleString('es-PE')
 }
@@ -86,6 +82,8 @@ function ConfigurationBlock({ configuration }: { configuration: ExperimentConfig
 }
 
 export function ExperimentComparison({ result, projectId, experimentId }: { result: ExperimentResultViewModel; projectId: string; experimentId: string }) {
+  // Corridas previas a OE5 no traen attempt ni technicallyEvaluable: las columnas solo existen si alguna repetición trae el dato.
+  const showRunColumns = result.repetitions.some((item) => item.attempt !== null || item.technicallyEvaluable !== null)
   const failures = Array.from(new Set([...Object.keys(result.baseline.failures), ...Object.keys(result.rag.failures)]))
   const tokenDelta = result.rag.totalTokens !== null && result.baseline.totalTokens !== null ? result.rag.totalTokens - result.baseline.totalTokens : null
   const costDelta = result.rag.estimatedCost !== null && result.baseline.estimatedCost !== null ? result.rag.estimatedCost - result.baseline.estimatedCost : null
@@ -181,8 +179,8 @@ export function ExperimentComparison({ result, projectId, experimentId }: { resu
                 <th scope="col">Válida</th>
                 <th scope="col">Par</th>
                 <th scope="col">Posición</th>
-                <th scope="col">Intento</th>
-                <th scope="col">Evaluable</th>
+                {showRunColumns && <th scope="col">Intento</th>}
+                {showRunColumns && <th scope="col">Evaluable</th>}
                 <th scope="col">Failure type</th>
                 <th scope="col">Duración</th>
                 <th scope="col">Ejecución en Sandbox</th>
@@ -199,11 +197,13 @@ export function ExperimentComparison({ result, projectId, experimentId }: { resu
                   <td>{item.valid ? 'Sí' : 'No'}</td>
                   <td>{item.pairId === null ? UNAVAILABLE : <code>{item.pairId}</code>}</td>
                   <td>{orUnavailable(item.pairPosition, (p) => `${p}.º en el par`)}</td>
-                  <td>{orUnavailable(item.attempt, (a) => `${a}.º`)}</td>
-                  <td>
-                    {evaluableText(item.technicallyEvaluable)}
-                    {item.technicallyEvaluable === false && <span className="evaluability-mark">técnicamente no evaluable</span>}
-                  </td>
+                  {showRunColumns && <td>{item.attempt === null ? '' : `${item.attempt}.º`}</td>}
+                  {showRunColumns && (
+                    <td>
+                      {item.technicallyEvaluable === null ? '' : item.technicallyEvaluable ? 'Sí' : 'No'}
+                      {item.technicallyEvaluable === false && <span className="evaluability-mark">técnicamente no evaluable</span>}
+                    </td>
+                  )}
                   <td>
                     <code>{item.failureType}</code>
                     {item.errorSummary && <div className="structured-error repetition-error-summary"><p>{item.errorSummary}</p></div>}

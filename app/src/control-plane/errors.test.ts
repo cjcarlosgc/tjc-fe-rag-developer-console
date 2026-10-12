@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest'
 import { ApiError } from '../api/client'
-import { bindingErrorMessage, errorCorrelationId, isGitHubAccessRenewalRequired, isLlmProviderUnavailable, isProjectNotFound, isVerificationUnavailable, reactivateErrorMessage } from './errors'
+import { UNSUPPORTED_PROJECT_MESSAGE, bindingErrorMessage, errorCorrelationId, isGitHubAccessRenewalRequired, isLlmProviderUnavailable, isProjectNotFound, isVerificationUnavailable, reactivateErrorMessage } from './errors'
 
 it('mapea los códigos de dominio de binding y de Project a un mensaje propio', () => {
   expect(bindingErrorMessage(new ApiError('x', 409, 'c', 'REPOSITORY_ALREADY_BOUND'))).toBe('Este repositorio ya está vinculado a otro proyecto. Elige otro repositorio.')
@@ -113,7 +113,8 @@ it.each([
 })
 
 it('WI-CONSOLE-021: 422 UNSUPPORTED_PROJECT, 503 LLM_PROVIDER_UNAVAILABLE indicando reintento, y los 409 de OE2 tienen mensaje propio', () => {
-  expect(bindingErrorMessage(new ApiError('crudo', 422, 'c', 'UNSUPPORTED_PROJECT'))).toBe('Este proyecto no tiene framework JEST, VITEST o PHPUNIT detectado.')
+  expect(bindingErrorMessage(new ApiError('crudo', 422, 'c', 'UNSUPPORTED_PROJECT'))).toBe(UNSUPPORTED_PROJECT_MESSAGE)
+  expect(UNSUPPORTED_PROJECT_MESSAGE).toBe('Este proyecto no tiene framework JEST, VITEST o PHPUNIT detectado.')
   const llm = bindingErrorMessage(new ApiError('crudo', 503, 'c', 'LLM_PROVIDER_UNAVAILABLE'))
   expect(llm).toMatch(/Inténtalo de nuevo/)
   expect(llm).not.toMatch(/no pudo completar/)

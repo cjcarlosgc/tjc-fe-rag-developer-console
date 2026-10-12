@@ -6,6 +6,7 @@ import { resetMockBackend } from '../api/mockBackend'
 import { ApiError } from '../api/client'
 import { renderApp } from '../test/render'
 import { RetrievalComparisonPage } from './RetrievalComparisonPage'
+import { UNSUPPORTED_PROJECT_MESSAGE } from '../control-plane/errors'
 
 // Overrides controlados de la capa api: el mock no puede producir 404/409/422/403 ni FAILED desde la UI, así que los
 // tests que lo necesitan sustituyen solo esas dos funciones. Sin override, todo sigue siendo el mock real.
@@ -181,7 +182,7 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
 
   it.each([
     [409, 'ANALYSIS_NOT_FINISHED', 'El Run todavía no terminó de analizarse; la comparación estará disponible cuando termine.'],
-    [422, 'UNSUPPORTED_PROJECT', 'Este proyecto no tiene framework JEST, VITEST o PHPUNIT detectado.'],
+    [422, 'UNSUPPORTED_PROJECT', UNSUPPORTED_PROJECT_MESSAGE],
   ])('creación con %i %s muestra el mensaje propio y no crea comparación', async (status, code, message) => {
     overrides.start = async () => { throw new ApiError('crudo de Core', status, 'corr-create', code) }
     const user = userEvent.setup()

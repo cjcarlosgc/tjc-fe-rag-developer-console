@@ -2046,6 +2046,244 @@
         }
       ],
       "closedAt": "2026-10-12T08:50:11.985Z"
+    },
+    {
+      "id": "WI-CONSOLE-026",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P2",
+      "sprint": "SMART V3",
+      "title": "Aplicar las decisiones pendientes de copy y mock de experimentos",
+      "storyIds": [
+        "HU12",
+        "HU15",
+        "HU17"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-028"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "specPaths": [
+        "spec/features/014-analysisrun-experiments/spec.md",
+        "spec/features/014-analysisrun-experiments/plan.md",
+        "spec/features/014-analysisrun-experiments/tasks.md",
+        "harness/reports/wi-console-026-scope-approval.md",
+        "harness/reports/wi-console-026-contract-sync-scope-review.md",
+        "harness/reports/wi-console-026-sdd-verification.md"
+      ],
+      "acceptanceCriteria": [
+        "EXPERIMENT_WORKER_LOST muestra un texto que no promete reanudación («El experimento se interrumpió; vuelve a crearlo.»); EXPERIMENT_FAILED y los códigos desconocidos no cambian; las pruebas de ExperimentPage se actualizan.",
+        "UNSUPPORTED_PROJECT tiene un solo texto claro y compartido para la creación de experimentos y la comparación OE2 de retrieval, sin variantes por pantalla ni por el mock; una sola fuente de verdad.",
+        "En corridas antiguas (previas a OE5) sin attempt ni technicallyEvaluable, la interfaz y el mock omiten esas filas y no muestran 1 ni false inventados; donde el dato existe se sigue mostrando, incluido technicallyEvaluable=false con attempt=2.",
+        "Sin cambios de contratos, DTO, API ni adapters live ni de comportamiento; el proyecto demo PHP propio queda fuera (backlog, no incluido).",
+        "ux-reviewer (contraste con el color computado real en el navegador), lint, tsc -b --noEmit, pruebas, build y validadores SDD/Harness pasan antes de la revisión humana; los mocks siguen rotulados DEMO · DATOS SIMULADOS."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-026-scope-approval.md",
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true,
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-026 solo cambia el copy de dos errores de experimentos y la omision de dos campos en el mock de corridas antiguas, sin tocar contratos, binding, identidad ni seguridad.",
+          "report": "harness/reports/wi-console-026-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso GitHub; WI-CONSOLE-026 solo cambia el copy de dos errores de experimentos y la omision de dos campos en el mock de corridas antiguas, sin tocar contratos, binding, identidad ni seguridad.",
+          "report": "harness/reports/wi-console-026-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-026 solo cambia el copy de dos errores de experimentos y la omision de dos campos en el mock de corridas antiguas, sin tocar contratos, binding, identidad ni seguridad.",
+          "report": "harness/reports/wi-console-026-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre workspaces, membresia y eventos organizacionales; WI-CONSOLE-026 solo cambia el copy de dos errores de experimentos y la omision de dos campos en el mock de corridas antiguas, sin tocar contratos, binding, identidad ni seguridad.",
+          "report": "harness/reports/wi-console-026-contract-sync-scope-review.md"
+        }
+      ],
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-10-12T19:25:00.000Z",
+        "note": "Ninguna decision PENDING/PROPOSED con Blocks alcanza este WI (DEC-VAL-001 y DEC-INF-001 no aplican); el usuario aprobo el alcance en el chat."
+      },
+      "execution": {
+        "leaderAgent": "leader",
+        "analysisAgent": "sdd-analyst",
+        "implementationAgent": "implementer",
+        "contractReviewAgent": null,
+        "reviewAgent": "human-reviewer",
+        "uxReviewAgent": "ux-reviewer",
+        "handoffs": [
+          {
+            "agent": "sdd-analyst",
+            "executedBy": {
+              "agent": "sdd-analyst",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Spec 014 silenciosa sobre los tres textos; sin decisiones Blocks aplicables; sin impacto contractual.",
+              "Interpretacion minima de «omitir filas»: en el mock del bundle omitir experimental[]/sandbox[] de repeticiones legacy; en ExperimentComparison omitir columnas Intento/Evaluable solo si ninguna repeticion trae el dato.",
+              "Fuente unica de UNSUPPORTED_PROJECT: control-plane/errors.ts; el ApiError del mock debe reutilizarla."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/experiments/failureMessages.ts",
+              "app/src/control-plane/errors.ts",
+              "app/src/api/mockBackend.ts",
+              "app/src/experiments/ExperimentComparison.tsx"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-026-sdd-verification.md"
+            ],
+            "recommendedNextStep": "Implementar el corte aprobado."
+          },
+          {
+            "agent": "implementer",
+            "executedBy": {
+              "agent": "implementer",
+              "configuredModel": "claude-haiku-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Copy de EXPERIMENT_WORKER_LOST, fuente unica de UNSUPPORTED_PROJECT y omision de attempt/technicallyEvaluable en corridas antiguas implementados; lint, tsc, 726 pruebas y build pasan."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/experiments/failureMessages.ts",
+              "app/src/control-plane/errors.ts",
+              "app/src/api/mockBackend.ts",
+              "app/src/experiments/ExperimentComparison.tsx"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-026-implementation.md"
+            ],
+            "recommendedNextStep": "Revision ux-reviewer y revision humana."
+          },
+          {
+            "agent": "ux-reviewer",
+            "executedBy": {
+              "agent": "ux-reviewer",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Textos y tabla verificados en navegador contra el mock; contraste computado >= 9.5:1; sin ganador automatico; rotulo DEMO presente.",
+              "Observaciones no bloqueantes: celdas vacias en caso mixto podrian llevar guion; copy de worker lost de OE2 sin «vuelve a crearlo»."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/experiments/ExperimentComparison.tsx",
+              "app/src/experiments/failureMessages.ts"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-026-ux-review.md"
+            ],
+            "recommendedNextStep": "Revision tecnica independiente del usuario."
+          },
+          {
+            "agent": "human-reviewer",
+            "status": "APPROVED",
+            "findings": [
+              "Aprobado por el usuario («si» a «¿Apruebas WI-CONSOLE-026, y mantienes omitir las filas o las alineas con el contrato?»). Se mantiene la omision de filas attempt/technicallyEvaluable en corridas antiguas del mock; lectura del Leader, la alternativa (alinear con INTEROP §6.16: 1/true) sigue disponible si el usuario la pide. Desviacion solo del mock, no live."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/experiments/failureMessages.ts",
+              "app/src/control-plane/errors.ts",
+              "app/src/api/mockBackend.ts",
+              "app/src/experiments/ExperimentComparison.tsx"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-026-user-review.md",
+              "harness/reports/wi-console-026-closure.md"
+            ],
+            "recommendedNextStep": "Cerrar el WI y liberar state.json; no publicar sin una solicitud explicita del usuario."
+          }
+        ],
+        "reviewCycles": 1,
+        "maxReviewCycles": 2
+      },
+      "gates": {
+        "sddVerified": "G-PASSED",
+        "implementationCompleted": "G-PASSED",
+        "uxReviewed": "G-PASSED",
+        "contractReviewed": "G-NOT_APPLICABLE",
+        "canonicalContractSynced": "G-NOT_APPLICABLE",
+        "contractSyncPublished": "G-NOT_APPLICABLE",
+        "independentReviewPassed": "G-PASSED",
+        "technicalChecksPassed": "G-PASSED",
+        "interopSyncChecked": "G-PASSED",
+        "noMocksPresentedAsLive": "G-PASSED",
+        "noBlockingDecisions": "G-PASSED",
+        "retryLimitRespected": "G-PASSED"
+      },
+      "evidence": [
+        "harness/reports/wi-console-026-scope-approval.md",
+        "harness/reports/wi-console-026-contract-sync-scope-review.md",
+        "harness/reports/wi-console-026-sdd-verification.md",
+        "harness/reports/wi-console-026-implementation.md",
+        "harness/reports/wi-console-026-ux-review.md",
+        "harness/reports/wi-console-026-user-review.md",
+        "harness/reports/wi-console-026-closure.md"
+      ],
+      "gateEvidence": {
+        "sddVerified": [
+          "harness/reports/wi-console-026-sdd-verification.md"
+        ],
+        "noBlockingDecisions": [
+          "harness/reports/wi-console-026-sdd-verification.md"
+        ],
+        "implementationCompleted": [
+          "harness/reports/wi-console-026-implementation.md"
+        ],
+        "technicalChecksPassed": [
+          "harness/reports/wi-console-026-implementation.md",
+          "harness/reports/wi-console-026-closure.md"
+        ],
+        "interopSyncChecked": [
+          "harness/reports/wi-console-026-contract-sync-scope-review.md"
+        ],
+        "noMocksPresentedAsLive": [
+          "harness/reports/wi-console-026-ux-review.md"
+        ],
+        "uxReviewed": [
+          "harness/reports/wi-console-026-ux-review.md"
+        ],
+        "independentReviewPassed": [
+          "harness/reports/wi-console-026-user-review.md"
+        ],
+        "retryLimitRespected": [
+          "harness/reports/wi-console-026-user-review.md"
+        ]
+      },
+      "closedAt": "2026-10-12T19:35:21.000Z"
     }
   ]
 }

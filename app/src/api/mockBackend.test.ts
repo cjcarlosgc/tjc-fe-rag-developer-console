@@ -4,7 +4,8 @@ import { getExperiment, startExperiment } from '../experiments/api'
 import { getTestInventory } from '../inventory/api'
 import { createProject, listProjects } from '../projects/api'
 import { setDataSourceForTests } from './dataSource'
-import { resetMockBackend } from './mockBackend'
+import { mockGetEvidence, resetMockBackend } from './mockBackend'
+import { UNSUPPORTED_PROJECT_MESSAGE } from '../control-plane/errors'
 
 test('conserva historial e inventarios internos sin requests HTTP', async () => {
   setDataSourceForTests('mock')
@@ -64,6 +65,25 @@ test('WI-CONSOLE-021: escenarios DEMO de experimento cubren corrida previa, Sand
   const noEvaluable = await getExperiment((await startExperiment('prj_checkout_demo', 'demo-scenario-no-evaluable', crypto.randomUUID())).experimentId, 'DEMO')
   expect(noEvaluable.result?.baseline).toMatchObject({ validRate: null, passedRate: null, totalDurationMs: null, evaluableRepetitions: 0, nonEvaluableRepetitions: 3 })
   expect(noEvaluable.result?.rag.evaluableRepetitions).toBe(3)
+
+  // WI-CONSOLE-026: bundle de una corrida legacy sin filas experimental[]/sandbox[] (sin attempt/technicallyEvaluable inventados); generation[] se conserva con attempt null.
+  const legacyId = (await startExperiment('prj_checkout_demo', 'demo-scenario-legacy', crypto.randomUUID())).experimentId
+  const legacyBundle = await mockGetEvidence('EXPERIMENT', legacyId)
+  expect(legacyBundle.experimental).toEqual([])
+  expect(legacyBundle.sandbox).toEqual([])
+  expect(legacyBundle.generation.length).toBe(2)
+  expect(legacyBundle.generation.every((row) => row.attempt === null)).toBe(true)
+  expect(JSON.stringify(legacyBundle)).not.toMatch(/"technicallyEvaluable":false/)
+
+  // WI-CONSOLE-026: con datos, las filas se emiten tal cual (attempt 2 y technicallyEvaluable false de la repetición RAG r1).
+  const mixedId = (await startExperiment('prj_checkout_demo', 'demo-scenario-mixed-sandbox', crypto.randomUUID())).experimentId
+  const mixedBundle = await mockGetEvidence('EXPERIMENT', mixedId)
+  expect(mixedBundle.experimental.some((row) => row.attempt === 2 && row.technicallyEvaluable === false)).toBe(true)
+  expect(mixedBundle.sandbox.some((row) => row.attempt === 2)).toBe(true)
+  expect(mixedBundle.experimental.every((row) => typeof row.technicallyEvaluable === 'boolean')).toBe(true)
+
+  // WI-CONSOLE-026 C2: el 422 UNSUPPORTED_PROJECT del mock reutiliza el texto compartido, sin variante DEMO.
+  await expect(startExperiment('prj_checkout_demo', 'demo-error-unsupported-project', crypto.randomUUID())).rejects.toMatchObject({ code: 'UNSUPPORTED_PROJECT', message: UNSUPPORTED_PROJECT_MESSAGE })
 
   // WI-CONSOLE-021 C1: proyecto PHP con PHPUnit (CS-CORE-20261009-018). Sin 422 de lenguaje; perfil y runner tal cual.
   const phpunit = await getExperiment((await startExperiment('prj_checkout_demo', 'demo-scenario-phpunit', crypto.randomUUID())).experimentId, 'DEMO')

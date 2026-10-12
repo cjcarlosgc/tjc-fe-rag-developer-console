@@ -9,6 +9,7 @@ import type { TestInventoryResponse } from '../inventory/types'
 import type { AnalysisHistoryItem, CreateProjectInput, Project, ProjectRole, UpdateProjectInput, Workspace, WorkspaceListResponse } from '../projects/types'
 import { DEMO_FOREIGN_OWNER_LOGINS, DEMO_GITHUB_REPOSITORIES } from '../control-plane/demoRepositories'
 import { canBindRepository } from '../control-plane/repositoryPermissions'
+import { UNSUPPORTED_PROJECT_MESSAGE } from '../control-plane/errors'
 import type {
   AnalysisRunDetailResponse,
   AnalysisRunListPage,
@@ -1127,7 +1128,7 @@ export async function mockStartExperiment(projectId: string, targetId: string): 
   const project = requireProjectRole(projectId, 'WRITER')
   // DEMO · errores de creación (WI-CONSOLE-021, INTEROP-2.7 §6.5.1). Ninguno crea el experimento.
   if (targetId === 'demo-error-reasoning-effort') throw new ApiError('El modelo no admite el esfuerzo de razonamiento pedido (DEMO).', 422, 'demo-correlation-id', 'REASONING_EFFORT_UNSUPPORTED', { supportedEfforts: ['low', 'medium'] })
-  if (targetId === 'demo-error-unsupported-project') throw new ApiError('El proyecto no tiene framework JEST, VITEST o PHPUNIT detectado (DEMO).', 422, 'demo-correlation-id', 'UNSUPPORTED_PROJECT')
+  if (targetId === 'demo-error-unsupported-project') throw new ApiError(UNSUPPORTED_PROJECT_MESSAGE, 422, 'demo-correlation-id', 'UNSUPPORTED_PROJECT')
   if (targetId === 'demo-error-llm-unavailable') throw new ApiError('El modelo de experimentos no está disponible (DEMO).', 503, 'demo-correlation-id', 'LLM_PROVIDER_UNAVAILABLE')
   const scenario = DEMO_EXPERIMENT_SCENARIOS.find((name) => targetId === `demo-scenario-${name}`)
   if (scenario) {
@@ -1999,17 +2000,22 @@ function evidenceAnalysisRun(run: AnalysisRunDetailResponse, generatedAt: string
 }
 
 /**
- * DEMO · DATOS SIMULADOS: una repetición de experimento en el bundle §6.16. Un dato no persistido (corrida previa a OE5 o
- * ejecución sin Sandbox) es `null`, nunca 0. `attempt` y `technicallyEvaluable` del contrato no admiten null: sin dato,
- * el mock usa 1 y `false` (pendiente de confirmar con Core; ver el reporte de WI-CONSOLE-021, corte C).
+ * DEMO · DATOS SIMULADOS: una repetición de experimento en el bundle §6.16. Un dato no persistido es `null`, nunca 0.
+ * Una repetición legacy (corrida previa a OE5: `attempt` y `technicallyEvaluable` null) NO emite sus filas `sandbox[]` ni
+ * `experimental[]`: el mock no inventa `attempt` ni `technicallyEvaluable`. `generation[]` sí se emite con `attempt: null`.
+ * Donde el dato existe se emite tal cual. Desviación deliberada del contrato de Core (que emite 1/true en filas previas) aprobada
+ * en WI-CONSOLE-026; ver `harness/reports/wi-console-026-implementation.md`.
  */
 function evidenceExperimentRepetition(subjectId: string, configuration: ExperimentConfiguration | null, rep: RepetitionResult): {
   generation: EvidenceBundleResponse['generation'][number]
-  sandbox: EvidenceBundleResponse['sandbox'][number]
-  experimental: EvidenceBundleResponse['experimental'][number]
+  sandbox: EvidenceBundleResponse['sandbox'][number] | null
+  experimental: EvidenceBundleResponse['experimental'][number] | null
 } {
   const executed = rep.executionDurationMs !== null
   const executionId = executed ? `demo-exec-${subjectId}-${rep.strategy}-${rep.repetition}` : null
+  // Sin ambos datos (legacy) no hay fila: el contrato no admite null en attempt/technicallyEvaluable de estas filas.
+  const runAttempt = rep.attempt
+  const runEvaluable = rep.technicallyEvaluable
   return {
     generation: {
       strategy: rep.strategy,
@@ -2024,27 +2030,27 @@ function evidenceExperimentRepetition(subjectId: string, configuration: Experime
       durationMs: rep.generationDurationMs,
       artifactHash: executed ? fakeSha256(`artifact:${subjectId}:${rep.strategy}:${rep.repetition}`) : null,
     },
-    sandbox: {
+    sandbox: runAttempt === null || runEvaluable === null ? null : {
       executionId,
       strategy: rep.strategy,
       repetition: rep.repetition,
       executionProfile: configuration?.executionProfile ?? null,
       runnerHint: configuration?.runnerHint ?? null,
-      attempt: rep.attempt ?? 1,
+      attempt: runAttempt,
       facts: { executionProfile: configuration?.executionProfile ?? null, failureCategory: rep.failureType === 'NONE' ? null : rep.failureType, failureMessage: rep.errorSummary },
       durationMs: rep.executionDurationMs,
       requestId: executionId,
       correlationId: executed ? 'demo-correlation-id' : null,
     },
-    experimental: {
+    experimental: runAttempt === null || runEvaluable === null ? null : {
       experimentId: subjectId,
       strategy: rep.strategy,
       repetition: rep.repetition,
       pairId: rep.pairId,
       pairPosition: rep.pairPosition,
-      attempt: rep.attempt ?? 1,
+      attempt: runAttempt,
       randomizationSeed: configuration?.randomizationSeed ?? null,
-      technicallyEvaluable: rep.technicallyEvaluable === true,
+      technicallyEvaluable: runEvaluable,
     },
   }
 }
@@ -2075,8 +2081,8 @@ export async function mockGetEvidence(kind: EvidenceKind, subjectId: string): Pr
       context: [],
       generation: rows.map((row) => row.generation),
       agentExploration: [],
-      sandbox: rows.map((row) => row.sandbox),
-      experimental: rows.map((row) => row.experimental),
+      sandbox: rows.flatMap((row) => (row.sandbox ? [row.sandbox] : [])),
+      experimental: rows.flatMap((row) => (row.experimental ? [row.experimental] : [])),
       publication: null,
     })
   }

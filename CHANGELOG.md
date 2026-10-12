@@ -4,6 +4,8 @@ Todos los cambios notables de la línea base SDD se registran aquí. El contenid
 
 ## [Unreleased]
 
+- **Cierre `WI-CONSOLE-026` (2026-10-12, `W-DONE`):** `EXPERIMENT_WORKER_LOST` pasa a «El experimento se interrumpió; vuelve a crearlo.» (sin promesa de reanudación); `UNSUPPORTED_PROJECT` tiene una única constante compartida por la creación de experimentos, la comparación OE2 y el mock; en corridas antiguas el mock omite las filas `attempt`/`technicallyEvaluable` y la comparación omite las columnas Intento/Evaluable si ninguna repetición trae el dato (donde existe se muestra). Decisión del usuario: aprobado; se mantiene la omisión (lectura del Leader del «si»; la alternativa de alinear con el contrato, 1/true, sigue disponible si la pide). Desviación respecto de INTEROP §6.16 solo del mock, no live. UX aprobado, Contract Sync `before-done` PASS. Sin cambios de contratos, DTO, API ni adapters live; demo PHP propio en backlog. Sin push ni PR.
+
 - **WI-CONSOLE-004 (pausa, 2026-10-12):** vuelve a `W-READY` (`activeWorkItem: null`, `ST-CONSOLE-004` `T-READY`) por orden del usuario para dar paso a un WI mínimo de correcciones de experimentos; el trabajo de `c4379ec` se conserva y las decisiones de OC02, OC10, OC11 y OC14 siguen pendientes (`harness/reports/wi-console-004-pause.md`). Sin `app/`, UI, API ni contratos.
 
 - **WI-CONSOLE-004:** los happy paths OC01–OC15 quedan formalizados en la Feature 013 (entrada, salida, invariantes, prueba propuesta y fuente); OC02, OC10, OC11 y OC14 quedan `DECISION_REQUIRED`. Solo documentación: sin `app/`, UI, API ni contratos; sin subcasos; no implica implementación ni cobertura, y los casos siguen `O-CATALOGUED`.

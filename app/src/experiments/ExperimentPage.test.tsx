@@ -6,6 +6,7 @@ import { setDataSourceForTests } from '../api/dataSource'
 import { resetMockBackend } from '../api/mockBackend'
 import { renderApp } from '../test/render'
 import { getCaptureNextPrState } from '../run-comparison/speculative/captureNextPr'
+import { UNSUPPORTED_PROJECT_MESSAGE } from '../control-plane/errors'
 import { ExperimentPage } from './ExperimentPage'
 import { EXPERIMENT_CONDITIONS_NOTE } from './ExperimentConditionsNote'
 
@@ -181,7 +182,7 @@ test('FAILED visible: role alert con el copy de EXPERIMENT_WORKER_LOST, sin «Pr
 
   const alert = await screen.findByRole('alert')
   expect(within(alert).getByText('El experimento no se completó')).toBeInTheDocument()
-  expect(within(alert).getByText('Se interrumpió el procesamiento y puede reanudarse.')).toBeInTheDocument()
+  expect(within(alert).getByText('El experimento se interrumpió; vuelve a crearlo.')).toBeInTheDocument()
   expect(within(alert).getByText(/DEMO: el worker dejó de responder/)).toBeInTheDocument()
   expect(within(alert).getByText('DEMO · DATOS SIMULADOS')).toBeInTheDocument()
   expect(screen.queryByText('Preparando experimento')).toBeNull()
@@ -223,7 +224,7 @@ test('422 UNSUPPORTED_PROJECT en la creación muestra su mensaje propio, sin rei
   renderApp(<ExperimentPage />, { initialEntry: '/projects/prj_checkout_demo/experimental', routePath: '/projects/:projectId/experimental' })
   await user.click(await screen.findByRole('button', { name: 'Ejecutar comparación' }))
   const alert = await screen.findByRole('alert')
-  expect(alert).toHaveTextContent('no tiene framework JEST, VITEST o PHPUNIT detectado')
+  expect(alert).toHaveTextContent(UNSUPPORTED_PROJECT_MESSAGE)
   expect(within(alert).queryByRole('button', { name: 'Reintentar' })).toBeNull()
 })
 
@@ -257,7 +258,7 @@ test('B2 selector DEMO (solo mock): las opciones de escenario y error se etiquet
   await user.selectOptions(select, 'demo-scenario-failed-worker-lost')
   await user.click(screen.getByRole('button', { name: 'Ejecutar comparación' }))
   const alert = await screen.findByRole('alert')
-  expect(within(alert).getByText('Se interrumpió el procesamiento y puede reanudarse.')).toBeInTheDocument()
+  expect(within(alert).getByText('El experimento se interrumpió; vuelve a crearlo.')).toBeInTheDocument()
 })
 
 test('WI-CONSOLE-021 C1: proyecto PHP con PHPUnit (DEMO) no se bloquea: runnerHint y perfil se muestran tal cual', async () => {
@@ -271,4 +272,33 @@ test('WI-CONSOLE-021 C1: proyecto PHP con PHPUnit (DEMO) no se bloquea: runnerHi
   expect(await screen.findByText('PHP_LARAVEL_PHPUNIT', {}, { timeout: 2000 })).toBeInTheDocument()
   expect(screen.getByText('PHPUNIT')).toBeInTheDocument()
   expect(screen.queryByRole('alert')).toBeNull()
+})
+
+test('WI-CONSOLE-026: corrida legacy sin attempt ni technicallyEvaluable no muestra columnas Intento/Evaluable ni valores inventados', async () => {
+  setDataSourceForTests('mock')
+  startHarness.targetOverride = 'demo-scenario-legacy'
+  const user = userEvent.setup()
+  renderApp(<ExperimentPage />, { initialEntry: '/projects/prj_checkout_demo/experimental', routePath: '/projects/:projectId/experimental' })
+  await user.click(await screen.findByRole('button', { name: 'Ejecutar comparación' }))
+
+  const table = await screen.findByRole('table', { name: 'Tabla de repeticiones por target' })
+  expect(within(table).getByRole('columnheader', { name: 'Failure type' })).toBeInTheDocument()
+  expect(within(table).queryByRole('columnheader', { name: 'Intento' })).toBeNull()
+  expect(within(table).queryByRole('columnheader', { name: 'Evaluable' })).toBeNull()
+  expect(within(table).queryByText('1.º')).toBeNull()
+  expect(within(table).queryByText('técnicamente no evaluable')).toBeNull()
+})
+
+test('WI-CONSOLE-026: corrida con attempt 2 y técnicamente no evaluable muestra Intento, Evaluable y la marca', async () => {
+  setDataSourceForTests('mock')
+  startHarness.targetOverride = 'demo-scenario-mixed-sandbox'
+  const user = userEvent.setup()
+  renderApp(<ExperimentPage />, { initialEntry: '/projects/prj_checkout_demo/experimental', routePath: '/projects/:projectId/experimental' })
+  await user.click(await screen.findByRole('button', { name: 'Ejecutar comparación' }))
+
+  const table = await screen.findByRole('table', { name: 'Tabla de repeticiones por target' })
+  expect(within(table).getByRole('columnheader', { name: 'Intento' })).toBeInTheDocument()
+  expect(within(table).getByRole('columnheader', { name: 'Evaluable' })).toBeInTheDocument()
+  expect(within(table).getByText('2.º')).toBeInTheDocument()
+  expect(within(table).getByText('técnicamente no evaluable')).toBeInTheDocument()
 })

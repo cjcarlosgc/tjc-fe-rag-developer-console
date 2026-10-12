@@ -83,9 +83,10 @@ describe('getEvidence · forma de §6.16 (CS-CORE-20261009-014, WI-CONSOLE-021 c
     const { bundle } = await getEvidence('EXPERIMENT', accepted.experimentId)
     expect(bundle.generation.length).toBeGreaterThan(0)
     expect(bundle.generation.some((row) => row.provider === null && row.model === null)).toBe(true)
-    expect(bundle.sandbox.some((row) => row.executionId === null && row.requestId === null && row.durationMs === null && row.correlationId === null)).toBe(true)
-    expect(bundle.sandbox.every((row) => row.durationMs !== 0)).toBe(true)
-    expect(bundle.experimental.every((row) => typeof row.technicallyEvaluable === 'boolean')).toBe(true)
+    // WI-CONSOLE-026: sin attempt ni technicallyEvaluable no hay filas sandbox[]/experimental[] (no se inventan 1 ni false).
+    expect(bundle.generation.every((row) => row.attempt === null)).toBe(true)
+    expect(bundle.sandbox).toEqual([])
+    expect(bundle.experimental).toEqual([])
     const raw = JSON.stringify(bundle)
     expect(raw).not.toMatch(/""/)
   })

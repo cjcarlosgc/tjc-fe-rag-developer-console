@@ -4,9 +4,9 @@
  */
 const knownFailureMessages: Record<string, string> = {
   EXPERIMENT_FAILED: 'El experimento falló durante la ejecución.',
-  // CS-CORE-20261009-010 dice que el run puede reanudarse, pero §6.5.1 no define ninguna ruta de reanudación:
-  // el texto es solo informativo y la UI no ofrece botón de reanudar ni vuelve a sondear un FAILED.
-  EXPERIMENT_WORKER_LOST: 'Se interrumpió el procesamiento y puede reanudarse.',
+  // CS-CORE-20261009-010 no define ninguna ruta de reanudación (INTEROP §6.5.1): el texto no promete reanudar.
+  // La UI no ofrece botón de reanudar ni vuelve a sondear un FAILED; el usuario crea un experimento nuevo.
+  EXPERIMENT_WORKER_LOST: 'El experimento se interrumpió; vuelve a crearlo.',
 }
 
 export function experimentFailureTitle(): string {

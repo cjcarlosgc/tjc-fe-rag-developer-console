@@ -1,5 +1,8 @@
 import { ApiError } from '../api/client'
 
+/** Fuente única del texto de `422 UNSUPPORTED_PROJECT` (experimentos y OE2). El mock demo la reutiliza. */
+export const UNSUPPORTED_PROJECT_MESSAGE = 'Este proyecto no tiene framework JEST, VITEST o PHPUNIT detectado.'
+
 /** HU30/HU56/HU57/HU64: mensajes de dominio por `ApiError.code` de las rutas de binding y de Project (INTEROP-2.4 §6.1/§6.8/§6.13). */
 const codeMessages: Record<string, string> = {
   REPOSITORY_ALREADY_BOUND: 'Este repositorio ya está vinculado a otro proyecto. Elige otro repositorio.',
@@ -28,7 +31,7 @@ const codeMessages: Record<string, string> = {
   IDEMPOTENCY_CONFLICT: 'Esa clave de idempotencia ya se usó para otra comparación. Inicia la comparación de nuevo desde la página.',
   // WI-CONSOLE-021 (INTEROP-2.7 §6.5.1 y §6.15): errores de creación de experimento (OE5) y de comparación de retrieval (OE2).
   // Ninguno crea el recurso; `UNSUPPORTED_PROJECT` vale para ambos y solo significa que no hay framework JEST, VITEST o PHPUNIT detectado (CS-CORE-20261009-017/-018).
-  UNSUPPORTED_PROJECT: 'Este proyecto no tiene framework JEST, VITEST o PHPUNIT detectado.',
+  UNSUPPORTED_PROJECT: UNSUPPORTED_PROJECT_MESSAGE,
   // Reintentable: el experimento no se creó, así que volver a intentarlo es seguro.
   LLM_PROVIDER_UNAVAILABLE: 'El modelo de experimentos no está disponible ahora. Inténtalo de nuevo en unos minutos.',
   ANALYSIS_NOT_FINISHED: 'El Run todavía no terminó de analizarse; la comparación estará disponible cuando termine.',
