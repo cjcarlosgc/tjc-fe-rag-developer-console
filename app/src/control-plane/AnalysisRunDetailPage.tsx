@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { hasRole } from '../projects/roles'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
@@ -9,9 +9,9 @@ import { useAnalysisRunContextTrace } from '../context-explorer/queries'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
 import { RepoChip } from '../ui/RepoChip'
-import { getTestPublication } from './api'
 import { OperationalTraceSection } from './OperationalTraceSection'
-import { useAnalysisRun, usePublishTests, useTestProposals } from './queries'
+import { isInProgressPublicationStatus, isTerminalPublicationStatus, useAnalysisRun, usePublication, usePublishTests, useRefreshOnPublicationTerminal, useTestProposals } from './queries'
+import { safePublicationUrl } from './publicationView'
 import { ANALYSIS_RUN_STATUS_LABELS, analysisRunStatusClass } from './status'
 import { getPriorCoverage, PRIOR_COVERAGE_LABELS } from './speculative/priorCoverage'
 import { findEligibleSymbol } from '../run-comparison/types'
@@ -35,16 +35,27 @@ const RUN_TRANSITION_REASON_LABELS: Record<AnalysisRunTransitionReason, string> 
 }
 const INFORMATIONAL_STATUSES = new Set(['NO_ADDITIONAL_TESTS_REQUIRED', 'NO_TEST_RELEVANT_CHANGES'])
 
+type PendingPublication = { publicationId: string; pollAfterMs: number }
+
 function PublishSection({ analysisRunId, projectId, targetBranch }: { analysisRunId: string; projectId: string; targetBranch: string }) {
   const projectQuery = useProject(projectId)
   const proposalsQuery = useTestProposals(analysisRunId)
   const publishMutation = usePublishTests(analysisRunId)
-  const [publicationId, setPublicationId] = useState<string | null>(null)
-  const publicationQuery = useQuery({
-    queryKey: ['control-plane', 'publication', publicationId],
-    queryFn: () => getTestPublication(publicationId as string),
-    enabled: Boolean(publicationId),
-  })
+  const [pending, setPending] = useState<PendingPublication | null>(null)
+  // Sondeo hasta terminal con el pollAfterMs del 202 (WI-CONSOLE-032).
+  const publicationQuery = usePublication(pending?.publicationId ?? null, pending?.pollAfterMs ?? null)
+  const publication = publicationQuery.data
+  useRefreshOnPublicationTerminal(analysisRunId, publication)
+  const mock = isMockDataSource()
+  const publishButtonRef = useRef<HTMLButtonElement>(null)
+  const resultRef = useRef<HTMLDivElement>(null)
+  const publicationTerminal = publication !== undefined && isTerminalPublicationStatus(publication.status)
+  // WI-CONSOLE-032 (corrección UX 1): al llegar a terminal, si el foco estaba en el botón (que puede desaparecer) o en body, pasa a la región de resultado.
+  useEffect(() => {
+    if (!publicationTerminal) return
+    const active = document.activeElement
+    if (active === null || active === document.body || active === publishButtonRef.current) resultRef.current?.focus()
+  }, [publicationTerminal, publication?.status])
 
   if (projectQuery.isPending || proposalsQuery.isPending) return <LoadingState label="Cargando propuestas…" />
   if (projectQuery.isError) return <ErrorState message={bindingErrorMessage(projectQuery.error)} correlationId={errorCorrelationId(projectQuery.error)} onRetry={() => void projectQuery.refetch()} />
@@ -53,6 +64,15 @@ function PublishSection({ analysisRunId, projectId, targetBranch }: { analysisRu
   const canPublish = hasRole(projectQuery.data.role, 'WRITER')
   const available = proposalsQuery.data.items.filter((item) => item.status === 'AVAILABLE')
   const published = proposalsQuery.data.items.filter((item) => item.status === 'PUBLISHED')
+  const publicationInProgress = pending !== null && !publicationQuery.isError && (publication === undefined || isInProgressPublicationStatus(publication.status))
+  const busy = publishMutation.isPending || publicationInProgress
+  // Sin reintento automático ni botón que reenvíe lo mismo tras un fallo terminal (FAILED/STALE/CLOSED).
+  const endedWithoutPublish = publication !== undefined && isTerminalPublicationStatus(publication.status) && publication.status !== 'PUBLISHED'
+  const showPublishButton = canPublish && !endedWithoutPublish && (busy || available.length > 0)
+  const statusText = publicationInProgress
+    ? `Publicación en curso: ${publication?.status ?? 'PENDING'}…`
+    : publication && isTerminalPublicationStatus(publication.status) ? `Publicación finalizada: ${publication.status}` : ''
+  const publicationUrl = safePublicationUrl(publication?.companionPullRequestUrl)
 
   return <div className="panel">
     <div className="section-heading"><div><h2>Propuestas de prueba</h2><p>{available.length > 0 ? `Freshness verificado contra el HEAD vigente (${proposalsQuery.data.headSha}). Publicar nunca hace merge ni escribe directo en la rama del PR.` : 'Sin propuestas disponibles para publicar en este Run.'}</p></div></div>
@@ -64,24 +84,48 @@ function PublishSection({ analysisRunId, projectId, targetBranch }: { analysisRu
         </li>
       ))}
     </ul>
-    {published.length > 0 && publicationQuery.data && (
-      <div className="panel success-note contract-note">
+    <div className="publication-status" role="status" aria-live="polite">{statusText}</div>
+    <div className="publication-result" ref={resultRef} tabIndex={-1}>
+    {mock && publication && <span className="demo-stamp">DEMO · DATOS SIMULADOS</span>}
+    {publication?.status === 'PUBLISHED' && (
+      <div className="panel success-note contract-note publication-panel">
         <div>
           <strong>Companion PR publicado</strong>
-          <p className="branch-flow-line">Rama <code>{publicationQuery.data.branchName}</code><span aria-hidden="true">→</span><code>{targetBranch}</code></p>
+          <p className="branch-flow-line">Rama <code>{publication.branchName ?? '—'}</code><span aria-hidden="true">→</span><code>{targetBranch}</code></p>
+          {publication.companionPullRequestNumber !== null && (
+            <p>PR companion #{publication.companionPullRequestNumber}{publicationUrl && <> · <a className="publication-url" href={publicationUrl} target="_blank" rel="noopener noreferrer">Abrir en GitHub<span className="visually-hidden"> (se abre en una pestaña nueva)</span></a></>}</p>
+          )}
           <p className="empty-inline-note">Se mergea a la rama que ya vas a mergear a <code>develop</code> — de ahí en adelante lo maneja GitHub.</p>
         </div>
       </div>
     )}
-    {available.length > 0 && canPublish && (
+    {published.length > 0 && pending === null && (publication === undefined || publication.status !== 'PUBLISHED') && (
+      <div className="panel success-note contract-note publication-panel"><p className="empty-inline-note">Las propuestas ya fueron publicadas en un companion PR.</p></div>
+    )}
+    {publication?.status === 'FAILED' && (
+      <div className="structured-error publication-alert" role="alert"><strong>Publicación fallida</strong><p>{publication.failureMessage ?? 'Core no indicó el motivo del fallo.'}</p><p className="publication-next-step">Revisa el motivo; Core no reintenta automáticamente. Cuando el problema se corrija, vuelve a abrir el Run o espera el siguiente HEAD del PR.</p></div>
+    )}
+    {publication?.status === 'STALE' && (
+      <div className="structured-error publication-alert" role="alert"><strong>Publicación obsoleta (STALE)</strong><p>El HEAD del PR cambió y el Run vigente es otro, así que estas propuestas no se publican desde este Run. Console no reintenta automáticamente.</p>{publication.failureMessage && <p>{publication.failureMessage}</p>}<p className="publication-next-step">El HEAD del PR cambió: abre el Run vigente del Pull Request para publicar sus propuestas.</p></div>
+    )}
+    {publication?.status === 'CLOSED' && (
+      <div className="structured-error publication-alert" role="alert"><strong>Companion PR cerrado</strong>{publication.failureMessage && <p>{publication.failureMessage}</p>}<p className="publication-next-step">El companion PR se cerró y no se reabre.</p></div>
+    )}
+    </div>
+    {publicationQuery.isError && <p className="inline-error" role="alert">No se pudo consultar el estado de la publicación. Recarga la página para verlo.</p>}
+    {showPublishButton && (
       <div className="run-actions">
         <button
+          ref={publishButtonRef}
           type="button"
           className="button primary"
-          disabled={publishMutation.isPending}
-          onClick={() => publishMutation.mutate({ proposalIds: available.map((item) => item.id) }, { onSuccess: (accepted) => setPublicationId(accepted.publicationId) })}
+          aria-disabled={busy ? 'true' : undefined}
+          onClick={() => {
+            if (busy || available.length === 0) return
+            publishMutation.mutate({ proposalIds: available.map((item) => item.id) }, { onSuccess: (accepted) => setPending({ publicationId: accepted.publicationId, pollAfterMs: accepted.pollAfterMs }) })
+          }}
         >
-          {publishMutation.isPending ? 'Publicando…' : `Publicar ${available.length} propuesta(s)`}
+          {busy ? 'Publicando…' : `Publicar ${available.length} propuesta(s)`}
         </button>
       </div>
     )}

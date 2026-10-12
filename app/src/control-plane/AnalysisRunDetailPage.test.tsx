@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, test } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
@@ -30,7 +30,8 @@ test('HU39/HU40: un Run SUCCESS lista propuestas AVAILABLE y publica un companio
   expect(screen.getByText('rag-tests/pr-45-e5e5e5e')).toBeInTheDocument()
   expect(screen.getAllByText('feature/rounding-mode').length).toBeGreaterThanOrEqual(2)
   expect(screen.getByText(/Se mergea a la rama que ya vas a mergear/)).toBeInTheDocument()
-  expect(screen.getAllByText('PUBLISHED')).toHaveLength(3)
+  // Las propuestas se refrescan al llegar la publicación a terminal (no en el POST).
+  await waitFor(() => expect(screen.getAllByText('PUBLISHED')).toHaveLength(3))
 })
 
 test('HU32: un Run ACTION_REQUIRED enlaza a Focus Mode con returnTo de vuelta al Run', async () => {

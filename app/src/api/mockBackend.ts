@@ -152,6 +152,15 @@ const githubAppAccessVerifications = new Map<string, number>()
 const analysisRuns = new Map<string, AnalysisRunDetailResponse>()
 const testProposals = new Map<string, GeneratedTestProposalResponse[]>()
 const testPublications = new Map<string, TestPublicationResponse>()
+/** DEMO · trabajo de publicación simulado por `publicationId`: propuestas afectadas y terminal previsto. */
+type DemoPublicationOutcome = 'PUBLISHED' | 'FAILED' | 'STALE'
+const publicationJobs = new Map<string, { proposalIds: string[]; outcome: DemoPublicationOutcome }>()
+/** DEMO · escenarios no exitosos fijados por Run (deterministas). Su `failureMessage` va rotulado «DEMO · DATOS SIMULADOS». */
+const DEMO_PUBLICATION_OUTCOME_BY_RUN: Partial<Record<string, DemoPublicationOutcome>> = {
+  arun_checkout_pr49: 'FAILED',
+  arun_billing_pr17_2: 'STALE',
+}
+const DEMO_PUBLICATION_LABEL = 'DEMO · DATOS SIMULADOS'
 const functionalKnowledge = new Map<string, FunctionalKnowledgeResponse>()
 /** PROPUESTA — HU49, ver run-comparison/speculative/captureNextPr.ts. Estado por proyecto, no global: "el próximo PR elegible" se arma sobre el repositorio vinculado a un proyecto puntual. */
 const captureNextPrStates = new Map<string, CaptureNextPrState>()
@@ -883,6 +892,7 @@ export function resetMockBackend(): void {
   analysisRuns.clear()
   testProposals.clear()
   testPublications.clear()
+  publicationJobs.clear()
   functionalKnowledge.clear()
   captureNextPrStates.clear()
   captureNextPrSeq = 0
@@ -2256,27 +2266,28 @@ export async function mockListTestProposals(analysisRunId: string): Promise<Gene
   return clone({ analysisRunId, headSha: run.pullRequest.headSha, items })
 }
 
-/** HU40: `POST /analysis-runs/{analysisRunId}/test-publications`. Simplificación de demo: publica de inmediato (`PUBLISHED`) en vez de simular un job asíncrono adicional — el companion PR mock ya está listo en la primera consulta de `mockGetTestPublication`. */
+/** HU40: `POST /analysis-runs/{analysisRunId}/test-publications`. Devuelve `202` con la publicación en `PENDING`; el progreso se observa por `mockGetTestPublication` (ver `advanceDemoPublication`). */
 export async function mockCreateTestPublication(analysisRunId: string, input: CreateTestPublicationRequest): Promise<TestPublicationAcceptedResponse> {
   await latency()
   const run = findVisibleRun(analysisRunId)
   if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   requireProjectRole(run.projectId, 'WRITER')
-  if (run.status !== 'SUCCESS') throw new ApiError('Solo un Run SUCCESS admite publicación.', 409, 'demo-correlation-id', 'RUN_NOT_PUBLISHABLE')
+  if (run.status !== 'SUCCESS') throw new ApiError('Solo un Run SUCCESS admite publicación.', 409, 'demo-correlation-id', 'TEST_PUBLICATION_INVALID_RUN_STATUS')
   const proposals = testProposals.get(analysisRunId) ?? []
   const selected = proposals.filter((proposal) => input.proposalIds.includes(proposal.id))
   if (selected.length === 0 || selected.some((proposal) => proposal.status !== 'AVAILABLE')) {
-    throw new ApiError('Las propuestas seleccionadas ya no están disponibles para publicar.', 409, 'demo-correlation-id', 'PROPOSAL_NOT_AVAILABLE')
+    throw new ApiError('Las propuestas seleccionadas ya no están disponibles para publicar.', 422, 'demo-correlation-id', 'TEST_PUBLICATION_PROPOSAL_NOT_AVAILABLE')
   }
-  selected.forEach((proposal) => { proposal.status = 'PUBLISHED' })
   sequence += 1
   const publicationId = `pub_demo_${sequence}`
   const createdAt = nowIso()
+  // Las propuestas pasan a PUBLISHED solo en el terminal exitoso (ver advanceDemoPublication).
+  publicationJobs.set(publicationId, { proposalIds: selected.map((proposal) => proposal.id), outcome: DEMO_PUBLICATION_OUTCOME_BY_RUN[analysisRunId] ?? 'PUBLISHED' })
   const publication: TestPublicationResponse = {
     id: publicationId,
     analysisRunId,
     sourceHeadSha: run.pullRequest.headSha,
-    status: 'PUBLISHED',
+    status: 'PENDING',
     branchName: `rag-tests/pr-${run.pullRequest.number}-${run.pullRequest.headSha.slice(0, 7)}`,
     companionPullRequestNumber: run.pullRequest.number + 100,
     companionPullRequestUrl: `https://github.com/${run.pullRequest.repositoryName}/pull/${run.pullRequest.number + 100}`,
@@ -2288,13 +2299,41 @@ export async function mockCreateTestPublication(analysisRunId: string, input: Cr
   return { status: 'PENDING', pollAfterMs: 300, publicationId, analysisRunId }
 }
 
-/** HU40: `GET /test-publications/{publicationId}`. */
+/**
+ * HU40: `GET /test-publications/{publicationId}`. Transición determinista por lecturas: la primera lectura pasa
+ * `PENDING` → `PUBLISHING`; la siguiente llega al terminal según el escenario del Run (`PUBLISHED` por defecto).
+ */
 export async function mockGetTestPublication(publicationId: string): Promise<TestPublicationResponse> {
   await latency()
   const publication = testPublications.get(publicationId)
-  if (!publication) notFound(`No existe la publicación demo "${publicationId}".`, 'PUBLICATION_NOT_FOUND')
+  if (!publication) notFound(`No existe la publicación demo "${publicationId}".`, 'TEST_PUBLICATION_NOT_FOUND')
   hideRunOfDeletedProject(publication.analysisRunId)
+  advanceDemoPublication(publication)
   return clone(publication)
+}
+
+function advanceDemoPublication(publication: TestPublicationResponse): void {
+  const job = publicationJobs.get(publication.id)
+  if (!job) return
+  if (publication.status === 'PENDING') {
+    publication.status = 'PUBLISHING'
+    publication.updatedAt = nowIso()
+    return
+  }
+  if (publication.status !== 'PUBLISHING') return
+  publication.updatedAt = nowIso()
+  if (job.outcome === 'PUBLISHED') {
+    publication.status = 'PUBLISHED'
+    publication.failureMessage = null
+    testProposals.get(publication.analysisRunId)?.forEach((proposal) => {
+      if (job.proposalIds.includes(proposal.id)) proposal.status = 'PUBLISHED'
+    })
+    return
+  }
+  publication.status = job.outcome
+  publication.failureMessage = job.outcome === 'FAILED'
+    ? `${DEMO_PUBLICATION_LABEL}: el job de publicación falló al crear la rama de pruebas.`
+    : `${DEMO_PUBLICATION_LABEL}: el HEAD del PR cambió antes de publicar; la publicación quedó obsoleta.`
 }
 
 /** HU35/HU36: `GET /projects/{projectId}/functional-knowledge?status&cursor&limit`. */

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { ApiError } from '../api/client'
 import { isMockDataSource } from '../api/dataSource'
@@ -12,6 +13,7 @@ import {
   getGitHubAppAccess,
   getGitHubAppInfo,
   getRepositoryBinding,
+  getTestPublication,
   listAnalysisRuns,
   listAllAnalysisRuns,
   listGitHubRepositoryBranches,
@@ -20,7 +22,14 @@ import {
   verifyGitHubAppAccess,
 } from './api'
 import { isTraceNotFinished, shouldRetryOperationalTrace } from './operationalTraceErrors'
-import type { AnalysisRunStatus, CreateRepositoryBindingRequest, CreateTestPublicationRequest, VerifyGitHubAppAccessRequest } from './types'
+import type {
+  AnalysisRunStatus,
+  CreateRepositoryBindingRequest,
+  CreateTestPublicationRequest,
+  TestPublicationResponse,
+  TestPublicationStatus,
+  VerifyGitHubAppAccessRequest,
+} from './types'
 
 export const controlPlaneKeys = {
   binding: (projectId: string) => ['control-plane', 'binding', projectId] as const,
@@ -33,6 +42,66 @@ export const controlPlaneKeys = {
   run: (analysisRunId: string) => ['control-plane', 'run', analysisRunId] as const,
   proposals: (analysisRunId: string) => ['control-plane', 'proposals', analysisRunId] as const,
   trace: (analysisRunId: string) => ['control-plane', 'trace', analysisRunId] as const,
+  publication: (publicationId: string) => ['control-plane', 'publication', publicationId] as const,
+}
+
+/** Estados terminales de `TestPublication` (INTEROP §5: permanecen consultables; no se vuelve a sondear). */
+export function isTerminalPublicationStatus(status: TestPublicationStatus | null | undefined): boolean {
+  return status === 'PUBLISHED' || status === 'FAILED' || status === 'STALE' || status === 'CLOSED'
+}
+
+/** Estados en curso: la publicación sigue en Core y conviene sondearla. */
+export function isInProgressPublicationStatus(status: TestPublicationStatus | null | undefined): boolean {
+  return status === 'PENDING' || status === 'PUBLISHING'
+}
+
+const PUBLICATION_POLL_FALLBACK_MS = 2000
+const PUBLICATION_POLL_TEST_MS = 10
+const PUBLICATION_MAX_NETWORK_RETRIES = 2
+
+/**
+ * Intervalo de sondeo de una publicación. `false` (sin intervalo) en terminal o tras un error; en curso usa
+ * `pollAfterMs` del `202` si es un número positivo, y si no el fallback. En tests, intervalo corto como el resto de polling.
+ */
+export function publicationPollIntervalMs(
+  state: { status?: TestPublicationStatus | null; hasError: boolean; pollAfterMs?: number | null },
+  testMode = import.meta.env.MODE === 'test',
+): number | false {
+  if (state.hasError || isTerminalPublicationStatus(state.status)) return false
+  if (testMode) return PUBLICATION_POLL_TEST_MS
+  return typeof state.pollAfterMs === 'number' && state.pollAfterMs > 0 ? state.pollAfterMs : PUBLICATION_POLL_FALLBACK_MS
+}
+
+/** Consulta `GET /test-publications/{publicationId}` con sondeo derivado del estado; no reintenta errores 4xx de dominio. */
+export function usePublication(publicationId: string | null | undefined, pollAfterMs?: number | null) {
+  return useQuery({
+    queryKey: controlPlaneKeys.publication(publicationId ?? ''),
+    queryFn: () => getTestPublication(publicationId as string),
+    enabled: Boolean(publicationId),
+    retry: (failureCount, error) => {
+      if (error instanceof ApiError && error.status >= 400 && error.status < 500) return false
+      return failureCount < PUBLICATION_MAX_NETWORK_RETRIES
+    },
+    refetchInterval: (query) =>
+      publicationPollIntervalMs({ status: query.state.data?.status, hasError: query.state.error !== null, pollAfterMs }),
+  })
+}
+
+/**
+ * Al llegar la publicación a terminal invalida propuestas y Run una sola vez por `publicationId`
+ * (no en el POST: el estado todavía no es definitivo).
+ */
+export function useRefreshOnPublicationTerminal(analysisRunId: string, publication: TestPublicationResponse | undefined) {
+  const queryClient = useQueryClient()
+  const refreshedFor = useRef<string | null>(null)
+  const publicationId = publication?.id ?? null
+  const status = publication?.status
+  useEffect(() => {
+    if (!publicationId || !isTerminalPublicationStatus(status) || refreshedFor.current === publicationId) return
+    refreshedFor.current = publicationId
+    void queryClient.invalidateQueries({ queryKey: controlPlaneKeys.proposals(analysisRunId) })
+    void queryClient.invalidateQueries({ queryKey: controlPlaneKeys.run(analysisRunId) })
+  }, [analysisRunId, publicationId, status, queryClient])
 }
 
 export function useRepositoryBinding(projectId: string) {
@@ -172,9 +241,13 @@ export function usePublishTests(analysisRunId: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (input: CreateTestPublicationRequest) => createTestPublication(analysisRunId, input),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: controlPlaneKeys.proposals(analysisRunId) })
-      void queryClient.invalidateQueries({ queryKey: controlPlaneKeys.run(analysisRunId) })
+    // El POST solo acepta la publicación (202 PENDING): propuestas y Run se invalidan al llegar a terminal (ver useRefreshOnPublicationTerminal).
+    onError: (error) => {
+      // 409/422 de dominio: las propuestas o el Run cambiaron; se relee para mostrar lo real.
+      if (error instanceof ApiError && (error.code === 'TEST_PUBLICATION_PROPOSAL_NOT_AVAILABLE' || error.code === 'TEST_PUBLICATION_INVALID_RUN_STATUS')) {
+        void queryClient.invalidateQueries({ queryKey: controlPlaneKeys.proposals(analysisRunId) })
+        void queryClient.invalidateQueries({ queryKey: controlPlaneKeys.run(analysisRunId) })
+      }
     },
   })
 }

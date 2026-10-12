@@ -397,6 +397,8 @@ describe('control-plane api (mock) — HU39/HU40 propuestas y companion PR', () 
     expect(set.items.every((item) => item.status === 'AVAILABLE')).toBe(true)
 
     const accepted = await createTestPublication('arun_checkout_pr45', { proposalIds: set.items.map((item) => item.id) })
+    // El mock transita PENDING → PUBLISHING → PUBLISHED por lecturas (el POST solo devuelve 202).
+    expect((await getTestPublication(accepted.publicationId)).status).toBe('PUBLISHING')
     const publication = await getTestPublication(accepted.publicationId)
     expect(publication.status).toBe('PUBLISHED')
     expect(publication.companionPullRequestUrl).toContain('acme/checkout-service/pull/')

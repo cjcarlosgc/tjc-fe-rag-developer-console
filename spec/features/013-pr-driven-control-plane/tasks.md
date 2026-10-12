@@ -21,4 +21,6 @@
 
 - [x] **ST-CONSOLE-033 · T-DONE · WI-CONSOLE-031 · HU01, HU11, HU14, HU15:** sincronizar INTEROP-2.9 y SYSTEM desde el Contract Sync de WI-CORE-045 (`CS-CORE-20261012-005`): espejar byte a byte, tratar `404 FUNCTIONAL_QUESTION_NOT_FOUND` al responder como pregunta obsoleta y no asumir consultable un `continuationAttemptId` no nulo; sin DTO, rutas ni live; no reanuda WI-CONSOLE-004. Aprobación: `harness/reports/wi-console-031-scope-approval.md`.
 
+- [x] **ST-CONSOLE-034 · T-DONE · WI-CONSOLE-032 · HU12, HU16:** publicar tests con seguimiento de la publicación asíncrona: guardar `publicationId` del `202`, consultar `GET /test-publications/{id}` hasta estado terminal, mostrar companion PR/rama/fallo, bloquear duplicados y simular PENDING/PUBLISHED/FAILED en el mock; sin DTO, rutas ni contrato. Aprobación: `harness/reports/wi-console-032-scope-approval.md`.
+
 La implementación antigua y sus IDs HU se conservan en `CHANGELOG.md`, `harness/reports/` y Git, no como backlog ejecutable actual.
