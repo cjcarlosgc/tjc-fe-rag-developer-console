@@ -2,7 +2,7 @@
 
 **Estado:** aprobado como comportamiento objetivo; aceptación de cada HU requiere evidencia propia.
 **Historias:** HU01, HU02, HU07–HU09, HU12–HU16
-**Contrato operativo:** SYSTEM-2.6 / INTEROP-2.7 / GH-INTEROP-1.2.
+**Contrato operativo vigente:** SYSTEM-2.8 / INTEROP-2.8 / GH-INTEROP-1.7.
 
 ## Objetivo
 

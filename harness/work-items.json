@@ -1396,7 +1396,7 @@
       "id": "WI-CONSOLE-020",
       "component": "CONSOLE",
       "workItemType": "PRODUCT",
-      "status": "W-IN_PROGRESS",
+      "status": "W-DONE",
       "priority": "P1",
       "sprint": "SMART V3",
       "title": "Activar y verificar los adapters live de SMART V3",
@@ -1604,6 +1604,225 @@
           "disposition": "NOT_RELEVANT",
           "reason": "El evento cubre workspaces, membresia y eventos organizacionales; WI-CONSOLE-021 adopta lo implementado por Core en experimentos OE5, comparacion OE2, trace y espejos, sin cambiar esas areas.",
           "report": "harness/reports/wi-console-021-contract-sync-scope-review.md"
+        }
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-022",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "title": "Adoptar la sincronización de contratos Core 2026-10-11 sin cambios de UI",
+      "storyIds": [
+        "HU01"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-024"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": true,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/system-contract.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/github-integration-contract.md"
+      ],
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Cubre lifecycle de binding; WI-CONSOLE-022 solo adopta contratos sin cambiar bindings, UI ni endpoints.",
+          "report": "harness/reports/wi-console-022-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Cubre workspaces y roles; WI-CONSOLE-022 solo adopta contratos sin cambiar autorización o interfaz.",
+          "report": "harness/reports/wi-console-022-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Cubre autenticación; WI-CONSOLE-022 no cambia login, sesión, tokens ni el cliente HTTP.",
+          "report": "harness/reports/wi-console-022-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Cubre membresía y eventos organizacionales; WI-CONSOLE-022 no altera Projects ni visibilidad.",
+          "report": "harness/reports/wi-console-022-contract-sync-scope-review.md"
+        }
+      ],
+      "acceptanceCriteria": [
+        "Los espejos SYSTEM-2.7, INTEROP-2.8 y GH-INTEROP-1.5 coinciden byte a byte con Core 7789f54fe0bc65faf37576f8562e844d826e98ac y sus SHA-256 quedan en el reporte.",
+        "CS-CORE-20261011-001 y CS-CORE-20261011-004 se importan y resuelven con evidencia local; el estado no declara cambios de UI, endpoint o DTO.",
+        "Se conserva un repositoryId por Project, no se añade selector de Project/aplicación y projectRoot solo puede exponerse como dato informativo en una vista técnica existente."
+      ],
+      "specPaths": [
+        "spec/contracts/system-contract.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/github-integration-contract.md",
+        "spec/README.md",
+        "spec/constitution/architecture.md",
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-022-contract-sync.md"
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-023",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "title": "Sincronizar GH-INTEROP-1.6 desde Core sin cambios de producto",
+      "storyIds": [
+        "HU14",
+        "HU15"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-025"
+      ],
+      "caseIds": [],
+      "dependsOn": [
+        "WI-CONSOLE-022"
+      ],
+      "contractImpact": true,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/system-contract.md",
+        "spec/contracts/github-integration-contract.md"
+      ],
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Cubre lifecycle de binding; WI-CONSOLE-023 solo adopta contratos de Check sin cambiar bindings, UI ni endpoints.",
+          "report": "harness/reports/wi-console-022-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Cubre workspaces y roles; WI-CONSOLE-023 solo adopta contratos de Check sin cambiar autorización o interfaz.",
+          "report": "harness/reports/wi-console-022-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Cubre autenticación; WI-CONSOLE-023 no cambia login, sesión, tokens ni el cliente HTTP.",
+          "report": "harness/reports/wi-console-022-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Cubre membresía y eventos organizacionales; WI-CONSOLE-023 no altera Projects ni visibilidad.",
+          "report": "harness/reports/wi-console-022-contract-sync-scope-review.md"
+        }
+      ],
+      "acceptanceCriteria": [
+        "Los espejos SYSTEM y GH-INTEROP-1.6 coinciden byte a byte con Core 4246685534bfdbb2de631c526cebce6ebb51ac99; el reporte conserva ambos SHA-256.",
+        "CS-CORE-20261011-005 se resuelve con evidencia local y sin declarar implementación de la conducta 422/reconciliación en Console.",
+        "No se modifica app/, UI, endpoints, DTOs, selectores de Project/aplicación, despliegue ni cutover."
+      ],
+      "specPaths": [
+        "spec/contracts/system-contract.md",
+        "spec/contracts/github-integration-contract.md",
+        "spec/README.md",
+        "spec/constitution/architecture.md",
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-023-sdd-verification.md",
+        "harness/reports/wi-console-023-implementation.md",
+        "harness/reports/wi-console-023-contract-review.md",
+        "harness/reports/wi-console-023-review.md",
+        "harness/reports/wi-console-023-closure.md"
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-024",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "title": "Sincronizar SYSTEM-2.8 y GH-INTEROP-1.7 desde Core sin cambios de producto",
+      "storyIds": [
+        "HU14",
+        "HU15"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-026"
+      ],
+      "caseIds": [],
+      "dependsOn": [
+        "WI-CONSOLE-023"
+      ],
+      "contractImpact": true,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/system-contract.md",
+        "spec/contracts/github-integration-contract.md"
+      ],
+      "acceptanceCriteria": [
+        "Los espejos SYSTEM-2.8 y GH-INTEROP-1.7 coinciden byte a byte con Core 313f560d405a582cd549255e27d5630bd668ad7e.",
+        "CS-CORE-20261011-006 se acusa como recepción y solo se resuelve con evidencia de cierre local.",
+        "No se modifica app/, UI, endpoints, DTOs, selectores, despliegue ni cutover."
+      ],
+      "specPaths": [
+        "spec/contracts/system-contract.md",
+        "spec/contracts/github-integration-contract.md",
+        "spec/README.md",
+        "spec/constitution/architecture.md",
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-024-implementation.md",
+        "harness/reports/wi-console-024-contract-review.md",
+        "harness/reports/wi-console-024-review.md",
+        "harness/reports/wi-console-024-closure.md"
+      ],
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Cubre lifecycle de binding; WI-CONSOLE-023 solo adopta contratos de Check sin cambiar bindings, UI ni endpoints.",
+          "report": "harness/reports/wi-console-022-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Cubre workspaces y roles; WI-CONSOLE-023 solo adopta contratos de Check sin cambiar autorización o interfaz.",
+          "report": "harness/reports/wi-console-022-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Cubre autenticación; WI-CONSOLE-023 no cambia login, sesión, tokens ni el cliente HTTP.",
+          "report": "harness/reports/wi-console-022-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "Cubre membresía y eventos organizacionales; WI-CONSOLE-023 no altera Projects ni visibilidad.",
+          "report": "harness/reports/wi-console-022-contract-sync-scope-review.md"
         }
       ]
     }
