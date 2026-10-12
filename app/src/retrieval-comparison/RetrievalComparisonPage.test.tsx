@@ -170,14 +170,15 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     const user = userEvent.setup()
     renderPage(MULTI_RUN)
     const list = await screen.findByRole('list', { name: 'Comparaciones previas del Run' })
-    expect(within(list).getAllByRole('listitem')).toHaveLength(6)
-    expect(within(list).getAllByRole('button', { name: /Ver resultado/ })).toHaveLength(3)
+    // WI-CONSOLE-030 (C1): la semilla PHP ya no cuelga de arun_checkout_pr49 (vive en arun_php_pr7): 5 previas, 2 COMPLETED.
+    expect(within(list).getAllByRole('listitem')).toHaveLength(5)
+    expect(within(list).getAllByRole('button', { name: /Ver resultado/ })).toHaveLength(2)
     expect(screen.getByText('Estado: Fallida (FAILED)')).toBeInTheDocument()
 
     await user.selectOptions(screen.getByLabelText('Símbolo a comparar'), FORMAT_CURRENCY)
     await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
-    // La nueva comparación se añade a las seis previas (incluida la semilla PHP); ninguna se reemplaza.
-    await waitFor(() => expect(within(screen.getByRole('list', { name: 'Comparaciones previas del Run' })).getAllByRole('listitem')).toHaveLength(7), { timeout: 5000 })
+    // La nueva comparación se añade a las cinco previas; ninguna se reemplaza.
+    await waitFor(() => expect(within(screen.getByRole('list', { name: 'Comparaciones previas del Run' })).getAllByRole('listitem')).toHaveLength(6), { timeout: 5000 })
   })
 
   it.each([
@@ -291,5 +292,30 @@ describe('WI-CONSOLE-017: descarga de evidencia en la comparación de retrieval'
 
     expect(await screen.findByRole('heading', { name: /Resultado de/ }, { timeout: 5000 })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Descargar evidencia (JSON)' })).toBeInTheDocument()
+  })
+})
+
+// WI-CONSOLE-030 (C1/C4): Runs PHP demo de team-sandbox, sin overrides (el 422 sale del mock real).
+const PHP_COUPON_APPLY = 'app/Services/CouponService.php::CouponService::apply'
+const SHOP_PHP_RUN = '/projects/prj_shop_php_demo/runs/arun_php_pr7/retrieval-comparison'
+const LEGACY_PHP_RUN = '/projects/prj_legacy_php_demo/runs/arun_legacy_php_pr3/retrieval-comparison'
+
+describe('RetrievalComparisonPage (WI-CONSOLE-030, C1/C4)', () => {
+  it('C1: el Run shop-php-demo lista la semilla PHP rcmp_demo_seed_php como COMPLETED con «Ver resultado»', async () => {
+    renderPage(SHOP_PHP_RUN)
+    const list = await screen.findByRole('list', { name: 'Comparaciones previas del Run' })
+    const seed = within(list).getAllByRole('listitem').find((item) => item.textContent?.includes('rcmp_demo_seed_php'))
+    expect(seed).toBeDefined()
+    expect(within(seed!).getByText('Estado: Completada (COMPLETED)')).toBeInTheDocument()
+    expect(within(seed!).getByRole('button', { name: /Ver resultado/ })).toBeInTheDocument()
+  })
+
+  it('C4: legacy-php-admin (PHP sin PHPUnit) muestra UNSUPPORTED_PROJECT al comparar, sin crear resultado', async () => {
+    const user = userEvent.setup()
+    renderPage(LEGACY_PHP_RUN)
+    await user.selectOptions(await screen.findByLabelText('Símbolo a comparar'), PHP_COUPON_APPLY)
+    await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
+    expect(await screen.findByText(UNSUPPORTED_PROJECT_MESSAGE)).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { level: 2, name: /Resultado de/ })).not.toBeInTheDocument()
   })
 })

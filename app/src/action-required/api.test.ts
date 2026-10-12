@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '../api/client'
-import { resetMockBackend } from '../api/mockBackend'
+import { resetMockBackend, setMockFunctionalKnowledgeScenarioForTests } from '../api/mockBackend'
 import { setDataSourceForTests } from '../api/dataSource'
 import { getAnalysisRun, listTestProposals } from '../control-plane/api'
 import { getContextQuestionSet, listActionRequired, listAllActionRequired, listFunctionalKnowledge, submitFunctionalAnswer } from './api'
@@ -256,5 +256,43 @@ describe('action-required api (live) — HU35-38, Core ya lo implementó (INTERO
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(page), { status: 200 }))
     await expect(listFunctionalKnowledge('prj_real', 'ACTIVE')).resolves.toEqual(page)
     expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/\/projects\/prj_real\/functional-knowledge\?status=ACTIVE$/), expect.anything())
+  })
+})
+
+// WI-CONSOLE-030 (C3, DEC-FK-001 / INTEROP-2.7 §6.11): el conflicto exige scope + targetRef + scenarioKey exactos.
+describe('action-required api (mock) — WI-CONSOLE-030 C3, conflicto por scope + targetRef + scenarioKey', () => {
+  it('con la misma clave (shipping.validate.zones) hay 409 y la regla en conflicto es la de esa clave exacta', async () => {
+    const error = await submitFunctionalAnswer('arun_checkout_pr52', 'fq_checkout_pr52_1', { choice: 'YES', answer: 'sí' }).catch((reason: unknown) => reason) as ApiError
+    expect(error).toBeInstanceOf(ApiError)
+    expect(error.status).toBe(409)
+    expect(error.code).toBe('FUNCTIONAL_KNOWLEDGE_CONFLICT')
+    const details = error.details as { conflictingKnowledge: { id: string; scenarioKey: string; targetRef: string; scope: string } }
+    expect(details.conflictingKnowledge).toMatchObject({ id: 'fk_shipping_zone', scenarioKey: 'shipping.validate.zones', targetRef: 'ShippingAddressValidator.validate', scope: 'METHOD' })
+  })
+
+  it('coexistencia: una regla ACTIVE del mismo target con otro scenarioKey no es conflicto; la respuesta se persiste como ACTIVE sin supersedesId', async () => {
+    setMockFunctionalKnowledgeScenarioForTests('fk_shipping_zone', { scenarioKind: 'BOUNDARY', scenarioKey: 'shipping.validate.other' })
+
+    const accepted = await submitFunctionalAnswer('arun_checkout_pr52', 'fq_checkout_pr52_1', { choice: 'YES', answer: 'sí' })
+    expect(accepted.outcome).toBe('ANSWERED')
+    expect(accepted.knowledgeId).not.toBeNull()
+
+    const rules = await listFunctionalKnowledge('prj_checkout_demo', 'ACTIVE')
+    expect(rules.items.find((item) => item.id === 'fk_shipping_zone')?.status).toBe('ACTIVE')
+    const persisted = rules.items.find((item) => item.id === accepted.knowledgeId)
+    expect(persisted).toMatchObject({
+      status: 'ACTIVE', supersedesId: null, scope: 'METHOD', targetRef: 'ShippingAddressValidator.validate',
+      scenarioKind: 'EXPECTED_RESULT', scenarioKey: 'shipping.validate.zones',
+    })
+  })
+
+  it('LEGACY y null no coinciden con una clave derivada: la regla con LEGACY o sin clave no genera 409', async () => {
+    setMockFunctionalKnowledgeScenarioForTests('fk_shipping_zone', { scenarioKind: null, scenarioKey: 'LEGACY' })
+    await expect(submitFunctionalAnswer('arun_checkout_pr52', 'fq_checkout_pr52_1', { choice: 'YES', answer: 'sí' })).resolves.toMatchObject({ outcome: 'ANSWERED' })
+
+    // Reinicio: regla con scenarioKey null (sin procedencia) tampoco coincide.
+    resetMockBackend()
+    setMockFunctionalKnowledgeScenarioForTests('fk_shipping_zone', { scenarioKey: null })
+    await expect(submitFunctionalAnswer('arun_checkout_pr52', 'fq_checkout_pr52_1', { choice: 'YES', answer: 'sí' })).resolves.toMatchObject({ outcome: 'ANSWERED' })
   })
 })

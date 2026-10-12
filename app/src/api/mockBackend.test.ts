@@ -4,8 +4,13 @@ import { getExperiment, startExperiment } from '../experiments/api'
 import { getTestInventory } from '../inventory/api'
 import { createProject, listProjects } from '../projects/api'
 import { setDataSourceForTests } from './dataSource'
-import { mockGetEvidence, resetMockBackend } from './mockBackend'
+import { mockGetEvidence, mockGetRepositoryBinding, resetMockBackend, DEMO_RETRIEVAL_PHP_COMPARISON_ID } from './mockBackend'
 import { UNSUPPORTED_PROJECT_MESSAGE } from '../control-plane/errors'
+import { getAnalysisRun } from '../control-plane/api'
+import { listRetrievalComparisons, startRetrievalComparison } from '../retrieval-comparison/api'
+import { ApiError } from './client'
+
+const KEY_A = '3f1c2d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f'
 
 test('conserva historial e inventarios internos sin requests HTTP', async () => {
   setDataSourceForTests('mock')
@@ -109,4 +114,116 @@ test.each([
   resetMockBackend()
   const project = 'prj_checkout_demo'
   await expect(startExperiment(project, targetId, crypto.randomUUID())).rejects.toMatchObject({ status, code, details })
+})
+
+// WI-CONSOLE-030 (C1/C4): Projects PHP demo en team-sandbox (2000003, ADMIN).
+test('WI-CONSOLE-030 (C1): team-sandbox lista shop-php-demo (PHP con PHPUnit) y legacy-php-admin', async () => {
+  setDataSourceForTests('mock')
+  resetMockBackend()
+
+  const projects = (await listProjects('2000003')).items
+  expect(projects.map((project) => project.id).sort()).toEqual(['prj_legacy_php_demo', 'prj_shop_php_demo'])
+  expect(projects.every((project) => project.role === 'ADMIN')).toBe(true)
+
+  const shopHistory = await listAnalysisHistory('prj_shop_php_demo')
+  const shopCurrent = shopHistory.find((version) => version.current)!
+  expect(shopCurrent.id).toBe('ver_shop_php_1')
+  expect(shopCurrent.language).toBe('PHP')
+  expect(shopCurrent.detectedFramework).toBe('PHPUNIT')
+
+  const inventory = await getTestInventory('ver_shop_php_1')
+  expect(inventory.language).toBe('PHP')
+  expect(inventory.detectedFramework).toBe('PHPUNIT')
+  expect(inventory.targetsWithTest + inventory.targetsMissingTest).toBe(inventory.targetsTotal)
+  expect(inventory.targets.every((target) => target.filePath.endsWith('.php'))).toBe(true)
+  expect(inventory.targets.some((target) => target.methodName === 'apply' && target.hasTest)).toBe(true)
+})
+
+test('WI-CONSOLE-030 (C1): el Run PHP arun_php_pr7 trae símbolos PHP y la semilla rcmp_demo_seed_php cuelga de él', async () => {
+  setDataSourceForTests('mock')
+  resetMockBackend()
+
+  const run = await getAnalysisRun('arun_php_pr7')
+  expect(run.projectId).toBe('prj_shop_php_demo')
+  expect(run.status).toBe('SUCCESS')
+  expect(run.symbols.length).toBeGreaterThan(0)
+  expect(run.symbols.every((symbol) => symbol.language === 'PHP')).toBe(true)
+  expect(run.symbols).toContainEqual({ language: 'PHP', kind: 'METHOD', qualifiedName: 'CouponService::apply', filePath: 'app/Services/CouponService.php', changeKind: 'DIRECTLY_CHANGED' })
+  expect(run.symbols.some((symbol) => symbol.changeKind === 'POTENTIALLY_IMPACTED')).toBe(true)
+  expect(run.createdAt < '2026-09-13').toBe(true)
+
+  const comparisons = await listRetrievalComparisons('arun_php_pr7')
+  expect(comparisons.items.map((item) => item.id)).toContain(DEMO_RETRIEVAL_PHP_COMPARISON_ID)
+  expect(comparisons.items.every((item) => item.analysisRunId === 'arun_php_pr7')).toBe(true)
+  // La semilla ya no vive en arun_checkout_pr49.
+  const checkout = await listRetrievalComparisons('arun_checkout_pr49')
+  expect(checkout.items.map((item) => item.id)).not.toContain(DEMO_RETRIEVAL_PHP_COMPARISON_ID)
+})
+
+test('WI-CONSOLE-030 (C4): legacy-php-admin (PHP sin PHPUnit) responde 422 UNSUPPORTED_PROJECT en OE2 y no crea comparación', async () => {
+  setDataSourceForTests('mock')
+  resetMockBackend()
+
+  const legacy = await listProjects('2000003')
+  const legacyProject = legacy.items.find((project) => project.id === 'prj_legacy_php_demo')!
+  expect(legacyProject.currentVersionId).toBe('ver_legacy_php_1')
+  expect((await getTestInventory('ver_legacy_php_1')).detectedFramework).toBeNull()
+
+  const run = await getAnalysisRun('arun_legacy_php_pr3')
+  const symbol = run.symbols[0]
+  const error = await startRetrievalComparison('arun_legacy_php_pr3', symbol, KEY_A).then(() => null, (reason: unknown) => reason)
+  expect(error).toBeInstanceOf(ApiError)
+  expect((error as ApiError).status).toBe(422)
+  expect((error as ApiError).code).toBe('UNSUPPORTED_PROJECT')
+  expect((error as ApiError).message).toBe(UNSUPPORTED_PROJECT_MESSAGE)
+  expect((await listRetrievalComparisons('arun_legacy_php_pr3')).items).toHaveLength(0)
+
+  // El mismo símbolo PHP en el Project con PHPUnit sí se acepta: el 422 depende del framework de la versión, no del lenguaje.
+  const accepted = await startRetrievalComparison('arun_php_pr7', (await getAnalysisRun('arun_php_pr7')).symbols[0], KEY_A)
+  expect(accepted.status).toBe('PENDING')
+})
+
+// WI-CONSOLE-030 (F4): sin framework de pruebas detectado, ningún target del inventario tiene test.
+test('WI-CONSOLE-030 (F4): legacy-php-admin (sin framework) tiene todos los targets sin test y contadores coherentes', async () => {
+  setDataSourceForTests('mock')
+  resetMockBackend()
+
+  const inventory = await getTestInventory('ver_legacy_php_1')
+  expect(inventory.detectedFramework).toBeNull()
+  expect(inventory.targets.length).toBe(inventory.targetsTotal)
+  expect(inventory.targets.every((target) => target.hasTest === false && target.testFilePaths.length === 0)).toBe(true)
+  expect(inventory.targetsWithTest).toBe(0)
+  expect(inventory.targetsMissingTest).toBe(inventory.targetsTotal)
+
+  const legacy = (await listAnalysisHistory('prj_legacy_php_demo')).find((version) => version.current)!
+  expect(legacy.targetsWithTest).toBe(0)
+  expect(legacy.targetsMissingTest).toBe(legacy.targetsTotal)
+})
+
+// WI-CONSOLE-030 (F3): shop-php-demo tiene repositorio vinculado coherente con sus PRs (team-sandbox/demo-api).
+test('WI-CONSOLE-030 (F3): shop-php-demo está vinculado a team-sandbox/demo-api, donde están sus PRs', async () => {
+  setDataSourceForTests('mock')
+  resetMockBackend()
+
+  const binding = await mockGetRepositoryBinding('prj_shop_php_demo')
+  expect(binding).toMatchObject({ projectId: 'prj_shop_php_demo', repositoryId: 'repo_team_sandbox', repositoryName: 'team-sandbox/demo-api', status: 'ENABLED' })
+  expect((await getAnalysisRun('arun_php_pr7')).pullRequest.repositoryName).toBe(binding!.repositoryName)
+})
+
+// WI-CONSOLE-030 (F1): el historial de un Run en cola solo tiene la creación; uno en proceso no declara generación completada.
+test('WI-CONSOLE-030 (F1): historial coherente para Runs QUEUED y PROCESSING', async () => {
+  setDataSourceForTests('mock')
+  resetMockBackend()
+
+  const queued = await getAnalysisRun('arun_checkout_pr53')
+  expect(queued.status).toBe('QUEUED')
+  expect(queued.attemptCount).toBe(0)
+  expect(queued.history?.map((item) => item.toStatus)).toEqual(['QUEUED'])
+  expect(queued.history?.some((item) => item.reason === 'GENERATION_COMPLETED')).toBe(false)
+
+  const processing = await getAnalysisRun('arun_billing_pr25')
+  expect(processing.status).toBe('PROCESSING')
+  expect(processing.history?.at(-1)?.toStatus).toBe('PROCESSING')
+  expect(processing.history?.some((item) => item.reason === 'GENERATION_COMPLETED')).toBe(false)
+  expect(processing.history?.some((item) => item.fromStatus === 'PROCESSING' && item.toStatus === 'PROCESSING')).toBe(false)
 })

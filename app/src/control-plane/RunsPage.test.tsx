@@ -15,11 +15,22 @@ test('HU32: lista todos los Analysis Runs con su badge de estado', async () => {
 
   expect(await screen.findByText('PR #42', { selector: '.pr-ref' })).toBeInTheDocument()
   expect(screen.getAllByText('checkout-service').length).toBeGreaterThan(0)
-  expect(screen.getAllByText('Success')).toHaveLength(6)
+  // WI-CONSOLE-030 (C1/C4): +2 Runs SUCCESS en team-sandbox (arun_php_pr7, arun_legacy_php_pr3) → 8.
+  expect(screen.getAllByText('Success')).toHaveLength(8)
   expect(screen.getByText('Behavioral mismatch')).toBeInTheDocument()
   expect(screen.getByText('Obsolete (HEAD nuevo)')).toBeInTheDocument()
   expect(screen.getByText('NO VIGENTE')).toBeInTheDocument()
-  expect(container.querySelectorAll('.repo-chip')).toHaveLength(17)
+  // WI-CONSOLE-030: 17 Runs previos + 2 PHP de team-sandbox + 2 en curso (QUEUED/PROCESSING, antes solo-trace) = 21.
+  expect(container.querySelectorAll('.repo-chip')).toHaveLength(21)
+})
+
+// WI-CONSOLE-030 (C2): los Runs QUEUED/PROCESSING del mock aparecen en el listado con su estado (etiquetas de status.ts; «Procesando» es el copy existente de PROCESSING).
+test('C2: arun_checkout_pr53 aparece como En cola y arun_billing_pr25 como Procesando en el listado personal', async () => {
+  renderApp(<RunsPage />, { initialEntry: '/analysis-runs?workspaceId=1000001' })
+  expect(await screen.findByText('PR #53', { selector: '.pr-ref' })).toBeInTheDocument()
+  expect(screen.getByText('PR #25', { selector: '.pr-ref' })).toBeInTheDocument()
+  expect(screen.getAllByText('En cola').length).toBeGreaterThan(0)
+  expect(screen.getAllByText('Procesando').length).toBeGreaterThan(0)
 })
 
 test('el workspace personal no mezcla Runs de las organizaciones', async () => {

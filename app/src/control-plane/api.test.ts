@@ -310,18 +310,25 @@ describe('control-plane api (mock) — HU30 repository binding user-centric (INT
 })
 
 describe('control-plane api (mock) — HU32 Analysis Runs, los 16 escenarios', () => {
-  it('lista los 17 Analysis Runs (incluye los escenarios de organizaciones)', async () => {
+  // WI-CONSOLE-030: 21 Runs = 17 previos + arun_php_pr7 y arun_legacy_php_pr3 (team-sandbox) + arun_checkout_pr53 (QUEUED) y arun_billing_pr25 (PROCESSING), estos dos antes fuera de listados.
+  it('lista los 21 Analysis Runs (incluye los escenarios de organizaciones, los Runs PHP y los dos en curso)', async () => {
     const page = await listAnalysisRuns()
-    expect(page.items).toHaveLength(17)
+    expect(page.items).toHaveLength(21)
   })
 
   it('filtra por proyecto y por status', async () => {
     const checkoutRuns = await listAnalysisRuns('prj_checkout_demo')
     expect(checkoutRuns.items.every((run) => run.projectId === 'prj_checkout_demo')).toBe(true)
-    expect(checkoutRuns.items).toHaveLength(7)
+    // WI-CONSOLE-030 (C2): + arun_checkout_pr53 (QUEUED) → 8.
+    expect(checkoutRuns.items).toHaveLength(8)
+    expect(checkoutRuns.items.find((run) => run.id === 'arun_checkout_pr53')?.status).toBe('QUEUED')
+    // WI-CONSOLE-030 (C2): el Run PROCESSING de billing también figura en su listado de proyecto.
+    const billingRuns = await listAnalysisRuns('prj_billing_demo')
+    expect(billingRuns.items.find((run) => run.id === 'arun_billing_pr25')?.status).toBe('PROCESSING')
 
     const successRuns = await listAnalysisRuns(undefined, 'SUCCESS')
-    expect(successRuns.items.map((run) => run.id).sort()).toEqual(['arun_billing_pr17_2', 'arun_billing_pr23', 'arun_checkout_pr45', 'arun_checkout_pr49', 'arun_checkout_pr50', 'arun_org_orders_pr8'])
+    // WI-CONSOLE-030: añade los dos Runs PHP de team-sandbox (SUCCESS).
+    expect(successRuns.items.map((run) => run.id).sort()).toEqual(['arun_billing_pr17_2', 'arun_billing_pr23', 'arun_checkout_pr45', 'arun_checkout_pr49', 'arun_checkout_pr50', 'arun_legacy_php_pr3', 'arun_org_orders_pr8', 'arun_php_pr7'])
   })
 
   it('el par pr17/pr17_2 representa la corrección por HEAD nuevo', async () => {

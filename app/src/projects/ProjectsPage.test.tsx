@@ -254,8 +254,9 @@ test('KPIs reflejan el estado real del workspace demo (2 proyectos, 4 Action Req
   const projectsCard = screen.getByText('Proyectos', { selector: '.kpi-card span' }).closest('.kpi-card')
   expect(projectsCard).toHaveTextContent('2')
 
+  // WI-CONSOLE-030 (C2): los Runs QUEUED/PROCESSING de acme (PR#53 y PR#25) ahora cuentan como PR activos: 13 → 15.
   const activePrCard = screen.getByText('PR activos', { selector: '.kpi-card span' }).closest('.kpi-card')
-  expect(activePrCard).toHaveTextContent('13')
+  expect(activePrCard).toHaveTextContent('15')
 
   const actionRequiredCard = screen.getByText('Action Required', { selector: '.kpi-card span' }).closest('.kpi-card')
   expect(actionRequiredCard).toHaveTextContent('4')
@@ -291,9 +292,11 @@ test('la tarjeta de un proyecto conectado muestra binding, Active PRs, Action Re
   const scope = within(checkoutCard)
   expect(scope.getByText('CONNECTED')).toBeInTheDocument()
   expect(scope.getByText('develop')).toBeInTheDocument()
-  expect(scope.getByText('Active PRs').closest('div')).toHaveTextContent('7')
+  // WI-CONSOLE-030 (C2): arun_checkout_pr53 (QUEUED) suma un PR activo al checkout: 7 → 8.
+  expect(scope.getByText('Active PRs').closest('div')).toHaveTextContent('8')
   expect(scope.getByText('Action Required').closest('div')).toHaveTextContent('2')
-  expect(scope.getByText(/PR #50/, { selector: 'p' })).toBeInTheDocument()
+  // WI-CONSOLE-030 (C2): la última corrida del checkout es ahora el Run en cola PR#53 (createdAt 2026-10-07), no PR#50.
+  expect(scope.getByText(/PR #53/, { selector: 'p' })).toBeInTheDocument()
 })
 
 test('un proyecto sin binding muestra NOT CONNECTED y enlaza a integrations/github', async () => {
@@ -336,7 +339,8 @@ test('"Actividad reciente" enlaza cada Run a su Analysis Run Detail', async () =
   const { container } = renderApp(<ProjectsPage />)
 
   const heading = await screen.findByText('Actividad reciente')
-  expect(container.querySelector('a[href="/projects/prj_checkout_demo/runs/arun_checkout_pr42?workspaceId=1000001"]')).toBeInTheDocument()
+  // WI-CONSOLE-030 (C2): la actividad muestra solo los 6 Runs más recientes del workspace; los dos nuevos (2026-10-07) desplazan a PR#42.
+  expect(container.querySelector('a[href="/projects/prj_billing_demo/runs/arun_billing_pr25?workspaceId=1000001"]')).toBeInTheDocument()
   const section = heading.closest('.panel') as HTMLElement
   expect(within(section).getByRole('link', { name: /Ver todos/ })).toHaveAttribute('href', '/analysis-runs?workspaceId=1000001')
 })

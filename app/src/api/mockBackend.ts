@@ -59,7 +59,7 @@ interface MockContextTraceState {
 /** Usuario demo que registra las abstenciones (solo demo; la UI no muestra identidades de abstención). */
 const MOCK_ACTOR_USER_ID = 'usr_demo_admin'
 
-/** HU37/HU38: preguntas de un `AnalysisRun` (control plane PR-driven), ordenadas — solo una `PENDING` a la vez está vigente. `headChanged` simula que llegó un HEAD nuevo mientras se respondía: la pregunta pasa a `OBSOLETE` en vez de `ANSWERED` y el Run no se reanuda. `conflictQuestionId` (HU51, INTEROP-2.1 §6.11) marca la única pregunta demo cuyo primer envío choca con una `FunctionalKnowledge` `ACTIVE` existente — intencionalmente no es un chequeo genérico por `targetRef`: varias preguntas HU37/38 ya comparten `targetRef` con FK seedeadas y romperían su propio flujo si el conflicto se evaluara siempre. */
+/** HU37/HU38: preguntas de un `AnalysisRun` (control plane PR-driven), ordenadas — solo una `PENDING` a la vez está vigente. `headChanged` simula que llegó un HEAD nuevo mientras se respondía: la pregunta pasa a `OBSOLETE` en vez de `ANSWERED` y el Run no se reanuda. `conflictQuestionId` (HU51, INTEROP-2.7 §6.11, DEC-FK-001) marca la única pregunta demo cuyo primer envío choca con una `FunctionalKnowledge` `ACTIVE` existente — intencionalmente no es un chequeo genérico por `targetRef`: varias preguntas HU37/38 ya comparten `targetRef` y `scenarioKey` con FK seedeadas y romperían su propio flujo si el conflicto se evaluara siempre. */
 interface MockActionRequiredRunState {
   analysisRunId: string
   projectId: string
@@ -130,8 +130,11 @@ const DEMO_RETRIEVAL_PHP_CANDIDATES: DemoRetrievalCandidate[] = [
   { chunkId: 'chk_demo_php_semantic', filePath: 'app/Support/Money.php', symbolQualifiedName: 'Money::format', semanticScore: 0.713, structuralRelation: null, combinedScore: 0.498 },
 ]
 
-/** DEMO · id de la semilla PHP de OE2 (`rcmp_demo_seed_php`): COMPLETED con relaciones SAME_NAMESPACE, FULLY_QUALIFIED_REFERENCE y DECLARING_CLASS. Vive en el Run `arun_checkout_pr49` porque el mock no tiene proyecto PHP. */
+/** DEMO · id de la semilla PHP de OE2 (`rcmp_demo_seed_php`): COMPLETED con relaciones SAME_NAMESPACE, FULLY_QUALIFIED_REFERENCE y DECLARING_CLASS.
+ * Vive en el Run PHP `arun_php_pr7` del Project `shop-php-demo` (WI-CONSOLE-030, C1). Antes estaba en `arun_checkout_pr49` porque el mock no tenía Project PHP. */
 export const DEMO_RETRIEVAL_PHP_COMPARISON_ID = 'rcmp_demo_seed_php'
+/** DEMO · Run PHP con símbolo `CouponService::apply` (DIRECTLY_CHANGED) donde cuelga `DEMO_RETRIEVAL_PHP_COMPARISON_ID`. */
+export const DEMO_RETRIEVAL_PHP_RUN_ID = 'arun_php_pr7'
 
 /** Métricas demo con verdad de terreno externa (10 relevantes): SE y SEM difieren a propósito, sin ganador implícito. */
 const DEMO_RETRIEVAL_METRICS: Record<'SE' | 'SEM', RetrievalMetricsResponse> = {
@@ -147,28 +150,6 @@ const repositoryBindings = new Map<string, ProjectRepositoryBindingResponse | nu
 /** HU30 user-centric (INTEROP-2.3 §6.8): intentos de verificación de acceso de la App por repo, para simular NOT_AUTHORIZED->revalidar->AUTHORIZED. */
 const githubAppAccessVerifications = new Map<string, number>()
 const analysisRuns = new Map<string, AnalysisRunDetailResponse>()
-const traceOnlyRuns = new Map<string, AnalysisRunDetailResponse>()
-function traceOnlyRunSeeds(): AnalysisRunDetailResponse[] {
-  const pr = (repositoryId: string, repositoryName: string, number: number, title: string, headRef: string, headSha: string, actorLogin: string) => ({ repositoryId, repositoryName, number, title, baseRef: 'develop', headRef, baseSha: 'c1c1c1c', headSha, draft: false, state: 'OPEN' as const, actorLogin })
-  return [
-    {
-      id: 'arun_checkout_pr53', projectId: 'prj_checkout_demo',
-      pullRequest: pr('repo_checkout', 'acme/checkout-service', 53, 'Ajuste de redondeo en CouponPolicy', 'feature/coupon-rounding', 'b7b7b7b', 'devA'),
-      status: 'QUEUED', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
-      createdAt: '2026-10-07T10:00:00.000Z', updatedAt: '2026-10-07T10:00:00.000Z', completedAt: null,
-      attemptCount: 0, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: 'b7b7b7b', indexDeltaBaseSha: 'c1c1c1c',
-      symbols: [], functionalBehaviorValidated: false, resultSummary: null, detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr53',
-    },
-    {
-      id: 'arun_billing_pr25', projectId: 'prj_billing_demo',
-      pullRequest: pr('repo_billing', 'acme/billing-engine', 25, 'Refactor de DiscountEngine para tasas escalonadas', 'feature/tiered-discount', '3c3c3c3', 'devD'),
-      status: 'PROCESSING', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
-      createdAt: '2026-10-07T11:00:00.000Z', updatedAt: '2026-10-07T11:02:00.000Z', completedAt: null,
-      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: '3c3c3c3', indexDeltaBaseSha: 'c1c1c1c',
-      symbols: [], functionalBehaviorValidated: false, resultSummary: null, detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr25',
-    },
-  ]
-}
 const testProposals = new Map<string, GeneratedTestProposalResponse[]>()
 const testPublications = new Map<string, TestPublicationResponse>()
 const functionalKnowledge = new Map<string, FunctionalKnowledgeResponse>()
@@ -217,6 +198,21 @@ function buildInventory(projectVersionId: string, revision = 7): TestInventoryRe
   const targets = revision === 5 ? [allTargets[0], allTargets[2], allTargets[3]] : revision === 6 ? allTargets.slice(0, 4) : allTargets
   const targetsWithTest = targets.filter((target) => target.hasTest).length
   return { projectVersionId, language: 'TYPESCRIPT', detectedFramework: 'VITEST', targetsTotal: targets.length, targetsWithTest, targetsMissingTest: targets.length - targetsWithTest, targets }
+}
+
+/** DEMO · WI-CONSOLE-030 (C1): inventario de un Project PHP con PHPUnit. `framework: null` modela un proyecto PHP sin framework de pruebas incluido (C4, `UNSUPPORTED_PROJECT`). */
+function buildPhpInventory(projectVersionId: string, framework: 'PHPUNIT' | null = 'PHPUNIT'): TestInventoryResponse {
+  // WI-CONSOLE-030 (F4): sin framework de pruebas detectado ningún target puede tener test (hasTest false, testFilePaths vacío).
+  const withTests = framework !== null
+  const coupon = withTests ? ['tests/Unit/CouponServiceTest.php'] : []
+  const targets: TestInventoryResponse['targets'] = [
+    { id: `${projectVersionId}-class-coupon`, filePath: 'app/Services/CouponService.php', symbolName: 'CouponService', methodName: null, targetType: 'CLASS', hasTest: withTests, testFilePaths: coupon },
+    { id: `${projectVersionId}-method-apply`, filePath: 'app/Services/CouponService.php', symbolName: 'CouponService', methodName: 'apply', targetType: 'METHOD', hasTest: withTests, testFilePaths: coupon },
+    { id: `${projectVersionId}-method-store`, filePath: 'app/Http/Controllers/CheckoutController.php', symbolName: 'CheckoutController', methodName: 'store', targetType: 'METHOD', hasTest: false, testFilePaths: [] },
+    { id: `${projectVersionId}-function-format`, filePath: 'app/Support/Money.php', symbolName: 'Money', methodName: 'format', targetType: 'METHOD', hasTest: false, testFilePaths: [] },
+  ]
+  const targetsWithTest = targets.filter((target) => target.hasTest).length
+  return { projectVersionId, language: 'PHP', detectedFramework: framework, targetsTotal: targets.length, targetsWithTest, targetsMissingTest: targets.length - targetsWithTest, targets }
 }
 
 /** No es un hash real; solo produce un string con forma hexadecimal estable para la demo. */
@@ -316,6 +312,21 @@ function seed(): void {
   projects.set(maintainerProject.id, maintainerProject)
   projects.set(readerProject.id, readerProject)
   projects.set(writerProject.id, writerProject)
+  // WI-CONSOLE-030 (C1/C4): dos Projects PHP en `team-sandbox` (ADMIN). Rotulados por los sellos DEMO globales, no por el nombre.
+  // `shop-php-demo`: PHP con PHPUnit y un Run con símbolos PHP (semilla OE2 `rcmp_demo_seed_php`).
+  // `legacy-php-admin`: PHP sin framework de pruebas detectado: OE2 responde 422 UNSUPPORTED_PROJECT (§6.5.1).
+  const shopPhpProject: Project = { id: 'prj_shop_php_demo', name: 'shop-php-demo', currentVersionId: 'ver_shop_php_1', workspace: DEMO_WORKSPACES[3], role: 'ADMIN', createdAt: '2026-09-05T09:00:00.000Z', updatedAt: '2026-09-08T10:05:00.000Z' }
+  const legacyPhpProject: Project = { id: 'prj_legacy_php_demo', name: 'legacy-php-admin', currentVersionId: 'ver_legacy_php_1', workspace: DEMO_WORKSPACES[3], role: 'ADMIN', createdAt: '2026-09-04T09:00:00.000Z', updatedAt: '2026-09-07T10:05:00.000Z' }
+  projects.set(shopPhpProject.id, shopPhpProject)
+  projects.set(legacyPhpProject.id, legacyPhpProject)
+  versions.set('ver_shop_php_1', {
+    history: { id: 'ver_shop_php_1', projectId: shopPhpProject.id, status: 'COMPLETED', language: 'PHP', originalFileName: null, filesProcessed: 31, chunksCount: 122, detectedFramework: 'PHPUNIT', targetsTotal: 4, targetsWithTest: 2, targetsMissingTest: 2, createdAt: '2026-09-05T09:02:00.000Z', completedAt: '2026-09-05T09:03:40.000Z', current: true },
+    inventory: buildPhpInventory('ver_shop_php_1'),
+  })
+  versions.set('ver_legacy_php_1', {
+    history: { id: 'ver_legacy_php_1', projectId: legacyPhpProject.id, status: 'COMPLETED', language: 'PHP', originalFileName: null, filesProcessed: 19, chunksCount: 77, detectedFramework: null, targetsTotal: 4, targetsWithTest: 0, targetsMissingTest: 4, createdAt: '2026-09-04T09:02:00.000Z', completedAt: '2026-09-04T09:03:10.000Z', current: true },
+    inventory: buildPhpInventory('ver_legacy_php_1', null),
+  })
   versions.set('ver_checkout_7', {
     history: { id: 'ver_checkout_7', projectId: project.id, status: 'COMPLETED', language: 'TYPESCRIPT', originalFileName: null, filesProcessed: 47, chunksCount: 186, detectedFramework: 'VITEST', targetsTotal: 5, targetsWithTest: 2, targetsMissingTest: 3, createdAt: '2026-08-31T14:17:10.000Z', completedAt, current: true },
     inventory: buildInventory('ver_checkout_7'),
@@ -415,7 +426,7 @@ function seedActionRequired(): void {
       },
     ],
   })
-  /** Caso HU51 (INTEROP-2.1 §6.11, definido/no implementado): responder esta pregunta choca con `fk_shipping_zone` (ACTIVE) — ver mockSubmitFunctionalAnswer. Solo demo en Focus Mode: sin `AnalysisRun` propio en control-plane. */
+  /** Caso HU51 (INTEROP-2.7 §6.11, DEC-FK-001): responder esta pregunta choca con `fk_shipping_zone` (ACTIVE, mismo scope/targetRef/scenarioKey) — ver mockSubmitFunctionalAnswer. Solo demo en Focus Mode: sin `AnalysisRun` propio en control-plane. */
   actionRequiredRuns.set('arun_checkout_pr52', {
     analysisRunId: 'arun_checkout_pr52',
     projectId: 'prj_checkout_demo',
@@ -423,7 +434,9 @@ function seedActionRequired(): void {
     conflictQuestionId: 'fq_checkout_pr52_1',
     questions: [
       {
-        id: 'fq_checkout_pr52_1', scenarioKind: 'EXCEPTION', scenarioKey: 'shipping.validate.corporate-exception', abstention: null,
+        // WI-CONSOLE-030 (C3): clave alineada con `fk_shipping_zone` (EXPECTED_RESULT / shipping.validate.zones) para que el conflicto
+        // exista por scope + targetRef + scenarioKey exactos (DEC-FK-001). Antes era `corporate-exception`, que no coincidía y rompía HU51.
+        id: 'fq_checkout_pr52_1', scenarioKind: 'EXPECTED_RESULT', scenarioKey: 'shipping.validate.zones', abstention: null,
         analysisRunId: 'arun_checkout_pr52',
         projectId: 'prj_checkout_demo',
         repositoryName: 'acme/checkout-service',
@@ -477,6 +490,8 @@ function seedControlPlane(): void {
   repositoryBindings.set('prj_org_orders_demo', { projectId: 'prj_org_orders_demo', installationId: 'inst_rag_orders', repositoryId: 'repo_rag_orders', repositoryName: 'rag-tesis-org/orders-api', integrationBranch: 'main', status: 'ENABLED', createdAt: '2026-09-12T08:30:00.000Z', updatedAt: '2026-09-12T08:30:00.000Z' })
   repositoryBindings.set('prj_org_writer_demo', { projectId: 'prj_org_writer_demo', installationId: 'inst_rag_payments', repositoryId: 'repo_rag_payments', repositoryName: 'rag-tesis-org/payments-gateway', integrationBranch: 'main', status: 'ENABLED', createdAt: '2026-09-16T08:10:00.000Z', updatedAt: '2026-09-16T08:10:00.000Z' })
   repositoryBindings.set('prj_org_metrics_demo', { projectId: 'prj_org_metrics_demo', installationId: 'inst_observability_metrics', repositoryId: 'repo_observability_metrics', repositoryName: 'observability-lab/metrics-console', integrationBranch: 'main', status: 'ENABLED', createdAt: '2026-09-13T10:15:00.000Z', updatedAt: '2026-09-13T10:15:00.000Z' })
+  // WI-CONSOLE-030 (F3): shop-php-demo se vincula al único repo de team-sandbox (demo-api), donde están sus PRs. legacy-php-admin queda sin binding: ver informe (no hay repo libre sin colisionar).
+  repositoryBindings.set('prj_shop_php_demo', { projectId: 'prj_shop_php_demo', installationId: 'inst_demo_repo_team_sandbox', repositoryId: 'repo_team_sandbox', repositoryName: 'team-sandbox/demo-api', integrationBranch: 'develop', status: 'ENABLED', createdAt: '2026-09-05T09:10:00.000Z', updatedAt: '2026-09-05T09:10:00.000Z' })
 
   function pr(repositoryId: string, repositoryName: string, number: number, title: string, headRef: string, headSha: string, actorLogin: string) {
     return { repositoryId, repositoryName, number, title, baseRef: 'develop', headRef, baseSha: 'c1c1c1c', headSha, draft: false, state: 'OPEN' as const, actorLogin }
@@ -685,14 +700,53 @@ function seedControlPlane(): void {
       symbols: [{ language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'PaymentRetry.schedule', filePath: 'src/payments/PaymentRetry.ts', changeKind: 'DIRECTLY_CHANGED' }],
       functionalBehaviorValidated: false, resultSummary: null, detailsUrl: '/projects/prj_org_writer_demo/runs/arun_org_writer_pr21',
     },
+    {
+      // WI-CONSOLE-030 (C1): Run PHP con símbolos PHP. Fechado antes de 2026-09-13 para no alterar «Runs esta semana» de los escenarios existentes.
+      id: 'arun_php_pr7', projectId: 'prj_shop_php_demo',
+      pullRequest: pr('repo_team_sandbox', 'team-sandbox/demo-api', 7, 'Aplica cupones en CouponService', 'feature/php-coupon-apply', 'p7p7p7p', 'demo-admin'),
+      status: 'SUCCESS', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
+      createdAt: '2026-09-08T10:00:00.000Z', updatedAt: '2026-09-08T10:05:00.000Z', completedAt: '2026-09-08T10:05:00.000Z',
+      attemptCount: 1, indexMode: 'BOOTSTRAP', changesetBaseSha: '000p7p0', changesetHeadSha: 'p7p7p7p', indexDeltaBaseSha: null,
+      symbols: [
+        { language: 'PHP', kind: 'METHOD', qualifiedName: 'CouponService::apply', filePath: 'app/Services/CouponService.php', changeKind: 'DIRECTLY_CHANGED' },
+        { language: 'PHP', kind: 'METHOD', qualifiedName: 'CheckoutController::store', filePath: 'app/Http/Controllers/CheckoutController.php', changeKind: 'POTENTIALLY_IMPACTED' },
+      ],
+      functionalBehaviorValidated: true, resultSummary: 'La cobertura PHPUnit existente ya ejercita CouponService::apply; no hacen falta pruebas nuevas.', detailsUrl: '/projects/prj_shop_php_demo/runs/arun_php_pr7',
+    },
+    {
+      // WI-CONSOLE-030 (C4): Run de un Project PHP sin framework de pruebas; OE2 debe responder 422 UNSUPPORTED_PROJECT.
+      id: 'arun_legacy_php_pr3', projectId: 'prj_legacy_php_demo',
+      pullRequest: pr('repo_team_sandbox', 'team-sandbox/demo-api', 3, 'Ajuste de descuento en CouponService legado', 'feature/legacy-coupon', 'l3l3l3l', 'demo-admin'),
+      status: 'SUCCESS', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
+      createdAt: '2026-09-07T10:00:00.000Z', updatedAt: '2026-09-07T10:05:00.000Z', completedAt: '2026-09-07T10:05:00.000Z',
+      attemptCount: 1, indexMode: 'BOOTSTRAP', changesetBaseSha: '000l3l0', changesetHeadSha: 'l3l3l3l', indexDeltaBaseSha: null,
+      symbols: [{ language: 'PHP', kind: 'METHOD', qualifiedName: 'CouponService::apply', filePath: 'app/Services/CouponService.php', changeKind: 'DIRECTLY_CHANGED' }],
+      functionalBehaviorValidated: false, resultSummary: 'Proyecto PHP sin PHPUnit detectado: no hay framework de pruebas para generar comparaciones de retrieval.', detailsUrl: '/projects/prj_legacy_php_demo/runs/arun_legacy_php_pr3',
+    },
+    {
+      // WI-CONSOLE-030 (C2): Run en cola. Antes vivía en `traceOnlyRuns` (fuera de listados); ahora aparece en listados y contadores.
+      id: 'arun_checkout_pr53', projectId: 'prj_checkout_demo',
+      pullRequest: pr('repo_checkout', 'acme/checkout-service', 53, 'Ajuste de redondeo en CouponPolicy', 'feature/coupon-rounding', 'b7b7b7b', 'devA'),
+      status: 'QUEUED', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
+      createdAt: '2026-10-07T10:00:00.000Z', updatedAt: '2026-10-07T10:00:00.000Z', completedAt: null,
+      attemptCount: 0, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: 'b7b7b7b', indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [], functionalBehaviorValidated: false, resultSummary: null, detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr53',
+    },
+    {
+      // WI-CONSOLE-030 (C2): Run en proceso. Antes vivía en `traceOnlyRuns` (fuera de listados); ahora aparece en listados y contadores.
+      id: 'arun_billing_pr25', projectId: 'prj_billing_demo',
+      pullRequest: pr('repo_billing', 'acme/billing-engine', 25, 'Refactor de DiscountEngine para tasas escalonadas', 'feature/tiered-discount', '3c3c3c3', 'devD'),
+      status: 'PROCESSING', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
+      createdAt: '2026-10-07T11:00:00.000Z', updatedAt: '2026-10-07T11:02:00.000Z', completedAt: null,
+      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: '3c3c3c3', indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [], functionalBehaviorValidated: false, resultSummary: null, detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr25',
+    },
   ]
 
   for (const { __proposals, ...run } of seeds) {
     analysisRuns.set(run.id, run)
     if (__proposals) testProposals.set(run.id, __proposals)
   }
-  // WI-CONSOLE-016: runs en curso solo para el trace operativo. Fuera de `analysisRuns` para no alterar listados, contadores ni 'último run' de los demás escenarios.
-  for (const run of traceOnlyRunSeeds()) traceOnlyRuns.set(run.id, run)
 }
 
 /** Shas de demo de 40 caracteres hexadecimales (procedencia; el contrato exige el valor completo). */
@@ -827,7 +881,6 @@ export function resetMockBackend(): void {
   repositoryBindings.clear()
   githubAppAccessVerifications.clear()
   analysisRuns.clear()
-  traceOnlyRuns.clear()
   testProposals.clear()
   testPublications.clear()
   functionalKnowledge.clear()
@@ -1285,6 +1338,13 @@ export async function mockStartRetrievalComparison(analysisRunId: string, symbol
   if (inRun.changeKind !== 'DIRECTLY_CHANGED' || (inRun.kind !== 'METHOD' && inRun.kind !== 'FUNCTION')) {
     throw new ApiError(`"${inRun.qualifiedName}" no es un METHOD/FUNCTION con cambio directo; no se puede comparar retrieval.`, 422, 'demo-correlation-id', 'UNSUPPORTED_SYMBOL_KIND')
   }
+  // WI-CONSOLE-030 (C4, INTEROP-2.7 §6.5.1): un proyecto PHP sin PHPUnit detectado no tiene framework de pruebas → 422 UNSUPPORTED_PROJECT.
+  // Solo aplica con versión actual existente y sin framework; un Project sin versión (currentVersionId null) conserva su comportamiento.
+  const runProject = projects.get(run.projectId)
+  const currentVersion = runProject?.currentVersionId ? versions.get(runProject.currentVersionId) : undefined
+  if (currentVersion && currentVersion.history.detectedFramework === null) {
+    throw new ApiError(UNSUPPORTED_PROJECT_MESSAGE, 422, 'demo-correlation-id', 'UNSUPPORTED_PROJECT')
+  }
   sequence += 1
   const retrievalComparisonId = `rcmp_demo_${sequence}`
   const projectVersionId = `ver_${run.projectId}`
@@ -1353,23 +1413,25 @@ function seedRetrievalComparisons(): void {
   const seed = (
     id: string,
     symbol: AnalysisSymbolResponse,
-    options: { status: RetrievalComparisonStatusResponse['status']; advances: boolean; finalStatus: 'COMPLETED' | 'FAILED'; withMetrics: boolean; failureCode?: string; failureMessage?: string; candidates?: DemoRetrievalCandidate[] },
+    options: { status: RetrievalComparisonStatusResponse['status']; advances: boolean; finalStatus: 'COMPLETED' | 'FAILED'; withMetrics: boolean; failureCode?: string; failureMessage?: string; candidates?: DemoRetrievalCandidate[]; run?: AnalysisRunDetailResponse },
   ) => {
+    // WI-CONSOLE-030 (C1): la semilla PHP cuelga de su propio Run (`options.run`); el resto sigue en `arun_checkout_pr49`.
+    const owner = options.run ?? run
     const terminal = options.status === 'COMPLETED' || options.status === 'FAILED'
     const state: MockRetrievalComparisonState = {
-      projectId: run.projectId,
+      projectId: owner.projectId,
       advances: options.advances,
       finalStatus: options.finalStatus,
       withMetrics: options.withMetrics,
       polls: 0,
-      fingerprint: retrievalFingerprint(run.id, symbol.filePath, symbol.qualifiedName),
+      fingerprint: retrievalFingerprint(owner.id, symbol.filePath, symbol.qualifiedName),
       results: null,
       candidates: options.candidates,
       operation: {
         id,
-        analysisRunId: run.id,
-        projectId: run.projectId,
-        projectVersionId: `ver_${run.projectId}`,
+        analysisRunId: owner.id,
+        projectId: owner.projectId,
+        projectVersionId: `ver_${owner.projectId}`,
         symbol: clone(symbol),
         status: options.status,
         failureCode: options.failureCode ?? null,
@@ -1388,10 +1450,13 @@ function seedRetrievalComparisons(): void {
   seed('rcmp_demo_seed_completed_sin_metricas', calculateTotal, { status: 'COMPLETED', advances: false, finalStatus: 'COMPLETED', withMetrics: false })
   // COMPLETED con métricas: demo de una comparación creada con verdad de terreno externa; la UI no permite cargarla en este corte.
   seed('rcmp_demo_seed_completed_con_metricas', createOrder, { status: 'COMPLETED', advances: false, finalStatus: 'COMPLETED', withMetrics: true })
-  // DEMO · proyecto PHP (CS-CORE-20261009-017): la comparación ya no devuelve 422 por lenguaje; semilla con símbolo PHP.
-  seed(DEMO_RETRIEVAL_PHP_COMPARISON_ID, {
-    language: 'PHP', kind: 'METHOD', qualifiedName: 'CouponService::apply', filePath: 'app/Services/CouponService.php', changeKind: 'DIRECTLY_CHANGED',
-  } as AnalysisSymbolResponse, { status: 'COMPLETED', advances: false, finalStatus: 'COMPLETED', withMetrics: false, candidates: DEMO_RETRIEVAL_PHP_CANDIDATES })
+  // DEMO · proyecto PHP (CS-CORE-20261009-017): la comparación ya no devuelve 422 por lenguaje; semilla con símbolo PHP
+  // del Run `arun_php_pr7` (WI-CONSOLE-030, C1). Antes vivía en `arun_checkout_pr49` porque no había Project PHP.
+  const phpRun = analysisRuns.get(DEMO_RETRIEVAL_PHP_RUN_ID)
+  const phpSymbol = phpRun?.symbols.find((item) => item.qualifiedName === 'CouponService::apply')
+  if (phpRun && phpSymbol) {
+    seed(DEMO_RETRIEVAL_PHP_COMPARISON_ID, phpSymbol, { status: 'COMPLETED', advances: false, finalStatus: 'COMPLETED', withMetrics: false, candidates: DEMO_RETRIEVAL_PHP_CANDIDATES, run: phpRun })
+  }
   seed('rcmp_demo_seed_failed', formatCurrencySymbol, {
     status: 'FAILED', advances: false, finalStatus: 'FAILED', withMetrics: false,
     failureCode: 'RETRIEVAL_COMPARISON_FAILED',
@@ -1543,9 +1608,35 @@ export async function mockGetContextQuestionSet(analysisRunId: string): Promise<
   return clone({ analysisRunId, currentQuestion, functionalBehaviorValidated })
 }
 
-/** HU51 (INTEROP-2.1 §6.11, definido/no implementado): regla `ACTIVE` en el mismo Project que ya cubre el símbolo de la pregunta — simplificación de demo de "scope compatible" (el contrato también contempla scope contenedor, no solo igualdad de targetRef). */
-function findConflictingKnowledge(projectId: string, targetRef: string): FunctionalKnowledgeResponse | null {
-  return Array.from(functionalKnowledge.values()).find((item) => item.projectId === projectId && item.status === 'ACTIVE' && item.targetRef === targetRef) ?? null
+/**
+ * WI-CONSOLE-030 (C3). Scope de una pregunta derivado de su símbolo: METHOD → `METHOD`, CLASS → `CLASS`.
+ * Otros tipos (FUNCTION, INTERFACE, …) no tienen un scope funcional equivalente en las semillas del mock: se devuelve `null`
+ * y el matcher omite la comparación de scope en ese caso (fallback documentado; no se inventa un scope).
+ */
+function targetScopeOf(target: AnalysisSymbolResponse): FunctionalKnowledgeResponse['scope'] | null {
+  if (target.kind === 'METHOD') return 'METHOD'
+  if (target.kind === 'CLASS') return 'CLASS'
+  return null
+}
+
+/**
+ * HU51 (INTEROP-2.7 §6.11, DEC-FK-001): conflicto solo entre reglas `ACTIVE` del mismo Project con el mismo `targetRef` y el
+ * mismo `scenarioKey` exactos. Un `scenarioKey` distinto del mismo target coexiste como `ACTIVE` y no es conflicto.
+ * Igualdad de cadena pura: `LEGACY` solo coincide con `LEGACY`, y `null`/`undefined` nunca coinciden con nada.
+ * `scope` se compara solo cuando es derivable del target de la pregunta (`targetScopeOf`).
+ * La compuerta `conflictQuestionId` de `mockSubmitFunctionalAnswer` se conserva: otras preguntas demo comparten target y
+ * `scenarioKey` con reglas semilla y romperían su propio flujo si el conflicto se evaluara siempre.
+ */
+function findConflictingKnowledge(projectId: string, target: AnalysisSymbolResponse, scenarioKey: string | null | undefined): FunctionalKnowledgeResponse | null {
+  if (scenarioKey === null || scenarioKey === undefined) return null
+  const scope = targetScopeOf(target)
+  return Array.from(functionalKnowledge.values()).find((item) =>
+    item.projectId === projectId
+    && item.status === 'ACTIVE'
+    && (scope === null || item.scope === scope)
+    && item.targetRef === target.qualifiedName
+    && item.scenarioKey === scenarioKey,
+  ) ?? null
 }
 
 /** HU37: `POST /analysis-runs/{analysisRunId}/context-questions/{questionId}/answers`. `headChanged` simula que un HEAD nuevo llegó mientras se respondía: la pregunta queda `OBSOLETE`, no `ANSWERED`, y el Run no se reanuda (`continuationAttemptId: null`). */
@@ -1577,7 +1668,7 @@ export async function mockSubmitFunctionalAnswer(analysisRunId: string, question
     return { status: 'PENDING', pollAfterMs: 300, analysisRunId, questionId, outcome: 'ABSTAINED', continuationAttemptId: null, knowledgeId: null }
   }
 
-  const conflicting = questionId === state.conflictQuestionId ? findConflictingKnowledge(state.projectId, question.target.qualifiedName) : null
+  const conflicting = questionId === state.conflictQuestionId ? findConflictingKnowledge(state.projectId, question.target, question.scenarioKey) : null
   if (conflicting && !input.conflictResolution) {
     sequence += 1
     const details: FunctionalKnowledgeConflictResponse = {
@@ -1597,15 +1688,18 @@ export async function mockSubmitFunctionalAnswer(analysisRunId: string, question
     return { status: 'PENDING', pollAfterMs: 300, analysisRunId, questionId, outcome: 'ANSWERED', continuationAttemptId: `attempt_demo_${sequence}`, knowledgeId: null }
   }
 
-  let knowledgeId = `fk_demo_${sequence}`
-  if (conflicting && input.conflictResolution?.action === 'SUPERSEDE') {
-    conflicting.status = 'SUPERSEDED'
-    knowledgeId = `fk_demo_${sequence}`
+  const knowledgeId = `fk_demo_${sequence}`
+  const persistsRule = (conflicting && input.conflictResolution?.action === 'SUPERSEDE') || (!conflicting && questionId === state.conflictQuestionId)
+  if (conflicting && input.conflictResolution?.action === 'SUPERSEDE') conflicting.status = 'SUPERSEDED'
+  if (persistsRule) {
+    // WI-CONSOLE-030 (C3): la regla nueva hereda kind/key de la pregunta. Con conflicto (SUPERSEDE) enlaza la vigente;
+    // sin conflicto (rama de coexistencia de la pregunta demo) queda ACTIVE sin supersedesId. Solo esa pregunta persiste,
+    // para no cambiar los conteos de `prj_checkout_demo` del resto de escenarios.
     functionalKnowledge.set(knowledgeId, {
-      id: knowledgeId, projectId: state.projectId, scope: conflicting.scope, targetRef: question.target.qualifiedName,
+      id: knowledgeId, projectId: state.projectId, scope: conflicting?.scope ?? targetScopeOf(question.target) ?? 'SYMBOL', targetRef: question.target.qualifiedName,
       originalQuestion: question.question, originalAnswer: input.answer?.trim() || input.choice,
       normalizedRule: `Regla propuesta a partir de la respuesta: "${input.answer?.trim() || question.question}".`,
-      source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: conflicting.id, createdAt: nowIso(),
+      source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: conflicting?.id ?? null, createdAt: nowIso(),
       // INTEROP-2.7: el escenario lo deriva Core de la pregunta; la Console no lo escribe.
       scenarioKind: question.scenarioKind, scenarioKey: question.scenarioKey,
       confirmedByUserId: MOCK_ACTOR_USER_ID, confirmedRole: project.role === 'ADMIN' ? 'ADMIN' : 'MAINTAINER',
@@ -1819,8 +1913,10 @@ export async function mockListAnalysisRuns(projectId: string | undefined, status
 function deriveRunHistory(run: AnalysisRunDetailResponse): AnalysisRunTransitionResponse[] {
   const history: AnalysisRunTransitionResponse[] = [
     { fromStatus: null, toStatus: 'QUEUED', reason: 'RUN_CREATED', occurredAt: run.createdAt },
-    { fromStatus: 'QUEUED', toStatus: 'PROCESSING', reason: 'SNAPSHOT_PROCESSING_STARTED', occurredAt: run.createdAt },
   ]
+  // WI-CONSOLE-030 (F1): un Run en cola solo tiene la creación; no ha empezado ni completado generación.
+  if (run.status === 'QUEUED') return history
+  history.push({ fromStatus: 'QUEUED', toStatus: 'PROCESSING', reason: 'SNAPSHOT_PROCESSING_STARTED', occurredAt: run.createdAt })
   if (run.status === 'ACTION_REQUIRED') {
     history.push({ fromStatus: 'PROCESSING', toStatus: 'ACTION_REQUIRED', reason: 'FUNCTIONAL_CONTEXT_REQUIRED', occurredAt: run.updatedAt })
     return history
@@ -1833,6 +1929,8 @@ function deriveRunHistory(run: AnalysisRunDetailResponse): AnalysisRunTransition
     history.push({ fromStatus: 'PROCESSING', toStatus: 'ACTION_REQUIRED', reason: 'FUNCTIONAL_CONTEXT_REQUIRED', occurredAt: run.createdAt })
     history.push({ fromStatus: 'ACTION_REQUIRED', toStatus: 'PROCESSING', reason: 'FUNCTIONAL_ANSWER_CONTINUATION', occurredAt: run.updatedAt })
   }
+  // WI-CONSOLE-030 (F1): un Run en proceso sigue en PROCESSING; no hay «Generación completada» hasta el estado final.
+  if (run.status === 'PROCESSING') return history
   history.push({ fromStatus: 'PROCESSING', toStatus: run.status, reason: 'GENERATION_COMPLETED', occurredAt: run.completedAt ?? run.updatedAt })
   return history
 }
@@ -1840,8 +1938,8 @@ function deriveRunHistory(run: AnalysisRunDetailResponse): AnalysisRunTransition
 /** HU32: `GET /analysis-runs/{analysisRunId}`. */
 export async function mockGetAnalysisRun(analysisRunId: string): Promise<AnalysisRunDetailResponse> {
   await latency()
-  // WI-CONSOLE-016: los runs solo-trace (QUEUED/PROCESSING) también se resuelven aquí, pero no aparecen en listados ni contadores.
-  const run = findVisibleRun(analysisRunId) ?? findVisibleTraceOnlyRun(analysisRunId)
+  // WI-CONSOLE-016 / WI-CONSOLE-030 (C2): los Runs QUEUED/PROCESSING se resuelven aquí como cualquier otro Run (aparecen también en listados y contadores).
+  const run = findVisibleRun(analysisRunId)
   if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   return { ...clone(run), history: deriveRunHistory(run) }
 }
@@ -1953,15 +2051,11 @@ function traceFor(run: AnalysisRunDetailResponse): AnalysisRunTraceResponse {
   }
 }
 
-function findVisibleTraceOnlyRun(analysisRunId: string): AnalysisRunDetailResponse | undefined {
-  const run = traceOnlyRuns.get(analysisRunId)
-  return run && !isProjectDeleted(run.projectId) ? run : undefined
-}
 
 /** INTEROP-2.7 §6.16: `GET /analysis-runs/{analysisRunId}/trace` (Reader). 404 genérico si no es visible; 409 `EVIDENCE_NOT_FINISHED` mientras el Run está en `QUEUED`/`PROCESSING`. */
 export async function mockGetAnalysisRunTrace(analysisRunId: string): Promise<AnalysisRunTraceResponse> {
   await latency()
-  const run = findVisibleRun(analysisRunId) ?? findVisibleTraceOnlyRun(analysisRunId)
+  const run = findVisibleRun(analysisRunId)
   if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   if (run.status === 'QUEUED' || run.status === 'PROCESSING') {
     throw new ApiError('La evidencia de este Analysis Run todavía no está disponible: el Run sigue en proceso.', 409, 'demo-correlation-id', 'EVIDENCE_NOT_FINISHED')
@@ -2059,7 +2153,7 @@ export async function mockGetEvidence(kind: EvidenceKind, subjectId: string): Pr
   await latency()
   const generatedAt = nowIso()
   if (kind === 'ANALYSIS_RUN') {
-    const run = findVisibleRun(subjectId) ?? findVisibleTraceOnlyRun(subjectId)
+    const run = findVisibleRun(subjectId)
     if (!run) notFound(`No existe el Analysis Run demo "${subjectId}".`, 'ANALYSIS_RUN_NOT_FOUND')
     if (run.status === 'QUEUED' || run.status === 'PROCESSING') throw new ApiError(DEMO_EVIDENCE_NOT_FINISHED, 409, 'demo-correlation-id', 'EVIDENCE_NOT_FINISHED')
     return clone(evidenceAnalysisRun(run, generatedAt))
@@ -2123,7 +2217,7 @@ export function setMockFunctionalKnowledgeScenarioForTests(knowledgeId: string, 
 
 /** Solo para pruebas: cambia estado o HEAD de un Run sembrado para simular el paso de QUEUED/PROCESSING a terminal o un push nuevo. */
 export function setMockAnalysisRunForTests(analysisRunId: string, patch: { status?: AnalysisRunStatus; headSha?: string }): void {
-  const run = analysisRuns.get(analysisRunId) ?? traceOnlyRuns.get(analysisRunId)
+  const run = analysisRuns.get(analysisRunId)
   if (!run) throw new Error(`No existe el Analysis Run demo "${analysisRunId}".`)
   if (patch.status) run.status = patch.status
   if (patch.headSha) run.pullRequest = { ...run.pullRequest, headSha: patch.headSha }

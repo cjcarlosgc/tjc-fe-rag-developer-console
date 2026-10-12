@@ -28,6 +28,8 @@ Fecha: 2026-10-12. Recoge las observaciones no bloqueantes y pendientes que los 
 
 ## C. Mock y datos de demostración
 
+> Actualización 2026-10-12 (WI-CONSOLE-030): CORREGIDO — proyecto demo PHP propio (`shop-php-demo`; semilla `rcmp_demo_seed_php` en `arun_php_pr7`), Runs QUEUED/PROCESSING en listados/contadores/métricas, conflicto 409 por `targetRef` + `scenarioKey` y caso demo `UNSUPPORTED_PROJECT` en OE2 (`legacy-php-admin`). PENDIENTE — `checkId` null y `reasoningEffort` ilustrativo (fuera de alcance); `attempt`/`technicallyEvaluable` omitidos en corridas antiguas (decisión del usuario); `legacy-php-admin` sin repositorio vinculado; UX F2 y F5-F7 de `wi-console-030-ux-review.md`.
+
 - Proyecto DEMO PHP propio para `rcmp_demo_seed_php` (hoy cuelga de un Run TypeScript). Aprobado como backlog. (021, 026)
 - Runs QUEUED/PROCESSING del mock viven en un mapa solo-trace, fuera de listados, contadores y métricas. (016)
 - `checkId` siempre `null` y `reasoningEffort` «high» ilustrativo en el mock. (016, 018)
