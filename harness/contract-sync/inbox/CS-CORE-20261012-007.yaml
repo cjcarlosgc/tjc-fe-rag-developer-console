@@ -11,4 +11,6 @@ requiredAction:
   - Espejar SYSTEM-2.10 e INTEROP-2.10 byte por byte, sin cambio de DTO; cuando Core implemente OC08 un Run INFRASTRUCTURE_FAILURE conservará propuestas AVAILABLE y no será publicable (409 TEST_PUBLICATION_INVALID_RUN_STATUS); para un compare UNVERIFIABLE mostrar resultSummary como texto libre sin depender de 300 archivos
 sourceRevision: f501aef7c0bf36c702e8703abf4f522ab29a54b8
 consumerImportedAt: 2026-10-12T22:54:22.952Z
-status: C-PENDING
+status: C-RESOLVED
+acknowledgementEvidence: harness/reports/wi-console-033-contract-sync-review.md
+resolutionEvidence: harness/reports/wi-console-033-implementation.md

@@ -3140,6 +3140,101 @@
         }
       ],
       "closedAt": "2026-10-12T22:51:49.000Z"
+    },
+    {
+      "id": "WI-CONSOLE-033",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "title": "Sincronizar SYSTEM/INTEROP 2.10, 2.11 y 2.12 desde los Contract Sync de WI-CORE-047 y WI-CORE-049",
+      "storyIds": [
+        "HU01",
+        "HU11",
+        "HU14",
+        "HU15"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-035"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md",
+        "spec/README.md",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-033-scope-approval.md",
+        "harness/reports/wi-console-033-contract-sync-scope-review.md",
+        "harness/reports/wi-console-033-sdd-verification.md",
+        "harness/reports/wi-console-033-implementation.md",
+        "harness/reports/wi-console-033-contract-review.md",
+        "harness/reports/wi-console-033-review.md",
+        "harness/reports/wi-console-033-closure.md",
+        "harness/reports/wi-console-033-contract-sync-review.md"
+      ],
+      "acceptanceCriteria": [
+        "SYSTEM, INTEROP y GH-INTEROP de Console coinciden byte a byte con la revisión canónica 864aa837b95fa379cc2c6d0a98f37521ff3eb3b6 de Core (SYSTEM/INTEROP-2.12, git show, SHA-256 verificado y ascendencia desde 30b9acdf, f501aef7 y b07d188a); la precedencia -007 < -009 < -011 queda documentada.",
+        "CS-CORE-20261012-007, -009 y -011 se acusan y resuelven solo con evidencia real; -008 (github-integration), -010 y -012 (sandbox) no son de Console y no se importan o quedan C-PENDING documentados.",
+        "resultSummary de OC11 se muestra como texto libre sin depender de «300» ni de un umbral, y un Run INFRASTRUCTURE_FAILURE con propuestas AVAILABLE no ofrece publicar, ambos con prueba; DEC-INF-002 y DEC-VAL-002 no se muestran como regla de UI; sin cambios de DTO, rutas ni live.",
+        "lint, tsc -b --noEmit, pruebas, build y validadores SDD/Harness pasan; WI-CONSOLE-004 permanece W-READY."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-033-scope-approval.md",
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true,
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [
+          "DEC-VAL-002",
+          "DEC-INF-002"
+        ],
+        "checkedAt": "2026-10-12T23:05:00.000Z",
+        "note": "DEC-VAL-002 (aprobada e implementada en Core) y DEC-INF-002 (aprobada as-built, Blocks NONE) no alcanzan este WI como reglas de UI; el usuario aprobo el alcance en el chat."
+      },
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-033 solo acusa y clasifica eventos de Core sin tocar bindings, UI ni endpoints.",
+          "report": "harness/reports/wi-console-033-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-033 solo acusa y clasifica eventos de Core sin tocar autorizacion ni interfaz.",
+          "report": "harness/reports/wi-console-033-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-033 no cambia login, sesion, tokens ni el cliente HTTP.",
+          "report": "harness/reports/wi-console-033-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-033 no altera Projects ni visibilidad.",
+          "report": "harness/reports/wi-console-033-contract-sync-scope-review.md"
+        }
+      ],
+      "closedAt": "2026-10-12T23:18:12.000Z"
     }
   ]
 }

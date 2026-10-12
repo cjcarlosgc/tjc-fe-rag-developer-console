@@ -11,4 +11,6 @@ requiredAction:
   - Sincronizar el espejo INTEROP-2.11 (y SYSTEM-2.11 si lo mantiene) byte a byte; sin cambio de comportamiento
 sourceRevision: b07d188a6ad60051e40e4d47ae44ec06aa0de50f
 consumerImportedAt: 2026-10-12T22:54:22.954Z
-status: C-PENDING
+status: C-RESOLVED
+acknowledgementEvidence: harness/reports/wi-console-033-contract-sync-review.md
+resolutionEvidence: harness/reports/wi-console-033-implementation.md

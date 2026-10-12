@@ -138,6 +138,36 @@ test('un Run INFRASTRUCTURE_FAILURE muestra el panel de fallo con resultSummary'
   expect(await screen.findByRole('alert')).toHaveTextContent('La GitHub Compare API no respondió')
 })
 
+test('WI-CONSOLE-033: un Run INFRASTRUCTURE_FAILURE con propuestas AVAILABLE no es publicable en Console', async () => {
+  renderDetail('arun_checkout_pr48', 'prj_checkout_demo')
+
+  expect(await screen.findByRole('alert')).toHaveTextContent('La GitHub Compare API no respondió')
+  // Espera a que una sección de propuestas montada (si la hubiera) termine de cargar; sin esto la ausencia sería vacua.
+  await waitFor(() => expect(screen.queryByText('Cargando propuestas…')).not.toBeInTheDocument())
+  await waitFor(() => expect(screen.queryByRole('button', { name: /Publicar/ })).not.toBeInTheDocument())
+  expect(screen.queryByText('Propuestas de prueba')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /Publicar/ })).not.toBeInTheDocument()
+  expect(screen.queryByText('AVAILABLE')).not.toBeInTheDocument()
+})
+
+test('WI-CONSOLE-033: el resultSummary de un Run INFRASTRUCTURE_FAILURE se muestra literal como texto libre, con o sin «300»', async () => {
+  const withThreshold = 'No se pudo verificar el compare de GitHub (por ejemplo, un PR con 300 o más archivos); análisis no realizado'
+  const withoutThreshold = 'No se pudo verificar el compare de GitHub (permiso denegado o límite de tasa); análisis no realizado'
+
+  setMockAnalysisRunForTests('arun_checkout_pr48', { resultSummary: withThreshold })
+  const first = renderDetail('arun_checkout_pr48', 'prj_checkout_demo')
+  expect(await screen.findByRole('alert')).toHaveTextContent(withThreshold)
+  expect(screen.getByRole('alert').textContent).toContain(withThreshold)
+  first.unmount()
+
+  resetMockBackend()
+  setMockAnalysisRunForTests('arun_checkout_pr48', { resultSummary: withoutThreshold })
+  renderDetail('arun_checkout_pr48', 'prj_checkout_demo')
+  expect(await screen.findByRole('alert')).toHaveTextContent(withoutThreshold)
+  expect(screen.getByRole('alert').textContent).toContain(withoutThreshold)
+  expect(screen.getByRole('alert').textContent).not.toContain('300')
+})
+
 test('caso Bootstrap: un Run con indexMode BOOTSTRAP muestra el aviso de primer análisis', async () => {
   renderDetail('arun_billing_pr23', 'prj_billing_demo')
 

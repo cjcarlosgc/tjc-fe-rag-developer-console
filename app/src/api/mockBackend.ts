@@ -615,6 +615,11 @@ function seedControlPlane(): void {
       attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: '888bbb8', indexDeltaBaseSha: 'c1c1c1c',
       symbols: [{ language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'ShippingAddressValidator', filePath: 'src/domain/ShippingAddressValidator.ts', changeKind: 'DIRECTLY_CHANGED' }],
       functionalBehaviorValidated: false, resultSummary: 'La GitHub Compare API no respondió al materializar el snapshot del HEAD — falla de infraestructura, no del código. El Run puede reintentarse.', detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr48',
+      // Datos simulados: propuestas conservadas en AVAILABLE aunque el Run es INFRASTRUCTURE_FAILURE (no publicable).
+      __proposals: [
+        { id: 'prop_pr48_1', relativePath: 'src/domain/ShippingAddressValidator.spec.ts', target: { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'ShippingAddressValidator', filePath: 'src/domain/ShippingAddressValidator.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr48_1'), status: 'AVAILABLE' },
+        { id: 'prop_pr48_2', relativePath: 'src/domain/ShippingAddressValidator.postal.spec.ts', target: { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'ShippingAddressValidator', filePath: 'src/domain/ShippingAddressValidator.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr48_2'), status: 'AVAILABLE' },
+      ],
     },
     {
       id: 'arun_billing_pr23', projectId: 'prj_billing_demo',
@@ -2227,10 +2232,11 @@ export function setMockFunctionalKnowledgeScenarioForTests(knowledgeId: string, 
 }
 
 /** Solo para pruebas: cambia estado o HEAD de un Run sembrado para simular el paso de QUEUED/PROCESSING a terminal o un push nuevo. */
-export function setMockAnalysisRunForTests(analysisRunId: string, patch: { status?: AnalysisRunStatus; headSha?: string }): void {
+export function setMockAnalysisRunForTests(analysisRunId: string, patch: { status?: AnalysisRunStatus; headSha?: string; resultSummary?: string | null }): void {
   const run = analysisRuns.get(analysisRunId)
   if (!run) throw new Error(`No existe el Analysis Run demo "${analysisRunId}".`)
   if (patch.status) run.status = patch.status
+  if (patch.resultSummary !== undefined) run.resultSummary = patch.resultSummary
   if (patch.headSha) run.pullRequest = { ...run.pullRequest, headSha: patch.headSha }
 }
 
