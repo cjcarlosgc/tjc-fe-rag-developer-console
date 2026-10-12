@@ -76,6 +76,7 @@ export interface FunctionalAnswerAcceptedResponse {
   questionId: string
   /** INTEROP-2.7: `ABSTAINED` implica `continuationAttemptId` y `knowledgeId` nulos. */
   outcome: FunctionalAnswerOutcome
+  /** INTEROP-2.9 §6.11: identificador opaco, no consultable en Console (no hay ruta ni UI que lo siga); `null` cuando no hay continuación. */
   continuationAttemptId: string | null
   knowledgeId: string | null
 }

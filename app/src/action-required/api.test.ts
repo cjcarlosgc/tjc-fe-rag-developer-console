@@ -296,3 +296,39 @@ describe('action-required api (mock) — WI-CONSOLE-030 C3, conflicto por scope 
     await expect(submitFunctionalAnswer('arun_checkout_pr52', 'fq_checkout_pr52_1', { choice: 'YES', answer: 'sí' })).resolves.toMatchObject({ outcome: 'ANSWERED' })
   })
 })
+
+describe('action-required api — INTEROP-2.9 pregunta no accionable', () => {
+  it('mock: responder una pregunta que ya no es PENDING devuelve 404 FUNCTIONAL_QUESTION_NOT_FOUND (no 409)', async () => {
+    await submitFunctionalAnswer('arun_checkout_pr42', 'fq_checkout_pr42_1', { choice: 'YES', answer: null })
+    const error = await submitFunctionalAnswer('arun_checkout_pr42', 'fq_checkout_pr42_1', { choice: 'YES', answer: null }).catch((reason: unknown) => reason)
+    expect(error).toBeInstanceOf(ApiError)
+    expect((error as ApiError).status).toBe(404)
+    expect((error as ApiError).code).toBe('FUNCTIONAL_QUESTION_NOT_FOUND')
+  })
+
+  it('mock: una pregunta inexistente sigue siendo 404, ahora con FUNCTIONAL_QUESTION_NOT_FOUND', async () => {
+    const error = await submitFunctionalAnswer('arun_checkout_pr42', 'fq_no_existe', { choice: 'YES', answer: null }).catch((reason: unknown) => reason)
+    expect((error as ApiError).status).toBe(404)
+    expect((error as ApiError).code).toBe('FUNCTIONAL_QUESTION_NOT_FOUND')
+  })
+
+  it('mock: un Run inexistente conserva ANALYSIS_RUN_NOT_FOUND', async () => {
+    const error = await submitFunctionalAnswer('arun_no_existe', 'fq_x', { choice: 'YES', answer: null }).catch((reason: unknown) => reason)
+    expect((error as ApiError).status).toBe(404)
+    expect((error as ApiError).code).toBe('ANALYSIS_RUN_NOT_FOUND')
+  })
+
+  it('live: 404 FUNCTIONAL_QUESTION_NOT_FOUND llega como ApiError con status y code', async () => {
+    setDataSourceForTests('live')
+    const spy = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(JSON.stringify({ code: 'FUNCTIONAL_QUESTION_NOT_FOUND', message: 'No aplica.' }), { status: 404 }))
+    try {
+      const error = await submitFunctionalAnswer('arun-live', 'fq-live', { choice: 'YES', answer: null }).catch((reason: unknown) => reason)
+      expect(error).toBeInstanceOf(ApiError)
+      expect((error as ApiError).status).toBe(404)
+      expect((error as ApiError).code).toBe('FUNCTIONAL_QUESTION_NOT_FOUND')
+    } finally {
+      spy.mockRestore()
+      setDataSourceForTests('mock')
+    }
+  })
+})

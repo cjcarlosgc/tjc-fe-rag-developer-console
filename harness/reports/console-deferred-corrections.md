@@ -57,6 +57,7 @@ Fecha: 2026-10-12. Recoge las observaciones no bloqueantes y pendientes que los 
 - F1 de WI-CONSOLE-027: `ContextExplorerPage.updateParams` puede perder `view=list` bajo carga; hace intermitente `ContextExplorerPage.test.tsx` («alterna entre vista de grafo y lista») sin límite de workers. Pendiente de decisión del usuario (WI de producto aparte); los timeouts globales deberían reducirse si se corrige.
 
 - RESUELTO (WI-CONSOLE-029, 2026-10-12): CS-CORE-20261012-002/-003/-004 acusados y resueltos en Console. PENDIENTE de sus receptores (no de Console): CS-CORE-20261009-012, 20261010-001/-002, 20261011-003 (github-integration) y 20261011-002 (sandbox); la parte Sandbox de -002 es de Sandbox.
+- RESUELTO (WI-CONSOLE-031, 2026-10-12): CS-CORE-20261012-005 (INTEROP-2.9/SYSTEM, 404 obsoleto) acusado y resuelto en Console; CS-CORE-20261012-006 es de github-integration y sigue C-PENDING. Pendiente menor de UX: `focus-mode-obsolete` sin CSS ni `:focus-visible` propios.
 - Reanudar WI-CONSOLE-004 (pausado en W-READY): re-seleccionar, volver a registrar la aprobación y correr `start`; el usuario debe decidir OC02, OC10, OC11 y OC14.
 - `awayMode` sigue `enabled: true` en `state.json` aunque el usuario revisa en el chat; lo desactiva el usuario.
 - En WI-CONSOLE-018 el `before-done` de Contract Sync se copió a mano con un `checkedAt` no real; el contenido coincidía con lo que daría una ejecución real. Desde WI-017 se corre de verdad.

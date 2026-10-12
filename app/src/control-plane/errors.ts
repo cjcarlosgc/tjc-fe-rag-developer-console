@@ -96,6 +96,14 @@ export function errorCorrelationId(error: unknown): string | undefined {
   return error instanceof ApiError ? error.correlationId : undefined
 }
 
+/** INTEROP-2.9 §6.11: `404 FUNCTIONAL_QUESTION_NOT_FOUND` al responder = pregunta inexistente, de otro Run o ya no accionable (obsoleta). No es un fallo transitorio: no se reintenta la misma pregunta. */
+export function isFunctionalQuestionObsolete(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 404 && error.code === 'FUNCTIONAL_QUESTION_NOT_FOUND'
+}
+
+/** Copy de la pregunta obsoleta (INTEROP-2.9): aviso no destructivo; la bandeja y el Run se actualizan. */
+export const FUNCTIONAL_QUESTION_OBSOLETE_MESSAGE = 'Esta pregunta ya no aplica. El Run cambió o ya fue contestada; actualizamos el contexto pendiente.'
+
 /** Un Project borrado (o ajeno) responde 404 `PROJECT_NOT_FOUND`: no es un fallo transitorio, así que no tiene sentido ofrecer "Reintentar". */
 export function isProjectNotFound(error: unknown): boolean {
   return error instanceof ApiError && error.status === 404 && error.code === 'PROJECT_NOT_FOUND'

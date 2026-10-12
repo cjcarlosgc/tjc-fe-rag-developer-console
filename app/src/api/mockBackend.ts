@@ -1646,8 +1646,9 @@ export async function mockSubmitFunctionalAnswer(analysisRunId: string, question
   if (!state) notFound(`No existe el Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   const project = requireProjectRole(state.projectId, 'MAINTAINER')
   const question = state.questions.find((item) => item.id === questionId)
-  if (!question) notFound(`No existe la pregunta demo "${questionId}".`, 'QUESTION_NOT_FOUND')
-  if (question.status !== 'PENDING') throw new ApiError('La pregunta demo ya no está pendiente.', 409, 'demo-correlation-id', 'QUESTION_NOT_PENDING')
+  if (!question) notFound(`No existe la pregunta demo "${questionId}".`, 'FUNCTIONAL_QUESTION_NOT_FOUND')
+  // INTEROP-2.9 §6.11: pregunta no accionable (ya no PENDING) = 404 FUNCTIONAL_QUESTION_NOT_FOUND, no 409.
+  if (question.status !== 'PENDING') notFound('La pregunta demo ya no está pendiente.', 'FUNCTIONAL_QUESTION_NOT_FOUND')
 
   if (state.headChanged) {
     // Comportamiento PROVISIONAL del mock: INTEROP-2.7 §6.11 solo fija que la pregunta queda OBSOLETE; no define el outcome ni registra abstención.

@@ -2,7 +2,7 @@
 
 **Estado:** aprobado como comportamiento objetivo; aceptación de cada HU requiere evidencia propia.
 **Historias:** HU01, HU02, HU07–HU09, HU12–HU16
-**Contrato operativo vigente:** SYSTEM-2.9 / INTEROP-2.8 / GH-INTEROP-1.7.
+**Contrato operativo vigente:** SYSTEM-2.9 / INTEROP-2.9 / GH-INTEROP-1.7.
 
 ## Objetivo
 
@@ -38,7 +38,7 @@ Contrato adoptado: SYSTEM-2.6 / INTEROP-2.7 (canónico en Core, `WI-CORE-017`). 
 
 Ver `spec/operational-cases.md`: OC01–OC15 están catalogados para formalización P2, happy paths primero. Subcasos, aceptación y evidencia se enlazan por subtarea/WI; el catálogo no significa cobertura completa.
 
-Esta sección formaliza los happy paths (`WI-CONSOLE-004`, corte 4). Describe solo lo que ya establecen SYSTEM-2.9, INTEROP-2.8 y GH-INTEROP-1.7 y esta feature. Cada caso indica qué observa el usuario en Console y qué determina Core. Ningún caso se declara implementado ni cubierto: las «pruebas propuestas» son descripciones; los mocks rotulados `DEMO · DATOS SIMULADOS` solo verifican presentación y no prueban cobertura del backend. Un caso marcado `DECISION_REQUIRED` no está formalizado y no debe implementarse hasta que se resuelva la pregunta indicada. Los subcasos `OCxx.a` no se añaden aquí.
+Esta sección formaliza los happy paths (`WI-CONSOLE-004`, corte 4). Describe solo lo que ya establecen SYSTEM-2.9, INTEROP-2.9 y GH-INTEROP-1.7 y esta feature. Cada caso indica qué observa el usuario en Console y qué determina Core. Ningún caso se declara implementado ni cubierto: las «pruebas propuestas» son descripciones; los mocks rotulados `DEMO · DATOS SIMULADOS` solo verifican presentación y no prueban cobertura del backend. Un caso marcado `DECISION_REQUIRED` no está formalizado y no debe implementarse hasta que se resuelva la pregunta indicada. Los subcasos `OCxx.a` no se añaden aquí.
 
 Abreviaturas de fuente: **SYS** = `spec/contracts/system-contract.md`; **INT** = `spec/contracts/interoperability-contract.md`; **GH** = `spec/contracts/github-integration-contract.md`.
 

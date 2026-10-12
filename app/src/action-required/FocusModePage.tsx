@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { hasRole } from '../projects/roles'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { ApiError } from '../api/client'
@@ -7,7 +7,7 @@ import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
 import { RepoChip } from '../ui/RepoChip'
 import { useProject } from '../projects/queries'
-import { bindingErrorMessage, errorCorrelationId } from '../control-plane/errors'
+import { FUNCTIONAL_QUESTION_OBSOLETE_MESSAGE, bindingErrorMessage, errorCorrelationId, isFunctionalQuestionObsolete } from '../control-plane/errors'
 import { useContextQuestionSet, useSubmitFunctionalAnswer } from './queries'
 import { abstentionLabel } from './abstention'
 import type { ConflictResolution, FunctionalAnswerChoice, FunctionalKnowledgeConflictResponse, VisualAidResponse } from './types'
@@ -45,17 +45,35 @@ export function FocusModePage() {
   const [pendingAnswer, setPendingAnswer] = useState<{ questionId: string; choice: FunctionalAnswerChoice; answer: string | null } | null>(null)
   /** Tras una abstención el botón «No lo sé» se deshabilita durante el envío y pierde el foco: se devuelve al contenedor de la pregunta. */
   const cardRef = useRef<HTMLDivElement>(null)
+  /** INTEROP-2.9: la pregunta que el servidor declaró no accionable deja de ofrecerse; el aviso toma el foco. */
+  const [obsoleteQuestionId, setObsoleteQuestionId] = useState<string | null>(null)
+  const noticeRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (obsoleteQuestionId) noticeRef.current?.focus()
+  }, [obsoleteQuestionId])
 
   if (questionSetQuery.isPending) return <LoadingState label="Abriendo Focus Mode…" />
   if (questionSetQuery.isError) return <ErrorState message={questionSetQuery.error.message} onRetry={() => void questionSetQuery.refetch()} />
   if (questionSetQuery.data.currentQuestion && projectQuery.isPending) return <LoadingState label="Comprobando tu rol en el Project…" />
   if (questionSetQuery.data.currentQuestion && projectQuery.isError) return <ErrorState message={bindingErrorMessage(projectQuery.error)} correlationId={errorCorrelationId(projectQuery.error)} onRetry={() => void projectQuery.refetch()} />
 
-  const { currentQuestion, functionalBehaviorValidated } = questionSetQuery.data
+  const { functionalBehaviorValidated } = questionSetQuery.data
+  const currentQuestion = questionSetQuery.data.currentQuestion?.id === obsoleteQuestionId ? null : questionSetQuery.data.currentQuestion
   const canAnswer = !currentQuestion || hasRole(projectQuery.data?.role, 'MAINTAINER')
+  const obsolete = isFunctionalQuestionObsolete(submitAnswer.error)
   const conflict = submitAnswer.error instanceof ApiError && submitAnswer.error.code === 'FUNCTIONAL_KNOWLEDGE_CONFLICT'
     ? submitAnswer.error.details as FunctionalKnowledgeConflictResponse
     : null
+
+  /** Fallo de envío: la pregunta obsoleta sale de la vista y se limpia la respuesta pendiente; cualquier otro error devuelve el foco a la tarjeta. */
+  function handleSubmitError(error: unknown, questionId: string) {
+    if (isFunctionalQuestionObsolete(error)) {
+      setObsoleteQuestionId(questionId)
+      setPendingAnswer(null)
+      return
+    }
+    cardRef.current?.focus()
+  }
 
   function submit(choice: FunctionalAnswerChoice) {
     if (!currentQuestion) return
@@ -68,7 +86,7 @@ export function FocusModePage() {
         else cardRef.current?.focus()
         setPendingAnswer(null)
       },
-        onError: () => cardRef.current?.focus() },
+        onError: (error) => handleSubmitError(error, currentQuestion.id) },
     )
   }
 
@@ -82,7 +100,7 @@ export function FocusModePage() {
         else cardRef.current?.focus()
         setPendingAnswer(null)
       },
-        onError: () => cardRef.current?.focus() },
+        onError: (error) => handleSubmitError(error, pendingAnswer.questionId) },
     )
   }
 
@@ -96,6 +114,10 @@ export function FocusModePage() {
       </div>
       {mock && <span className="demo-stamp">DEMO · DATOS SIMULADOS</span>}
     </div>
+
+    {obsolete && <div className="panel focus-mode-obsolete" role="status" tabIndex={-1} ref={noticeRef}>
+      <p>{FUNCTIONAL_QUESTION_OBSOLETE_MESSAGE}</p>
+    </div>}
 
     {!currentQuestion && (
       <div className="panel success-note contract-note">
@@ -147,7 +169,7 @@ export function FocusModePage() {
         </div>
       )}
 
-      {submitAnswer.isError && !conflict && <p className="inline-error" role="alert">{bindingErrorMessage(submitAnswer.error)}{errorCorrelationId(submitAnswer.error) && <> · Correlation ID: <code>{errorCorrelationId(submitAnswer.error)}</code></>}</p>}
+      {submitAnswer.isError && !conflict && !obsolete && <p className="inline-error" role="alert">{bindingErrorMessage(submitAnswer.error)}{errorCorrelationId(submitAnswer.error) && <> · Correlation ID: <code>{errorCorrelationId(submitAnswer.error)}</code></>}</p>}
       </> : <p className="role-note">Solo un Maintainer o Admin puede responder esta pregunta funcional</p>}
     </div>}
 

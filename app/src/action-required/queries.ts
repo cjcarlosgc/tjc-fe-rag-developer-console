@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useIdempotencyKeys } from '../api/idempotency'
+import { isFunctionalQuestionObsolete } from '../control-plane/errors'
 import { getContextQuestionSet, listActionRequired, listAllActionRequired, listFunctionalKnowledge, submitFunctionalAnswer } from './api'
 import type { FunctionalKnowledgeStatus, SubmitFunctionalAnswerRequest } from './types'
 
@@ -55,6 +56,13 @@ export function useSubmitFunctionalAnswer(analysisRunId: string) {
       return submitFunctionalAnswer(analysisRunId, questionId, input, idempotency.getOrCreate(id))
     },
     onSuccess: (_data, variables) => {
+      idempotency.clear(`${variables.questionId}:${JSON.stringify(variables.input)}`)
+      void queryClient.invalidateQueries({ queryKey: actionRequiredKeys.questionSet(analysisRunId) })
+      void queryClient.invalidateQueries({ queryKey: ['action-required', 'list'] })
+    },
+    /** INTEROP-2.9: 404 FUNCTIONAL_QUESTION_NOT_FOUND = pregunta obsoleta; se refrescan Run e inbox y no se reintenta la misma pregunta. */
+    onError: (error, variables) => {
+      if (!isFunctionalQuestionObsolete(error)) return
       idempotency.clear(`${variables.questionId}:${JSON.stringify(variables.input)}`)
       void queryClient.invalidateQueries({ queryKey: actionRequiredKeys.questionSet(analysisRunId) })
       void queryClient.invalidateQueries({ queryKey: ['action-required', 'list'] })

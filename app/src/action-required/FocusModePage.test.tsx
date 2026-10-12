@@ -292,3 +292,56 @@ test('accesibilidad: si el conflicto se resuelve con ABSTAINED, el foco vuelve a
   await waitFor(() => expect(screen.getByText(LIVE_QUESTION).closest('.focus-mode-card')).toHaveFocus())
   expect(screen.queryByText('Esta respuesta contradice una regla vigente')).not.toBeInTheDocument()
 })
+
+test('INTEROP-2.9: 404 FUNCTIONAL_QUESTION_NOT_FOUND al responder muestra «Esta pregunta ya no aplica», refresca el Run y no ofrece reenviar la misma pregunta', async () => {
+  setDataSourceForTests('live')
+  const user = userEvent.setup()
+  const fetchMock = liveFetch([() => new Response(JSON.stringify({ code: 'FUNCTIONAL_QUESTION_NOT_FOUND', message: 'No aplica.' }), { status: 404 })])
+
+  renderFocusMode('arun-live')
+  await user.click(await screen.findByRole('button', { name: 'Sí' }))
+
+  const obsoleteNotice = await screen.findByText(/Esta pregunta ya no aplica/)
+  expect(obsoleteNotice.closest('[role="status"]')).toHaveFocus()
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  expect(screen.queryByText(/Correlation ID/)).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Sí' })).not.toBeInTheDocument()
+  await waitFor(() => {
+    const questionSetGets = fetchMock.mock.calls.filter(([input, init]) => String(input).includes('context-questions') && init?.method !== 'POST')
+    expect(questionSetGets.length).toBeGreaterThanOrEqual(2)
+  })
+})
+
+test('INTEROP-2.9: 404 ANALYSIS_RUN_NOT_FOUND y 403 PROJECT_ROLE_INSUFFICIENT conservan su mensaje y no muestran el aviso de pregunta obsoleta', async () => {
+  setDataSourceForTests('live')
+  const user = userEvent.setup()
+  liveFetch([() => new Response(JSON.stringify({ code: 'ANALYSIS_RUN_NOT_FOUND', message: 'Run no visible.' }), { status: 404 })])
+
+  renderFocusMode('arun-live')
+  await user.click(await screen.findByRole('button', { name: 'Sí' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('Run no visible.')
+  expect(screen.queryByText(/Esta pregunta ya no aplica/)).not.toBeInTheDocument()
+})
+
+test('INTEROP-2.9: un 403 de rol sigue mostrando el rol requerido y no el aviso de pregunta obsoleta', async () => {
+  setDataSourceForTests('live')
+  const user = userEvent.setup()
+  liveFetch([() => new Response(JSON.stringify({ code: 'PROJECT_ROLE_INSUFFICIENT', message: 'Rol.', details: { requiredRole: 'MAINTAINER', currentRole: 'WRITER' } }), { status: 403 })])
+
+  renderFocusMode('arun-live')
+  await user.click(await screen.findByRole('button', { name: 'Sí' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('se requiere MAINTAINER')
+  expect(screen.queryByText(/Esta pregunta ya no aplica/)).not.toBeInTheDocument()
+})
+
+test('INTEROP-2.9: continuationAttemptId no nulo es opaco: no se muestra ni se consulta en ninguna petición', async () => {
+  setDataSourceForTests('live')
+  const user = userEvent.setup()
+  const fetchMock = liveFetch([() => new Response(JSON.stringify({ status: 'PENDING', pollAfterMs: 500, analysisRunId: 'arun-live', questionId: 'fq-live', outcome: 'ANSWERED', continuationAttemptId: 'cont-opaque-7f3a', knowledgeId: 'fk-7f3a' }), { status: 202 })])
+
+  renderFocusMode('arun-live')
+  await user.click(await screen.findByRole('button', { name: 'Sí' }))
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/answers'), expect.objectContaining({ method: 'POST' })))
+  expect(screen.queryByText(/cont-opaque-7f3a/)).not.toBeInTheDocument()
+  expect(fetchMock.mock.calls.some(([input]) => String(input).includes('cont-opaque-7f3a'))).toBe(false)
+})
