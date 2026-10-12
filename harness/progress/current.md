@@ -1,6 +1,6 @@
 # Progreso actual — CONSOLE
 
-**WI-CONSOLE-004 en curso (2026-10-12, W-IN_PROGRESS, parcial):** happy paths OC01, OC03–OC09, OC12, OC13 y OC15 formalizados en la Feature 013; OC02, OC10, OC11 y OC14 en `DECISION_REQUIRED`. Solo documentación; nada implementado ni cubierto. Falta: decisión del usuario sobre esos cuatro casos, revisión humana, checkpoints `implementation-delivery`, `before-review` y `before-done`. Pausado por orden del usuario a favor de un WI mínimo de correcciones de experimentos.
+**WI-CONSOLE-004 en pausa (2026-10-12, `W-READY`, `activeWorkItem: null`):** happy paths OC01, OC03–OC09, OC12, OC13 y OC15 formalizados en la Feature 013 (`c4379ec`); OC02, OC10, OC11 y OC14 en `DECISION_REQUIRED`. Solo documentación; nada implementado ni cubierto. Pausado por orden del usuario; al reanudar hay que re-seleccionar, re-registrar la aprobación y correr de nuevo el `start`. Ver `harness/reports/wi-console-004-pause.md`. **Siguiente WI:** el mínimo de correcciones de experimentos, que abrirá otro Leader.
 
 ## Siguiente corte (2026-10-10)
 

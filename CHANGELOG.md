@@ -4,6 +4,8 @@ Todos los cambios notables de la línea base SDD se registran aquí. El contenid
 
 ## [Unreleased]
 
+- **WI-CONSOLE-004 (pausa, 2026-10-12):** vuelve a `W-READY` (`activeWorkItem: null`, `ST-CONSOLE-004` `T-READY`) por orden del usuario para dar paso a un WI mínimo de correcciones de experimentos; el trabajo de `c4379ec` se conserva y las decisiones de OC02, OC10, OC11 y OC14 siguen pendientes (`harness/reports/wi-console-004-pause.md`). Sin `app/`, UI, API ni contratos.
+
 - **WI-CONSOLE-004:** los happy paths OC01–OC15 quedan formalizados en la Feature 013 (entrada, salida, invariantes, prueba propuesta y fuente); OC02, OC10, OC11 y OC14 quedan `DECISION_REQUIRED`. Solo documentación: sin `app/`, UI, API ni contratos; sin subcasos; no implica implementación ni cobertura, y los casos siguen `O-CATALOGUED`.
 
 - **WI-CONSOLE-025 / CS-CORE-20261012-001:** los espejos SYSTEM-2.9 e INTEROP-2.8 se adoptan byte a byte desde Core. Se registra el estado operativo de reutilización de infraestructura de Sandbox; Console no cambia UI, API, DTOs, producto, despliegue ni GCE.
