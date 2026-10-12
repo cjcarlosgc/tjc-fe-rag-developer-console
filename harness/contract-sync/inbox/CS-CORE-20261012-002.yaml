@@ -11,4 +11,6 @@ requiredAction:
   - Console: al espejar INTEROP-2.7, tomar spec/contracts/interoperability-contract.md del commit indicado en sourceRevision (fusion en feature/jean, a7c04cef) y NO de la revision original del evento corregido, que vive en la rama PHP con base anterior a WI-CORE-027 y regresionaria /evidence y las tasas nulas. Sin cambio funcional ni de contrato.
 sourceRevision: a7c04cef12740941d8559c743f84ed287fb57ced
 consumerImportedAt: 2026-10-12T18:50:16.622Z
-status: C-PENDING
+status: C-RESOLVED
+acknowledgementEvidence: harness/reports/wi-console-029-contract-sync-scope-review.md
+resolutionEvidence: harness/reports/wi-console-029-implementation.md

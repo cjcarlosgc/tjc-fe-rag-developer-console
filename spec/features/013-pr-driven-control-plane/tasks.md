@@ -17,4 +17,6 @@
 
 - [x] **ST-CONSOLE-027 · T-DONE · WI-CONSOLE-025 · HU11:** espejar SYSTEM-2.9 e INTEROP-2.8 de Core; sin UI, producto ni GCE.
 
+- [x] **ST-CONSOLE-031 · T-DONE · WI-CONSOLE-029 · HU01, HU11, HU14, HU15:** acusar y clasificar los eventos de Contract Sync de Core pendientes (`CS-CORE-20261009-012`, `20261010-001/-002`, `20261011-002/-003`, `20261012-002/-003/-004`) con evidencia verificable; sin UI, DTOs, endpoints, espejos ni código de producto. Aprobación: `harness/reports/wi-console-029-scope-approval.md`.
+
 La implementación antigua y sus IDs HU se conservan en `CHANGELOG.md`, `harness/reports/` y Git, no como backlog ejecutable actual.

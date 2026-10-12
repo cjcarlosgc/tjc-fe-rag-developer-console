@@ -2786,6 +2786,87 @@
         ]
       },
       "closedAt": "2026-10-12T20:59:43.306Z"
+    },
+    {
+      "id": "WI-CONSOLE-029",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P2",
+      "sprint": "SMART V3",
+      "title": "Acusar y clasificar los eventos de Contract Sync de Core pendientes",
+      "storyIds": [
+        "HU01",
+        "HU11",
+        "HU14",
+        "HU15"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-031"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md"
+      ],
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-029-scope-approval.md"
+      ],
+      "acceptanceCriteria": [
+        "Cada evento C-PENDING del buzón queda clasificado con evidencia real (acusado/resuelto, abierto con motivo o no aplicable a Console) y el contenido de los eventos no se modifica.",
+        "Los eventos dirigidos a Console cuyo contenido ya adoptan los espejos actuales se acusan y resuelven con SHA-256 y ascendencia git verificados contra Core.",
+        "Los eventos que no apuntan a Console quedan documentados como no aplicables sin forzar estados; ningún espejo, UI, API ni contrato cambia.",
+        "lint, tsc -b --noEmit, pruebas, build y validadores SDD/Harness pasan; WI-CONSOLE-004 permanece W-READY."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-029-scope-approval.md",
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-029 solo acusa y clasifica eventos de Core sin tocar bindings, UI ni endpoints.",
+          "report": "harness/reports/wi-console-029-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-029 solo acusa y clasifica eventos de Core sin tocar autorizacion ni interfaz.",
+          "report": "harness/reports/wi-console-029-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-029 no cambia login, sesion, tokens ni el cliente HTTP.",
+          "report": "harness/reports/wi-console-029-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-029 no altera Projects ni visibilidad.",
+          "report": "harness/reports/wi-console-029-contract-sync-scope-review.md"
+        }
+      ],
+      "approved": true,
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-10-12T21:03:51.182Z",
+        "note": "Ninguna decision PENDING/PROPOSED con Blocks alcanza este WI documental; el usuario aprobo el alcance en el chat."
+      },
+      "closedAt": "2026-10-12T21:16:26.000Z"
     }
   ]
 }

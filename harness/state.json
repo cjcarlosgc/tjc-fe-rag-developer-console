@@ -8265,6 +8265,417 @@
         ]
       },
       "closedAt": "2026-10-12T20:59:43.306Z"
+    },
+    {
+      "id": "WI-CONSOLE-029",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "priority": "P2",
+      "sprint": "SMART V3",
+      "title": "Acusar y clasificar los eventos de Contract Sync de Core pendientes",
+      "storyIds": [
+        "HU01",
+        "HU11",
+        "HU14",
+        "HU15"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-031"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-029-scope-approval.md"
+      ],
+      "acceptanceCriteria": [
+        "Cada evento C-PENDING del buzón queda clasificado con evidencia real (acusado/resuelto, abierto con motivo o no aplicable a Console) y el contenido de los eventos no se modifica.",
+        "Los eventos dirigidos a Console cuyo contenido ya adoptan los espejos actuales se acusan y resuelven con SHA-256 y ascendencia git verificados contra Core.",
+        "Los eventos que no apuntan a Console quedan documentados como no aplicables sin forzar estados; ningún espejo, UI, API ni contrato cambia.",
+        "lint, tsc -b --noEmit, pruebas, build y validadores SDD/Harness pasan; WI-CONSOLE-004 permanece W-READY."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-029-scope-approval.md",
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "status": "W-DONE",
+      "approved": true,
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-10-12T21:03:51.182Z",
+        "note": "Ninguna decision PENDING/PROPOSED con Blocks alcanza este WI documental; el usuario aprobo el alcance en el chat."
+      },
+      "execution": {
+        "leaderAgent": "leader",
+        "analysisAgent": "leader",
+        "implementationAgent": "implementer",
+        "contractReviewAgent": "contract-reviewer",
+        "reviewAgent": "reviewer",
+        "uxReviewAgent": null,
+        "handoffs": [
+          {
+            "agent": "leader",
+            "executedBy": {
+              "agent": "leader",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "medium"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Analisis SDD y clasificacion de 8 eventos C-PENDING hechos por el leader (WI documental sin dudas de alcance); 5 no apuntan a Console, 3 se acusan."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "harness/reports/wi-console-029-contract-sync-scope-review.md",
+              "harness/reports/wi-console-029-sdd-verification.md"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-029-sdd-verification.md"
+            ],
+            "recommendedNextStep": "Delegar la redaccion del reporte de evidencia al implementer."
+          },
+          {
+            "agent": "implementer",
+            "executedBy": {
+              "agent": "implementer",
+              "configuredModel": "claude-haiku-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Verificaciones 1-5 reejecutadas con evidencia propia: a7c04cef ancestro de 76053463, SHA-256 de espejos = Core 76053463, inbox solo cambia status/acknowledgementEvidence.",
+              "Diff a7c04cef..76053463 caracterizado hunk a hunk como actualizacion posterior con reemplazos no normativos (no solo aditiva); §6.16 /trace y /evidence identicos salvo GH-INTEROP-1.3 a 1.5; ningun endpoint, codigo de error ni termino normativo desaparece."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "harness/reports/wi-console-029-implementation.md"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-029-implementation.md"
+            ],
+            "recommendedNextStep": "Resolver CS-CORE-20261012-002/-003/-004 y pasar a revision contractual e independiente."
+          },
+          {
+            "agent": "contract-reviewer",
+            "executedBy": {
+              "agent": "contract-reviewer",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "medium"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Targets y requiredAction verificados; los 5 eventos no dirigidos a Console no requieren accion en Console.",
+              "Ancestria y SHA-256 de espejos contra Core 76053463 verificados; diff a7c04cef..76053463 sin perdida de endpoints, codigos de error ni terminos normativos; §6.16 /trace y /evidence integros."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "harness/reports/wi-console-029-contract-review.md"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-029-contract-review.md"
+            ],
+            "recommendedNextStep": "Cerrar el WI."
+          },
+          {
+            "agent": "reviewer",
+            "executedBy": {
+              "agent": "reviewer",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "medium"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Alcance respetado: solo inbox -002/-003/-004, state, work-items y tasks.md; sin app/, espejos ni UI.",
+              "Validadores y reverificacion contra Core pasan; observacion no bloqueante sobre texto intermedio del reporte de implementacion, anotada en el cierre."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "harness/reports/wi-console-029-review.md"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-029-review.md"
+            ],
+            "recommendedNextStep": "Cerrar el WI."
+          }
+        ],
+        "reviewCycles": 0,
+        "maxReviewCycles": 2
+      },
+      "gates": {
+        "sddVerified": "G-PASSED",
+        "implementationCompleted": "G-PASSED",
+        "independentReviewPassed": "G-PASSED",
+        "technicalChecksPassed": "G-PASSED",
+        "interopSyncChecked": "G-PASSED",
+        "noMocksPresentedAsLive": "G-PASSED",
+        "noBlockingDecisions": "G-PASSED",
+        "retryLimitRespected": "G-PASSED",
+        "uxReviewed": "G-NOT_APPLICABLE",
+        "contractReviewed": "G-NOT_APPLICABLE",
+        "canonicalContractSynced": "G-NOT_APPLICABLE",
+        "contractSyncPublished": "G-NOT_APPLICABLE"
+      },
+      "coordination": {
+        "contractImpact": false,
+        "publishesContract": false,
+        "uiImpact": false,
+        "pullCheckpoints": [
+          {
+            "checkpoint": "start",
+            "workItem": "WI-CONSOLE-029",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [
+              "CS-CORE-20261012-002",
+              "CS-CORE-20261012-003",
+              "CS-CORE-20261012-004"
+            ],
+            "resolvedSyncIds": [
+              "CS-20260920-002",
+              "CS-20260924-001",
+              "CS-CORE-20260926-001",
+              "CS-CORE-20260927-001",
+              "CS-CORE-20260927-003",
+              "CS-CORE-20260927-004",
+              "CS-CORE-20261008-001",
+              "CS-CORE-20261008-002",
+              "CS-CORE-20261008-003",
+              "CS-CORE-20261008-005",
+              "CS-CORE-20261008-006",
+              "CS-CORE-20261009-008",
+              "CS-CORE-20261009-009",
+              "CS-CORE-20261009-010",
+              "CS-CORE-20261009-011",
+              "CS-CORE-20261009-013",
+              "CS-CORE-20261009-014",
+              "CS-CORE-20261009-015",
+              "CS-CORE-20261009-016",
+              "CS-CORE-20261009-017",
+              "CS-CORE-20261009-018",
+              "CS-CORE-20261010-003",
+              "CS-CORE-20261011-001",
+              "CS-CORE-20261011-004",
+              "CS-CORE-20261012-001"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [],
+            "checkedAt": "2026-10-12T21:03:34.587Z"
+          },
+          {
+            "checkpoint": "implementation-delivery",
+            "workItem": "WI-CONSOLE-029",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002",
+              "CS-20260924-001",
+              "CS-CORE-20260926-001",
+              "CS-CORE-20260927-001",
+              "CS-CORE-20260927-003",
+              "CS-CORE-20260927-004",
+              "CS-CORE-20261008-001",
+              "CS-CORE-20261008-002",
+              "CS-CORE-20261008-003",
+              "CS-CORE-20261008-005",
+              "CS-CORE-20261008-006",
+              "CS-CORE-20261009-008",
+              "CS-CORE-20261009-009",
+              "CS-CORE-20261009-010",
+              "CS-CORE-20261009-011",
+              "CS-CORE-20261009-013",
+              "CS-CORE-20261009-014",
+              "CS-CORE-20261009-015",
+              "CS-CORE-20261009-016",
+              "CS-CORE-20261009-017",
+              "CS-CORE-20261009-018",
+              "CS-CORE-20261010-003",
+              "CS-CORE-20261011-001",
+              "CS-CORE-20261011-004",
+              "CS-CORE-20261012-001",
+              "CS-CORE-20261012-002",
+              "CS-CORE-20261012-003",
+              "CS-CORE-20261012-004"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-12T21:12:05.918Z"
+          },
+          {
+            "checkpoint": "before-review",
+            "workItem": "WI-CONSOLE-029",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002",
+              "CS-20260924-001",
+              "CS-CORE-20260926-001",
+              "CS-CORE-20260927-001",
+              "CS-CORE-20260927-003",
+              "CS-CORE-20260927-004",
+              "CS-CORE-20261008-001",
+              "CS-CORE-20261008-002",
+              "CS-CORE-20261008-003",
+              "CS-CORE-20261008-005",
+              "CS-CORE-20261008-006",
+              "CS-CORE-20261009-008",
+              "CS-CORE-20261009-009",
+              "CS-CORE-20261009-010",
+              "CS-CORE-20261009-011",
+              "CS-CORE-20261009-013",
+              "CS-CORE-20261009-014",
+              "CS-CORE-20261009-015",
+              "CS-CORE-20261009-016",
+              "CS-CORE-20261009-017",
+              "CS-CORE-20261009-018",
+              "CS-CORE-20261010-003",
+              "CS-CORE-20261011-001",
+              "CS-CORE-20261011-004",
+              "CS-CORE-20261012-001",
+              "CS-CORE-20261012-002",
+              "CS-CORE-20261012-003",
+              "CS-CORE-20261012-004"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-12T21:12:25.424Z"
+          },
+          {
+            "checkpoint": "before-done",
+            "workItem": "WI-CONSOLE-029",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002",
+              "CS-20260924-001",
+              "CS-CORE-20260926-001",
+              "CS-CORE-20260927-001",
+              "CS-CORE-20260927-003",
+              "CS-CORE-20260927-004",
+              "CS-CORE-20261008-001",
+              "CS-CORE-20261008-002",
+              "CS-CORE-20261008-003",
+              "CS-CORE-20261008-005",
+              "CS-CORE-20261008-006",
+              "CS-CORE-20261009-008",
+              "CS-CORE-20261009-009",
+              "CS-CORE-20261009-010",
+              "CS-CORE-20261009-011",
+              "CS-CORE-20261009-013",
+              "CS-CORE-20261009-014",
+              "CS-CORE-20261009-015",
+              "CS-CORE-20261009-016",
+              "CS-CORE-20261009-017",
+              "CS-CORE-20261009-018",
+              "CS-CORE-20261010-003",
+              "CS-CORE-20261011-001",
+              "CS-CORE-20261011-004",
+              "CS-CORE-20261012-001",
+              "CS-CORE-20261012-002",
+              "CS-CORE-20261012-003",
+              "CS-CORE-20261012-004"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-12T21:16:16.967Z"
+          }
+        ],
+        "publishedSyncIds": [],
+        "pendingRelevantSyncIds": [],
+        "knownIncompatibilities": []
+      },
+      "evidence": [
+        "harness/reports/wi-console-029-scope-approval.md",
+        "harness/reports/wi-console-029-sdd-verification.md",
+        "harness/reports/wi-console-029-contract-sync-scope-review.md",
+        "harness/reports/wi-console-029-implementation.md",
+        "harness/reports/wi-console-029-contract-review.md",
+        "harness/reports/wi-console-029-review.md",
+        "harness/reports/wi-console-029-closure.md"
+      ],
+      "blockedReason": null,
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-029 solo acusa y clasifica eventos de Core sin tocar bindings, UI ni endpoints.",
+          "report": "harness/reports/wi-console-029-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-029 solo acusa y clasifica eventos de Core sin tocar autorizacion ni interfaz.",
+          "report": "harness/reports/wi-console-029-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-029 no cambia login, sesion, tokens ni el cliente HTTP.",
+          "report": "harness/reports/wi-console-029-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-029 no altera Projects ni visibilidad.",
+          "report": "harness/reports/wi-console-029-contract-sync-scope-review.md"
+        }
+      ],
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md"
+      ],
+      "gateEvidence": {
+        "sddVerified": [
+          "harness/reports/wi-console-029-sdd-verification.md"
+        ],
+        "noBlockingDecisions": [
+          "harness/reports/wi-console-029-sdd-verification.md"
+        ],
+        "implementationCompleted": [
+          "harness/reports/wi-console-029-implementation.md"
+        ],
+        "technicalChecksPassed": [
+          "harness/reports/wi-console-029-closure.md"
+        ],
+        "interopSyncChecked": [
+          "harness/reports/wi-console-029-contract-sync-scope-review.md"
+        ],
+        "noMocksPresentedAsLive": [
+          "harness/reports/wi-console-029-closure.md"
+        ],
+        "independentReviewPassed": [
+          "harness/reports/wi-console-029-review.md"
+        ],
+        "retryLimitRespected": [
+          "harness/reports/wi-console-029-review.md"
+        ]
+      },
+      "closedAt": "2026-10-12T21:16:26.000Z"
     }
   ],
   "activeWorkItem": null
