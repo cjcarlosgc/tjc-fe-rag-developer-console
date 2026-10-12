@@ -63,8 +63,8 @@ interface StrategyMetricsResponse {
   toolCalls: number | null
   filesInspected: number | null
   failures: Partial<Record<FailureType, number>>
-  evaluableRepetitions?: number
-  nonEvaluableRepetitions?: number
+  evaluableRepetitions: number
+  nonEvaluableRepetitions: number
 }
 
 interface ExperimentRepetitionResponse {

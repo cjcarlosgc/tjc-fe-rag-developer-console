@@ -21,9 +21,8 @@ export interface StrategyMetrics {
   contextTokens?: number | null
   toolCalls?: number | null
   filesInspected?: number | null
-  /** Respuestas previas a CS-CORE-20261009-015 no los traen: `undefined` = no informado. */
-  evaluableRepetitions?: number
-  nonEvaluableRepetitions?: number
+  evaluableRepetitions: number
+  nonEvaluableRepetitions: number
 }
 export interface RepetitionResult {
   target: string

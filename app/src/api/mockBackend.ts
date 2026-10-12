@@ -920,8 +920,8 @@ export async function mockGetTestInventory(projectVersionId: string): Promise<Te
 function experimentResult(target: string): ExperimentResultViewModel {
   return {
     // Agregados derivados de las 6 repeticiones (denominador 3 por brazo): válida = passed; compila = failureType distinto de COMPILATION/INFRASTRUCTURE; ejecuta = NONE o TEST_ASSERTION.
-    baseline: { strategy: 'GENERALIST_AGENT', validRate: 1 / 3, compilationRate: 1 / 3, executionRate: 1 / 3, passedRate: 1 / 3, generationDurationMs: 3_900, executionDurationMs: 920, totalDurationMs: 4_820, totalTokens: 2_940, estimatedCost: .018, failures: { COMPILATION: 1, INFRASTRUCTURE: 1 }, toolCalls: 6, filesInspected: 4 },
-    rag: { strategy: 'RAG', validRate: 2 / 3, compilationRate: 1, executionRate: 1, passedRate: 2 / 3, generationDurationMs: 4_610, executionDurationMs: 850, totalDurationMs: 5_460, totalTokens: 4_180, estimatedCost: .027, failures: { TEST_ASSERTION: 1 }, retrievedChunks: 24, selectedChunks: 7, contextTokens: 2_180 },
+    baseline: { strategy: 'GENERALIST_AGENT', validRate: 1 / 3, compilationRate: 1 / 3, executionRate: 1 / 3, passedRate: 1 / 3, generationDurationMs: 3_900, executionDurationMs: 920, totalDurationMs: 4_820, totalTokens: 2_940, estimatedCost: .018, failures: { COMPILATION: 1, INFRASTRUCTURE: 1 }, toolCalls: 6, filesInspected: 4, evaluableRepetitions: 3, nonEvaluableRepetitions: 0 },
+    rag: { strategy: 'RAG', validRate: 2 / 3, compilationRate: 1, executionRate: 1, passedRate: 2 / 3, generationDurationMs: 4_610, executionDurationMs: 850, totalDurationMs: 5_460, totalTokens: 4_180, estimatedCost: .027, failures: { TEST_ASSERTION: 1 }, retrievedChunks: 24, selectedChunks: 7, contextTokens: 2_180, evaluableRepetitions: 3, nonEvaluableRepetitions: 0 },
     // DEMO · DATOS SIMULADOS: configuración ilustrativa, no es un valor medido.
     configuration: {
       model: { provider: 'OpenAI', model: 'gpt-6-luna', modelVersion: null, reasoningEffort: 'high', temperature: null, maxOutputTokens: null },
@@ -980,7 +980,7 @@ function demoScenarioOperation(scenario: DemoExperimentScenario, experimentId: s
   })
   const metrics = (partial: Partial<StrategyMetrics> & Pick<StrategyMetrics, 'strategy'>): StrategyMetrics => ({
     validRate: null, compilationRate: null, executionRate: null, passedRate: null, generationDurationMs: null, executionDurationMs: null, totalDurationMs: null,
-    totalTokens: null, estimatedCost: null, failures: {}, ...partial,
+    totalTokens: null, estimatedCost: null, failures: {}, evaluableRepetitions: 3, nonEvaluableRepetitions: 0, ...partial,
   })
   switch (scenario) {
     case 'legacy': {

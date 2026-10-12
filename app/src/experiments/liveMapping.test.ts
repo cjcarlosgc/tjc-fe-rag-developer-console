@@ -31,8 +31,8 @@ test('separa las métricas de RAG y GENERALIST_AGENT en baseline/rag', () => {
     repetitionsPerStrategy: 3,
     completedAt: '2026-09-07T00:05:00.000Z',
     strategies: [
-      { strategy: 'RAG', validRate: .83, compilationRate: 1, executionRate: .83, passedRate: .83, generationDurationMs: 900, executionDurationMs: 200, totalDurationMs: 1100, inputTokens: 500, outputTokens: 200, totalTokens: 700, estimatedCost: .02, retrievedChunks: 10, selectedChunks: 4, contextTokens: 900, toolCalls: null, filesInspected: null, failures: {} },
-      { strategy: 'GENERALIST_AGENT', validRate: .5, compilationRate: .67, executionRate: .5, passedRate: .5, generationDurationMs: 1200, executionDurationMs: 300, totalDurationMs: 1500, inputTokens: 800, outputTokens: 300, totalTokens: 1100, estimatedCost: .03, retrievedChunks: null, selectedChunks: null, contextTokens: null, toolCalls: 5, filesInspected: 3, failures: { COMPILATION: 1 } },
+      { strategy: 'RAG', evaluableRepetitions: 3, nonEvaluableRepetitions: 0, validRate: .83, compilationRate: 1, executionRate: .83, passedRate: .83, generationDurationMs: 900, executionDurationMs: 200, totalDurationMs: 1100, inputTokens: 500, outputTokens: 200, totalTokens: 700, estimatedCost: .02, retrievedChunks: 10, selectedChunks: 4, contextTokens: 900, toolCalls: null, filesInspected: null, failures: {} },
+      { strategy: 'GENERALIST_AGENT', evaluableRepetitions: 3, nonEvaluableRepetitions: 0, validRate: .5, compilationRate: .67, executionRate: .5, passedRate: .5, generationDurationMs: 1200, executionDurationMs: 300, totalDurationMs: 1500, inputTokens: 800, outputTokens: 300, totalTokens: 1100, estimatedCost: .03, retrievedChunks: null, selectedChunks: null, contextTokens: null, toolCalls: 5, filesInspected: 3, failures: { COMPILATION: 1 } },
     ],
     repetitions: [
       { repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', totalDurationMs: 350, totalTokens: 230, errorSummary: null },
@@ -68,8 +68,8 @@ const resultsWith27: ExperimentResultsResponse = {
   repetitionsPerStrategy: 3,
   completedAt: '2026-09-07T00:05:00.000Z',
   strategies: [
-    { strategy: 'RAG', validRate: 1, compilationRate: 1, executionRate: 1, passedRate: 1, generationDurationMs: 1, executionDurationMs: 1, totalDurationMs: 2, inputTokens: null, outputTokens: null, totalTokens: null, estimatedCost: null, retrievedChunks: null, selectedChunks: null, contextTokens: null, toolCalls: null, filesInspected: null, failures: {} },
-    { strategy: 'GENERALIST_AGENT', validRate: 0, compilationRate: 0, executionRate: 0, passedRate: 0, generationDurationMs: 1, executionDurationMs: 1, totalDurationMs: 2, inputTokens: null, outputTokens: null, totalTokens: null, estimatedCost: null, retrievedChunks: null, selectedChunks: null, contextTokens: null, toolCalls: null, filesInspected: null, failures: {} },
+    { strategy: 'RAG', evaluableRepetitions: 3, nonEvaluableRepetitions: 0, validRate: 1, compilationRate: 1, executionRate: 1, passedRate: 1, generationDurationMs: 1, executionDurationMs: 1, totalDurationMs: 2, inputTokens: null, outputTokens: null, totalTokens: null, estimatedCost: null, retrievedChunks: null, selectedChunks: null, contextTokens: null, toolCalls: null, filesInspected: null, failures: {} },
+    { strategy: 'GENERALIST_AGENT', evaluableRepetitions: 0, nonEvaluableRepetitions: 3, validRate: null, compilationRate: null, executionRate: null, passedRate: null, generationDurationMs: null, executionDurationMs: null, totalDurationMs: null, inputTokens: null, outputTokens: null, totalTokens: null, estimatedCost: null, retrievedChunks: null, selectedChunks: null, contextTokens: null, toolCalls: null, filesInspected: null, failures: {} },
   ],
   repetitions: [
     { repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', totalDurationMs: 350, totalTokens: null, errorSummary: null, pairId: 'pair-1', pairPosition: 1, attempt: 2, technicallyEvaluable: false },
@@ -147,13 +147,14 @@ test('tasas y medias null de una estrategia se mapean como null y los contadores
     ...resultsWith27,
     strategies: [
       { ...resultsWith27.strategies[0] },
-      { ...resultsWith27.strategies[1], validRate: null, compilationRate: null, executionRate: null, passedRate: null, generationDurationMs: null, executionDurationMs: null, totalDurationMs: null, evaluableRepetitions: 0, nonEvaluableRepetitions: 3 },
+      { ...resultsWith27.strategies[1] },
     ],
   }
   const operation = toExperimentOperation(configuredStatus, noEval, 'calculateTotal')
-  expect(operation.result?.baseline).toMatchObject({ validRate: null, passedRate: null, totalDurationMs: null, executionDurationMs: null, evaluableRepetitions: 0, nonEvaluableRepetitions: 3 })
+  expect(operation.result?.baseline).toMatchObject({ validRate: null, compilationRate: null, executionRate: null, passedRate: null, generationDurationMs: null, executionDurationMs: null, totalDurationMs: null, failures: {}, evaluableRepetitions: 0, nonEvaluableRepetitions: 3 })
   expect(operation.result?.baseline.validRate).not.toBe(0)
-  expect(operation.result?.rag.evaluableRepetitions).toBeUndefined()
+  expect(operation.result?.rag.evaluableRepetitions).toBe(3)
+  expect(operation.result?.rag.nonEvaluableRepetitions).toBe(0)
 })
 
 test('un experimento FAILED mapea failureCode y failureMessage sin descartarlos', () => {

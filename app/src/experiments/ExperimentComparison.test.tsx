@@ -17,8 +17,8 @@ const configuration: ExperimentConfiguration = {
 }
 
 const withValues: ExperimentResultViewModel = {
-  baseline: { strategy: 'GENERALIST_AGENT', validRate: .5, compilationRate: .5, executionRate: .5, passedRate: .5, generationDurationMs: 600, executionDurationMs: 300, totalDurationMs: 1000, totalTokens: 100, estimatedCost: .01, failures: { INFRASTRUCTURE: 1 } },
-  rag: { strategy: 'RAG', validRate: .75, compilationRate: .75, executionRate: .75, passedRate: .75, generationDurationMs: 900, executionDurationMs: 450, totalDurationMs: 1500, totalTokens: 160, estimatedCost: .02, failures: {} },
+  baseline: { strategy: 'GENERALIST_AGENT', validRate: .5, compilationRate: .5, executionRate: .5, passedRate: .5, generationDurationMs: 600, executionDurationMs: 300, totalDurationMs: 1000, totalTokens: 100, estimatedCost: .01, failures: { INFRASTRUCTURE: 1 }, evaluableRepetitions: 2, nonEvaluableRepetitions: 1 },
+  rag: { strategy: 'RAG', validRate: .75, compilationRate: .75, executionRate: .75, passedRate: .75, generationDurationMs: 900, executionDurationMs: 450, totalDurationMs: 1500, totalTokens: 160, estimatedCost: .02, failures: {}, evaluableRepetitions: 3, nonEvaluableRepetitions: 0 },
   configuration,
   repetitions: [
     { target: 'Cart.total', repetition: 1, strategy: 'GENERALIST_AGENT', valid: true, failureType: 'NONE', generationDurationMs: null, executionDurationMs: null, totalDurationMs: 500, totalTokens: 50, errorSummary: null, pairId: 'pair-visible-1', pairPosition: 2, attempt: 1, technicallyEvaluable: true },
@@ -41,7 +41,7 @@ function rowCells(text: string, index = 0): HTMLElement[] {
   return within(row).getAllByRole('cell')
 }
 
-const result: ExperimentResultViewModel = { baseline: { strategy: 'GENERALIST_AGENT', validRate: .5, compilationRate: .6, executionRate: .5, passedRate: .5, generationDurationMs: 600, executionDurationMs: 300, totalDurationMs: 1000, totalTokens: 100, estimatedCost: .01, failures: { COMPILATION: 2 } }, rag: { strategy: 'RAG', validRate: .75, compilationRate: .8, executionRate: .75, passedRate: .75, generationDurationMs: 900, executionDurationMs: 450, totalDurationMs: 1500, totalTokens: 160, estimatedCost: .02, failures: { COMPILATION: 1 }, retrievedChunks: 20, selectedChunks: 6, contextTokens: 1200 }, repetitions: [{ target: 'Cart.total', repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', generationDurationMs: null, executionDurationMs: null, totalDurationMs: 500, totalTokens: 50, errorSummary: null, pairId: null, pairPosition: null, attempt: null, technicallyEvaluable: null }] }
+const result: ExperimentResultViewModel = { baseline: { strategy: 'GENERALIST_AGENT', validRate: .5, compilationRate: .6, executionRate: .5, passedRate: .5, generationDurationMs: 600, executionDurationMs: 300, totalDurationMs: 1000, totalTokens: 100, estimatedCost: .01, failures: { COMPILATION: 2 }, evaluableRepetitions: 3, nonEvaluableRepetitions: 0 }, rag: { strategy: 'RAG', validRate: .75, compilationRate: .8, executionRate: .75, passedRate: .75, generationDurationMs: 900, executionDurationMs: 450, totalDurationMs: 1500, totalTokens: 160, estimatedCost: .02, failures: { COMPILATION: 1 }, retrievedChunks: 20, selectedChunks: 6, contextTokens: 1200, evaluableRepetitions: 3, nonEvaluableRepetitions: 0 }, repetitions: [{ target: 'Cart.total', repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', generationDurationMs: null, executionDurationMs: null, totalDurationMs: 500, totalTokens: 50, errorSummary: null, pairId: null, pairPosition: null, attempt: null, technicallyEvaluable: null }] }
 
 function renderWithRouter(ui: ReactElement) {
   return render(<MemoryRouter>{ui}</MemoryRouter>)
@@ -253,9 +253,9 @@ test('con repeticiones evaluables muestra el respaldo «N evaluables · M no eva
   expect(screen.queryByText(/sin datos evaluables/)).toBeNull()
 })
 
-test('sin contadores de evaluabilidad (respuesta previa) no se muestra ningún respaldo', () => {
+test('las respuestas OE5 siempre muestran los contadores de evaluabilidad', () => {
   const { container } = renderWithRouter(<ExperimentComparison result={result} projectId="prj1" experimentId="exp1" />)
-  expect(container.querySelector('.evaluability-note')).toBeNull()
+  expect(container.querySelector('.evaluability-note')).toHaveTextContent('3 evaluables · 0 no evaluables')
 })
 
 test('sin delta cuando un lado de la duración de Sandbox no existe; la media de ejecución nunca se promedia en la UI', () => {
