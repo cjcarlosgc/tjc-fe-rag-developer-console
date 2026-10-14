@@ -1,8 +1,8 @@
 # Contrato universal de interoperabilidad
 
-**Versión:** INTEROP-2.12
+**Versión:** INTEROP-2.16
 **Compatible con:** SYSTEM-2.12
-**Fecha de corte:** 2026-10-12
+**Fecha de corte:** 2026-10-14
 **Estado:** APROBADO salvo decisiones externas referenciadas explícitamente
 **Propietario canónico:** `tjc-be-rag-core-api/spec/contracts/interoperability-contract.md`
 
@@ -11,7 +11,7 @@ Este documento define el contrato HTTP operativo entre Developer Console, RAG Co
 ## 1. Compatibilidad y autoridad
 
 - El único disparador de análisis productivo es un PR/HEAD vinculado a un `AnalysisRun`. El snapshot ZIP interno se transfiere a Docker/Sandbox y no constituye una entrada manual.
-- `INTEROP-2.12` es la versión documental vigente (`WI-CORE-049`, documental): solo alinea la cabecera con `SYSTEM-2.12`; no toca ninguna sección §6.x ni el transporte. `INTEROP-2.11` (`WI-CORE-049`, documental): corrige en §6.10 el estado del mensaje de un compare no verificable, ya implementado en `WI-CORE-046`, y alinea la cabecera con `SYSTEM-2.11`; no cambia rutas, campos, códigos, estados ni transporte. `INTEROP-2.10` (`WI-CORE-047`, aclaratoria): corrige el estado del mensaje de un PR cuyo compare no puede verificarse (§6.10) y alinea la cabecera con `SYSTEM-2.10`; no cambia rutas, campos, códigos ni estados. `INTEROP-2.9` (`WI-CORE-045`, aditiva y aclaratoria, sin cambio de rutas, campos ni códigos ya emitidos por Core): fija en §6.11 el `404 FUNCTIONAL_QUESTION_NOT_FOUND` de una respuesta a una pregunta no accionable y el orden de errores de `POST …/answers`, cuándo `continuationAttemptId` es `null` y su carácter opaco, y en §6.10/§6.11 la semántica de `functionalBehaviorValidated` y el `resultSummary` objetivo de un PR que excede el límite del compare. `INTEROP-2.8`, sobre la base de `INTEROP-2.7`, agrega `projectRoot`/`effectiveProjectRoot`, el aislamiento de paths al subproyecto y el transporte de la raíz efectiva en Core→Sandbox (§6.1, §6.2 y §7.2); la selección automática se limita a un único candidato PHP y conserva un repositorio por Project. El consumidor Sandbox debe importar y aceptar el campo antes de que Core lo envíe en ejecuciones PHP; omitirlo conserva el comportamiento legacy de raíz `.` durante la transición. `INTEROP-2.7` (preparado en `WI-CORE-017`) agregó el rol Writer (§6.13), `UNKNOWN` auditado y procedencia/escenarios de Functional Knowledge (§6.11), OE5 (§6.5.1), comparación de retrieval OE2 (§6.15) y trace/evidencia (§6.16). Cada sección indica su estado: las capacidades implementadas en Core incluyen `UNKNOWN`/Functional Knowledge (`WI-CORE-018`–`020`), OE5 (`WI-CORE-023`–`025`), retrieval (`WI-CORE-022`, `028`), trace/evidencia (`WI-CORE-026`, `027`), PHP/PHPUnit (`WI-CORE-013`, `029`) y el rol Writer (`WI-CORE-019`); el resto sigue pendiente del WI indicado en su sección. Nada se infiere implementado por el número de versión. Antes de `INTEROP-2.7` regía `INTEROP-2.6`, que mantuvo rutas Core→Console y Core↔Sandbox, agregó el límite directo de UI GitHub (§6.14) y declaró el lenguaje de `ProjectVersion` y framework PHPUNIT. La compatibilidad durante el cambio se valida antes de retirar rutas anteriores.
+- `INTEROP-2.16` es la versión documental vigente (`WI-CORE-062`, documental y aditiva): `StageDuration` (§7.3) agrega `startedAt?` y `completedAt?` opcionales (ISO-8601 UTC) que el Sandbox emite por etapa desde `WI-SANDBOX-007` (`CS-SANDBOX-20261014-001`); no cambia rutas, códigos, autenticación, idempotencia, aislamiento ni los tipos existentes. `INTEROP-2.15` fue la versión documental vigente (`WI-CORE-058`, aditiva y retrocompatible): `RagDependencyEntryResponse` (§6.7) agrega `final?: true`; no cambia rutas, §6.16, `contextTokens` ni el ranking. `INTEROP-2.14` fue la versión documental vigente (`WI-CORE-057`, aditiva y retrocompatible): el detalle de traza RAG (§6.7) agrega el campo opcional `dependencyContext` (FQCN de las dependencias del target PHP); no cambia rutas, §6.16, `contextTokens` ni el ranking. `INTEROP-2.13` fue la versión documental vigente (`WI-CORE-054`, aditiva y retrocompatible): `StrategyMetricsResponse` (§6.5.1) agrega `technicallyValidRate` y `assertionFailureCount`; no cambia rutas ni campos existentes ni §6.16. `INTEROP-2.12` fue la versión documental vigente (`WI-CORE-049`, documental): solo alinea la cabecera con `SYSTEM-2.12`; no toca ninguna sección §6.x ni el transporte. `INTEROP-2.11` (`WI-CORE-049`, documental): corrige en §6.10 el estado del mensaje de un compare no verificable, ya implementado en `WI-CORE-046`, y alinea la cabecera con `SYSTEM-2.11`; no cambia rutas, campos, códigos, estados ni transporte. `INTEROP-2.10` (`WI-CORE-047`, aclaratoria): corrige el estado del mensaje de un PR cuyo compare no puede verificarse (§6.10) y alinea la cabecera con `SYSTEM-2.10`; no cambia rutas, campos, códigos ni estados. `INTEROP-2.9` (`WI-CORE-045`, aditiva y aclaratoria, sin cambio de rutas, campos ni códigos ya emitidos por Core): fija en §6.11 el `404 FUNCTIONAL_QUESTION_NOT_FOUND` de una respuesta a una pregunta no accionable y el orden de errores de `POST …/answers`, cuándo `continuationAttemptId` es `null` y su carácter opaco, y en §6.10/§6.11 la semántica de `functionalBehaviorValidated` y el `resultSummary` objetivo de un PR que excede el límite del compare. `INTEROP-2.8`, sobre la base de `INTEROP-2.7`, agrega `projectRoot`/`effectiveProjectRoot`, el aislamiento de paths al subproyecto y el transporte de la raíz efectiva en Core→Sandbox (§6.1, §6.2 y §7.2); la selección automática se limita a un único candidato PHP y conserva un repositorio por Project. El consumidor Sandbox debe importar y aceptar el campo antes de que Core lo envíe en ejecuciones PHP; omitirlo conserva el comportamiento legacy de raíz `.` durante la transición. `INTEROP-2.7` (preparado en `WI-CORE-017`) agregó el rol Writer (§6.13), `UNKNOWN` auditado y procedencia/escenarios de Functional Knowledge (§6.11), OE5 (§6.5.1), comparación de retrieval OE2 (§6.15) y trace/evidencia (§6.16). Cada sección indica su estado: las capacidades implementadas en Core incluyen `UNKNOWN`/Functional Knowledge (`WI-CORE-018`–`020`), OE5 (`WI-CORE-023`–`025`), retrieval (`WI-CORE-022`, `028`), trace/evidencia (`WI-CORE-026`, `027`), PHP/PHPUnit (`WI-CORE-013`, `029`) y el rol Writer (`WI-CORE-019`); el resto sigue pendiente del WI indicado en su sección. Nada se infiere implementado por el número de versión. Antes de `INTEROP-2.7` regía `INTEROP-2.6`, que mantuvo rutas Core→Console y Core↔Sandbox, agregó el límite directo de UI GitHub (§6.14) y declaró el lenguaje de `ProjectVersion` y framework PHPUNIT. La compatibilidad durante el cambio se valida antes de retirar rutas anteriores.
 - Las capacidades de experimento sobre `AnalysisRun`, historial de transiciones, listado transversal de Runs y conflicto de Functional Knowledge se especifican en §6.5, §6.10 y §6.11. Cada sección indica por separado si está implementada o pendiente; no se infiere de una nota histórica.
 - Los consumidores deben ignorar campos de respuesta desconocidos, pero los servidores rechazan campos de request no declarados.
 - Los DTO HTTP son explícitos y no exponen entidades ORM, tipos del SDK de Supabase ni modelos internos del LLM.
@@ -291,6 +291,7 @@ interface StrategyMetricsResponse {
   compilationRate: number | null
   executionRate: number | null
   passedRate: number | null
+  technicallyValidRate: number | null // INTEROP-2.13: fracción de repeticiones evaluables con compiled === true ∧ executed === true ∧ failureType ∈ {NONE, TEST_ASSERTION}; null si evaluableRepetitions = 0
   generationDurationMs: number | null // media de los valores no nulos de las repeticiones evaluables; null si ninguna lo registró (siempre null si evaluableRepetitions = 0)
   executionDurationMs: number | null // media de los valores no nulos; null si ninguna repetición evaluable invocó el Sandbox
   totalDurationMs: number | null // ídem generationDurationMs
@@ -304,6 +305,7 @@ interface StrategyMetricsResponse {
   toolCalls: number | null
   filesInspected: number | null
   failures: Partial<Record<FailureType, number>>
+  assertionFailureCount: number // INTEROP-2.13: repeticiones evaluables con failureType = TEST_ASSERTION; 0 si no hay evaluables; igual a failures.TEST_ASSERTION ?? 0
 }
 
 interface ExperimentRepetitionResponse {
@@ -345,6 +347,7 @@ El contrato HTTP queda definido. `DEC-EXP-002` queda `APROBADO` (herramientas, l
 - Herramientas permitidas del agente: `list_files`, `read_file`, `search_text` e `inspect_symbol`/referencias. Prohibidos: shell, Composer/PHPUnit/Jest/Vitest, escritura, Internet y GitHub API. Se persisten el tope de tool calls, el presupuesto de contexto, tokens, archivos y duración, y la secuencia observable de herramientas.
 - Diseño pareado: 3 repeticiones RAG y 3 GA forman 3 pares, cada repetición en sesión fresca. El orden dentro de cada par es aleatorio y reproducible a partir de `randomizationSeed`, que se persiste por experimento.
 - Reintentos: un fallo de la estrategia no tiene reintento de calidad; un fallo externo demostrado admite como máximo un reintento; un segundo fallo de infraestructura deja la repetición `technicallyEvaluable: false`. Implementación en Core: son fallos externos solo el fallo del proveedor LLM por HTTP 5xx, 429 o error de conexión, la excepción del cliente de Sandbox (`SandboxUnavailableError` u otra) y el resultado `INFRASTRUCTURE` del Sandbox salvo `TIMED_OUT`. El reintento es único (intento 2, inmediato, sesión fresca, mismo `pairId` y `pairPosition`); la fila vigente de cada repetición es su último intento (`attempt` 1 o 2). `technicallyEvaluable` es `false` tras el segundo fallo externo o si el intento 2 queda interrumpido (huérfano). Los experimentos creados antes de OE5 (`randomizationSeed` `null`) conservan su comportamiento anterior: sin pareado ni reintento. El sufijo `:2` de la identidad Core→Sandbox (§3) es interno y solo informativo para los consumidores.
+- `technicallyValidRate` y `assertionFailureCount` (INTEROP-2.13): `technicallyValidRate` es la fracción de las repeticiones evaluables cuya prueba generada se compiló (`compiled === true`) y se ejecutó (`executed === true`) y cuyo `failureType` es `NONE` o `TEST_ASSERTION`: una prueba técnicamente válida cuya aserción falla cuenta como válida para esta tasa. `TEST_RUNTIME`, `COMPILATION`, `DEPENDENCY`, `CONFIGURATION`, `INFRASTRUCTURE`, `UNKNOWN` y las repeticiones sin invocación al Sandbox no cuentan; `validRate` no cambia y `validRate ≤ technicallyValidRate`. Mismo denominador y reglas de `null` que las demás tasas (`null` solo si `evaluableRepetitions = 0`; un `0` es cero real). `assertionFailureCount` es un conteo no nulo (`0` sin evaluables) igual a `failures.TEST_ASSERTION ?? 0`. Son diagnóstico técnico: no declaran ganador ni se derivan en CF/CO, y la exportación de evidencia (§6.16, `schemaVersion` `'1'`) no cambia. Los consumidores deben tolerar su ausencia en respuestas de un Core anterior.
 - Ningún DTO declara un ganador. `validRate`, `passedRate` y similares son diagnóstico técnico y no se derivan en CF/CO (SYSTEM-2.6, «Calidad, métricas y evidencia»).
 - Autorización y errores: `POST /experiments` exige Writer y `Idempotency-Key`; los GET exigen Reader y un experimento inexistente o no visible responde el mismo `404` que ya devuelve `GET /experiments/{experimentId}`. Si el proveedor no admite el esfuerzo de razonamiento pedido, la creación responde `422 REASONING_EFFORT_UNSUPPORTED` y no se crea el experimento; `details` incluye `supportedEfforts: string[]` (esfuerzos admitidos por el modelo configurado). Si el modelo de experimentos no está disponible (`MODEL_UNAVAILABLE` interno), la creación responde `503 LLM_PROVIDER_UNAVAILABLE` (§4, dependencia de plataforma) y tampoco crea el experimento. `TIMED_OUT` del Sandbox es fallo de la prueba generada y no cuenta como fallo externo para el reintento.
 - PHP/PHPUnit (`PHP_LARAVEL_PHPUNIT`, `PHPUNIT`) se admite en experimentos desde `WI-CORE-029` (2026-10-09): `runnerHint` `PHPUNIT` y perfil `PHP_LARAVEL_PHPUNIT`; ambos brazos ubican el test según `DEC-PHP-GEN-001` (archivo nuevo, `CREATED`) y una respuesta sin `<?php` es resultado técnico desfavorable de la estrategia, sin reintento. `POST /experiments` responde `422 UNSUPPORTED_PROJECT` y no crea el experimento ni encola el job cuando la versión no tiene framework `JEST`/`VITEST`/`PHPUNIT` detectado (un proyecto PHP sin PHPUnit incluido). Precedencia: Core valida este `422` después de Writer, indexación, versión completada y target, y antes de resolver el modelo (`REASONING_EFFORT_UNSUPPORTED`/`503`).
@@ -458,6 +461,24 @@ type RagMatchedVia = 'SEMANTIC' | 'IMPORTS' | 'IMPORTED_BY' | 'SAME_NAMESPACE' |
 type RagCandidateDecision = 'SELECTED' | 'DISCARDED'
 type RagDiscardReason = 'BELOW_MINIMUM_SCORE' | 'TOP_K_LIMIT' | 'TOKEN_BUDGET'
 
+type RagDependencyOrigin = 'CONSTRUCTOR' | 'METHOD_SIGNATURE'
+type RagDependencyResolvedBy = 'LITERAL' | 'IMPORT' | 'SAME_NAMESPACE'
+
+interface RagDependencyEntryResponse {
+  typeName: string // nombre corto tal como aparece en el código
+  fqcn: string // nombre completo sin '\' inicial: tomado del `use` o de un literal con '\' del código, o del mismo namespace de la clase declarante solo si existe en el índice de la versión
+  origin: RagDependencyOrigin // dónde se declaró el tipo; si aparece en ambos, CONSTRUCTOR
+  resolvedBy: RagDependencyResolvedBy
+  final?: true // INTEROP-2.15; solo PHP; presente únicamente si el chunk de declaración del tipo, resuelto en el índice de la versión, es `final class` o una enumeración; ausente = no determinado o no final
+}
+
+interface RagDependencyContextResponse {
+  entries: RagDependencyEntryResponse[] // máximo 20; constructor primero, luego firma; sin duplicados por fqcn
+  unresolvedCount: number // tipos candidatos que no se resolvieron y no se listan (sin nombrarlos); no incluye los recortados
+  tokenCount: number // tokens del texto de la sección tal como entra al prompt, incluido el encabezado; máximo 300
+  truncated: boolean // true si se recortaron entradas por el máximo de 20 o de 300 tokens
+}
+
 interface RagTargetNodeResponse {
   chunkIds: Id[]
   excerpt: SourceExcerptResponse
@@ -491,6 +512,7 @@ interface RagContextTraceDetailResponse extends ContextTraceSummaryResponse {
     semanticWeight: number
     structuralWeight: number
   }
+  dependencyContext?: RagDependencyContextResponse // INTEROP-2.14; solo PHP; ausente en trazas anteriores y en TypeScript
 }
 
 type AgentToolName = 'list_files' | 'search_text' | 'inspect_symbol' | 'read_file'
@@ -536,6 +558,7 @@ Reglas:
 
 - Una traza se vincula a una `ProjectVersion` inmutable. Los hashes, rangos y snippets son evidencia; las líneas circundantes pueden reconstruirse desde el snapshot congelado.
 - `RAG` conserva candidatos seleccionados y descartados. `discardReason` es `null` únicamente cuando `decision=SELECTED`; un score no se presenta como probabilidad.
+- `dependencyContext` (INTEROP-2.14) es contexto determinista no rankeado: no es un candidato, no participa en `minimumScore`, `topK`, `maxContextTokens` ni en `contextTokens`, y sus `tokenCount` (máximo 300) se suman al prompt aparte (el presupuesto efectivo del prompt es `maxContextTokens` más la sección). Solo lista nombres que el código declara (por `use` o literal con `\`) o que existen en el índice de tipos de la versión dentro del namespace de la clase declarante (`SAME_NAMESPACE`); no lista escalares ni clases globales internas de PHP; `unresolvedCount` cuenta los tipos no resueltos sin nombrarlos y el objeto se omite si no hay entradas ni no resueltos. Los consumidores deben tolerar su ausencia (trazas anteriores y TypeScript: «no calculado», no «sin dependencias»). La evidencia §6.16 no lo incluye (`schemaVersion '1'`) y la comparación OE2 SE vs SEM (§6.15) no lo usa. `final` (INTEROP-2.15) solo se emite como `true` cuando el tipo resuelto está declarado en el índice de la versión como `final class` (con o sin `readonly`) o como enumeración (implícitamente final: PHPUnit no puede crear un doble). Su ausencia no significa que el tipo sea mockeable: significa que no se determinó o que no es final (`abstract class`, `interface`, `trait`, `class` sin `final`, tipos fuera del índice como `vendor/`). No afirma nada sobre tipos fuera del índice ni sobre los no resueltos, no cambia el orden, el tope de 20 entradas ni el de 300 tokens, y no es una señal test-aware (`DEC-RAG-001`) ni de ranking. Trazas anteriores no lo tienen (sin backfill); los consumidores deben tolerar su ausencia. Como el resto de la traza, puede contener nombres de código confidencial.
 - `AGENT` conserva la secuencia observable de tool calls. No usa `SELECTED`/`DISCARDED`, no expone mensajes internos del modelo y no afirma qué contenido influyó en su respuesta.
 - `list_files` devuelve un nodo resumen; sus rutas completas se consultan paginadas. Un resultado vacío o un error permanece como paso atenuable mediante `status`.
 - El detalle de una traza o un listado de archivos antes del estado terminal de su run/experimento devuelve `409 CONTEXT_TRACE_NOT_FINISHED`. Un id inexistente o no autorizado devuelve `404 CONTEXT_TRACE_NOT_FOUND`.
@@ -1423,6 +1446,8 @@ interface RunnerFacts {
 interface StageDuration {
   stage: SandboxStage
   durationMs: number
+  startedAt?: IsoDateTime // INTEROP-2.16: inicio de la etapa (ISO-8601 UTC); ausente en Sandboxes anteriores o en etapas que no lo emiten
+  completedAt?: IsoDateTime // INTEROP-2.16: fin de la etapa (ISO-8601 UTC); ausente en Sandboxes anteriores o en etapas que no lo emiten
 }
 
 interface SandboxFailureFact {
@@ -1459,6 +1484,8 @@ interface SandboxExecutionResultResponse {
   completedAt: IsoDateTime
 }
 ```
+
+`startedAt` y `completedAt` (INTEROP-2.16) son hechos de tiempo del Sandbox, opcionales por etapa: el Sandbox los emite para `PREPARING`, `INSTALLING_DEPENDENCIES` y `RUNNING_TESTS` desde `sourceRevision` `19dfde456795c0a533d4823c25b546f3d372a970` (`WI-SANDBOX-007`, `CS-SANDBOX-20261014-001`) una vez desplegado. Su ausencia (Sandbox anterior o etapa que no los emite) no es un error y los consumidores deben tolerarla e ignorar campos desconocidos (§1). `durationMs` sigue siendo la fuente de duración y no se valida contra `completedAt - startedAt`. Core los conserva solo en la evidencia interna del experimento (`WI-CORE-061`), sin exponerlos en DTO públicos ni en §6.16.
 
 `failureKind` (aditivo, 2026-10-09) es un hecho del runner, no una clasificación: `ASSERTION` = una aserción no se cumplió; `ERROR` = el test lanzó antes o en vez de verificar. PHPUnit lo deriva de JUnit `<failure>`/`<error>` (determinista); Jest/Vitest, con mejor esfuerzo (`matcherResult`, `Error: expect(`, `AssertionError`). Un Sandbox anterior puede omitirlo; Core no lo trata como fuente única de clasificación.
 

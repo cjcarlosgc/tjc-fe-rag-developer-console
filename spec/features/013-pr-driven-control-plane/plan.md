@@ -2,7 +2,7 @@
 
 ## Dependencias
 
-SYSTEM-2.12/INTEROP-2.12/GH-INTEROP-1.7, identidad Supabase, diseño, routing, query cache y adapters `mock|live`. Console usa GitHub Integration directamente solo para App info, discovery, verificación GitHub y ramas; Core sigue siendo la API de dominio para Projects/workspaces, persistencia de bindings, RAG y análisis.
+SYSTEM-2.12/INTEROP-2.16/GH-INTEROP-1.7, identidad Supabase, diseño, routing, query cache y adapters `mock|live`. Console usa GitHub Integration directamente solo para App info, discovery, verificación GitHub y ramas; Core sigue siendo la API de dominio para Projects/workspaces, persistencia de bindings, RAG y análisis.
 
 ## Cortes
 

@@ -172,3 +172,14 @@ test('los nulos internos de modelo se preservan como null, nunca como 0', () => 
   const operation = toExperimentOperation({ ...configuredStatus, model: { provider: 'OpenAI', model: 'gpt-6-luna' } }, resultsWith27, 'calculateTotal')
   expect(operation.configuration?.model).toEqual({ provider: 'OpenAI', model: 'gpt-6-luna', modelVersion: null, reasoningEffort: null, temperature: null, maxOutputTokens: null })
 })
+
+test('tolera technicallyValidRate y assertionFailureCount presentes en la respuesta (INTEROP-2.13) sin alterar las métricas mapeadas', () => {
+  const withInterop213 = {
+    ...resultsWith27,
+    strategies: resultsWith27.strategies.map((strategy) => ({ ...strategy, technicallyValidRate: 0.9, assertionFailureCount: 2 })),
+  } as unknown as ExperimentResultsResponse
+  const operation = toExperimentOperation(configuredStatus, withInterop213, 'calculateTotal')
+  expect(operation.result?.rag).toMatchObject({ strategy: 'RAG', validRate: 1, passedRate: 1, evaluableRepetitions: 3 })
+  expect(operation.result?.rag).not.toHaveProperty('technicallyValidRate')
+  expect(operation.result?.rag).not.toHaveProperty('assertionFailureCount')
+})
