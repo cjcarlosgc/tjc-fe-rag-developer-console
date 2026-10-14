@@ -19,7 +19,7 @@ Fecha: 2026-10-12. Recoge las observaciones no bloqueantes y pendientes que los 
 
 ## B. Comportamiento de la UI
 
-> Actualización 2026-10-12: B (FAILED de experimentos, texto OE2 worker lost, `useEvidence`) y D (suite intermitente) cerrados por WI-CONSOLE-027; queda un seguimiento de producto sobre `setSearchParams` en ContextExplorer.
+> Actualización 2026-10-12: B (FAILED de experimentos, texto OE2 worker lost, `useEvidence`) y D (suite intermitente) cerrados por WI-CONSOLE-027; queda un seguimiento de producto sobre `setSearchParams` en ContextExplorer (CORREGIDO por WI-CONSOLE-037, 2026-10-14).
 
 - Un experimento `FAILED` sigue mostrando «Preparando experimento» sin mensaje de fallo (previo a SMART V3). (017)
 - `RETRIEVAL_COMPARISON_WORKER_LOST` no dice «vuelve a crearlo» (fuera del alcance de WI-026). (026)
@@ -54,7 +54,9 @@ Fecha: 2026-10-12. Recoge las observaciones no bloqueantes y pendientes que los 
 
 ## F. Harness y procesos
 
-- F1 de WI-CONSOLE-027: `ContextExplorerPage.updateParams` puede perder `view=list` bajo carga; hace intermitente `ContextExplorerPage.test.tsx` («alterna entre vista de grafo y lista») sin límite de workers. Pendiente de decisión del usuario (WI de producto aparte); los timeouts globales deberían reducirse si se corrige.
+- CORREGIDO (WI-CONSOLE-037, 2026-10-14): seguimiento de WI-CONSOLE-032, ventana con botón «Publicar» habilitado entre PUBLISHED y el refetch de propuestas; ahora se oculta con la publicación PUBLISHED en memoria. Con propuestas AVAILABLE nuevas tras recargar sin publicación en memoria sigue ofreciéndose publicar.
+
+- CORREGIDO (WI-CONSOLE-037, 2026-10-14): F1 de WI-CONSOLE-027 — `updateParams` compone desde la última query escrita; `waitForDefaultSelection` retirado; 3 corridas completas sin límite de workers y 5 de ContextExplorer verdes. Los timeouts globales no se tocaron. Original: F1 de WI-CONSOLE-027: `ContextExplorerPage.updateParams` puede perder `view=list` bajo carga; hace intermitente `ContextExplorerPage.test.tsx` («alterna entre vista de grafo y lista») sin límite de workers. Pendiente de decisión del usuario (WI de producto aparte); los timeouts globales deberían reducirse si se corrige.
 
 - RESUELTO (WI-CONSOLE-029, 2026-10-12): CS-CORE-20261012-002/-003/-004 acusados y resueltos en Console. PENDIENTE de sus receptores (no de Console): CS-CORE-20261009-012, 20261010-001/-002, 20261011-003 (github-integration) y 20261011-002 (sandbox); la parte Sandbox de -002 es de Sandbox.
 - RESUELTO (WI-CONSOLE-031, 2026-10-12): CS-CORE-20261012-005 (INTEROP-2.9/SYSTEM, 404 obsoleto) acusado y resuelto en Console; CS-CORE-20261012-006 es de github-integration y sigue C-PENDING. Pendiente menor de UX: `focus-mode-obsolete` sin CSS ni `:focus-visible` propios.
