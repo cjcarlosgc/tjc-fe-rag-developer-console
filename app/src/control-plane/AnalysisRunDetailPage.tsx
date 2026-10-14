@@ -68,14 +68,16 @@ function PublishSection({ analysisRunId, projectId, targetBranch }: { analysisRu
   const busy = publishMutation.isPending || publicationInProgress
   // Sin reintento automático ni botón que reenvíe lo mismo tras un fallo terminal (FAILED/STALE/CLOSED).
   const endedWithoutPublish = publication !== undefined && isTerminalPublicationStatus(publication.status) && publication.status !== 'PUBLISHED'
-  const showPublishButton = canPublish && !endedWithoutPublish && (busy || available.length > 0)
+  // Publicación PUBLISHED en memoria: no se ofrece publicar, también en la ventana anterior al refetch de propuestas (aún AVAILABLE).
+  const publishedNow = publication?.status === 'PUBLISHED'
+  const showPublishButton = canPublish && !endedWithoutPublish && !publishedNow && (busy || available.length > 0)
   const statusText = publicationInProgress
     ? `Publicación en curso: ${publication?.status ?? 'PENDING'}…`
     : publication && isTerminalPublicationStatus(publication.status) ? `Publicación finalizada: ${publication.status}` : ''
   const publicationUrl = safePublicationUrl(publication?.companionPullRequestUrl)
 
   return <div className="panel">
-    <div className="section-heading"><div><h2>Propuestas de prueba</h2><p>{available.length > 0 ? `Freshness verificado contra el HEAD vigente (${proposalsQuery.data.headSha}). Publicar nunca hace merge ni escribe directo en la rama del PR.` : 'Sin propuestas disponibles para publicar en este Run.'}</p></div></div>
+    <div className="section-heading"><div><h2>Propuestas de prueba</h2><p>{available.length > 0 && !publishedNow ? `Freshness verificado contra el HEAD vigente (${proposalsQuery.data.headSha}). Publicar nunca hace merge ni escribe directo en la rama del PR.` : 'Sin propuestas disponibles para publicar en este Run.'}</p></div></div>
     <ul className="test-proposal-list">
       {proposalsQuery.data.items.map((item) => (
         <li key={item.id} className="test-proposal-item">
@@ -129,7 +131,7 @@ function PublishSection({ analysisRunId, projectId, targetBranch }: { analysisRu
         </button>
       </div>
     )}
-    {available.length > 0 && !canPublish && <p className="empty-inline-note">Tu rol es de solo lectura. Un Writer, Maintainer o Admin puede publicar estas propuestas.</p>}
+    {available.length > 0 && !canPublish && !publishedNow && <p className="empty-inline-note">Tu rol es de solo lectura. Un Writer, Maintainer o Admin puede publicar estas propuestas.</p>}
     {publishMutation.isError && <p className="inline-error" role="alert">{bindingErrorMessage(publishMutation.error)}{errorCorrelationId(publishMutation.error) && <> · Correlation ID: <code>{errorCorrelationId(publishMutation.error)}</code></>}</p>}
   </div>
 }

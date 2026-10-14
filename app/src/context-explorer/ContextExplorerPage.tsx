@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useParams, useSearchParams } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { useProject } from '../projects/queries'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState } from '../ui/Feedback'
@@ -90,17 +90,22 @@ export function ContextExplorerPage() {
   const repetitionRaw = Number(searchParams.get('repetition'))
   const repetitionParam = repetitionRaw === 1 || repetitionRaw === 2 || repetitionRaw === 3 ? repetitionRaw : null
 
-  // Aplica varios cambios de query params en una sola actualización: dos llamadas seguidas a setSearchParams
-  // parten del mismo snapshot previo y la segunda pisaría a la primera.
+  // Las escrituras de la URL se componen desde la última query escrita, no desde el snapshot del render: dos escrituras
+  // en el mismo ciclo (p. ej. efecto de nodo + clic de vista) no deben pisarse. La ref recoge cada escritura y se
+  // reconcilia con la ubicación real cuando React la confirma (nuestra escritura o una navegación externa).
+  const location = useLocation()
+  const latestSearchRef = useRef(location.search)
+  useEffect(() => {
+    latestSearchRef.current = location.search
+  }, [location.search])
   const updateParams = useCallback((patch: Record<string, string | null>) => {
-    setSearchParams((previous) => {
-      const next = new URLSearchParams(previous)
-      for (const [key, value] of Object.entries(patch)) {
-        if (value === null) next.delete(key)
-        else next.set(key, value)
-      }
-      return next
-    }, { replace: true })
+    const next = new URLSearchParams(latestSearchRef.current)
+    for (const [key, value] of Object.entries(patch)) {
+      if (value === null) next.delete(key)
+      else next.set(key, value)
+    }
+    latestSearchRef.current = next.toString()
+    setSearchParams(next, { replace: true })
   }, [setSearchParams])
   const updateParam = useCallback((key: string, value: string | null) => updateParams({ [key]: value }), [updateParams])
 

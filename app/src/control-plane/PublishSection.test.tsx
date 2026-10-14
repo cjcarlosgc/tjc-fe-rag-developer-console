@@ -129,3 +129,39 @@ test('WI-CONSOLE-032 (corrección UX 1): STALE indica abrir el Run vigente del P
   expect(within(alert).getByText(/abre el Run vigente del Pull Request para publicar sus propuestas/)).toBeInTheDocument()
   expect(alert).toHaveClass('publication-alert')
 })
+
+// --- WI-CONSOLE-037: PUBLISHED en memoria oculta «Publicar» aunque el refetch de propuestas aún las muestre AVAILABLE ---
+test('WI-CONSOLE-037: PUBLISHED en memoria oculta Publicar y su oferta aunque el refetch de propuestas siga AVAILABLE', async () => {
+  const user = userEvent.setup()
+  const realList = controlPlaneApi.listTestProposals
+  let initialSnapshot: Awaited<ReturnType<typeof realList>> | null = null
+  let releaseRefetch!: () => void
+  const refetchGate = new Promise<void>((resolve) => { releaseRefetch = resolve })
+  let refetchDone = false
+  let calls = 0
+  vi.spyOn(controlPlaneApi, 'listTestProposals').mockImplementation(async (analysisRunId) => {
+    calls += 1
+    if (calls === 1) {
+      initialSnapshot = await realList(analysisRunId)
+      return initialSnapshot
+    }
+    // Refetch tras el terminal: se retiene y devuelve la lista previa (propuestas todavía AVAILABLE).
+    await refetchGate
+    refetchDone = true
+    return initialSnapshot as NonNullable<typeof initialSnapshot>
+  })
+  renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
+  await user.click(await screen.findByRole('button', { name: /Publicar 3 propuesta\(s\)/ }))
+  expect(await screen.findByText('Companion PR publicado')).toBeInTheDocument()
+
+  // Ventana PUBLISHED antes del refetch: las propuestas siguen AVAILABLE en pantalla.
+  expect(screen.getAllByText('AVAILABLE').length).toBeGreaterThan(0)
+  expect(screen.queryByRole('button', { name: /Publicar/ })).not.toBeInTheDocument()
+  expect(screen.queryByText(/Publicar nunca hace merge/)).not.toBeInTheDocument()
+
+  releaseRefetch()
+  await waitFor(() => expect(refetchDone).toBe(true))
+  expect(screen.queryByRole('button', { name: /Publicar/ })).not.toBeInTheDocument()
+  expect(screen.queryByText(/Publicar nunca hace merge/)).not.toBeInTheDocument()
+  expect(screen.getByText('Companion PR publicado')).toBeInTheDocument()
+})

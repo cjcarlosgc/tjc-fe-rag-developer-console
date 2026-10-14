@@ -1,6 +1,7 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { useLocation } from 'react-router-dom'
 import { setDataSourceForTests } from '../api/dataSource'
 import { mockStartExperiment, resetMockBackend } from '../api/mockBackend'
 import { clickGraphNode, renderApp } from '../test/render'
@@ -23,11 +24,6 @@ async function renderExperiment(search = '') {
   })
 }
 
-// El efecto que fija el nodo por defecto (setSearchParams) puede asentarse después del primer findBy; esperar a la selección evita pisar un clic de toggle.
-async function waitForDefaultSelection() {
-  await waitFor(() => expect(screen.getAllByRole('button').some((button) => button.className.includes('graph-node') && button.getAttribute('aria-pressed') === 'true')).toBe(true))
-}
-
 describe('ContextExplorerPage', () => {
   it('muestra por defecto la traza RAG del experimento', async () => {
     await renderExperiment()
@@ -39,7 +35,6 @@ describe('ContextExplorerPage', () => {
     const user = userEvent.setup()
     await renderExperiment()
     await screen.findByRole('button', { name: /calculateTotal/ })
-    await waitForDefaultSelection()
     const graphNodeCount = screen.getAllByRole('button').filter((button) => button.className.includes('graph-node')).length
 
     await user.click(screen.getByRole('button', { name: 'Vista de lista' }))
@@ -67,7 +62,6 @@ describe('ContextExplorerPage', () => {
     const user = userEvent.setup()
     await renderExperiment('?strategy=RAG&repetition=1')
     expect(await screen.findByRole('button', { name: /calculateTotal/ })).toBeInTheDocument()
-    await waitForDefaultSelection()
     await user.click(screen.getByRole('button', { name: /Agente · rep 1/ }))
     expect(await screen.findByRole('button', { name: /Listar archivos/ })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /calculateTotal/ })).not.toBeInTheDocument()
@@ -86,4 +80,33 @@ it('WI-CONSOLE-036 B1: el breadcrumb «Modo experimental» conserva experimentId
   expect(target.pathname).toBe('/projects/prj_checkout_demo/experimental')
   expect(target.searchParams.get('experimentId')).toBe(accepted.experimentId)
   expect(target.searchParams.get('analysisRunId')).toBe('arun-1')
+})
+
+// --- WI-CONSOLE-037 F1: composición de escrituras de URL desde la URL vigente, no desde el snapshot del render ---
+function LocationProbe() {
+  const location = useLocation()
+  return <output data-testid="location-search">{location.search}</output>
+}
+
+it('WI-CONSOLE-037 F1: dos escrituras de URL en el mismo ciclo (nodo y vista) no se pisan', async () => {
+  const accepted = await mockStartExperiment('prj_checkout_demo', 'ver_checkout_7-method-total')
+  renderApp(<><ContextExplorerPage /><LocationProbe /></>, {
+    initialEntry: `/projects/prj_checkout_demo/experimental/${accepted.experimentId}/context`,
+    routePath: EXPERIMENT_ROUTE,
+  })
+  await screen.findByRole('button', { name: /calculateTotal/ })
+  const readParams = () => new URLSearchParams(screen.getByTestId('location-search').textContent ?? '')
+  // Precondición: el efecto de nodo por defecto ya escribió `node` en la URL (no basta con que el nodo aparezca pulsado).
+  await waitFor(() => expect(readParams().get('node')).not.toBeNull())
+  const defaultNode = readParams().get('node')
+
+  // Ambos clics ocurren antes de que React re-renderice: la segunda escritura debe partir de la URL ya escrita por la primera.
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /formatCurrency/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Vista de lista' }))
+  })
+
+  expect(readParams().get('view')).toBe('list')
+  expect(readParams().get('node')).not.toBe(defaultNode)
+  expect(readParams().get('node')).not.toBeNull()
 })
