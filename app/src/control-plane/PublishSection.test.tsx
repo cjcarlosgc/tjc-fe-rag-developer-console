@@ -64,7 +64,7 @@ test('WI-CONSOLE-032: PENDING → PUBLISHING → PUBLISHED con enlace seguro y s
   expect(screen.getByText('PR companion #145', { exact: false })).toBeInTheDocument()
   expect(screen.getByText('rag-tests/pr-45-e5e5e5e')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /Publicar/ })).not.toBeInTheDocument()
-  expect(screen.getAllByText('PUBLISHED')).toHaveLength(3)
+  await waitFor(() => expect(screen.getAllByText('PUBLISHED')).toHaveLength(3))
 })
 
 test('WI-CONSOLE-032: FAILED muestra role=alert con failureMessage y sin botón de reintento', async () => {
@@ -164,4 +164,39 @@ test('WI-CONSOLE-037: PUBLISHED en memoria oculta Publicar y su oferta aunque el
   expect(screen.queryByRole('button', { name: /Publicar/ })).not.toBeInTheDocument()
   expect(screen.queryByText(/Publicar nunca hace merge/)).not.toBeInTheDocument()
   expect(screen.getByText('Companion PR publicado')).toBeInTheDocument()
+})
+
+// --- WI-CONSOLE-038: las insignias PUBLISHED de las filas llegan con el refetch, no en la ventana previa ---
+test('WI-CONSOLE-038: las insignias PUBLISHED de las filas esperan al refetch de propuestas', async () => {
+  const user = userEvent.setup()
+  const realList = controlPlaneApi.listTestProposals
+  let initialSnapshot: Awaited<ReturnType<typeof realList>> | null = null
+  let releaseRefetch!: () => void
+  const refetchGate = new Promise<void>((resolve) => { releaseRefetch = resolve })
+  let refetchDone = false
+  let calls = 0
+  vi.spyOn(controlPlaneApi, 'listTestProposals').mockImplementation(async (analysisRunId) => {
+    calls += 1
+    if (calls === 1) {
+      initialSnapshot = await realList(analysisRunId)
+      return initialSnapshot
+    }
+    // Refetch tras el terminal: se retiene con la puerta; al liberarla devuelve la lista real ya publicada.
+    await refetchGate
+    refetchDone = true
+    return realList(analysisRunId)
+  })
+  renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
+  await user.click(await screen.findByRole('button', { name: /Publicar 3 propuesta\(s\)/ }))
+  expect(await screen.findByText('Companion PR publicado')).toBeInTheDocument()
+
+  // Ventana retenida: el estado de publicación ya es terminal, pero las filas no tienen PUBLISHED.
+  expect(screen.queryAllByText('PUBLISHED')).toHaveLength(0)
+  expect(screen.getAllByText('AVAILABLE').length).toBeGreaterThan(0)
+  expect(refetchDone).toBe(false)
+
+  releaseRefetch()
+  await waitFor(() => expect(refetchDone).toBe(true))
+  await waitFor(() => expect(screen.getAllByText('PUBLISHED')).toHaveLength(3))
+  expect(screen.queryAllByText('AVAILABLE')).toHaveLength(0)
 })

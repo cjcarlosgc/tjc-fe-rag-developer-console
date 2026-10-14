@@ -1,5 +1,7 @@
 # Progreso actual — CONSOLE
 
+**WI-CONSOLE-038 cerrado (2026-10-14, `W-DONE`, `activeWorkItem: null`):** `PublishSection.test.tsx` espera las insignias `PUBLISHED` tras el refetch de propuestas (solo pruebas, ROJO→VERDE con puerta; 806/806 y 5 corridas completas verdes); `reviewer` (awayMode). Ver `harness/reports/wi-console-038-closure.md`. **Esperan frase del usuario:** sondeo en segundo plano y UI informativa de campos nuevos (ambos necesitan id nuevo).
+
 **WI-CONSOLE-037 cerrado (2026-10-14, `W-DONE`, `activeWorkItem: null`):** F1 de ContextExplorer corregido (URL compuesta desde la última query escrita) y «Publicar» oculto con la publicación `PUBLISHED`; revisión UX y `reviewer` (awayMode). Ver `harness/reports/wi-console-037-closure.md`. **Esperan frase del usuario:** sondeo en segundo plano (el id WI-CONSOLE-037 ya está usado; necesita otro) y WI-CONSOLE-038.
 
 **WI-CONSOLE-034 cerrado (2026-10-14, `W-DONE`, `activeWorkItem: null`):** INTEROP-2.16 espejado desde Core `7f24c169` (SYSTEM-2.12 y GH-INTEROP sin cambio); `CS-CORE-20261013-001/-002/-003` y `CS-CORE-20261014-001` resueltos; `-012` es de sandbox. Revisión contractual y `reviewer` (awayMode). Ver `harness/reports/wi-console-034-closure.md`. **Esperan frase del usuario:** WI-CONSOLE-037 (sondeo en segundo plano) y WI-CONSOLE-038 (UI informativa de campos nuevos).

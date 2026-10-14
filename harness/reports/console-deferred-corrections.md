@@ -54,6 +54,8 @@ Fecha: 2026-10-12. Recoge las observaciones no bloqueantes y pendientes que los 
 
 ## F. Harness y procesos
 
+- CORREGIDO (WI-CONSOLE-038, 2026-10-14): `PublishSection.test.tsx` afirmaba de forma síncrona 3 insignias PUBLISHED antes del refetch de propuestas (intermitente bajo carga); ahora espera con `waitFor` y hay prueba ROJO→VERDE con puerta. 5 corridas completas sin límite de workers verdes.
+
 - CORREGIDO (WI-CONSOLE-037, 2026-10-14): seguimiento de WI-CONSOLE-032, ventana con botón «Publicar» habilitado entre PUBLISHED y el refetch de propuestas; ahora se oculta con la publicación PUBLISHED en memoria. Con propuestas AVAILABLE nuevas tras recargar sin publicación en memoria sigue ofreciéndose publicar.
 
 - CORREGIDO (WI-CONSOLE-037, 2026-10-14): F1 de WI-CONSOLE-027 — `updateParams` compone desde la última query escrita; `waitForDefaultSelection` retirado; 3 corridas completas sin límite de workers y 5 de ContextExplorer verdes. Los timeouts globales no se tocaron. Original: F1 de WI-CONSOLE-027: `ContextExplorerPage.updateParams` puede perder `view=list` bajo carga; hace intermitente `ContextExplorerPage.test.tsx` («alterna entre vista de grafo y lista») sin límite de workers. Pendiente de decisión del usuario (WI de producto aparte); los timeouts globales deberían reducirse si se corrige.
