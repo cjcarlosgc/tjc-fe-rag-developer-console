@@ -5,6 +5,7 @@ import { ErrorState, LoadingState } from '../ui/Feedback'
 import { RepoChip } from '../ui/RepoChip'
 import { useAllActionRequiredList } from './queries'
 import { abstentionLabel } from './abstention'
+import { RuleTargetSummary } from './RuleTargetSummary'
 import { useAllProjects } from '../projects/queries'
 
 /** HU38 — bandeja de Runs con contexto funcional pendiente; cada fila abre Focus Mode con retorno seguro. */
@@ -46,9 +47,9 @@ export function ActionRequiredPage() {
                 <div className="action-required-item-heading">
                   <RepoChip repositoryName={question.repositoryName} />
                   <span className="pr-ref">PR #{question.pullRequestNumber}</span>
-                  <span className="target-ref">{question.target.qualifiedName}</span>
                 </div>
                 <p>{question.question}</p>
+                <RuleTargetSummary target={question.target} scenarioKind={question.scenarioKind} />
                 {question.abstention && <p className="abstention-note">{abstentionLabel(question.abstention)}</p>}
                 <span className="card-link">Abrir Focus Mode →</span>
               </Link>

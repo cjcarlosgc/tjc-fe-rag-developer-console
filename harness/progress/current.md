@@ -1,5 +1,7 @@
 # Progreso actual — CONSOLE
 
+**WI-CONSOLE-035 cerrado (2026-10-13, `W-DONE`, `activeWorkItem: null`):** destino de la regla (símbolo, archivo, tipo, escenario) y frase «Tu respuesta se registrará como regla para <símbolo>» en Focus Mode y Action Required; sin DTO ni Core. Revisión UX y `reviewer` (awayMode). Ver `harness/reports/wi-console-035-closure.md`. **Siguiente:** WI-CONSOLE-036 (experimentos); pendiente decisión del usuario sobre etiquetas en español de tipo/escenario. No se abre otro WI.
+
 **WI-CONSOLE-004 cerrado (2026-10-12, `W-DONE`, `activeWorkItem: null`):** OC01–OC15 formalizados en la Feature 013 con las decisiones del usuario (OC02, OC10, OC11, OC14, OC15, OC08) y el orden de prioridad registrado en `spec/operational-cases.md`; afirmaciones sin cita en el espejo marcadas «pendiente de cita contractual». Solo documentación; ningún caso implementado, cubierto, `O-READY` ni `O-COVERED`. Revisión contractual y por `reviewer` (awayMode). Ver `harness/reports/wi-console-004-review.md`.
 
 **WI-CONSOLE-033 cerrado (2026-10-12, `W-DONE`, `activeWorkItem: null`):** SYSTEM/INTEROP-2.12 espejados desde Core `864aa837`; `CS-CORE-20261012-007`, `-009` y `-011` resueltos; regresión de `INFRASTRUCTURE_FAILURE` no publicable y `resultSummary` libre cubierta con pruebas. Revisión contractual y `reviewer` (awayMode). Ver `harness/reports/wi-console-033-closure.md`. **Siguiente:** reanudar `WI-CONSOLE-004` (sigue `W-READY`) con las decisiones y la prioridad que confirme el usuario en el chat (OC02, OC10, OC11, OC14). No se abre otro WI.

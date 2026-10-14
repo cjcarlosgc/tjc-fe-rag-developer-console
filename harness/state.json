@@ -11007,6 +11007,474 @@
         }
       ],
       "closedAt": "2026-10-12T23:45:41.141Z"
+    },
+    {
+      "id": "WI-CONSOLE-035",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "sprint": "SMART V3",
+      "storyIds": [
+        "HU07",
+        "HU08",
+        "HU14"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-036"
+      ],
+      "caseIds": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/013-pr-driven-control-plane/plan.md",
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/contracts/interoperability-contract.md",
+        "CHANGELOG.md",
+        "harness/reports/fase2-diagnostico-console.md",
+        "harness/reports/wi-console-035-scope-approval.md",
+        "harness/reports/wi-console-035-contract-sync-scope-review.md",
+        "harness/reports/wi-console-035-sdd-verification.md",
+        "harness/reports/wi-console-035-implementation.md",
+        "harness/reports/wi-console-035-ux-review.md",
+        "harness/reports/wi-console-035-review.md",
+        "harness/reports/wi-console-035-closure.md"
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-035-scope-approval.md",
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true,
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-10-13T00:00:00.000Z",
+        "note": "Sin decisiones PENDING/PROPOSED que bloqueen este WI (Blocks no alcanza Focus Mode/Action Required); el usuario aprobó el alcance en el chat."
+      },
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-035 solo acusa y clasifica eventos de Core sin tocar bindings, UI ni endpoints.",
+          "report": "harness/reports/wi-console-035-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-035 solo acusa y clasifica eventos de Core sin tocar autorizacion ni interfaz.",
+          "report": "harness/reports/wi-console-035-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-035 no cambia login, sesion, tokens ni el cliente HTTP.",
+          "report": "harness/reports/wi-console-035-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-035 no altera Projects ni visibilidad.",
+          "report": "harness/reports/wi-console-035-contract-sync-scope-review.md"
+        }
+      ],
+      "execution": {
+        "leaderAgent": "leader",
+        "analysisAgent": "sdd-analyst",
+        "implementationAgent": "implementer",
+        "contractReviewAgent": null,
+        "reviewAgent": "reviewer",
+        "uxReviewAgent": "ux-reviewer",
+        "handoffs": [
+          {
+            "agent": "sdd-analyst",
+            "executedBy": {
+              "agent": "sdd-analyst",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "SUFICIENTE: campos no nulos en contrato; sin DEC bloqueante; riesgos de selectores y de la frase para «No lo sé» identificados; mock sin nulos (prueba con respuesta inyectada)."
+            ],
+            "blockers": [],
+            "filesAffected": [],
+            "evidence": [
+              "harness/reports/wi-console-035-sdd-verification.md"
+            ],
+            "recommendedNextStep": "Delegar al implementer con ROJO→VERDE."
+          },
+          {
+            "agent": "implementer",
+            "executedBy": {
+              "agent": "implementer",
+              "configuredModel": "claude-haiku-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Corte completo segun el implementer: RuleTargetSummary compartido, grupo «Destino de la regla» en Focus Mode, frase fija sobre botones, destino en la lista de Action Required, «sin dato» para nulos; ROJO 4 fallos -> VERDE 31/31; suite 777; lint/tsc/build verdes."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/action-required/RuleTargetSummary.tsx",
+              "app/src/action-required/FocusModePage.tsx",
+              "app/src/action-required/ActionRequiredPage.tsx",
+              "app/src/action-required/FocusModePage.test.tsx",
+              "app/src/action-required/ActionRequiredPage.test.tsx",
+              "app/src/styles.css"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-035-implementation.md"
+            ],
+            "recommendedNextStep": "ux-reviewer y revision independiente."
+          },
+          {
+            "agent": "ux-reviewer",
+            "executedBy": {
+              "agent": "ux-reviewer",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Contraste computado 9.95-16.2:1; sin scroll horizontal a 375/768/1024; jerarquia h1>h2>h3 correcta; copy honesto. F1 (group+h3 duplicado) corregido por el leader con aria-labelledby (cambio minimo, 2 lineas en FocusModePage.tsx). F3 enums crudos: decision de etiquetas pendiente del usuario. Limitacion: Tab visual real no probado."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "harness/reports/wi-console-035-ux-review.md"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-035-ux-review.md"
+            ],
+            "recommendedNextStep": "Revision independiente."
+          },
+          {
+            "agent": "reviewer",
+            "executedBy": {
+              "agent": "reviewer",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "medium"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Ciclo 1 aprobado: alcance y criterios cumplidos; 6 mutaciones fallan; gates reejecutados; sin heuristicas, DTO ni Core."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/action-required/RuleTargetSummary.tsx",
+              "app/src/action-required/FocusModePage.tsx",
+              "app/src/action-required/ActionRequiredPage.tsx",
+              "app/src/styles.css"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-035-review.md"
+            ],
+            "recommendedNextStep": "before-done y cierre."
+          }
+        ],
+        "reviewCycles": 0,
+        "maxReviewCycles": 2
+      },
+      "gates": {
+        "sddVerified": "G-PASSED",
+        "implementationCompleted": "G-PASSED",
+        "uxReviewed": "G-PASSED",
+        "contractReviewed": "G-NOT_APPLICABLE",
+        "canonicalContractSynced": "G-NOT_APPLICABLE",
+        "contractSyncPublished": "G-NOT_APPLICABLE",
+        "independentReviewPassed": "G-PASSED",
+        "technicalChecksPassed": "G-PASSED",
+        "interopSyncChecked": "G-PASSED",
+        "noMocksPresentedAsLive": "G-PASSED",
+        "noBlockingDecisions": "G-PASSED",
+        "retryLimitRespected": "G-PASSED"
+      },
+      "coordination": {
+        "contractImpact": false,
+        "publishesContract": false,
+        "uiImpact": true,
+        "pullCheckpoints": [
+          {
+            "checkpoint": "start",
+            "workItem": "WI-CONSOLE-035",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002",
+              "CS-20260924-001",
+              "CS-CORE-20260926-001",
+              "CS-CORE-20260927-001",
+              "CS-CORE-20260927-003",
+              "CS-CORE-20260927-004",
+              "CS-CORE-20260927-005",
+              "CS-CORE-20260927-006",
+              "CS-CORE-20261008-001",
+              "CS-CORE-20261008-002",
+              "CS-CORE-20261008-003",
+              "CS-CORE-20261008-004",
+              "CS-CORE-20261008-005",
+              "CS-CORE-20261008-006",
+              "CS-CORE-20261008-007",
+              "CS-CORE-20261009-008",
+              "CS-CORE-20261009-009",
+              "CS-CORE-20261009-010",
+              "CS-CORE-20261009-011",
+              "CS-CORE-20261009-013",
+              "CS-CORE-20261009-014",
+              "CS-CORE-20261009-015",
+              "CS-CORE-20261009-016",
+              "CS-CORE-20261009-017",
+              "CS-CORE-20261009-018",
+              "CS-CORE-20261010-003",
+              "CS-CORE-20261011-001",
+              "CS-CORE-20261011-004",
+              "CS-CORE-20261011-005",
+              "CS-CORE-20261011-006",
+              "CS-CORE-20261012-001",
+              "CS-CORE-20261012-002",
+              "CS-CORE-20261012-003",
+              "CS-CORE-20261012-004",
+              "CS-CORE-20261012-005",
+              "CS-CORE-20261012-007",
+              "CS-CORE-20261012-009",
+              "CS-CORE-20261012-011"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [],
+            "checkedAt": "2026-10-14T02:32:05.681Z"
+          },
+          {
+            "checkpoint": "implementation-delivery",
+            "workItem": "WI-CONSOLE-035",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002",
+              "CS-20260924-001",
+              "CS-CORE-20260926-001",
+              "CS-CORE-20260927-001",
+              "CS-CORE-20260927-003",
+              "CS-CORE-20260927-004",
+              "CS-CORE-20260927-005",
+              "CS-CORE-20260927-006",
+              "CS-CORE-20261008-001",
+              "CS-CORE-20261008-002",
+              "CS-CORE-20261008-003",
+              "CS-CORE-20261008-004",
+              "CS-CORE-20261008-005",
+              "CS-CORE-20261008-006",
+              "CS-CORE-20261008-007",
+              "CS-CORE-20261009-008",
+              "CS-CORE-20261009-009",
+              "CS-CORE-20261009-010",
+              "CS-CORE-20261009-011",
+              "CS-CORE-20261009-013",
+              "CS-CORE-20261009-014",
+              "CS-CORE-20261009-015",
+              "CS-CORE-20261009-016",
+              "CS-CORE-20261009-017",
+              "CS-CORE-20261009-018",
+              "CS-CORE-20261010-003",
+              "CS-CORE-20261011-001",
+              "CS-CORE-20261011-004",
+              "CS-CORE-20261011-005",
+              "CS-CORE-20261011-006",
+              "CS-CORE-20261012-001",
+              "CS-CORE-20261012-002",
+              "CS-CORE-20261012-003",
+              "CS-CORE-20261012-004",
+              "CS-CORE-20261012-005",
+              "CS-CORE-20261012-007",
+              "CS-CORE-20261012-009",
+              "CS-CORE-20261012-011"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-14T02:40:08.241Z"
+          },
+          {
+            "checkpoint": "before-review",
+            "workItem": "WI-CONSOLE-035",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002",
+              "CS-20260924-001",
+              "CS-CORE-20260926-001",
+              "CS-CORE-20260927-001",
+              "CS-CORE-20260927-003",
+              "CS-CORE-20260927-004",
+              "CS-CORE-20260927-005",
+              "CS-CORE-20260927-006",
+              "CS-CORE-20261008-001",
+              "CS-CORE-20261008-002",
+              "CS-CORE-20261008-003",
+              "CS-CORE-20261008-004",
+              "CS-CORE-20261008-005",
+              "CS-CORE-20261008-006",
+              "CS-CORE-20261008-007",
+              "CS-CORE-20261009-008",
+              "CS-CORE-20261009-009",
+              "CS-CORE-20261009-010",
+              "CS-CORE-20261009-011",
+              "CS-CORE-20261009-013",
+              "CS-CORE-20261009-014",
+              "CS-CORE-20261009-015",
+              "CS-CORE-20261009-016",
+              "CS-CORE-20261009-017",
+              "CS-CORE-20261009-018",
+              "CS-CORE-20261010-003",
+              "CS-CORE-20261011-001",
+              "CS-CORE-20261011-004",
+              "CS-CORE-20261011-005",
+              "CS-CORE-20261011-006",
+              "CS-CORE-20261012-001",
+              "CS-CORE-20261012-002",
+              "CS-CORE-20261012-003",
+              "CS-CORE-20261012-004",
+              "CS-CORE-20261012-005",
+              "CS-CORE-20261012-007",
+              "CS-CORE-20261012-009",
+              "CS-CORE-20261012-011"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-14T02:42:36.494Z"
+          },
+          {
+            "checkpoint": "before-done",
+            "workItem": "WI-CONSOLE-035",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002",
+              "CS-20260924-001",
+              "CS-CORE-20260926-001",
+              "CS-CORE-20260927-001",
+              "CS-CORE-20260927-003",
+              "CS-CORE-20260927-004",
+              "CS-CORE-20260927-005",
+              "CS-CORE-20260927-006",
+              "CS-CORE-20261008-001",
+              "CS-CORE-20261008-002",
+              "CS-CORE-20261008-003",
+              "CS-CORE-20261008-004",
+              "CS-CORE-20261008-005",
+              "CS-CORE-20261008-006",
+              "CS-CORE-20261008-007",
+              "CS-CORE-20261009-008",
+              "CS-CORE-20261009-009",
+              "CS-CORE-20261009-010",
+              "CS-CORE-20261009-011",
+              "CS-CORE-20261009-013",
+              "CS-CORE-20261009-014",
+              "CS-CORE-20261009-015",
+              "CS-CORE-20261009-016",
+              "CS-CORE-20261009-017",
+              "CS-CORE-20261009-018",
+              "CS-CORE-20261010-003",
+              "CS-CORE-20261011-001",
+              "CS-CORE-20261011-004",
+              "CS-CORE-20261011-005",
+              "CS-CORE-20261011-006",
+              "CS-CORE-20261012-001",
+              "CS-CORE-20261012-002",
+              "CS-CORE-20261012-003",
+              "CS-CORE-20261012-004",
+              "CS-CORE-20261012-005",
+              "CS-CORE-20261012-007",
+              "CS-CORE-20261012-009",
+              "CS-CORE-20261012-011"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-14T02:47:15.675Z"
+          }
+        ],
+        "publishedSyncIds": [],
+        "pendingRelevantSyncIds": [],
+        "knownIncompatibilities": []
+      },
+      "evidence": [
+        "harness/reports/wi-console-035-scope-approval.md",
+        "harness/reports/wi-console-035-contract-sync-scope-review.md",
+        "harness/reports/wi-console-035-sdd-verification.md",
+        "harness/reports/wi-console-035-implementation.md",
+        "harness/reports/wi-console-035-ux-review.md",
+        "harness/reports/wi-console-035-review.md",
+        "harness/reports/wi-console-035-closure.md"
+      ],
+      "blockedReason": null,
+      "acceptanceCriteria": [
+        "Focus Mode muestra junto a la respuesta el destino de la regla con target.qualifiedName, target.filePath, target.kind y scenarioKind tal como los trae el contrato (INTEROP §6.11), en un bloque accesible con encabezado o role=\"group\" con nombre, y una frase fija pegada sobre los botones «Tu respuesta se registrará como regla para <qualifiedName>»; un campo null se muestra como «sin dato» sin inventar.",
+        "La lista de Action Required muestra por consistencia el mismo destino (símbolo, archivo, tipo y escenario) sin romper su enlace a Focus Mode; ningún botón se deshabilita por esto.",
+        "Sin heurísticas de texto, sin lógica de dominio, sin campos nuevos del contrato, sin cambios a Core ni derivar ganador/CF/CO; el mock muestra el destino con varios símbolos, incluida una pregunta con campos nulos.",
+        "Prueba ROJO→VERDE; contraste, teclado, 375/768/1024 px y orden de lectura revisados por ux-reviewer; lint, tsc -b --noEmit, pruebas, build y validadores SDD/Harness pasan; CS-CORE-20261013-001/-002/-003 no se acusan ni se resuelven aquí."
+      ],
+      "gateEvidence": {
+        "sddVerified": [
+          "harness/reports/wi-console-035-sdd-verification.md"
+        ],
+        "noBlockingDecisions": [
+          "harness/reports/wi-console-035-sdd-verification.md"
+        ],
+        "implementationCompleted": [
+          "harness/reports/wi-console-035-implementation.md"
+        ],
+        "uxReviewed": [
+          "harness/reports/wi-console-035-ux-review.md"
+        ],
+        "noMocksPresentedAsLive": [
+          "harness/reports/wi-console-035-implementation.md"
+        ],
+        "technicalChecksPassed": [
+          "harness/reports/wi-console-035-implementation.md"
+        ],
+        "interopSyncChecked": [
+          "harness/reports/wi-console-035-implementation.md",
+          "harness/reports/wi-console-035-contract-sync-scope-review.md"
+        ],
+        "independentReviewPassed": [
+          "harness/reports/wi-console-035-review.md"
+        ],
+        "retryLimitRespected": [
+          "harness/reports/wi-console-035-review.md"
+        ]
+      },
+      "priority": "P1",
+      "title": "Mostrar el destino de la regla antes de confirmar una respuesta funcional",
+      "dependsOn": [],
+      "closedAt": "2026-10-14T02:47:23.000Z"
     }
   ],
   "activeWorkItem": null
