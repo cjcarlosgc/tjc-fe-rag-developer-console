@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
 import { mockStartExperiment, resetMockBackend } from '../api/mockBackend'
 import { getAnalysisRunContextTrace, getContextTrace, listDiscoveredFiles, listExperimentContextTraces } from './api'
@@ -57,12 +57,23 @@ describe('context-explorer api (mock)', () => {
   })
 })
 
-describe('context-explorer api (live, contrato pendiente en RAG Core)', () => {
-  it('rechaza con PendingContractError en las funciones aún no publicadas por Core', async () => {
+describe('context-explorer api (live)', () => {
+  afterEach(() => vi.restoreAllMocks())
+
+  it('consulta las rutas publicadas por Core para trazas de un experimento', async () => {
     setDataSourceForTests('live')
-    await expect(listExperimentContextTraces('exp-1')).rejects.toThrow(/RAG Core/)
-    await expect(getContextTrace('trace-1')).rejects.toThrow(/RAG Core/)
-    await expect(listDiscoveredFiles('trace-1', 1)).rejects.toThrow(/RAG Core/)
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(JSON.stringify({ items: [], nextCursor: null }), { status: 200 }))
+    await expect(listExperimentContextTraces('exp-1', { strategy: 'RAG', repetition: 2 })).resolves.toEqual({ items: [], nextCursor: null })
+    await getContextTrace('trace-1')
+    await listDiscoveredFiles('trace-1', 3)
+    const urls = fetchMock.mock.calls.map((call) => String(call[0]))
+    expect(urls[0]).toContain('/experiments/exp-1/context-traces?strategy=RAG&repetition=2')
+    expect(urls[1]).toContain('/context-traces/trace-1')
+    expect(urls[2]).toContain('/context-traces/trace-1/discovered-files?step=3')
+  })
+
+  it('el contexto de un Analysis Run sigue pendiente de contrato en Core', async () => {
+    setDataSourceForTests('live')
     await expect(getAnalysisRunContextTrace('arun-1')).rejects.toThrow(/RAG Core/)
   })
 })
