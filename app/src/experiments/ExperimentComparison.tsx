@@ -81,7 +81,7 @@ function ConfigurationBlock({ configuration }: { configuration: ExperimentConfig
   )
 }
 
-export function ExperimentComparison({ result, projectId, experimentId }: { result: ExperimentResultViewModel; projectId: string; experimentId: string }) {
+export function ExperimentComparison({ result, projectId, experimentId, analysisRunId }: { result: ExperimentResultViewModel; projectId: string; experimentId: string; analysisRunId?: string }) {
   // Corridas previas a OE5 no traen attempt ni technicallyEvaluable: las columnas solo existen si alguna repetición trae el dato.
   const showRunColumns = result.repetitions.some((item) => item.attempt !== null || item.technicallyEvaluable !== null)
   const failures = Array.from(new Set([...Object.keys(result.baseline.failures), ...Object.keys(result.rag.failures)]))
@@ -212,7 +212,7 @@ export function ExperimentComparison({ result, projectId, experimentId }: { resu
                   <td>{item.executionDurationMs === null ? '—' : formatDuration(item.executionDurationMs)}</td>
                   <td>{item.totalTokens ?? '—'}</td>
                   <td>
-                    <Link className="target-action" to={`/projects/${projectId}/experimental/${experimentId}/context?strategy=${item.strategy}&repetition=${item.repetition}`}>Ver contexto →</Link>
+                    <Link className="target-action" to={`/projects/${projectId}/experimental/${experimentId}/context?strategy=${item.strategy}&repetition=${item.repetition}${analysisRunId ? `&analysisRunId=${encodeURIComponent(analysisRunId)}` : ''}`}>Ver contexto →</Link>
                   </td>
                 </tr>
               ))}

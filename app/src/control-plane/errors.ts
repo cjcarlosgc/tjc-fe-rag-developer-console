@@ -24,6 +24,8 @@ const codeMessages: Record<string, string> = {
   WORKSPACE_NOT_FOUND: 'Ese workspace ya no está disponible. Actualiza la lista de workspaces y vuelve a elegirlo.',
   WORKSPACE_ADMIN_REQUIRED: 'Solo un owner activo de la organización puede crear Projects en ese workspace.',
   // WI-CONSOLE-014 (INTEROP-2.7 §6.15, OE2 SE vs SEM): mensajes propios, sin semántica de ganador ni de OE5.
+  // WI-CONSOLE-036 B4: el target elegido no existe en el código del Run (INTEROP-2.7 §6.5.1). No promete reanudar ni reintentar la misma opción.
+  UNRESOLVABLE_TARGET: 'No pudimos localizar el target elegido en el código de este Run. Prueba con otro símbolo del Run.',
   ANALYSIS_SYMBOL_NOT_FOUND: 'Ese símbolo ya no pertenece a este Run. Actualiza el Run y vuelve a elegirlo.',
   UNSUPPORTED_SYMBOL_KIND: 'Solo se pueden comparar métodos o funciones con cambio directo en este Run.',
   RETRIEVAL_COMPARISON_NOT_FOUND: 'Esa comparación de retrieval ya no existe o no está disponible.',

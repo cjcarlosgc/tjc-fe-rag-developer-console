@@ -461,6 +461,18 @@ code { color: var(--accent); background: var(--surface-2); padding: 2px 5px; bor
 .answer-choices { display: flex; flex-wrap: wrap; gap: 10px; }
 .free-text-field { margin-top: 4px; }
 
+/* WI-CONSOLE-035: destino de la regla. Texto sobre --surface-2 con --muted (~10:1) y #eae7f7; «sin dato» en cursiva además de color. Valores largos rompen línea sin scroll horizontal. */
+.rule-target-block { display: flex; flex-direction: column; gap: 8px; min-width: 0; border: 1px solid var(--border-subtle); border-radius: 10px; background: var(--surface-2); padding: 14px 16px; }
+.rule-target-title { margin: 0; color: var(--accent); font: 800 11px 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .1em; text-transform: uppercase; }
+.rule-target { display: grid; gap: 6px; margin: 0; min-width: 0; }
+.rule-target > div { display: grid; grid-template-columns: minmax(72px, 96px) minmax(0, 1fr); gap: 4px 12px; align-items: baseline; min-width: 0; }
+.rule-target dt { color: var(--muted); font-size: 12px; }
+.rule-target dd { margin: 0; min-width: 0; color: #eae7f7; font: 600 13px/1.5 'JetBrains Mono', ui-monospace, monospace; overflow-wrap: anywhere; }
+.rule-target dd.rule-target-empty { color: var(--muted); font-style: italic; font-weight: 400; font-family: inherit; }
+.rule-target-note { margin: 0; color: var(--muted); line-height: 1.5; overflow-wrap: anywhere; }
+.rule-target-note code { color: #eae7f7; overflow-wrap: anywhere; }
+.action-required-item .rule-target { margin-top: 6px; }
+
 .status-badge.status-success { color: #7fe3bb; border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.1); }
 .status-badge.status-danger { color: #ffb4c0; border-color: rgba(244,63,94,.35); background: rgba(244,63,94,.1); }
 .status-badge.status-warn { color: #f1ca7c; border-color: #695b35; background: #1d1a10; }

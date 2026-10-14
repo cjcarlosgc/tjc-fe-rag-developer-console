@@ -194,7 +194,7 @@
       "id": "WI-CONSOLE-004",
       "component": "CONSOLE",
       "workItemType": "PRODUCT",
-      "status": "W-READY",
+      "status": "W-DONE",
       "priority": "P2",
       "sprint": "P2",
       "title": "Formalizar casos operativos",
@@ -250,6 +250,53 @@
         "Los 15 casos tienen un happy path especificado y trazado a sus HU y a la Feature 013 vigente.",
         "Cada happy path declara precondiciones o entrada, resultado observable o salida, invariantes y prueba propuesta, sin afirmar cobertura implementada.",
         "No se agregan subcasos OCxx.a, comportamiento no aprobado, cambios de app/, UI, API, infraestructura ni contratos."
+      ],
+      "approved": true,
+      "evidence": [
+        "harness/reports/wi-console-004-sdd-analysis.md",
+        "harness/reports/wi-console-004-scope-reapproval.md",
+        "harness/reports/wi-console-004-contract-sync-review.md",
+        "harness/reports/wi-console-004-implementation.md",
+        "harness/reports/wi-console-004-checks.md",
+        "harness/reports/wi-console-004-contract-review.md",
+        "harness/reports/wi-console-004-review.md",
+        "harness/reports/wi-console-004-closure.md"
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-004-scope-reapproval.md",
+      "syncScopePaths": [
+        "spec/contracts/system-contract.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/github-integration-contract.md"
+      ],
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-004 solo redacta happy paths en la Feature 013 sin tocar bindings, UI ni endpoints.",
+          "report": "harness/reports/wi-console-004-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-004 solo redacta happy paths en la Feature 013 sin tocar autorizacion ni interfaz.",
+          "report": "harness/reports/wi-console-004-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-004 no cambia login, sesion, tokens ni el cliente HTTP.",
+          "report": "harness/reports/wi-console-004-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-004 no altera Projects ni visibilidad.",
+          "report": "harness/reports/wi-console-004-contract-sync-review.md"
+        }
       ]
     },
     {
@@ -3235,6 +3282,184 @@
         }
       ],
       "closedAt": "2026-10-12T23:18:12.000Z"
+    },
+    {
+      "id": "WI-CONSOLE-035",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "title": "Mostrar el destino de la regla antes de confirmar una respuesta funcional",
+      "storyIds": [
+        "HU07",
+        "HU08",
+        "HU14"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-036"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/013-pr-driven-control-plane/plan.md",
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/contracts/interoperability-contract.md",
+        "CHANGELOG.md",
+        "harness/reports/fase2-diagnostico-console.md",
+        "harness/reports/wi-console-035-scope-approval.md",
+        "harness/reports/wi-console-035-contract-sync-scope-review.md",
+        "harness/reports/wi-console-035-sdd-verification.md",
+        "harness/reports/wi-console-035-implementation.md",
+        "harness/reports/wi-console-035-ux-review.md",
+        "harness/reports/wi-console-035-review.md",
+        "harness/reports/wi-console-035-closure.md"
+      ],
+      "acceptanceCriteria": [
+        "Focus Mode muestra junto a la respuesta el destino de la regla con target.qualifiedName, target.filePath, target.kind y scenarioKind tal como los trae el contrato (INTEROP §6.11), en un bloque accesible con encabezado o role=\"group\" con nombre, y una frase fija pegada sobre los botones «Tu respuesta se registrará como regla para <qualifiedName>»; un campo null se muestra como «sin dato» sin inventar.",
+        "La lista de Action Required muestra por consistencia el mismo destino (símbolo, archivo, tipo y escenario) sin romper su enlace a Focus Mode; ningún botón se deshabilita por esto.",
+        "Sin heurísticas de texto, sin lógica de dominio, sin campos nuevos del contrato, sin cambios a Core ni derivar ganador/CF/CO; el mock muestra el destino con varios símbolos, incluida una pregunta con campos nulos.",
+        "Prueba ROJO→VERDE; contraste, teclado, 375/768/1024 px y orden de lectura revisados por ux-reviewer; lint, tsc -b --noEmit, pruebas, build y validadores SDD/Harness pasan; CS-CORE-20261013-001/-002/-003 no se acusan ni se resuelven aquí."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-035-scope-approval.md",
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true,
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-10-13T00:00:00.000Z",
+        "note": "Sin decisiones PENDING/PROPOSED que bloqueen este WI (Blocks no alcanza Focus Mode/Action Required); el usuario aprobó el alcance en el chat."
+      },
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-035 solo acusa y clasifica eventos de Core sin tocar bindings, UI ni endpoints.",
+          "report": "harness/reports/wi-console-035-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-035 solo acusa y clasifica eventos de Core sin tocar autorizacion ni interfaz.",
+          "report": "harness/reports/wi-console-035-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-035 no cambia login, sesion, tokens ni el cliente HTTP.",
+          "report": "harness/reports/wi-console-035-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-035 no altera Projects ni visibilidad.",
+          "report": "harness/reports/wi-console-035-contract-sync-scope-review.md"
+        }
+      ],
+      "closedAt": "2026-10-14T02:47:23.000Z"
+    },
+    {
+      "id": "WI-CONSOLE-036",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "title": "Experimentos: id en la URL, motivo visible del botón y selector sin constructor preseleccionado",
+      "storyIds": [
+        "HU12",
+        "HU15",
+        "HU17"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-037"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "specPaths": [
+        "spec/features/014-analysisrun-experiments/spec.md",
+        "spec/features/014-analysisrun-experiments/plan.md",
+        "spec/features/014-analysisrun-experiments/tasks.md",
+        "spec/contracts/interoperability-contract.md",
+        "CHANGELOG.md",
+        "harness/reports/fase2-diagnostico-console.md",
+        "harness/reports/wi-console-036-scope-approval.md",
+        "harness/reports/wi-console-036-contract-sync-scope-review.md",
+        "harness/reports/wi-console-036-sdd-verification.md"
+      ],
+      "acceptanceCriteria": [
+        "B1: experimentId vive en la URL como ?experimentId= (misma ruta, preservando analysisRunId); al lanzar con éxito se escribe; al montar con el parámetro se reabre el experimento y sus resultados; un id inexistente o fallido muestra error claro; «Ver contexto →» y volver conserva el id; sin usar el listado de experimentos.",
+        "B3: nota role=\"status\" bajo «Ejecutar comparación» con el motivo concreto cuando no lanza o está deshabilitado (sin target, sin permiso, ya lanzado/en curso, mutación en curso, Run no elegible); si GET /experiments/{id} falla se muestra bloque de error con mensaje, correlation id y «Reintentar» en vez de «Preparando experimento…» eterno.",
+        "B4: la preselección del selector no es un constructor (constructor/__construct se ordenan al final sin filtrarlos); nota previa «puede no ser ejecutable» si el seleccionado es constructor (también si es el único candidato); UNRESOLVABLE_TARGET con mensaje claro; heurística de presentación por nombre declarada, raíz en Core.",
+        "Sin cambios de contrato, DTO, rutas ni Core ni sondeo en segundo plano; pruebas ROJO→VERDE por punto; contraste computado, teclado, 375/768/1024 px revisados por ux-reviewer; lint, tsc -b --noEmit, pruebas, build y validadores pasan; CS-CORE-20261013-001/-002/-003 no se acusan ni se resuelven."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-036-scope-approval.md",
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true,
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-10-14T02:49:15.407Z",
+        "note": "Sin decisiones PENDING/PROPOSED que bloqueen este WI (Blocks no alcanza ExperimentPage); el usuario aprobó el alcance en el chat."
+      },
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-036 solo acusa y clasifica eventos de Core sin tocar bindings, UI ni endpoints.",
+          "report": "harness/reports/wi-console-036-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-036 solo acusa y clasifica eventos de Core sin tocar autorizacion ni interfaz.",
+          "report": "harness/reports/wi-console-036-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-036 no cambia login, sesion, tokens ni el cliente HTTP.",
+          "report": "harness/reports/wi-console-036-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-036 no altera Projects ni visibilidad.",
+          "report": "harness/reports/wi-console-036-contract-sync-scope-review.md"
+        }
+      ],
+      "closedAt": "2026-10-14T06:57:17.000Z"
     }
   ]
 }

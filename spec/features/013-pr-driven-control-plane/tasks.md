@@ -1,6 +1,6 @@
 # 013 — Subtareas actuales
 
-- [ ] **ST-CONSOLE-004 · T-READY · WI-CONSOLE-004 · HU03–HU16:** especificar la experiencia de OC01–OC15 desde happy paths; subcasos y evidencia se agregan solo tras aprobación.
+- [x] **ST-CONSOLE-004 · T-DONE · WI-CONSOLE-004 · HU03–HU16:** especificar la experiencia de OC01–OC15 desde happy paths; subcasos y evidencia se agregan solo tras aprobación.
 - [x] **ST-CONSOLE-014 [T-DONE] · WI-CONSOLE-012 · HU12, HU14:** reproducir la prueba reportada como rota de `RunsPage`, registrar comando y mensaje, determinar su causa y corregir la causa (no el conteo de aserciones) o cerrar con evidencia si no reproduce.
 - [x] **ST-CONSOLE-015 [T-DONE] · WI-CONSOLE-013 · HU07, HU08, HU14:** rol `WRITER` y abstención `UNKNOWN` en Focus Mode y Action Required según `DEC-FK-002` y `DEC-ORG-003`; la pregunta sigue pendiente y no se muestra como resuelta.
 - [x] **ST-CONSOLE-017 [T-DONE] · WI-CONSOLE-015 · HU07, HU09:** mostrar varias reglas `ACTIVE` por target agrupadas por escenario y su procedencia, y retirar el panel especulativo de procedencia.
@@ -23,5 +23,6 @@
 
 - [x] **ST-CONSOLE-034 · T-DONE · WI-CONSOLE-032 · HU12, HU16:** publicar tests con seguimiento de la publicación asíncrona: guardar `publicationId` del `202`, consultar `GET /test-publications/{id}` hasta estado terminal, mostrar companion PR/rama/fallo, bloquear duplicados y simular PENDING/PUBLISHED/FAILED en el mock; sin DTO, rutas ni contrato. Aprobación: `harness/reports/wi-console-032-scope-approval.md`.
 - [x] **ST-CONSOLE-035 · T-DONE · WI-CONSOLE-033 · HU01, HU11, HU14, HU15:** sincronizar SYSTEM/INTEROP 2.10, 2.11 y 2.12 desde los Contract Sync de WI-CORE-047 y WI-CORE-049 (`CS-CORE-20261012-007`, `-009` y `-011`): espejar byte a byte, mostrar `resultSummary` de OC11 como texto libre y no ofrecer publicar un Run `INFRASTRUCTURE_FAILURE`; sin DTO, rutas ni live; no reanuda WI-CONSOLE-004. Aprobación: `harness/reports/wi-console-033-scope-approval.md`.
+- [x] **ST-CONSOLE-036 · T-DONE · WI-CONSOLE-035 · HU07, HU08, HU14:** mostrar en Focus Mode y en la lista de Action Required el destino de la regla (`target.qualifiedName`, `target.filePath`, `target.kind`, `scenarioKind`) y la frase «Tu respuesta se registrará como regla para <símbolo>» antes de confirmar; sin heurísticas de texto, lógica de dominio, campos nuevos de contrato ni cambios a Core. Aprobación: `harness/reports/wi-console-035-scope-approval.md`.
 
 La implementación antigua y sus IDs HU se conservan en `CHANGELOG.md`, `harness/reports/` y Git, no como backlog ejecutable actual.

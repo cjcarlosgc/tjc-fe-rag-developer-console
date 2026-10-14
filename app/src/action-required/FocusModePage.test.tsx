@@ -1,10 +1,11 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, test, vi } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
 import { resetMockBackend } from '../api/mockBackend'
 import { renderApp } from '../test/render'
 import { FocusModePage } from './FocusModePage'
+import type { FunctionalQuestionSetResponse } from './types'
 
 beforeEach(() => {
   setDataSourceForTests('mock')
@@ -344,4 +345,63 @@ test('INTEROP-2.9: continuationAttemptId no nulo es opaco: no se muestra ni se c
   await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/answers'), expect.objectContaining({ method: 'POST' })))
   expect(screen.queryByText(/cont-opaque-7f3a/)).not.toBeInTheDocument()
   expect(fetchMock.mock.calls.some(([input]) => String(input).includes('cont-opaque-7f3a'))).toBe(false)
+})
+
+test('WI-CONSOLE-035: muestra el destino de la regla (símbolo, archivo, tipo y escenario) en un grupo con nombre dentro de la tarjeta', async () => {
+  renderFocusMode('arun_checkout_pr42')
+
+  const target = await screen.findByRole('group', { name: 'Destino de la regla' })
+  expect(target.closest('.focus-mode-card')).not.toBeNull()
+  for (const label of ['Símbolo', 'Archivo', 'Tipo', 'Escenario']) {
+    expect(within(target).getByText(label)).toBeInTheDocument()
+  }
+  expect(within(target).getByText('CouponPolicy.apply')).toBeInTheDocument()
+  expect(within(target).getByText('src/domain/CouponPolicy.ts')).toBeInTheDocument()
+  expect(within(target).getByText('METHOD')).toBeInTheDocument()
+  expect(within(target).getByText('EXCEPTION')).toBeInTheDocument()
+})
+
+test('WI-CONSOLE-035: la frase fija va justo encima de los botones, nombra el qualifiedName y aclara que «No lo sé» solo registra una abstención', async () => {
+  renderFocusMode('arun_checkout_pr42')
+
+  const note = await screen.findByText(/Tu respuesta se registrará como regla para/)
+  expect(note).toHaveTextContent('Tu respuesta se registrará como regla para CouponPolicy.apply')
+  expect(note).toHaveTextContent('«No lo sé» solo registra una abstención.')
+  const yes = screen.getByRole('button', { name: 'Sí' })
+  expect(note.compareDocumentPosition(yes) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(yes).toBeEnabled()
+  expect(screen.getByRole('button', { name: 'No lo sé' })).toBeEnabled()
+})
+
+test('WI-CONSOLE-035: sin capacidad de respuesta no se muestra la frase de registro', async () => {
+  renderFocusMode('arun_org_writer_pr21')
+
+  await screen.findByText('Solo un Maintainer o Admin puede responder esta pregunta funcional')
+  expect(screen.queryByText(/Tu respuesta se registrará como regla/)).not.toBeInTheDocument()
+})
+
+test('WI-CONSOLE-035: un campo nulo del destino se muestra como «sin dato» sin romper la tarjeta', async () => {
+  setDataSourceForTests('live')
+  const questionSet = {
+    analysisRunId: 'arun-null',
+    currentQuestion: {
+      id: 'fq-null', analysisRunId: 'arun-null', projectId: 'prj-live', repositoryName: 'acme/repo', pullRequestNumber: 12,
+      headSha: 'abc123', target: { language: 'TYPESCRIPT', kind: null, qualifiedName: 'calculate', filePath: null, changeKind: 'DIRECTLY_CHANGED' },
+      question: '¿Cuál es el comportamiento esperado?', rationale: 'Falta una regla funcional.', status: 'PENDING', visualAid: null,
+      scenarioKind: null, scenarioKey: 'calculate.result', abstention: null, createdAt: '2026-10-10T00:00:00.000Z',
+    },
+    functionalBehaviorValidated: false,
+  } as unknown as FunctionalQuestionSetResponse
+  const project = { id: 'prj-live', name: 'Live', currentVersionId: null, workspace: { kind: 'PERSONAL', id: 'ws-live', login: 'person' }, role: 'ADMIN', createdAt: '2026-10-10T00:00:00.000Z', updatedAt: '2026-10-10T00:00:00.000Z' }
+  const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+    const url = String(input)
+    return new Response(JSON.stringify(url.includes('context-questions') ? questionSet : project), { status: 200 })
+  })
+
+  renderFocusMode('arun-null')
+  const target = await screen.findByRole('group', { name: 'Destino de la regla' })
+  expect(within(target).getAllByText('sin dato')).toHaveLength(3)
+  expect(within(target).getByText('calculate')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Sí' })).toBeEnabled()
+  fetchMock.mockRestore()
 })

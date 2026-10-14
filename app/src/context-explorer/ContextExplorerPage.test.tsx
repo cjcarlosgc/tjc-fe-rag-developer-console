@@ -73,3 +73,17 @@ describe('ContextExplorerPage', () => {
     expect(screen.queryByRole('button', { name: /calculateTotal/ })).not.toBeInTheDocument()
   })
 })
+
+// --- WI-CONSOLE-036 corte A (B1): breadcrumb de vuelta conserva experimentId y analysisRunId ---
+it('WI-CONSOLE-036 B1: el breadcrumb «Modo experimental» conserva experimentId y analysisRunId', async () => {
+  const accepted = await mockStartExperiment('prj_checkout_demo', 'ver_checkout_7-method-total')
+  renderApp(<ContextExplorerPage />, {
+    initialEntry: `/projects/prj_checkout_demo/experimental/${accepted.experimentId}/context?analysisRunId=arun-1`,
+    routePath: EXPERIMENT_ROUTE,
+  })
+  const link = await screen.findByRole('link', { name: 'Modo experimental' })
+  const target = new URL(link.getAttribute('href') ?? '', 'http://localhost')
+  expect(target.pathname).toBe('/projects/prj_checkout_demo/experimental')
+  expect(target.searchParams.get('experimentId')).toBe(accepted.experimentId)
+  expect(target.searchParams.get('analysisRunId')).toBe('arun-1')
+})

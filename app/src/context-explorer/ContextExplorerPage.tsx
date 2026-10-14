@@ -151,11 +151,16 @@ export function ContextExplorerPage() {
     [ragDetail, nodeSearch, signalKinds, showDiscarded],
   )
 
+  // WI-CONSOLE-036 B1: volver al laboratorio conserva experimentId y analysisRunId (si la URL lo trae).
+  const backToExperimentQuery = new URLSearchParams({ experimentId })
+  const analysisRunIdParam = searchParams.get('analysisRunId')
+  if (analysisRunIdParam) backToExperimentQuery.set('analysisRunId', analysisRunIdParam)
+
   if (tracesQuery.isPending) return <ContextTraceLoadingState label="Cargando trazas de contexto…" />
   if (tracesQuery.isError) return <ErrorState message={contextTraceErrorMessage(tracesQuery.error)} onRetry={() => void tracesQuery.refetch()} />
 
   return <section>
-    <Breadcrumbs items={[{ label: 'Proyectos', to: '/' }, { label: projectQuery.data?.name ?? projectId, to: `/projects/${projectId}` }, { label: 'Modo experimental', to: `/projects/${projectId}/experimental` }, { label: 'Explorar contexto' }]} />
+    <Breadcrumbs items={[{ label: 'Proyectos', to: '/' }, { label: projectQuery.data?.name ?? projectId, to: `/projects/${projectId}` }, { label: 'Modo experimental', to: `/projects/${projectId}/experimental?${backToExperimentQuery}` }, { label: 'Explorar contexto' }]} />
     <div className="page-heading"><div><p className="eyebrow">Contexto / Experimento {experimentId}</p><h1>Explorador de contexto</h1><p>Evidencia de contexto recolectada para las repeticiones del experimento.</p></div></div>
 
     {allTraces.length === 0 ? <div className="empty-state"><div className="empty-icon">{'{ }'}</div><h2>Sin trazas de contexto</h2><p>Este experimento todavía no registró evidencia de contexto para mostrar.</p></div> : <>

@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import { beforeEach, expect, test } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
 import { resetMockBackend } from '../api/mockBackend'
@@ -57,4 +57,19 @@ test('Writer y Reader ven la bandeja sin botones de respuesta ni «No lo sé»',
   expect(screen.getByText('PR #15', { selector: '.pr-ref' })).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'No lo sé' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Sí' })).not.toBeInTheDocument()
+})
+
+test('WI-CONSOLE-035: cada tarjeta de Action Required muestra archivo, tipo y escenario del destino, con el enlace a Focus Mode', async () => {
+  renderApp(<ActionRequiredPage />, { initialEntry: '/action-required' })
+
+  const symbol = await screen.findByText('CouponPolicy.apply', { selector: 'dd' })
+  const item = symbol.closest('.action-required-item') as HTMLElement
+  expect(item).not.toBeNull()
+  for (const label of ['Símbolo', 'Archivo', 'Tipo', 'Escenario']) {
+    expect(within(item).getByText(label)).toBeInTheDocument()
+  }
+  expect(within(item).getByText('src/domain/CouponPolicy.ts')).toBeInTheDocument()
+  expect(within(item).getByText('METHOD')).toBeInTheDocument()
+  expect(within(item).getByText('EXCEPTION')).toBeInTheDocument()
+  expect(item.querySelector('a')).toHaveAttribute('href', expect.stringContaining('/action-required/arun_checkout_pr42'))
 })

@@ -127,3 +127,10 @@ it('isLlmProviderUnavailable solo reconoce el 503 de la creación de experimento
   expect(isLlmProviderUnavailable(new ApiError('x', 422, 'c', 'LLM_PROVIDER_UNAVAILABLE'))).toBe(false)
   expect(isLlmProviderUnavailable(new Error('x'))).toBe(false)
 })
+
+// --- WI-CONSOLE-036 corte B (B4): target no resoluble en el Run ---
+it('WI-CONSOLE-036 B4: UNRESOLVABLE_TARGET tiene copy propio y no muestra el mensaje crudo de Core', () => {
+  const message = bindingErrorMessage(new ApiError('El TestTarget no existe o no pertenece a este Project.', 404, 'c', 'UNRESOLVABLE_TARGET'))
+  expect(message).toBe('No pudimos localizar el target elegido en el código de este Run. Prueba con otro símbolo del Run.')
+  expect(message).not.toMatch(/TestTarget/)
+})

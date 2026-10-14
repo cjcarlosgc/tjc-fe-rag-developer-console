@@ -10,6 +10,7 @@ import { useProject } from '../projects/queries'
 import { FUNCTIONAL_QUESTION_OBSOLETE_MESSAGE, bindingErrorMessage, errorCorrelationId, isFunctionalQuestionObsolete } from '../control-plane/errors'
 import { useContextQuestionSet, useSubmitFunctionalAnswer } from './queries'
 import { abstentionLabel } from './abstention'
+import { RuleRegistrationNote, RuleTargetSummary } from './RuleTargetSummary'
 import type { ConflictResolution, FunctionalAnswerChoice, FunctionalKnowledgeConflictResponse, VisualAidResponse } from './types'
 
 /** Evita open-redirect: `returnTo` solo puede ser una ruta interna. */
@@ -135,9 +136,14 @@ export function FocusModePage() {
       <h2>{currentQuestion.question}</h2>
       <p className="focus-mode-rationale">{currentQuestion.rationale}</p>
       {currentQuestion.visualAid && <VisualAid aid={currentQuestion.visualAid} />}
+      <div className="rule-target-block" role="group" aria-labelledby="rule-target-title">
+        <h3 id="rule-target-title" className="rule-target-title">Destino de la regla</h3>
+        <RuleTargetSummary target={currentQuestion.target} scenarioKind={currentQuestion.scenarioKind} />
+      </div>
       <div role="status">{currentQuestion.abstention && <p className="abstention-note">{abstentionLabel(currentQuestion.abstention)}</p>}</div>
 
       {canAnswer ? <>
+      <RuleRegistrationNote qualifiedName={currentQuestion.target.qualifiedName} />
       <div className="answer-choices" role="group" aria-label="Respuesta">
         {(Object.keys(CHOICE_LABELS) as Exclude<FunctionalAnswerChoice, 'FREE_TEXT'>[]).map((choice) => (
           <button key={choice} type="button" className={`button ${choice === 'UNKNOWN' ? 'secondary' : 'primary'}`} disabled={submitAnswer.isPending} onClick={() => submit(choice)}>
