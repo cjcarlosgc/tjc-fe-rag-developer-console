@@ -1037,6 +1037,8 @@ export const DEMO_EXPERIMENT_SELECTOR_OPTIONS: ReadonlyArray<{ id: string; label
   { id: 'demo-error-reasoning-effort', label: 'DEMO · error 422 REASONING_EFFORT_UNSUPPORTED' },
   { id: 'demo-error-unsupported-project', label: 'DEMO · error 422 UNSUPPORTED_PROJECT' },
   { id: 'demo-error-llm-unavailable', label: 'DEMO · error 503 LLM_PROVIDER_UNAVAILABLE (reintentable)' },
+  // WI-CONSOLE-036 B4: símbolo constructor DEMO; al elegirlo, el mock responde 404 UNRESOLVABLE_TARGET. No se preselecciona.
+  { id: 'demo-error-unresolvable-target', label: 'DEMO · DATOS SIMULADOS · Demo::__construct' },
 ]
 
 const DEMO_SCENARIO_TARGET = 'DEMO · escenario'
@@ -1197,6 +1199,7 @@ export async function mockStartExperiment(projectId: string, targetId: string): 
   // DEMO · errores de creación (WI-CONSOLE-021, INTEROP-2.7 §6.5.1). Ninguno crea el experimento.
   if (targetId === 'demo-error-reasoning-effort') throw new ApiError('El modelo no admite el esfuerzo de razonamiento pedido (DEMO).', 422, 'demo-correlation-id', 'REASONING_EFFORT_UNSUPPORTED', { supportedEfforts: ['low', 'medium'] })
   if (targetId === 'demo-error-unsupported-project') throw new ApiError(UNSUPPORTED_PROJECT_MESSAGE, 422, 'demo-correlation-id', 'UNSUPPORTED_PROJECT')
+  if (targetId === 'demo-error-unresolvable-target') throw new ApiError('El TestTarget no existe o no pertenece a este Project (DEMO).', 404, 'demo-correlation-id', 'UNRESOLVABLE_TARGET')
   if (targetId === 'demo-error-llm-unavailable') throw new ApiError('El modelo de experimentos no está disponible (DEMO).', 503, 'demo-correlation-id', 'LLM_PROVIDER_UNAVAILABLE')
   const scenario = DEMO_EXPERIMENT_SCENARIOS.find((name) => targetId === `demo-scenario-${name}`)
   if (scenario) {

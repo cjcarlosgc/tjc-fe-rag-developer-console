@@ -1,5 +1,7 @@
 # Progreso actual — CONSOLE
 
+**WI-CONSOLE-036 cerrado (2026-10-14, `W-DONE`, `activeWorkItem: null`):** `experimentId` en la URL, nota de motivo del botón, error de consulta con «Reintentar»/«Iniciar otra comparación» (`retry: false`) y constructores al final del selector; tercer ciclo UX autorizado por el usuario. Ver `harness/reports/wi-console-036-closure.md`. **Esperan frase del usuario:** WI-CONSOLE-037 (sondeo en segundo plano), WI-CONSOLE-034 (espejo 2.13–2.15) y WI-CONSOLE-038.
+
 **WI-CONSOLE-035 cerrado (2026-10-13, `W-DONE`, `activeWorkItem: null`):** destino de la regla (símbolo, archivo, tipo, escenario) y frase «Tu respuesta se registrará como regla para <símbolo>» en Focus Mode y Action Required; sin DTO ni Core. Revisión UX y `reviewer` (awayMode). Ver `harness/reports/wi-console-035-closure.md`. **Siguiente:** WI-CONSOLE-036 (experimentos); pendiente decisión del usuario sobre etiquetas en español de tipo/escenario. No se abre otro WI.
 
 **WI-CONSOLE-004 cerrado (2026-10-12, `W-DONE`, `activeWorkItem: null`):** OC01–OC15 formalizados en la Feature 013 con las decisiones del usuario (OC02, OC10, OC11, OC14, OC15, OC08) y el orden de prioridad registrado en `spec/operational-cases.md`; afirmaciones sin cita en el espejo marcadas «pendiente de cita contractual». Solo documentación; ningún caso implementado, cubierto, `O-READY` ni `O-COVERED`. Revisión contractual y por `reviewer` (awayMode). Ver `harness/reports/wi-console-004-review.md`.

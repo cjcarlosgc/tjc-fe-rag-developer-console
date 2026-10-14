@@ -11475,6 +11475,522 @@
       "title": "Mostrar el destino de la regla antes de confirmar una respuesta funcional",
       "dependsOn": [],
       "closedAt": "2026-10-14T02:47:23.000Z"
+    },
+    {
+      "id": "WI-CONSOLE-036",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "sprint": "SMART V3",
+      "storyIds": [
+        "HU12",
+        "HU15",
+        "HU17"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-037"
+      ],
+      "caseIds": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "specPaths": [
+        "spec/features/014-analysisrun-experiments/spec.md",
+        "spec/features/014-analysisrun-experiments/plan.md",
+        "spec/features/014-analysisrun-experiments/tasks.md",
+        "spec/contracts/interoperability-contract.md",
+        "CHANGELOG.md",
+        "harness/reports/fase2-diagnostico-console.md",
+        "harness/reports/wi-console-036-scope-approval.md",
+        "harness/reports/wi-console-036-contract-sync-scope-review.md",
+        "harness/reports/wi-console-036-sdd-verification.md"
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-036-scope-approval.md",
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true,
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-10-14T02:49:15.407Z",
+        "note": "Sin decisiones PENDING/PROPOSED que bloqueen este WI (Blocks no alcanza ExperimentPage); el usuario aprobó el alcance en el chat."
+      },
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-036 solo acusa y clasifica eventos de Core sin tocar bindings, UI ni endpoints.",
+          "report": "harness/reports/wi-console-036-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-036 solo acusa y clasifica eventos de Core sin tocar autorizacion ni interfaz.",
+          "report": "harness/reports/wi-console-036-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-036 no cambia login, sesion, tokens ni el cliente HTTP.",
+          "report": "harness/reports/wi-console-036-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-036 no altera Projects ni visibilidad.",
+          "report": "harness/reports/wi-console-036-contract-sync-scope-review.md"
+        }
+      ],
+      "execution": {
+        "leaderAgent": "leader",
+        "analysisAgent": "sdd-analyst",
+        "implementationAgent": "implementer",
+        "contractReviewAgent": null,
+        "reviewAgent": "reviewer",
+        "handoffs": [
+          {
+            "agent": "sdd-analyst",
+            "executedBy": {
+              "agent": "sdd-analyst",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "SUFICIENTE: sin DEC bloqueantes ni impacto contractual; 5 precisiones (setSearchParams funcional con replace, breadcrumb de contexto, copy UNRESOLVABLE_TARGET, nota role=status persistente, isError sin sondeo en bucle) y heurística B4 por último segmento."
+            ],
+            "blockers": [],
+            "filesAffected": [],
+            "evidence": [
+              "harness/reports/wi-console-036-sdd-verification.md"
+            ],
+            "recommendedNextStep": "Delegar al implementer con ROJO→VERDE por punto."
+          },
+          {
+            "agent": "implementer",
+            "executedBy": {
+              "agent": "implementer",
+              "configuredModel": "claude-haiku-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Cortes A (B1+breadcrumb) y B (B3+B4+copy) y correccion UX c1 con ROJO->VERDE; 800/800 pruebas, lint y tsc verdes (reejecutados por el leader)."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/experiments/ExperimentPage.tsx",
+              "app/src/experiments/ExperimentComparison.tsx",
+              "app/src/experiments/targetOrdering.ts",
+              "app/src/control-plane/errors.ts",
+              "app/src/context-explorer/ContextExplorerPage.tsx",
+              "app/src/api/mockBackend.ts"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-036-implementation.md"
+            ],
+            "recommendedNextStep": "Corregir la consulta de experimento con id inexistente en el navegador y repetir UX."
+          },
+          {
+            "agent": "ux-reviewer",
+            "executedBy": {
+              "agent": "ux-reviewer",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "CHANGES_REQUESTED",
+            "findings": [
+              "Ciclo 1: nota veraz con error; corregido. Ciclo 2: con ?experimentId= inexistente el navegador real sigue en «Preparando experimento» (retry:1 de main.tsx + refetchInterval 560 ms mantienen la query en pending); el bloque de error y «Iniciar otra comparación» no son alcanzables aunque las pruebas pasan. Contraste, foco y 375 px del boton nuevo sin medir."
+            ],
+            "blockers": [
+              "Defecto B3 en navegador; limite de 2 ciclos UX agotado"
+            ],
+            "filesAffected": [
+              "harness/reports/wi-console-036-ux-review.md"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-036-ux-review.md"
+            ],
+            "recommendedNextStep": "Decision del usuario: autorizar un ciclo adicional (retry:false o failureCount>0 como error en esta query) y nueva revision UX."
+          },
+          {
+            "agent": "implementer",
+            "executedBy": {
+              "agent": "implementer",
+              "configuredModel": "claude-haiku-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Ciclo 3: causa = reintento de TanStack Query pausado sin foco/visibilidad; retry:false en la query del experimento con prueba ROJO->VERDE (focusManager.setFocused(false))."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/experiments/ExperimentPage.tsx",
+              "app/src/experiments/ExperimentPage.retry.test.tsx"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-036-implementation.md"
+            ],
+            "recommendedNextStep": "Revision UX ciclo 3 y revision independiente."
+          },
+          {
+            "agent": "ux-reviewer",
+            "executedBy": {
+              "agent": "ux-reviewer",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "low"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Ciclo 3 en navegador real (mock): ?experimentId=nope-404 llega al role=alert con Reintentar e Iniciar otra comparacion en ~2,8 s; contraste 18,26:1, foco visible, sin overflow a 375/768/1024. Hallazgos bajos no bloqueantes: estilo nativo de botones, foco cae a BODY tras activar, workspaceId ausente en URL."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "harness/reports/wi-console-036-ux-review.md"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-036-ux-review.md"
+            ],
+            "recommendedNextStep": "Revision independiente del reviewer."
+          },
+          {
+            "agent": "reviewer",
+            "executedBy": {
+              "agent": "reviewer",
+              "configuredModel": "claude-sonnet-5-5",
+              "servedModel": "unknown",
+              "effort": "high"
+            },
+            "status": "APPROVED",
+            "findings": [
+              "Ciclo 3 (unico, autorizado por el usuario): B1/B3/B4 y retry:false solo en la query del experimento cumplen; prueba ROJO->VERDE valida; sin contrato, Core ni rutas. Hallazgos bajos no bloqueantes: foco cae a BODY tras Iniciar otra comparacion, botones fuera de Black Glass, workspaceId no conservado al quitar experimentId."
+            ],
+            "blockers": [],
+            "filesAffected": [
+              "app/src/experiments/ExperimentPage.tsx",
+              "app/src/experiments/ExperimentPage.retry.test.tsx"
+            ],
+            "evidence": [
+              "harness/reports/wi-console-036-review.md"
+            ],
+            "recommendedNextStep": "Cerrar WI-CONSOLE-036."
+          }
+        ],
+        "reviewCycles": 2,
+        "maxReviewCycles": 2,
+        "uxReviewAgent": "ux-reviewer",
+        "extraReviewCycleAuthorization": {
+          "count": 1,
+          "cycle": 3,
+          "report": "harness/reports/wi-console-036-third-cycle-authorization.md",
+          "scope": "retry:false en la query del experimento; no amplia maxReviewCycles; si no basta, DECISION_REQUIRED"
+        }
+      },
+      "gates": {
+        "sddVerified": "G-PASSED",
+        "implementationCompleted": "G-PASSED",
+        "uxReviewed": "G-PASSED",
+        "contractReviewed": "G-NOT_APPLICABLE",
+        "canonicalContractSynced": "G-NOT_APPLICABLE",
+        "contractSyncPublished": "G-NOT_APPLICABLE",
+        "independentReviewPassed": "G-PASSED",
+        "technicalChecksPassed": "G-PASSED",
+        "interopSyncChecked": "G-PASSED",
+        "noMocksPresentedAsLive": "G-PASSED",
+        "noBlockingDecisions": "G-PASSED",
+        "retryLimitRespected": "G-PASSED"
+      },
+      "coordination": {
+        "contractImpact": false,
+        "publishesContract": false,
+        "uiImpact": true,
+        "pullCheckpoints": [
+          {
+            "checkpoint": "start",
+            "workItem": "WI-CONSOLE-036",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002",
+              "CS-20260924-001",
+              "CS-CORE-20260926-001",
+              "CS-CORE-20260927-001",
+              "CS-CORE-20260927-003",
+              "CS-CORE-20260927-004",
+              "CS-CORE-20260927-005",
+              "CS-CORE-20260927-006",
+              "CS-CORE-20261008-001",
+              "CS-CORE-20261008-002",
+              "CS-CORE-20261008-003",
+              "CS-CORE-20261008-004",
+              "CS-CORE-20261008-005",
+              "CS-CORE-20261008-006",
+              "CS-CORE-20261008-007",
+              "CS-CORE-20261009-008",
+              "CS-CORE-20261009-009",
+              "CS-CORE-20261009-010",
+              "CS-CORE-20261009-011",
+              "CS-CORE-20261009-013",
+              "CS-CORE-20261009-014",
+              "CS-CORE-20261009-015",
+              "CS-CORE-20261009-016",
+              "CS-CORE-20261009-017",
+              "CS-CORE-20261009-018",
+              "CS-CORE-20261010-003",
+              "CS-CORE-20261011-001",
+              "CS-CORE-20261011-004",
+              "CS-CORE-20261011-005",
+              "CS-CORE-20261011-006",
+              "CS-CORE-20261012-001",
+              "CS-CORE-20261012-002",
+              "CS-CORE-20261012-003",
+              "CS-CORE-20261012-004",
+              "CS-CORE-20261012-005",
+              "CS-CORE-20261012-007",
+              "CS-CORE-20261012-009",
+              "CS-CORE-20261012-011"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [],
+            "checkedAt": "2026-10-14T02:49:25.752Z"
+          },
+          {
+            "checkpoint": "implementation-delivery",
+            "workItem": "WI-CONSOLE-036",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002",
+              "CS-20260924-001",
+              "CS-CORE-20260926-001",
+              "CS-CORE-20260927-001",
+              "CS-CORE-20260927-003",
+              "CS-CORE-20260927-004",
+              "CS-CORE-20260927-005",
+              "CS-CORE-20260927-006",
+              "CS-CORE-20261008-001",
+              "CS-CORE-20261008-002",
+              "CS-CORE-20261008-003",
+              "CS-CORE-20261008-004",
+              "CS-CORE-20261008-005",
+              "CS-CORE-20261008-006",
+              "CS-CORE-20261008-007",
+              "CS-CORE-20261009-008",
+              "CS-CORE-20261009-009",
+              "CS-CORE-20261009-010",
+              "CS-CORE-20261009-011",
+              "CS-CORE-20261009-013",
+              "CS-CORE-20261009-014",
+              "CS-CORE-20261009-015",
+              "CS-CORE-20261009-016",
+              "CS-CORE-20261009-017",
+              "CS-CORE-20261009-018",
+              "CS-CORE-20261010-003",
+              "CS-CORE-20261011-001",
+              "CS-CORE-20261011-004",
+              "CS-CORE-20261011-005",
+              "CS-CORE-20261011-006",
+              "CS-CORE-20261012-001",
+              "CS-CORE-20261012-002",
+              "CS-CORE-20261012-003",
+              "CS-CORE-20261012-004",
+              "CS-CORE-20261012-005",
+              "CS-CORE-20261012-007",
+              "CS-CORE-20261012-009",
+              "CS-CORE-20261012-011"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-14T03:17:31.007Z"
+          },
+          {
+            "checkpoint": "before-review",
+            "workItem": "WI-CONSOLE-036",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002",
+              "CS-20260924-001",
+              "CS-CORE-20260926-001",
+              "CS-CORE-20260927-001",
+              "CS-CORE-20260927-003",
+              "CS-CORE-20260927-004",
+              "CS-CORE-20260927-005",
+              "CS-CORE-20260927-006",
+              "CS-CORE-20261008-001",
+              "CS-CORE-20261008-002",
+              "CS-CORE-20261008-003",
+              "CS-CORE-20261008-004",
+              "CS-CORE-20261008-005",
+              "CS-CORE-20261008-006",
+              "CS-CORE-20261008-007",
+              "CS-CORE-20261009-008",
+              "CS-CORE-20261009-009",
+              "CS-CORE-20261009-010",
+              "CS-CORE-20261009-011",
+              "CS-CORE-20261009-013",
+              "CS-CORE-20261009-014",
+              "CS-CORE-20261009-015",
+              "CS-CORE-20261009-016",
+              "CS-CORE-20261009-017",
+              "CS-CORE-20261009-018",
+              "CS-CORE-20261010-003",
+              "CS-CORE-20261011-001",
+              "CS-CORE-20261011-004",
+              "CS-CORE-20261011-005",
+              "CS-CORE-20261011-006",
+              "CS-CORE-20261012-001",
+              "CS-CORE-20261012-002",
+              "CS-CORE-20261012-003",
+              "CS-CORE-20261012-004",
+              "CS-CORE-20261012-005",
+              "CS-CORE-20261012-007",
+              "CS-CORE-20261012-009",
+              "CS-CORE-20261012-011"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-14T03:17:31.113Z"
+          },
+          {
+            "checkpoint": "before-done",
+            "workItem": "WI-CONSOLE-036",
+            "relevantPendingSyncIds": [],
+            "acknowledgedSyncIds": [],
+            "resolvedSyncIds": [
+              "CS-20260920-002",
+              "CS-20260924-001",
+              "CS-CORE-20260926-001",
+              "CS-CORE-20260927-001",
+              "CS-CORE-20260927-003",
+              "CS-CORE-20260927-004",
+              "CS-CORE-20260927-005",
+              "CS-CORE-20260927-006",
+              "CS-CORE-20261008-001",
+              "CS-CORE-20261008-002",
+              "CS-CORE-20261008-003",
+              "CS-CORE-20261008-004",
+              "CS-CORE-20261008-005",
+              "CS-CORE-20261008-006",
+              "CS-CORE-20261008-007",
+              "CS-CORE-20261009-008",
+              "CS-CORE-20261009-009",
+              "CS-CORE-20261009-010",
+              "CS-CORE-20261009-011",
+              "CS-CORE-20261009-013",
+              "CS-CORE-20261009-014",
+              "CS-CORE-20261009-015",
+              "CS-CORE-20261009-016",
+              "CS-CORE-20261009-017",
+              "CS-CORE-20261009-018",
+              "CS-CORE-20261010-003",
+              "CS-CORE-20261011-001",
+              "CS-CORE-20261011-004",
+              "CS-CORE-20261011-005",
+              "CS-CORE-20261011-006",
+              "CS-CORE-20261012-001",
+              "CS-CORE-20261012-002",
+              "CS-CORE-20261012-003",
+              "CS-CORE-20261012-004",
+              "CS-CORE-20261012-005",
+              "CS-CORE-20261012-007",
+              "CS-CORE-20261012-009",
+              "CS-CORE-20261012-011"
+            ],
+            "deferredSyncIds": [],
+            "notRelevantSyncIds": [
+              "CS-20260920-003",
+              "CS-20260921-001",
+              "CS-20260921-002",
+              "CS-20260921-003"
+            ],
+            "checkedAt": "2026-10-14T06:57:07.823Z"
+          }
+        ],
+        "publishedSyncIds": [],
+        "pendingRelevantSyncIds": [],
+        "knownIncompatibilities": []
+      },
+      "evidence": [
+        "harness/reports/wi-console-036-scope-approval.md",
+        "harness/reports/wi-console-036-contract-sync-scope-review.md",
+        "harness/reports/wi-console-036-sdd-verification.md",
+        "harness/reports/wi-console-036-implementation.md",
+        "harness/reports/wi-console-036-ux-review.md",
+        "harness/reports/wi-console-036-third-cycle-authorization.md",
+        "harness/reports/wi-console-036-third-cycle-authorization.md",
+        "harness/reports/wi-console-036-review.md",
+        "harness/reports/wi-console-036-closure.md"
+      ],
+      "acceptanceCriteria": [
+        "B1: experimentId vive en la URL como ?experimentId= (misma ruta, preservando analysisRunId); al lanzar con éxito se escribe; al montar con el parámetro se reabre el experimento y sus resultados; un id inexistente o fallido muestra error claro; «Ver contexto →» y volver conserva el id; sin usar el listado de experimentos.",
+        "B3: nota role=\"status\" bajo «Ejecutar comparación» con el motivo concreto cuando no lanza o está deshabilitado (sin target, sin permiso, ya lanzado/en curso, mutación en curso, Run no elegible); si GET /experiments/{id} falla se muestra bloque de error con mensaje, correlation id y «Reintentar» en vez de «Preparando experimento…» eterno.",
+        "B4: la preselección del selector no es un constructor (constructor/__construct se ordenan al final sin filtrarlos); nota previa «puede no ser ejecutable» si el seleccionado es constructor (también si es el único candidato); UNRESOLVABLE_TARGET con mensaje claro; heurística de presentación por nombre declarada, raíz en Core.",
+        "Sin cambios de contrato, DTO, rutas ni Core ni sondeo en segundo plano; pruebas ROJO→VERDE por punto; contraste computado, teclado, 375/768/1024 px revisados por ux-reviewer; lint, tsc -b --noEmit, pruebas, build y validadores pasan; CS-CORE-20261013-001/-002/-003 no se acusan ni se resuelven."
+      ],
+      "priority": "P1",
+      "title": "Experimentos: id en la URL, motivo visible del botón y selector sin constructor preseleccionado",
+      "dependsOn": [],
+      "gateEvidence": {
+        "sddVerified": [
+          "harness/reports/wi-console-036-sdd-verification.md"
+        ],
+        "noBlockingDecisions": [
+          "harness/reports/wi-console-036-sdd-verification.md"
+        ],
+        "technicalChecksPassed": [
+          "harness/reports/wi-console-036-implementation.md",
+          "harness/reports/wi-console-036-closure.md"
+        ],
+        "interopSyncChecked": [
+          "harness/reports/wi-console-036-implementation.md",
+          "harness/reports/wi-console-036-contract-sync-scope-review.md"
+        ],
+        "noMocksPresentedAsLive": [
+          "harness/reports/wi-console-036-implementation.md"
+        ],
+        "implementationCompleted": [
+          "harness/reports/wi-console-036-implementation.md"
+        ],
+        "uxReviewed": [
+          "harness/reports/wi-console-036-ux-review.md"
+        ],
+        "independentReviewPassed": [
+          "harness/reports/wi-console-036-review.md"
+        ],
+        "retryLimitRespected": [
+          "harness/reports/wi-console-036-third-cycle-authorization.md",
+          "harness/reports/wi-console-036-review.md"
+        ]
+      },
+      "closedAt": "2026-10-14T06:57:17.000Z"
     }
   ],
   "activeWorkItem": null
