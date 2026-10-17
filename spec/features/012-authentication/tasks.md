@@ -1,15 +1,5 @@
-# 012-authentication — Tareas
+# 012-authentication — Subtareas vigentes
 
-- [ ] Implementar adapters de identidad `mock|supabase` y `AuthProvider`.
-- [ ] Implementar login por correo, recuperación y solicitud de acceso/invitación.
-- [ ] Proteger rutas y restaurar/refrescar sesión.
-- [ ] Añadir Bearer al cliente de Core y manejar `AUTH_REQUIRED`/`INVALID_ACCESS_TOKEN`.
-- [ ] Aplicar identidad mock solo a datos mock/locales y señalizarla.
-- [ ] Mostrar únicamente recursos devueltos para el propietario autenticado, sin duplicar autorización local.
+No hay una subtarea técnica seleccionable en este archivo para SDD 3.0. El comportamiento vigente está en `spec.md` y `plan.md`; la ejecución futura requiere una ST local y un WI registrado antes de comenzar.
 
-## Calidad
-
-- [ ] Agregar pruebas unitarias, integración y navegación.
-- [ ] Auditar teclado, formularios, contraste y mensajes.
-- [ ] Verificar que tokens y claims no aparecen en logs ni UI.
-- [ ] Ejecutar lint/test/build/SDD check y registrar evidencia.
+Los checklists anteriores se conservan en Git, CHANGELOG y `harness/reports/open-task-triage-3.0.md`.

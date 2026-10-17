@@ -1,11 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { hasRole } from '../projects/roles'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { isMockDataSource } from '../api/dataSource'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
 import { RepoChip } from '../ui/RepoChip'
+import { useProject } from '../projects/queries'
+import { FUNCTIONAL_QUESTION_OBSOLETE_MESSAGE, bindingErrorMessage, errorCorrelationId, isFunctionalQuestionObsolete } from '../control-plane/errors'
 import { useContextQuestionSet, useSubmitFunctionalAnswer } from './queries'
+import { abstentionLabel } from './abstention'
+import { RuleRegistrationNote, RuleTargetSummary } from './RuleTargetSummary'
 import type { ConflictResolution, FunctionalAnswerChoice, FunctionalKnowledgeConflictResponse, VisualAidResponse } from './types'
 
 /** Evita open-redirect: `returnTo` solo puede ser una ruta interna. */
@@ -35,16 +40,41 @@ export function FocusModePage() {
   const mock = isMockDataSource()
   const questionSetQuery = useContextQuestionSet(analysisRunId)
   const submitAnswer = useSubmitFunctionalAnswer(analysisRunId)
+  const currentQuestionId = questionSetQuery.data?.currentQuestion?.projectId ?? ''
+  const projectQuery = useProject(currentQuestionId)
   const [answerText, setAnswerText] = useState('')
   const [pendingAnswer, setPendingAnswer] = useState<{ questionId: string; choice: FunctionalAnswerChoice; answer: string | null } | null>(null)
+  /** Tras una abstención el botón «No lo sé» se deshabilita durante el envío y pierde el foco: se devuelve al contenedor de la pregunta. */
+  const cardRef = useRef<HTMLDivElement>(null)
+  /** INTEROP-2.9: la pregunta que el servidor declaró no accionable deja de ofrecerse; el aviso toma el foco. */
+  const [obsoleteQuestionId, setObsoleteQuestionId] = useState<string | null>(null)
+  const noticeRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (obsoleteQuestionId) noticeRef.current?.focus()
+  }, [obsoleteQuestionId])
 
   if (questionSetQuery.isPending) return <LoadingState label="Abriendo Focus Mode…" />
   if (questionSetQuery.isError) return <ErrorState message={questionSetQuery.error.message} onRetry={() => void questionSetQuery.refetch()} />
+  if (questionSetQuery.data.currentQuestion && projectQuery.isPending) return <LoadingState label="Comprobando tu rol en el Project…" />
+  if (questionSetQuery.data.currentQuestion && projectQuery.isError) return <ErrorState message={bindingErrorMessage(projectQuery.error)} correlationId={errorCorrelationId(projectQuery.error)} onRetry={() => void projectQuery.refetch()} />
 
-  const { currentQuestion, functionalBehaviorValidated } = questionSetQuery.data
+  const { functionalBehaviorValidated } = questionSetQuery.data
+  const currentQuestion = questionSetQuery.data.currentQuestion?.id === obsoleteQuestionId ? null : questionSetQuery.data.currentQuestion
+  const canAnswer = !currentQuestion || hasRole(projectQuery.data?.role, 'MAINTAINER')
+  const obsolete = isFunctionalQuestionObsolete(submitAnswer.error)
   const conflict = submitAnswer.error instanceof ApiError && submitAnswer.error.code === 'FUNCTIONAL_KNOWLEDGE_CONFLICT'
     ? submitAnswer.error.details as FunctionalKnowledgeConflictResponse
     : null
+
+  /** Fallo de envío: la pregunta obsoleta sale de la vista y se limpia la respuesta pendiente; cualquier otro error devuelve el foco a la tarjeta. */
+  function handleSubmitError(error: unknown, questionId: string) {
+    if (isFunctionalQuestionObsolete(error)) {
+      setObsoleteQuestionId(questionId)
+      setPendingAnswer(null)
+      return
+    }
+    cardRef.current?.focus()
+  }
 
   function submit(choice: FunctionalAnswerChoice) {
     if (!currentQuestion) return
@@ -52,7 +82,12 @@ export function FocusModePage() {
     setPendingAnswer({ questionId: currentQuestion.id, choice, answer })
     submitAnswer.mutate(
       { questionId: currentQuestion.id, input: { choice, answer } },
-      { onSuccess: () => { setAnswerText(''); setPendingAnswer(null) } },
+      { onSuccess: (result) => {
+        if (result.outcome !== 'ABSTAINED') setAnswerText('')
+        else cardRef.current?.focus()
+        setPendingAnswer(null)
+      },
+        onError: (error) => handleSubmitError(error, currentQuestion.id) },
     )
   }
 
@@ -61,7 +96,12 @@ export function FocusModePage() {
     if (!pendingAnswer || !conflict) return
     submitAnswer.mutate(
       { questionId: pendingAnswer.questionId, input: { choice: pendingAnswer.choice, answer: pendingAnswer.answer, conflictResolution: { conflictId: conflict.conflictId, action } } },
-      { onSuccess: () => { setAnswerText(''); setPendingAnswer(null) } },
+      { onSuccess: (result) => {
+        if (result.outcome !== 'ABSTAINED') setAnswerText('')
+        else cardRef.current?.focus()
+        setPendingAnswer(null)
+      },
+        onError: (error) => handleSubmitError(error, pendingAnswer.questionId) },
     )
   }
 
@@ -76,6 +116,10 @@ export function FocusModePage() {
       {mock && <span className="demo-stamp">DEMO · DATOS SIMULADOS</span>}
     </div>
 
+    {obsolete && <div className="panel focus-mode-obsolete" role="status" tabIndex={-1} ref={noticeRef}>
+      <p>{FUNCTIONAL_QUESTION_OBSOLETE_MESSAGE}</p>
+    </div>}
+
     {!currentQuestion && (
       <div className="panel success-note contract-note">
         <div>
@@ -87,12 +131,19 @@ export function FocusModePage() {
       </div>
     )}
 
-    {currentQuestion && <div className="panel focus-mode-card">
+    {currentQuestion && <div className="panel focus-mode-card" ref={cardRef} tabIndex={-1}>
       <span className="run-heading-meta"><RepoChip repositoryName={currentQuestion.repositoryName} /><span className="pr-ref">PR #{currentQuestion.pullRequestNumber} · {currentQuestion.target.qualifiedName}</span></span>
       <h2>{currentQuestion.question}</h2>
       <p className="focus-mode-rationale">{currentQuestion.rationale}</p>
       {currentQuestion.visualAid && <VisualAid aid={currentQuestion.visualAid} />}
+      <div className="rule-target-block" role="group" aria-labelledby="rule-target-title">
+        <h3 id="rule-target-title" className="rule-target-title">Destino de la regla</h3>
+        <RuleTargetSummary target={currentQuestion.target} scenarioKind={currentQuestion.scenarioKind} />
+      </div>
+      <div role="status">{currentQuestion.abstention && <p className="abstention-note">{abstentionLabel(currentQuestion.abstention)}</p>}</div>
 
+      {canAnswer ? <>
+      <RuleRegistrationNote qualifiedName={currentQuestion.target.qualifiedName} />
       <div className="answer-choices" role="group" aria-label="Respuesta">
         {(Object.keys(CHOICE_LABELS) as Exclude<FunctionalAnswerChoice, 'FREE_TEXT'>[]).map((choice) => (
           <button key={choice} type="button" className={`button ${choice === 'UNKNOWN' ? 'secondary' : 'primary'}`} disabled={submitAnswer.isPending} onClick={() => submit(choice)}>
@@ -124,7 +175,8 @@ export function FocusModePage() {
         </div>
       )}
 
-      {submitAnswer.isError && !conflict && <p className="inline-error" role="alert">{submitAnswer.error.message}</p>}
+      {submitAnswer.isError && !conflict && !obsolete && <p className="inline-error" role="alert">{bindingErrorMessage(submitAnswer.error)}{errorCorrelationId(submitAnswer.error) && <> · Correlation ID: <code>{errorCorrelationId(submitAnswer.error)}</code></>}</p>}
+      </> : <p className="role-note">Solo un Maintainer o Admin puede responder esta pregunta funcional</p>}
     </div>}
 
     <div className="run-actions"><Link className="button secondary button-link" to={returnTo}>Volver</Link></div>

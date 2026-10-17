@@ -1,6 +1,6 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { expect, test, vi } from 'vitest'
+import { expect, test } from 'vitest'
 import { render } from '@testing-library/react'
 import { InventoryView } from './InventoryView'
 
@@ -17,10 +17,8 @@ test('filtra targets sin cobertura', async () => {
   expect(screen.queryByText('User')).not.toBeInTheDocument()
 })
 
-test('selecciona un target preservando su identidad técnica', async () => {
-  const onSelect = vi.fn()
-  const user = userEvent.setup()
-  render(<InventoryView targets={targets} onSelect={onSelect} />)
-  await user.click(screen.getAllByRole('button', { name: 'Usar target →' })[0])
-  expect(onSelect).toHaveBeenCalledWith(targets[0])
+test('el inventario es de consulta y no permite seleccionar un target para generar', () => {
+  render(<InventoryView targets={targets} />)
+  expect(screen.getByText('total')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /usar target/i })).not.toBeInTheDocument()
 })

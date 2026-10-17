@@ -1,15 +1,35 @@
 import { apiRequest } from '../api/client'
 import { getDataSource } from '../api/dataSource'
+import { createIdempotencyKey } from '../api/idempotency'
 import { mockGetContextQuestionSet, mockListActionRequired, mockListFunctionalKnowledge, mockSubmitFunctionalAnswer } from '../api/mockBackend'
 import type { ActionRequiredListPage, FunctionalAnswerAcceptedResponse, FunctionalKnowledgeListPage, FunctionalKnowledgeStatus, FunctionalQuestionSetResponse, SubmitFunctionalAnswerRequest } from './types'
 
+const AGGREGATE_PAGE_SIZE = 100
+
 /** HU38 (INTEROP-2.2 §6.11, implementado y desplegado en Core): `GET /action-required?projectId&cursor&limit` — inbox cross-project, `projectId` opcional. */
-export function listActionRequired(projectId?: string): Promise<ActionRequiredListPage> {
+export function listActionRequired(projectId?: string, cursor?: string | null, limit?: number): Promise<ActionRequiredListPage> {
   if (getDataSource() === 'mock') return mockListActionRequired(projectId)
   const params = new URLSearchParams()
   if (projectId) params.set('projectId', projectId)
+  if (cursor) params.set('cursor', cursor)
+  if (limit) params.set('limit', String(limit))
   const query = params.toString()
   return apiRequest<ActionRequiredListPage>(`/action-required${query ? `?${query}` : ''}`)
+}
+
+/** Consume todas las páginas; evita mostrar una bandeja vacía si aún hay preguntas fuera de la primera página. */
+export async function listAllActionRequired(): Promise<ActionRequiredListPage['items']> {
+  const items: ActionRequiredListPage['items'] = []
+  const seenCursors = new Set<string>()
+  let cursor: string | null = null
+  do {
+    if (cursor && seenCursors.has(cursor)) throw new Error('La paginación de Action Required no avanzó; vuelve a intentarlo.')
+    if (cursor) seenCursors.add(cursor)
+    const page = await listActionRequired(undefined, cursor, AGGREGATE_PAGE_SIZE)
+    items.push(...page.items)
+    cursor = page.nextCursor
+  } while (cursor)
+  return items
 }
 
 /** HU37: `GET /analysis-runs/{analysisRunId}/context-questions` — una pregunta a la vez, sin total fijo. */
@@ -24,18 +44,23 @@ export function getContextQuestionSet(analysisRunId: string): Promise<Functional
  * Un `409 FUNCTIONAL_KNOWLEDGE_CONFLICT` llega como `ApiError` con `details: FunctionalKnowledgeConflictResponse`
  * (`FocusModePage` ya lo consume así).
  */
-export function submitFunctionalAnswer(analysisRunId: string, questionId: string, input: SubmitFunctionalAnswerRequest): Promise<FunctionalAnswerAcceptedResponse> {
+export function submitFunctionalAnswer(analysisRunId: string, questionId: string, input: SubmitFunctionalAnswerRequest, idempotencyKey?: string): Promise<FunctionalAnswerAcceptedResponse> {
   if (getDataSource() === 'mock') return mockSubmitFunctionalAnswer(analysisRunId, questionId, input)
   const body: { choice: typeof input.choice; answer?: string; conflictResolution?: typeof input.conflictResolution } = { choice: input.choice }
   if (input.answer) body.answer = input.answer
   if (input.conflictResolution) body.conflictResolution = input.conflictResolution
   return apiRequest<FunctionalAnswerAcceptedResponse>(`/analysis-runs/${encodeURIComponent(analysisRunId)}/context-questions/${encodeURIComponent(questionId)}/answers`, {
     method: 'POST',
+    headers: { 'Idempotency-Key': idempotencyKey ?? createIdempotencyKey() },
     body: JSON.stringify(body),
   })
 }
 
-/** HU35/HU36 (implementado y desplegado en Core): `GET /projects/{projectId}/functional-knowledge?status&cursor&limit`. */
+/**
+ * HU35/HU36 · INTEROP-2.7 §6.11: `GET /projects/{projectId}/functional-knowledge?status&cursor&limit`.
+ * Core publica la forma con procedencia y escenario (`scenarioKind`, `confirmedByUserId`, …).
+ * Console la muestra tal como llega, sin calcular `scenarioKey` ni autoridad.
+ */
 export function listFunctionalKnowledge(projectId: string, status?: FunctionalKnowledgeStatus): Promise<FunctionalKnowledgeListPage> {
   if (getDataSource() === 'mock') return mockListFunctionalKnowledge(projectId, status)
   const params = new URLSearchParams()

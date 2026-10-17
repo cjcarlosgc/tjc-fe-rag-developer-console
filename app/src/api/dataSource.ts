@@ -26,7 +26,8 @@ export function getDataSource(): DataSource {
   if (dataSourceOverride) return dataSourceOverride
   const configured = import.meta.env.VITE_DATA_SOURCE
   if (configured === 'live' || configured === 'mock') return configured
-  return import.meta.env.MODE === 'test' ? 'live' : 'mock'
+  // Sin variable: solo `vite dev` arranca en mock; build de producción (Render) y tests van live.
+  return import.meta.env.MODE === 'development' ? 'mock' : 'live'
 }
 
 export function isMockDataSource(): boolean {

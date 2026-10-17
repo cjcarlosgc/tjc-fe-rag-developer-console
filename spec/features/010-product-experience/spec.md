@@ -1,7 +1,7 @@
 # 010-product-experience — Especificación
 
 **Estado:** aprobado para implementar.
-**Historias:** HU25, HU26
+**Historias:** soporte visual transversal de HU01–HU18; no constituye una HU adicional.
 
 ## Objetivo
 
@@ -16,10 +16,9 @@ Consolidar toda la aplicación como una consola técnica coherente, oscura y rec
 - La densidad informativa prioriza resultados técnicos; el glass, glow y partículas no reducen legibilidad ni esconden controles.
 - El nombre visible de la aplicación coincide con el nombre aprobado del proyecto Stitch: `RAG Test Studio`.
 
-## Demo GitHub anterior — SUPERSEDED
+## Demo del flujo PR-driven
 
-- La trayectoria HU26 anterior queda retirada. Solo pueden reutilizarse componentes visuales y de estado que no preserven su semántica.
-- La demo vigente implementa el binding mock de INTEROP-2.2: discovery, validación de App, selección de rama, RepositoryBinding, PR/HEAD y AnalysisRun. Se rotula y no produce efectos externos.
+- La demo vigente representa discovery, validación de App, selección de rama, RepositoryBinding, PR/HEAD y AnalysisRun conforme al contrato actual. Se rotula y no produce efectos externos.
 
 ## Fuera de alcance
 

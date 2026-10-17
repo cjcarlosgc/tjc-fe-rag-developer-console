@@ -1,4 +1,4 @@
-import type { AnalysisRunStatus } from './types'
+import type { AnalysisRunStatus, RepositoryBindingStatus } from './types'
 
 export const ANALYSIS_RUN_STATUS_LABELS: Record<AnalysisRunStatus, string> = {
   QUEUED: 'En cola',
@@ -33,4 +33,11 @@ export function analysisRunStatusClass(status: AnalysisRunStatus): string {
     default:
       return ''
   }
+}
+
+/** Un binding `DISABLED` es una pausa reversible (ámbar); `REVOKED` es pérdida de acceso de la GitHub App (falla, rojo). */
+export const BINDING_STATUS_BADGES: Record<RepositoryBindingStatus, { label: string; className: string }> = {
+  ENABLED: { label: 'Activo', className: 'status-success' },
+  DISABLED: { label: 'Pausado', className: 'status-warn' },
+  REVOKED: { label: 'Revocado', className: 'status-danger' },
 }

@@ -1,11 +1,7 @@
-import { invalidCredentialsMessage } from '../errors'
 import type { AuthAdapter, AuthSession } from '../types'
 
 const STORAGE_KEY = 'rag-console.mock-session'
-/** Decisión: identidad demostrativa ficticia, nunca el correo real de quien usa la demo. */
-const DEMO_USER = { id: 'user_demo_local', email: 'demo@rag-test-studio.local' }
-const DEMO_TOKEN = 'mock-session-token'
-/** HU29 ampliado: identidad separada para distinguir el login por GitHub del de correo/contraseña en la demo. */
+/** HU62: única identidad demostrativa, siempre de GitHub y ficticia, nunca el correo real de quien usa la demo. */
 const DEMO_GITHUB_USER = { id: 'user_demo_github', email: 'demo@rag-test-studio.local' }
 const DEMO_GITHUB_TOKEN = 'mock-github-session-token'
 /** HU30: provider token GitHub demo, nunca real — separado del `accessToken` de la sesión de la Console. */
@@ -25,34 +21,16 @@ export const mockAuthAdapter: AuthAdapter = {
   async getSession() {
     return readStoredSession()
   },
-  async signInWithPassword(email, password) {
-    await latency()
-    if (!email.trim() || password.length < 6) throw new Error(invalidCredentialsMessage)
-    const session: AuthSession = { user: DEMO_USER, accessToken: DEMO_TOKEN, githubProviderToken: null }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(session))
-    return session
-  },
+  /** El mock no redirige a GitHub: establece la sesión demo de inmediato y la navegación posterior la hace `LoginPage`. */
   async signInWithGitHub() {
     await latency()
     const session: AuthSession = { user: DEMO_GITHUB_USER, accessToken: DEMO_GITHUB_TOKEN, githubProviderToken: DEMO_GITHUB_PROVIDER_TOKEN }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(session))
     return session
   },
-  /** HU30: vincula GitHub a una sesión existente (típicamente de correo) sin cambiar `user`/`accessToken`. */
-  async linkGitHub() {
-    await latency()
-    const current = readStoredSession()
-    if (!current) throw new Error('No hay una sesión activa para vincular GitHub.')
-    const next: AuthSession = { ...current, githubProviderToken: DEMO_GITHUB_PROVIDER_TOKEN }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-    return next
-  },
   async signOut() {
     await latency()
     localStorage.removeItem(STORAGE_KEY)
-  },
-  async resetPasswordForEmail() {
-    await latency()
   },
   onAuthStateChange() {
     return () => {}

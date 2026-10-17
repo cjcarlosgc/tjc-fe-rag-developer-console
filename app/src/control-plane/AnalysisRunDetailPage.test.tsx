@@ -1,8 +1,8 @@
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, test } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
-import { resetMockBackend } from '../api/mockBackend'
+import { resetMockBackend, setMockAnalysisRunForTests } from '../api/mockBackend'
 import { clickGraphNode, renderApp } from '../test/render'
 import { AnalysisRunDetailPage } from './AnalysisRunDetailPage'
 
@@ -30,7 +30,8 @@ test('HU39/HU40: un Run SUCCESS lista propuestas AVAILABLE y publica un companio
   expect(screen.getByText('rag-tests/pr-45-e5e5e5e')).toBeInTheDocument()
   expect(screen.getAllByText('feature/rounding-mode').length).toBeGreaterThanOrEqual(2)
   expect(screen.getByText(/Se mergea a la rama que ya vas a mergear/)).toBeInTheDocument()
-  expect(screen.getAllByText('PUBLISHED')).toHaveLength(3)
+  // Las propuestas se refrescan al llegar la publicación a terminal (no en el POST).
+  await waitFor(() => expect(screen.getAllByText('PUBLISHED')).toHaveLength(3))
 })
 
 test('HU32: un Run ACTION_REQUIRED enlaza a Focus Mode con returnTo de vuelta al Run', async () => {
@@ -45,6 +46,21 @@ test('HU48: un Run resuelto con símbolo elegible enlaza a Run comparison', asyn
 
   const link = await screen.findByRole('link', { name: /Run comparison/ })
   expect(link).toHaveAttribute('href', '/projects/prj_checkout_demo/runs/arun_checkout_pr45/comparison')
+})
+
+test('WI-CONSOLE-020: el acceso OE5 conserva el AnalysisRun en la URL, para construir el payload live publicado', async () => {
+  renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
+
+  const link = await screen.findByRole('link', { name: 'Comparar RAG vs GA' })
+  expect(link).toHaveAttribute('href', '/projects/prj_checkout_demo/experimental?analysisRunId=arun_checkout_pr45')
+})
+
+test('WI-CONSOLE-020: un Run OBSOLETE no ofrece iniciar OE5', async () => {
+  renderDetail('arun_billing_pr17', 'prj_billing_demo')
+
+  await screen.findByText('Run obsoleto')
+  expect(screen.queryByRole('link', { name: 'Comparar RAG vs GA' })).not.toBeInTheDocument()
+  expect(screen.getByRole('link', { name: /Run comparison/ })).toBeInTheDocument()
 })
 
 test('HU48: un Run ACTION_REQUIRED no ofrece Run comparison todavía', async () => {
@@ -100,12 +116,13 @@ test('el Run de PR#45 muestra el contexto RAG recolectado (grafo target→candid
   expect(await screen.findByRole('heading', { name: 'formatCurrency' })).toBeInTheDocument()
 })
 
-test('HU54 (especulativo): junto al contexto RAG muestra qué FK y qué test existente lo alimentaron', async () => {
+test('HU54 retirado: el bloque especulativo «Qué más alimentó este contexto» ya no aparece junto al contexto RAG', async () => {
   renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
 
-  expect(await screen.findByText('Qué más alimentó este contexto')).toBeInTheDocument()
-  expect(screen.getByText('El total calculado redondea al centavo más cercano (no trunca).')).toBeInTheDocument()
-  expect(screen.getByText('src/domain/OrderService.spec.ts')).toBeInTheDocument()
+  expect(await screen.findByText('Contexto recolectado')).toBeInTheDocument()
+  expect(screen.queryByText('Qué más alimentó este contexto')).not.toBeInTheDocument()
+  expect(screen.queryByText('Test existente')).not.toBeInTheDocument()
+  expect(screen.queryByText('src/domain/OrderService.spec.ts')).not.toBeInTheDocument()
 })
 
 test('un Run sin traza de contexto mockeada no muestra la sección "Contexto recolectado"', async () => {
@@ -119,6 +136,36 @@ test('un Run INFRASTRUCTURE_FAILURE muestra el panel de fallo con resultSummary'
   renderDetail('arun_checkout_pr48', 'prj_checkout_demo')
 
   expect(await screen.findByRole('alert')).toHaveTextContent('La GitHub Compare API no respondió')
+})
+
+test('WI-CONSOLE-033: un Run INFRASTRUCTURE_FAILURE con propuestas AVAILABLE no es publicable en Console', async () => {
+  renderDetail('arun_checkout_pr48', 'prj_checkout_demo')
+
+  expect(await screen.findByRole('alert')).toHaveTextContent('La GitHub Compare API no respondió')
+  // Espera a que una sección de propuestas montada (si la hubiera) termine de cargar; sin esto la ausencia sería vacua.
+  await waitFor(() => expect(screen.queryByText('Cargando propuestas…')).not.toBeInTheDocument())
+  await waitFor(() => expect(screen.queryByRole('button', { name: /Publicar/ })).not.toBeInTheDocument())
+  expect(screen.queryByText('Propuestas de prueba')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /Publicar/ })).not.toBeInTheDocument()
+  expect(screen.queryByText('AVAILABLE')).not.toBeInTheDocument()
+})
+
+test('WI-CONSOLE-033: el resultSummary de un Run INFRASTRUCTURE_FAILURE se muestra literal como texto libre, con o sin «300»', async () => {
+  const withThreshold = 'No se pudo verificar el compare de GitHub (por ejemplo, un PR con 300 o más archivos); análisis no realizado'
+  const withoutThreshold = 'No se pudo verificar el compare de GitHub (permiso denegado o límite de tasa); análisis no realizado'
+
+  setMockAnalysisRunForTests('arun_checkout_pr48', { resultSummary: withThreshold })
+  const first = renderDetail('arun_checkout_pr48', 'prj_checkout_demo')
+  expect(await screen.findByRole('alert')).toHaveTextContent(withThreshold)
+  expect(screen.getByRole('alert').textContent).toContain(withThreshold)
+  first.unmount()
+
+  resetMockBackend()
+  setMockAnalysisRunForTests('arun_checkout_pr48', { resultSummary: withoutThreshold })
+  renderDetail('arun_checkout_pr48', 'prj_checkout_demo')
+  expect(await screen.findByRole('alert')).toHaveTextContent(withoutThreshold)
+  expect(screen.getByRole('alert').textContent).toContain(withoutThreshold)
+  expect(screen.getByRole('alert').textContent).not.toContain('300')
 })
 
 test('caso Bootstrap: un Run con indexMode BOOTSTRAP muestra el aviso de primer análisis', async () => {
@@ -166,4 +213,53 @@ test('HU53 (INTEROP-2.1 §6.10, definido/no implementado): el historial de trans
   expect(screen.getByText('Run creado')).toBeInTheDocument()
   expect(screen.getByText('Snapshot indexado, análisis iniciado')).toBeInTheDocument()
   expect(screen.getByText('Generación completada')).toBeInTheDocument()
+})
+
+test('WI-CONSOLE-014: el CTA «Comparar retrieval SE vs SEM» aparece con rol Writer y navega a la ruta nueva', async () => {
+  renderDetail('arun_checkout_pr49', 'prj_checkout_demo')
+
+  const cta = await screen.findByRole('link', { name: 'Comparar retrieval SE vs SEM' })
+  expect(cta).toHaveAttribute('href', '/projects/prj_checkout_demo/runs/arun_checkout_pr49/retrieval-comparison')
+  expect(screen.getByRole('link', { name: 'Run comparison →' })).toBeInTheDocument()
+})
+
+test('WI-CONSOLE-014: un Reader no ve el CTA de comparación de retrieval', async () => {
+  renderDetail('arun_org_metrics_pr15', 'prj_org_metrics_demo')
+
+  expect(await screen.findByRole('heading', { level: 1 })).toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Comparar retrieval SE vs SEM' })).not.toBeInTheDocument()
+})
+
+test('WI-CONSOLE-017: la descarga de evidencia aparece en estado terminal, incluidos ACTION_REQUIRED, SUCCESS y el rol Reader', async () => {
+  renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
+  expect(await screen.findByRole('button', { name: 'Descargar evidencia (JSON)' })).toBeInTheDocument()
+})
+
+test('WI-CONSOLE-017: un Run ACTION_REQUIRED también ofrece la descarga', async () => {
+  renderDetail('arun_checkout_pr42', 'prj_checkout_demo')
+  expect(await screen.findByRole('button', { name: 'Descargar evidencia (JSON)' })).toBeInTheDocument()
+})
+
+test('WI-CONSOLE-017: un Reader puede ver el control de descarga de evidencia', async () => {
+  renderDetail('arun_org_metrics_pr15', 'prj_org_metrics_demo')
+  expect(await screen.findByRole('button', { name: 'Descargar evidencia (JSON)' })).toBeInTheDocument()
+})
+
+test.each(['QUEUED', 'PROCESSING'] as const)('WI-CONSOLE-017: un Run %s no muestra el control de evidencia', async (status) => {
+  setMockAnalysisRunForTests('arun_checkout_pr45', { status })
+  renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
+  expect(await screen.findByText('PR #45', { selector: '.pr-number' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Descargar evidencia (JSON)' })).not.toBeInTheDocument()
+})
+
+test('accesibilidad: «Símbolos cambiados» es h2 y ningún encabezado salta más de un nivel', async () => {
+  renderDetail('arun_checkout_pr42', 'prj_checkout_demo')
+
+  expect(await screen.findByRole('heading', { name: 'Símbolos cambiados', level: 2 })).toBeInTheDocument()
+  const levels = screen.getAllByRole('heading').map((heading) => Number(heading.tagName.slice(1)))
+  expect(levels[0]).toBe(1)
+  expect(levels[1]).toBe(2)
+  for (let index = 1; index < levels.length; index += 1) {
+    expect(levels[index] - levels[index - 1]).toBeLessThanOrEqual(1)
+  }
 })

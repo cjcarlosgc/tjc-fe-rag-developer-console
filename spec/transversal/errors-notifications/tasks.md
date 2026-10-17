@@ -1,13 +1,5 @@
-# errors-notifications — Tareas
+# errors-notifications — Subtareas vigentes
 
-- [ ] error catalog.
-- [ ] error boundary/page states.
-- [ ] notification patterns.
+- [ ] **ST-CONSOLE-007 · T-BACKLOGGED · WI-CONSOLE-007 · HU01, HU12, HU14:** unificar catálogo de errores, estados de página, límites de error y patrones de notificación del flujo PR-driven; verificar diferenciación de errores recuperables, autorización y datos demo.
 
-## Calidad
-
-- [ ] Agregar/actualizar pruebas.
-- [ ] Verificar manejo de errores.
-- [ ] Verificar observabilidad mínima.
-- [ ] Ejecutar lint/test/build.
-- [ ] Registrar evidencia de revisión en `harness/reports/`.
+Los checks genéricos de lint, test, build y revisión se ejecutan mediante los gates del WI.

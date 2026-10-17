@@ -1,22 +1,33 @@
 import { ApiError, apiRequest } from '../api/client'
-import { getDataSource, PendingContractError } from '../api/dataSource'
+import {
+  getGitHubAppInfo as getGitHubAppInfoDirect,
+  listGitHubRepositoryBranches as listRepositoriesBranchesDirect,
+  listGitHubUserRepositories as listUserRepositoriesDirect,
+  verifyGitHubAppAccess as verifyGitHubAppAccessDirect,
+} from './githubIntegrationApi'
+import { getDataSource } from '../api/dataSource'
 import {
   mockCreateRepositoryBinding,
   mockCreateTestPublication,
   mockDisconnectRepository,
+  mockEnableRepository,
   mockGetAnalysisRun,
+  mockGetAnalysisRunTrace,
   mockGetRepositoryBinding,
   mockGetTestPublication,
   mockListAnalysisRuns,
   mockListGitHubRepositoryBranches,
   mockListGitHubUserRepositories,
   mockListTestProposals,
+  mockPeekGitHubAppAccess,
   mockVerifyGitHubAppAccess,
 } from '../api/mockBackend'
+import type { AnalysisRunTraceResponse } from './operationalTraceTypes'
 import type {
   AnalysisRunDetailResponse,
   AnalysisRunListPage,
   AnalysisRunStatus,
+  AnalysisRunSummaryResponse,
   CreateRepositoryBindingRequest,
   CreateTestPublicationRequest,
   GeneratedTestProposalSetResponse,
@@ -29,42 +40,67 @@ import type {
   VerifyGitHubAppAccessRequest,
 } from './types'
 
-// HU30 — repository binding / GitHub App, user-centric (INTEROP-2.2 §6.8). RAG Core todavía no publica estas rutas.
+// GitHub App UI capabilities use GH-INTEROP-1.3 directly; domain and durable binding remain in Core.
 
-/** `GET /projects/{projectId}/integrations/github` responde `404 REPOSITORY_BINDING_NOT_FOUND` cuando el proyecto nunca se vinculó — se traduce a `null`, igual que el mock. */
+export function getGitHubAppInfo(): Promise<GitHubAppAccessResponse['app']> {
+  return getGitHubAppInfoDirect()
+}
+
+/**
+ * `GET /projects/{projectId}/integrations/github` responde `404 REPOSITORY_BINDING_NOT_FOUND` cuando el proyecto nunca se vinculó — se traduce a `null`, igual que el mock.
+ * Cualquier otro 404 (p. ej. `PROJECT_NOT_FOUND` de un Project borrado) se propaga: no es "sin binding". Un binding desconectado llega como `DISABLED`, no como `null`.
+ */
 export async function getRepositoryBinding(projectId: string): Promise<ProjectRepositoryBindingResponse | null> {
   if (getDataSource() === 'mock') return mockGetRepositoryBinding(projectId)
   try {
     return await apiRequest<ProjectRepositoryBindingResponse>(`/projects/${encodeURIComponent(projectId)}/integrations/github`)
   } catch (error) {
-    if (error instanceof ApiError && error.status === 404) return null
+    if (error instanceof ApiError && error.status === 404 && error.code === 'REPOSITORY_BINDING_NOT_FOUND') return null
     throw error
   }
 }
 
 /**
- * `GET /integrations/github/repositories` exige `X-GitHub-Provider-Token` (INTEROP-2.2 §6.8) — lo
- * provee la sesión de GitHub OAuth del usuario (`authSession.githubProviderToken`), nunca se
- * persiste ni se reenvía a otro lado.
+ * Discovery exige `X-GitHub-Provider-Token` en la ruta de usuario de Integration. El token de la
+ * sesión GitHub es efímero, no se incluye en query keys y nunca se persiste ni se envía a Core.
  */
-export function listGitHubUserRepositories(githubProviderToken: string): Promise<GitHubUserRepositoryPage> {
-  if (getDataSource() === 'mock') return mockListGitHubUserRepositories()
-  return apiRequest<GitHubUserRepositoryPage>('/integrations/github/repositories', { headers: { 'X-GitHub-Provider-Token': githubProviderToken } })
+export function listGitHubUserRepositories(githubProviderToken: string, workspaceId: string, projectId?: string): Promise<GitHubUserRepositoryPage> {
+  if (getDataSource() === 'mock') return mockListGitHubUserRepositories(workspaceId)
+  if (!projectId) throw new ApiError('Falta el proyecto para consultar GitHub.', 400, undefined, 'INVALID_REQUEST')
+  return listUserRepositoriesDirect(projectId, githubProviderToken)
 }
 
-export function verifyGitHubAppAccess(input: VerifyGitHubAppAccessRequest): Promise<GitHubAppAccessResponse> {
+export function verifyGitHubAppAccess(input: VerifyGitHubAppAccessRequest, projectId?: string, githubProviderToken?: string | null): Promise<GitHubAppAccessResponse> {
   if (getDataSource() === 'mock') return mockVerifyGitHubAppAccess(input)
-  return apiRequest<GitHubAppAccessResponse>('/integrations/github/repositories/verify-app-access', { method: 'POST', body: JSON.stringify(input) })
+  if (!projectId) throw new ApiError('Falta el proyecto para verificar GitHub.', 400, undefined, 'INVALID_REQUEST')
+  return verifyGitHubAppAccessDirect(projectId, input, githubProviderToken ?? undefined)
 }
 
-export function listGitHubRepositoryBranches(owner: string, repo: string): Promise<GitHubRepositoryBranchesResponse> {
+/**
+ * Lectura del estado de acceso de la App (y su `configureUrl`) a un repositorio ya vinculado. En live usa la ruta de usuario Integration;
+ * en mock no cuenta como una verificación (a diferencia de `verifyGitHubAppAccess`), para no alterar el resultado determinista de Reactivar.
+ */
+export function getGitHubAppAccess(input: VerifyGitHubAppAccessRequest, projectId?: string): Promise<GitHubAppAccessResponse> {
+  if (getDataSource() === 'mock') return mockPeekGitHubAppAccess(input)
+  return verifyGitHubAppAccess(input, projectId)
+}
+
+export function listGitHubRepositoryBranches(owner: string, repo: string, projectId?: string): Promise<GitHubRepositoryBranchesResponse> {
   if (getDataSource() === 'mock') return mockListGitHubRepositoryBranches(owner, repo)
-  return apiRequest<GitHubRepositoryBranchesResponse>(`/integrations/github/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches`)
+  if (!projectId) throw new ApiError('Falta el proyecto para consultar ramas.', 400, undefined, 'INVALID_REQUEST')
+  return listRepositoriesBranchesDirect(projectId, owner, repo)
 }
 
-export function createRepositoryBinding(projectId: string, input: CreateRepositoryBindingRequest): Promise<ProjectRepositoryBindingResponse> {
+export function createRepositoryBinding(projectId: string, input: CreateRepositoryBindingRequest, githubProviderToken?: string | null): Promise<ProjectRepositoryBindingResponse> {
   if (getDataSource() === 'mock') return mockCreateRepositoryBinding(projectId, input)
-  return apiRequest<ProjectRepositoryBindingResponse>(`/projects/${encodeURIComponent(projectId)}/integrations/github`, { method: 'POST', body: JSON.stringify(input) })
+  return verifyGitHubAppAccessDirect(projectId, input, githubProviderToken ?? undefined, input.integrationBranch)
+    .then((verified) => {
+      if (!verified.authorizationEvidence) throw new ApiError('GitHub no devolvió evidencia vigente para vincular el repositorio.', 503, undefined, 'CORE_AUTHORIZATION_UNAVAILABLE')
+      return apiRequest<ProjectRepositoryBindingResponse>(`/projects/${encodeURIComponent(projectId)}/integrations/github/verified`, {
+        method: 'POST',
+        body: JSON.stringify({ ...input, authorizationEvidence: verified.authorizationEvidence }),
+      })
+    })
 }
 
 export function disconnectRepository(projectId: string): Promise<void> {
@@ -72,27 +108,62 @@ export function disconnectRepository(projectId: string): Promise<void> {
   return apiRequest<void>(`/projects/${encodeURIComponent(projectId)}/integrations/github`, { method: 'DELETE' })
 }
 
+/**
+ * HU57 (INTEROP-2.3 §6.8, implementado en Core — CS-20260920-003): `POST /projects/{projectId}/integrations/github/enable` — reactiva un
+ * binding `DISABLED` (y `REVOKED` si Core revalida que la App recuperó acceso; si no, 403 `GITHUB_APP_ACCESS_REQUIRED` y el estado no cambia).
+ * Idempotente y sin cuerpo: el contrato no define uno.
+ */
+export function enableRepository(projectId: string): Promise<ProjectRepositoryBindingResponse> {
+  if (getDataSource() === 'mock') return mockEnableRepository(projectId)
+  return apiRequest<ProjectRepositoryBindingResponse>(`/projects/${encodeURIComponent(projectId)}/integrations/github/enable`, { method: 'POST' })
+}
+
 // HU32 — Analysis Runs por PR/HEAD (INTEROP-2.1 §6.10).
 
+const AGGREGATE_PAGE_SIZE = 100
+
 /**
- * `GET /projects/{projectId}/analysis-runs?status&cursor&limit`. Core (verificado contra su
- * controller real) exige `projectId` en el path — no existe un listado global. La vista "todos
- * los Runs" de `RunsPage`/`ProjectsPage` no tiene ruta live: se rechaza con un mensaje propio en
- * vez de intentar simular una agregación cross-proyecto que el contrato nunca definió.
+ * `GET /projects/{projectId}/analysis-runs?status&cursor&limit` cuando se pide un Project,
+ * o `GET /analysis-runs?status&cursor&limit` para los Projects visibles del usuario (HU55).
  */
-export function listAnalysisRuns(projectId?: string, status?: AnalysisRunStatus, cursor?: string | null): Promise<AnalysisRunListPage> {
+export function listAnalysisRuns(projectId?: string, status?: AnalysisRunStatus, cursor?: string | null, limit?: number): Promise<AnalysisRunListPage> {
   if (getDataSource() === 'mock') return mockListAnalysisRuns(projectId, status)
-  if (!projectId) return Promise.reject(new PendingContractError('un listado global de Analysis Runs (HU55) — INTEROP-2.1 §6.10 ya define GET /analysis-runs, Core todavía no lo implementó'))
   const params = new URLSearchParams()
   if (status) params.set('status', status)
   if (cursor) params.set('cursor', cursor)
+  if (limit) params.set('limit', String(limit))
   const query = params.toString()
-  return apiRequest<AnalysisRunListPage>(`/projects/${encodeURIComponent(projectId)}/analysis-runs${query ? `?${query}` : ''}`)
+  const path = projectId ? `/projects/${encodeURIComponent(projectId)}/analysis-runs` : '/analysis-runs'
+  return apiRequest<AnalysisRunListPage>(`${path}${query ? `?${query}` : ''}`)
+}
+
+/** Consume todas las páginas del listado global para agregar actividad completa por workspace. */
+export async function listAllAnalysisRuns(): Promise<AnalysisRunSummaryResponse[]> {
+  const items: AnalysisRunSummaryResponse[] = []
+  const seenCursors = new Set<string>()
+  let cursor: string | null = null
+  do {
+    if (cursor && seenCursors.has(cursor)) throw new Error('La paginación de Analysis Runs no avanzó; vuelve a intentarlo.')
+    if (cursor) seenCursors.add(cursor)
+    const page = await listAnalysisRuns(undefined, undefined, cursor, AGGREGATE_PAGE_SIZE)
+    items.push(...page.items)
+    cursor = page.nextCursor
+  } while (cursor)
+  return items
 }
 
 export function getAnalysisRun(analysisRunId: string): Promise<AnalysisRunDetailResponse> {
   if (getDataSource() === 'mock') return mockGetAnalysisRun(analysisRunId)
   return apiRequest<AnalysisRunDetailResponse>(`/analysis-runs/${encodeURIComponent(analysisRunId)}`)
+}
+
+/**
+ * INTEROP-2.7 §6.16 (HU15, WI-CONSOLE-016): trace operativo de nueve enlaces. Lectura Reader.
+ * Core expone la ruta publicada; los detalles de UI siguen siendo solo lectores.
+ */
+export function getAnalysisRunTrace(analysisRunId: string): Promise<AnalysisRunTraceResponse> {
+  if (getDataSource() === 'mock') return mockGetAnalysisRunTrace(analysisRunId)
+  return apiRequest<AnalysisRunTraceResponse>(`/analysis-runs/${encodeURIComponent(analysisRunId)}/trace`)
 }
 
 // HU39/HU40 — Checks, propuestas y companion PR (INTEROP-2.2 §6.12, implementado y desplegado en Core).

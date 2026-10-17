@@ -6,9 +6,9 @@
 
 ## Diseño técnico
 
-Base URL/config, correlation IDs, parsing de `ErrorEnvelope` y responses tipadas desde [`../../contracts/rag-core-api.md`](../../contracts/rag-core-api.md). Mantener los DTO de transporte separados de los view models cuando la UI necesite composición. Sandbox no es endpoint cliente.
+Base URL/config, correlation IDs, parsing de `ErrorEnvelope` y responses tipadas desde [`../../contracts/interoperability-contract.md`](../../contracts/interoperability-contract.md). Mantener los DTO de transporte separados de los view models cuando la UI necesite composición. Sandbox no es endpoint cliente.
 
-La sincronización debe ser explícita: cambio de contrato en RAG Core -> actualización de la copia local + `CHANGELOG.md` -> adapter/types/tests del frontend. No usar tolerancia de shapes como sustituto de un contrato pendiente.
+La sincronización debe ser explícita: cambio de contrato en el componente dueño -> Contract Sync -> actualización del mirror local + `CHANGELOG.md` -> adapter/types/tests del frontend. No usar tolerancia de shapes como sustituto de un contrato pendiente.
 
 ## Validación
 

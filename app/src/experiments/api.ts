@@ -3,14 +3,35 @@ import { getDataSource } from '../api/dataSource'
 import { mockGetExperiment, mockStartExperiment } from '../api/mockBackend'
 import { toExperimentOperation, type ExperimentResultsResponse, type ExperimentStatusResponse } from './liveMapping'
 import type { ExperimentAccepted, ExperimentOperation } from './types'
+import type { AnalysisSymbolResponse } from '../control-plane/types'
 
-/** `POST /experiments`, exige `Idempotency-Key`. `targetId` es el id real del target (METHOD/FUNCTION). */
-export function startExperiment(projectId: string, targetId: string, idempotencyKey: string): Promise<ExperimentAccepted> {
-  if (getDataSource() === 'mock') return mockStartExperiment(projectId, targetId)
+export interface CreateExperimentInput {
+  analysisRunId: string
+  symbolFilePath: string
+  symbolQualifiedName: string
+}
+
+/** Construye el único cuerpo publicado por INTEROP-2.7 §6.5; no acepta ids internos de inventario. */
+export function buildCreateExperimentInput(analysisRunId: string, symbol: Pick<AnalysisSymbolResponse, 'filePath' | 'qualifiedName'>): CreateExperimentInput {
+  return { analysisRunId, symbolFilePath: symbol.filePath, symbolQualifiedName: symbol.qualifiedName }
+}
+
+/** `POST /experiments`, exige `Idempotency-Key` y se ancla a un símbolo de un AnalysisRun. */
+export function startExperiment(input: CreateExperimentInput, idempotencyKey: string): Promise<ExperimentAccepted>
+/** Compatibilidad exclusiva del mock existente; live no admite el DTO histórico. */
+export function startExperiment(projectId: string, targetId: string, idempotencyKey: string): Promise<ExperimentAccepted>
+export function startExperiment(inputOrProjectId: CreateExperimentInput | string, keyOrTargetId: string): Promise<ExperimentAccepted> {
+  if (typeof inputOrProjectId === 'string') {
+    if (getDataSource() !== 'mock') throw new TypeError('El modo live requiere analysisRunId, symbolFilePath y symbolQualifiedName.')
+    return mockStartExperiment(inputOrProjectId, keyOrTargetId)
+  }
+  const input = inputOrProjectId
+  const idempotencyKey = keyOrTargetId
+  if (getDataSource() === 'mock') return mockStartExperiment(input.analysisRunId, input.symbolQualifiedName)
   return apiRequest<ExperimentAccepted>('/experiments', {
     method: 'POST',
     headers: { 'Idempotency-Key': idempotencyKey },
-    body: JSON.stringify({ projectId, targetId }),
+    body: JSON.stringify(input),
   })
 }
 

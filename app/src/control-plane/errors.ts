@@ -1,0 +1,112 @@
+import { ApiError } from '../api/client'
+
+/** Fuente única del texto de `422 UNSUPPORTED_PROJECT` (experimentos y OE2). El mock demo la reutiliza. */
+export const UNSUPPORTED_PROJECT_MESSAGE = 'Este proyecto no tiene framework JEST, VITEST o PHPUNIT detectado.'
+
+/** HU30/HU56/HU57/HU64: mensajes de dominio por `ApiError.code` de las rutas de binding y de Project (INTEROP-2.4 §6.1/§6.8/§6.13). */
+const codeMessages: Record<string, string> = {
+  REPOSITORY_ALREADY_BOUND: 'Este repositorio ya está vinculado a otro proyecto. Elige otro repositorio.',
+  REPOSITORY_BINDING_ALREADY_EXISTS: 'Este proyecto ya tiene un repositorio vinculado.',
+  REPOSITORY_BINDING_NOT_FOUND: 'Este proyecto no tiene un repositorio vinculado.',
+  // Un solo caso a propósito (INTEROP-2.4 §6.8): repositorio inexistente, id falso o sin ningún permiso responden lo mismo y no se distinguen.
+  GITHUB_REPOSITORY_NOT_FOUND: 'No encontramos ese repositorio o no tienes permiso sobre él. Vuelve a elegirlo de la lista.',
+  REPOSITORY_OUTSIDE_WORKSPACE: 'Este repositorio no pertenece a tu cuenta; en un proyecto personal solo puedes vincular repositorios propios.',
+  REPOSITORY_PERMISSION_INSUFFICIENT: 'Necesitas permiso maintain, write o admin sobre este repositorio.',
+  // 401 de discovery (INTEROP §6.8): habla del token OAuth de GitHub, no de la sesión de la Console; la acción es «Renovar acceso a GitHub».
+  GITHUB_ACCOUNT_REQUIRED: 'Tu acceso a GitHub no está disponible o expiró. Renuévalo para descubrir tus repositorios.',
+  GITHUB_USER_TOKEN_INVALID: 'Tu acceso a GitHub no está disponible o expiró. Renuévalo para descubrir tus repositorios.',
+  // Reintentable: no afirma que el repositorio no exista ni que falte el permiso.
+  GITHUB_VERIFICATION_UNAVAILABLE: 'No pudimos verificar el permiso en GitHub ahora; inténtalo de nuevo.',
+  GITHUB_UPSTREAM_UNAVAILABLE: 'GitHub no está disponible ahora; inténtalo de nuevo en unos minutos.',
+  CORE_AUTHORIZATION_UNAVAILABLE: 'No pudimos autorizar esta operación de GitHub ahora; inténtalo de nuevo en unos minutos.',
+  GITHUB_APP_ACCESS_REQUIRED: 'La GitHub App no tiene acceso al repositorio. Configura el acceso en GitHub y vuelve a intentarlo.',
+  PROJECT_NOT_FOUND: 'El proyecto ya no existe.',
+  WORKSPACE_NOT_FOUND: 'Ese workspace ya no está disponible. Actualiza la lista de workspaces y vuelve a elegirlo.',
+  WORKSPACE_ADMIN_REQUIRED: 'Solo un owner activo de la organización puede crear Projects en ese workspace.',
+  // WI-CONSOLE-014 (INTEROP-2.7 §6.15, OE2 SE vs SEM): mensajes propios, sin semántica de ganador ni de OE5.
+  // WI-CONSOLE-036 B4: el target elegido no existe en el código del Run (INTEROP-2.7 §6.5.1). No promete reanudar ni reintentar la misma opción.
+  UNRESOLVABLE_TARGET: 'No pudimos localizar el target elegido en el código de este Run. Prueba con otro símbolo del Run.',
+  ANALYSIS_SYMBOL_NOT_FOUND: 'Ese símbolo ya no pertenece a este Run. Actualiza el Run y vuelve a elegirlo.',
+  UNSUPPORTED_SYMBOL_KIND: 'Solo se pueden comparar métodos o funciones con cambio directo en este Run.',
+  RETRIEVAL_COMPARISON_NOT_FOUND: 'Esa comparación de retrieval ya no existe o no está disponible.',
+  RETRIEVAL_COMPARISON_NOT_FINISHED: 'La comparación todavía no terminó; los resultados aparecerán cuando termine.',
+  IDEMPOTENCY_CONFLICT: 'Esa clave de idempotencia ya se usó para otra comparación. Inicia la comparación de nuevo desde la página.',
+  // WI-CONSOLE-021 (INTEROP-2.7 §6.5.1 y §6.15): errores de creación de experimento (OE5) y de comparación de retrieval (OE2).
+  // Ninguno crea el recurso; `UNSUPPORTED_PROJECT` vale para ambos y solo significa que no hay framework JEST, VITEST o PHPUNIT detectado (CS-CORE-20261009-017/-018).
+  UNSUPPORTED_PROJECT: UNSUPPORTED_PROJECT_MESSAGE,
+  // Reintentable: el experimento no se creó, así que volver a intentarlo es seguro.
+  LLM_PROVIDER_UNAVAILABLE: 'El modelo de experimentos no está disponible ahora. Inténtalo de nuevo en unos minutos.',
+  ANALYSIS_NOT_FINISHED: 'El Run todavía no terminó de analizarse; la comparación estará disponible cuando termine.',
+  RETRIEVAL_COMPARISON_FAILED: 'La comparación de retrieval falló. Revisa el detalle del estado de la comparación.',
+}
+
+/** INTEROP-2.7 §6.5.1: `422 REASONING_EFFORT_UNSUPPORTED` trae `details.supportedEfforts: string[]`; si falta o no es una lista de cadenas, el mensaje no la menciona. */
+function reasoningEffortMessage(details: unknown): string {
+  const base = 'El modelo no admite el esfuerzo de razonamiento configurado; el experimento no se creó.'
+  const supported = (details as { supportedEfforts?: unknown } | null | undefined)?.supportedEfforts
+  if (!Array.isArray(supported) || !supported.every((item) => typeof item === 'string') || supported.length === 0) return base
+  return `${base} Esfuerzos admitidos: ${supported.join(', ')}.`
+}
+
+/** `503 LLM_PROVIDER_UNAVAILABLE` en la creación de experimentos: reintentable, sin experimento creado. */
+export function isLlmProviderUnavailable(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 503 && error.code === 'LLM_PROVIDER_UNAVAILABLE'
+}
+
+const serverErrorMessage = 'RAG Core no pudo completar la operación. Inténtalo de nuevo en unos minutos.'
+
+export function bindingErrorMessage(error: unknown): string {
+  if (error instanceof ApiError) {
+    if (error.code === 'PROJECT_ROLE_INSUFFICIENT') {
+      const details = error.details as { requiredRole?: unknown; currentRole?: unknown } | null
+      if (typeof details?.requiredRole === 'string' && typeof details.currentRole === 'string') {
+        return `Tu rol actual (${details.currentRole}) no alcanza para esta acción; se requiere ${details.requiredRole}.`
+      }
+      return 'Tu rol actual no permite esta acción en el Project.'
+    }
+    if (error.code === 'REASONING_EFFORT_UNSUPPORTED') return reasoningEffortMessage(error.details)
+    if (error.code && codeMessages[error.code]) return codeMessages[error.code]
+    if (error.status >= 500) return serverErrorMessage
+  }
+  return error instanceof Error && error.message ? error.message : serverErrorMessage
+}
+
+/**
+ * Reactivar (HU57) no permite revincular otro repositorio: «Vuelve a elegirlo de la lista» no aplica. Si Core revalida `repositoryId`
+ * (404) o propietario (400) y fallan, el binding sigue REVOKED y el único camino es un proyecto nuevo (INTEROP-2.4 §6.8).
+ */
+const reactivateUnavailableMessage = 'El repositorio ya no está disponible para este proyecto; si necesitas otro, elimina el proyecto y crea uno nuevo.'
+
+export function reactivateErrorMessage(error: unknown): string {
+  if (error instanceof ApiError && (error.code === 'GITHUB_REPOSITORY_NOT_FOUND' || error.code === 'REPOSITORY_OUTSIDE_WORKSPACE')) return reactivateUnavailableMessage
+  return bindingErrorMessage(error)
+}
+
+/** `401 GITHUB_ACCOUNT_REQUIRED`/`GITHUB_USER_TOKEN_INVALID` en discovery: no cierran la sesión; se resuelven con «Renovar acceso a GitHub». */
+export function isGitHubAccessRenewalRequired(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 401 && (error.code === 'GITHUB_ACCOUNT_REQUIRED' || error.code === 'GITHUB_USER_TOKEN_INVALID')
+}
+
+/** HU64 (INTEROP-2.4 §6.13): GitHub no permitió verificar el permiso o la instalación; reintentar tiene sentido y no implica ningún juicio sobre el repositorio. */
+export function isVerificationUnavailable(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 503 &&
+    (error.code === 'GITHUB_VERIFICATION_UNAVAILABLE' || error.code === 'GITHUB_UPSTREAM_UNAVAILABLE' || error.code === 'CORE_AUTHORIZATION_UNAVAILABLE')
+}
+
+/** Referencia para soporte: solo existe en errores que vinieron de Core (o del mock) con `correlationId`. */
+export function errorCorrelationId(error: unknown): string | undefined {
+  return error instanceof ApiError ? error.correlationId : undefined
+}
+
+/** INTEROP-2.9 §6.11: `404 FUNCTIONAL_QUESTION_NOT_FOUND` al responder = pregunta inexistente, de otro Run o ya no accionable (obsoleta). No es un fallo transitorio: no se reintenta la misma pregunta. */
+export function isFunctionalQuestionObsolete(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 404 && error.code === 'FUNCTIONAL_QUESTION_NOT_FOUND'
+}
+
+/** Copy de la pregunta obsoleta (INTEROP-2.9): aviso no destructivo; la bandeja y el Run se actualizan. */
+export const FUNCTIONAL_QUESTION_OBSOLETE_MESSAGE = 'Esta pregunta ya no aplica. El Run cambió o ya fue contestada; actualizamos el contexto pendiente.'
+
+/** Un Project borrado (o ajeno) responde 404 `PROJECT_NOT_FOUND`: no es un fallo transitorio, así que no tiene sentido ofrecer "Reintentar". */
+export function isProjectNotFound(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 404 && error.code === 'PROJECT_NOT_FOUND'
+}

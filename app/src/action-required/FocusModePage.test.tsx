@@ -1,10 +1,11 @@
-import { screen } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, expect, test } from 'vitest'
+import { beforeEach, expect, test, vi } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
 import { resetMockBackend } from '../api/mockBackend'
 import { renderApp } from '../test/render'
 import { FocusModePage } from './FocusModePage'
+import type { FunctionalQuestionSetResponse } from './types'
 
 beforeEach(() => {
   setDataSourceForTests('mock')
@@ -30,14 +31,93 @@ test('HU37: muestra la pregunta vigente con su visualAid y avanza a la siguiente
   expect(await screen.findByText('¿El redondeo de "calculateTotal" debe truncar o redondear al centavo más cercano?')).toBeInTheDocument()
 })
 
-test('HU37: "No lo sé" (UNKNOWN) también avanza, sin prometer conocimiento persistido', async () => {
+test('HU37/INTEROP-2.7: "No lo sé" (UNKNOWN) es una abstención: la pregunta permanece, muestra la abstención y no avanza', async () => {
   const user = userEvent.setup()
   renderFocusMode('arun_checkout_pr42')
 
   await screen.findByText('¿"apply" debe rechazar un cupón vencido aunque el pedido ya esté marcado como pagado?')
   await user.click(screen.getByRole('button', { name: 'No lo sé' }))
 
-  expect(await screen.findByText('¿El redondeo de "calculateTotal" debe truncar o redondear al centavo más cercano?')).toBeInTheDocument()
+  const status = await screen.findByRole('status')
+  expect(status).toHaveTextContent(/^Abstención registrada · ADMIN · .+ · 1 abstención\(es\)$/)
+  expect(screen.getByText('¿"apply" debe rechazar un cupón vencido aunque el pedido ya esté marcado como pagado?')).toBeInTheDocument()
+  expect(screen.queryByText('¿El redondeo de "calculateTotal" debe truncar o redondear al centavo más cercano?')).not.toBeInTheDocument()
+  expect(screen.queryByText('Contexto funcional confirmado')).not.toBeInTheDocument()
+  expect(screen.queryByText(/resuelto|continuando|todas las preguntas respondidas/i)).not.toBeInTheDocument()
+  expect(screen.queryByText(/usr_demo/)).not.toBeInTheDocument()
+})
+
+test('live: UNKNOWN reutiliza la misma Idempotency-Key UUID al reintentar la misma acción', async () => {
+  setDataSourceForTests('live')
+  const user = userEvent.setup()
+  const questionSet = {
+    analysisRunId: 'arun-live',
+    currentQuestion: {
+      id: 'fq-live', analysisRunId: 'arun-live', projectId: 'prj-live', repositoryName: 'acme/repo', pullRequestNumber: 12,
+      headSha: 'abc123', target: { language: 'TYPESCRIPT', kind: 'FUNCTION', qualifiedName: 'calculate', filePath: 'src/calculate.ts', changeKind: 'DIRECTLY_CHANGED' },
+      question: '¿Cuál es el comportamiento esperado?', rationale: 'Falta una regla funcional.', status: 'PENDING', visualAid: null,
+      scenarioKind: 'EXPECTED_RESULT', scenarioKey: 'calculate.result', abstention: null, createdAt: '2026-10-10T00:00:00.000Z',
+    },
+    functionalBehaviorValidated: false,
+  }
+  const project = { id: 'prj-live', name: 'Live', currentVersionId: null, workspace: { kind: 'PERSONAL', id: 'ws-live', login: 'person' }, role: 'ADMIN', createdAt: '2026-10-10T00:00:00.000Z', updatedAt: '2026-10-10T00:00:00.000Z' }
+  let posts = 0
+  const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+    const url = String(input)
+    if (url.endsWith('/answers') && init?.method === 'POST') {
+      posts += 1
+      return posts === 1
+        ? new Response(JSON.stringify({ code: 'TEMPORARY_FAILURE', message: 'Reintenta.' }), { status: 500 })
+        : new Response(JSON.stringify({ status: 'PENDING', pollAfterMs: 500, analysisRunId: 'arun-live', questionId: 'fq-live', outcome: 'ABSTAINED', continuationAttemptId: null, knowledgeId: null }), { status: 202 })
+    }
+    return new Response(JSON.stringify(url.includes('context-questions') ? questionSet : project), { status: 200 })
+  })
+
+  renderFocusMode('arun-live')
+  await user.click(await screen.findByRole('button', { name: 'No lo sé' }))
+  await screen.findByRole('alert')
+  await user.click(screen.getByRole('button', { name: 'No lo sé' }))
+  await waitFor(() => expect(posts).toBe(2))
+
+  const keys = fetchMock.mock.calls
+    .filter(([, init]) => init?.method === 'POST')
+    .map(([, init]) => new Headers(init?.headers).get('Idempotency-Key'))
+  expect(keys).toHaveLength(2)
+  expect(keys[0]).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
+  expect(keys[1]).toBe(keys[0])
+})
+
+test('INTEROP-2.7: una segunda abstención incrementa el contador sin avanzar', async () => {
+  const user = userEvent.setup()
+  renderFocusMode('arun_checkout_pr42')
+
+  await screen.findByText('¿"apply" debe rechazar un cupón vencido aunque el pedido ya esté marcado como pagado?')
+  await user.click(screen.getByRole('button', { name: 'No lo sé' }))
+  await screen.findByText(/1 abstención\(es\)/)
+  await user.click(screen.getByRole('button', { name: 'No lo sé' }))
+
+  expect(await screen.findByText(/2 abstención\(es\)/)).toBeInTheDocument()
+  expect(screen.getByText('¿"apply" debe rechazar un cupón vencido aunque el pedido ya esté marcado como pagado?')).toBeInTheDocument()
+})
+
+test('HU07/HU14: Writer no ve «No lo sé» ni respuestas y recibe la nota de Maintainer o Admin', async () => {
+  renderFocusMode('arun_org_writer_pr21')
+
+  expect(await screen.findByText('¿El reintento de cobro debe respetar el límite diario aunque el cliente tenga un plan anual?')).toBeInTheDocument()
+  expect(screen.getByText('Solo un Maintainer o Admin puede responder esta pregunta funcional')).toBeInTheDocument()
+  for (const name of ['Sí', 'No', 'Depende', 'No lo sé', 'Responder solo con este texto']) {
+    expect(screen.queryByRole('button', { name })).not.toBeInTheDocument()
+  }
+  expect(screen.queryByRole('group', { name: 'Respuesta' })).not.toBeInTheDocument()
+})
+
+test('HU07/HU14: Reader ve la misma nota de Maintainer o Admin y ninguna respuesta', async () => {
+  renderFocusMode('arun_org_metrics_pr15')
+
+  expect(await screen.findByText('¿Los límites de fecha se interpretan en UTC o en la zona horaria del usuario?')).toBeInTheDocument()
+  expect(screen.getByText('Solo un Maintainer o Admin puede responder esta pregunta funcional')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'No lo sé' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Sí' })).not.toBeInTheDocument()
 })
 
 test('HU37: al agotar las preguntas del Run, confirma el contexto y permite volver a returnTo', async () => {
@@ -104,4 +184,224 @@ test('HU51: "Mantener la vigente" (KEEP_EXISTING) avanza sin tocar la regla', as
   await user.click(screen.getByRole('button', { name: 'Mantener la vigente, guardar como evidencia' }))
 
   expect(await screen.findByText('Contexto funcional confirmado')).toBeInTheDocument()
+})
+
+const CHECKOUT_QUESTION = '¿"apply" debe rechazar un cupón vencido aunque el pedido ya esté marcado como pagado?'
+
+test('INTEROP-2.7 teclado: «No lo sé» se alcanza con Tab, se activa con Enter y el foco queda en el contenedor de la pregunta', async () => {
+  const user = userEvent.setup()
+  renderFocusMode('arun_checkout_pr42')
+
+  await screen.findByText(CHECKOUT_QUESTION)
+  screen.getByRole('button', { name: 'Sí' }).focus()
+  await user.tab()
+  await user.tab()
+  await user.tab()
+  const unknown = screen.getByRole('button', { name: 'No lo sé' })
+  expect(unknown).toHaveFocus()
+
+  await user.keyboard('{Enter}')
+
+  const status = await screen.findByRole('status')
+  expect(status).toHaveTextContent(/^Abstención registrada · ADMIN · .+ · 1 abstención\(es\)$/)
+  expect(screen.getByText(CHECKOUT_QUESTION).closest('.focus-mode-card')).toHaveFocus()
+  expect(screen.queryByText('¿El redondeo de "calculateTotal" debe truncar o redondear al centavo más cercano?')).not.toBeInTheDocument()
+})
+
+test('INTEROP-2.7 teclado: «No lo sé» también responde con Espacio y acumula la abstención', async () => {
+  const user = userEvent.setup()
+  renderFocusMode('arun_checkout_pr42')
+
+  await screen.findByText(CHECKOUT_QUESTION)
+  screen.getByRole('button', { name: 'No lo sé' }).focus()
+  await user.keyboard(' ')
+
+  expect(await screen.findByText(/1 abstención\(es\)/)).toBeInTheDocument()
+  expect(screen.getByText(CHECKOUT_QUESTION)).toBeInTheDocument()
+})
+
+test('INTEROP-2.7 (comportamiento provisional del mock): «No lo sé» con HEAD cambiado deja la pregunta OBSOLETE sin abstención registrada', async () => {
+  const user = userEvent.setup()
+  renderFocusMode('arun_billing_pr17')
+
+  await screen.findByText('¿"DiscountEngine.applyDiscount" puede dejar el total en negativo si el cupón excede el subtotal?')
+  await user.click(screen.getByRole('button', { name: 'No lo sé' }))
+
+  expect(await screen.findByText('Sin preguntas pendientes en este Run')).toBeInTheDocument()
+  expect(screen.queryByText(/Abstención registrada/)).not.toBeInTheDocument()
+  expect(screen.queryByText('¿"DiscountEngine.applyDiscount" puede dejar el total en negativo si el cupón excede el subtotal?')).not.toBeInTheDocument()
+})
+
+const LIVE_QUESTION = '¿Cuál es el comportamiento esperado?'
+
+function liveFetch(answerResponses: Array<() => Response>) {
+  const questionSet = {
+    analysisRunId: 'arun-live',
+    currentQuestion: {
+      id: 'fq-live', analysisRunId: 'arun-live', projectId: 'prj-live', repositoryName: 'acme/repo', pullRequestNumber: 12,
+      headSha: 'abc123', target: { language: 'TYPESCRIPT', kind: 'FUNCTION', qualifiedName: 'calculate', filePath: 'src/calculate.ts', changeKind: 'DIRECTLY_CHANGED' },
+      question: LIVE_QUESTION, rationale: 'Falta una regla funcional.', status: 'PENDING', visualAid: null,
+      scenarioKind: 'EXPECTED_RESULT', scenarioKey: 'calculate.result', abstention: null, createdAt: '2026-10-10T00:00:00.000Z',
+    },
+    functionalBehaviorValidated: false,
+  }
+  const project = { id: 'prj-live', name: 'Live', currentVersionId: null, workspace: { kind: 'PERSONAL', id: 'ws-live', login: 'person' }, role: 'ADMIN', createdAt: '2026-10-10T00:00:00.000Z', updatedAt: '2026-10-10T00:00:00.000Z' }
+  let posts = 0
+  return vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+    const url = String(input)
+    if (url.endsWith('/answers') && init?.method === 'POST') {
+      const respond = answerResponses[Math.min(posts, answerResponses.length - 1)]
+      posts += 1
+      return respond()
+    }
+    return new Response(JSON.stringify(url.includes('context-questions') ? questionSet : project), { status: 200 })
+  })
+}
+
+test('accesibilidad: si el envío falla con 5xx, el foco vuelve al contenedor de la pregunta', async () => {
+  setDataSourceForTests('live')
+  const user = userEvent.setup()
+  liveFetch([() => new Response(JSON.stringify({ code: 'TEMPORARY_FAILURE', message: 'Reintenta.' }), { status: 500 })])
+
+  renderFocusMode('arun-live')
+  await user.click(await screen.findByRole('button', { name: 'Sí' }))
+
+  await screen.findByRole('alert')
+  expect(screen.getByText(LIVE_QUESTION).closest('.focus-mode-card')).toHaveFocus()
+})
+
+test('accesibilidad: si el conflicto se resuelve con ABSTAINED, el foco vuelve al contenedor de la pregunta', async () => {
+  setDataSourceForTests('live')
+  const user = userEvent.setup()
+  const conflictBody = {
+    code: 'FUNCTIONAL_KNOWLEDGE_CONFLICT', message: 'Conflicto.',
+    details: {
+      conflictId: 'conflict-live', analysisRunId: 'arun-live', questionId: 'fq-live',
+      conflictingKnowledge: { id: 'fk-old', targetRef: 'calculate', normalizedRule: 'Regla vigente anterior.' },
+      proposedNormalizedRule: 'Regla propuesta.',
+    },
+  }
+  liveFetch([
+    () => new Response(JSON.stringify(conflictBody), { status: 409 }),
+    () => new Response(JSON.stringify({ status: 'PENDING', pollAfterMs: 500, analysisRunId: 'arun-live', questionId: 'fq-live', outcome: 'ABSTAINED', continuationAttemptId: null, knowledgeId: null }), { status: 202 }),
+  ])
+
+  renderFocusMode('arun-live')
+  await user.click(await screen.findByRole('button', { name: 'Sí' }))
+  await user.click(await screen.findByRole('button', { name: 'Reemplazar regla vigente' }))
+
+  await waitFor(() => expect(screen.getByText(LIVE_QUESTION).closest('.focus-mode-card')).toHaveFocus())
+  expect(screen.queryByText('Esta respuesta contradice una regla vigente')).not.toBeInTheDocument()
+})
+
+test('INTEROP-2.9: 404 FUNCTIONAL_QUESTION_NOT_FOUND al responder muestra «Esta pregunta ya no aplica», refresca el Run y no ofrece reenviar la misma pregunta', async () => {
+  setDataSourceForTests('live')
+  const user = userEvent.setup()
+  const fetchMock = liveFetch([() => new Response(JSON.stringify({ code: 'FUNCTIONAL_QUESTION_NOT_FOUND', message: 'No aplica.' }), { status: 404 })])
+
+  renderFocusMode('arun-live')
+  await user.click(await screen.findByRole('button', { name: 'Sí' }))
+
+  const obsoleteNotice = await screen.findByText(/Esta pregunta ya no aplica/)
+  expect(obsoleteNotice.closest('[role="status"]')).toHaveFocus()
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  expect(screen.queryByText(/Correlation ID/)).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Sí' })).not.toBeInTheDocument()
+  await waitFor(() => {
+    const questionSetGets = fetchMock.mock.calls.filter(([input, init]) => String(input).includes('context-questions') && init?.method !== 'POST')
+    expect(questionSetGets.length).toBeGreaterThanOrEqual(2)
+  })
+})
+
+test('INTEROP-2.9: 404 ANALYSIS_RUN_NOT_FOUND y 403 PROJECT_ROLE_INSUFFICIENT conservan su mensaje y no muestran el aviso de pregunta obsoleta', async () => {
+  setDataSourceForTests('live')
+  const user = userEvent.setup()
+  liveFetch([() => new Response(JSON.stringify({ code: 'ANALYSIS_RUN_NOT_FOUND', message: 'Run no visible.' }), { status: 404 })])
+
+  renderFocusMode('arun-live')
+  await user.click(await screen.findByRole('button', { name: 'Sí' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('Run no visible.')
+  expect(screen.queryByText(/Esta pregunta ya no aplica/)).not.toBeInTheDocument()
+})
+
+test('INTEROP-2.9: un 403 de rol sigue mostrando el rol requerido y no el aviso de pregunta obsoleta', async () => {
+  setDataSourceForTests('live')
+  const user = userEvent.setup()
+  liveFetch([() => new Response(JSON.stringify({ code: 'PROJECT_ROLE_INSUFFICIENT', message: 'Rol.', details: { requiredRole: 'MAINTAINER', currentRole: 'WRITER' } }), { status: 403 })])
+
+  renderFocusMode('arun-live')
+  await user.click(await screen.findByRole('button', { name: 'Sí' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('se requiere MAINTAINER')
+  expect(screen.queryByText(/Esta pregunta ya no aplica/)).not.toBeInTheDocument()
+})
+
+test('INTEROP-2.9: continuationAttemptId no nulo es opaco: no se muestra ni se consulta en ninguna petición', async () => {
+  setDataSourceForTests('live')
+  const user = userEvent.setup()
+  const fetchMock = liveFetch([() => new Response(JSON.stringify({ status: 'PENDING', pollAfterMs: 500, analysisRunId: 'arun-live', questionId: 'fq-live', outcome: 'ANSWERED', continuationAttemptId: 'cont-opaque-7f3a', knowledgeId: 'fk-7f3a' }), { status: 202 })])
+
+  renderFocusMode('arun-live')
+  await user.click(await screen.findByRole('button', { name: 'Sí' }))
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/answers'), expect.objectContaining({ method: 'POST' })))
+  expect(screen.queryByText(/cont-opaque-7f3a/)).not.toBeInTheDocument()
+  expect(fetchMock.mock.calls.some(([input]) => String(input).includes('cont-opaque-7f3a'))).toBe(false)
+})
+
+test('WI-CONSOLE-035: muestra el destino de la regla (símbolo, archivo, tipo y escenario) en un grupo con nombre dentro de la tarjeta', async () => {
+  renderFocusMode('arun_checkout_pr42')
+
+  const target = await screen.findByRole('group', { name: 'Destino de la regla' })
+  expect(target.closest('.focus-mode-card')).not.toBeNull()
+  for (const label of ['Símbolo', 'Archivo', 'Tipo', 'Escenario']) {
+    expect(within(target).getByText(label)).toBeInTheDocument()
+  }
+  expect(within(target).getByText('CouponPolicy.apply')).toBeInTheDocument()
+  expect(within(target).getByText('src/domain/CouponPolicy.ts')).toBeInTheDocument()
+  expect(within(target).getByText('METHOD')).toBeInTheDocument()
+  expect(within(target).getByText('EXCEPTION')).toBeInTheDocument()
+})
+
+test('WI-CONSOLE-035: la frase fija va justo encima de los botones, nombra el qualifiedName y aclara que «No lo sé» solo registra una abstención', async () => {
+  renderFocusMode('arun_checkout_pr42')
+
+  const note = await screen.findByText(/Tu respuesta se registrará como regla para/)
+  expect(note).toHaveTextContent('Tu respuesta se registrará como regla para CouponPolicy.apply')
+  expect(note).toHaveTextContent('«No lo sé» solo registra una abstención.')
+  const yes = screen.getByRole('button', { name: 'Sí' })
+  expect(note.compareDocumentPosition(yes) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(yes).toBeEnabled()
+  expect(screen.getByRole('button', { name: 'No lo sé' })).toBeEnabled()
+})
+
+test('WI-CONSOLE-035: sin capacidad de respuesta no se muestra la frase de registro', async () => {
+  renderFocusMode('arun_org_writer_pr21')
+
+  await screen.findByText('Solo un Maintainer o Admin puede responder esta pregunta funcional')
+  expect(screen.queryByText(/Tu respuesta se registrará como regla/)).not.toBeInTheDocument()
+})
+
+test('WI-CONSOLE-035: un campo nulo del destino se muestra como «sin dato» sin romper la tarjeta', async () => {
+  setDataSourceForTests('live')
+  const questionSet = {
+    analysisRunId: 'arun-null',
+    currentQuestion: {
+      id: 'fq-null', analysisRunId: 'arun-null', projectId: 'prj-live', repositoryName: 'acme/repo', pullRequestNumber: 12,
+      headSha: 'abc123', target: { language: 'TYPESCRIPT', kind: null, qualifiedName: 'calculate', filePath: null, changeKind: 'DIRECTLY_CHANGED' },
+      question: '¿Cuál es el comportamiento esperado?', rationale: 'Falta una regla funcional.', status: 'PENDING', visualAid: null,
+      scenarioKind: null, scenarioKey: 'calculate.result', abstention: null, createdAt: '2026-10-10T00:00:00.000Z',
+    },
+    functionalBehaviorValidated: false,
+  } as unknown as FunctionalQuestionSetResponse
+  const project = { id: 'prj-live', name: 'Live', currentVersionId: null, workspace: { kind: 'PERSONAL', id: 'ws-live', login: 'person' }, role: 'ADMIN', createdAt: '2026-10-10T00:00:00.000Z', updatedAt: '2026-10-10T00:00:00.000Z' }
+  const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+    const url = String(input)
+    return new Response(JSON.stringify(url.includes('context-questions') ? questionSet : project), { status: 200 })
+  })
+
+  renderFocusMode('arun-null')
+  const target = await screen.findByRole('group', { name: 'Destino de la regla' })
+  expect(within(target).getAllByText('sin dato')).toHaveLength(3)
+  expect(within(target).getByText('calculate')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Sí' })).toBeEnabled()
+  fetchMock.mockRestore()
 })

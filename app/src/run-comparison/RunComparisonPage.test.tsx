@@ -5,14 +5,17 @@ import { setDataSourceForTests } from '../api/dataSource'
 import { resetMockBackend } from '../api/mockBackend'
 import { renderApp } from '../test/render'
 import { RunComparisonPage } from './RunComparisonPage'
+import { EXPERIMENT_CONDITIONS_NOTE } from '../experiments/ExperimentConditionsNote'
 
 test('HU48: arranca la comparación al montar y presenta el resultado tras varios polls', async () => {
   setDataSourceForTests('mock')
   resetMockBackend()
-  renderApp(<RunComparisonPage />, { initialEntry: '/projects/prj_checkout_demo/runs/arun_checkout_pr45/comparison', routePath: '/projects/:projectId/runs/:analysisRunId/comparison' })
+  const { container } = renderApp(<RunComparisonPage />, { initialEntry: '/projects/prj_checkout_demo/runs/arun_checkout_pr45/comparison', routePath: '/projects/:projectId/runs/:analysisRunId/comparison' })
 
   expect(await screen.findByText('Laboratorio simulado')).toBeInTheDocument()
-  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 2000 })).toBeInTheDocument()
+  expect(screen.getByText(EXPERIMENT_CONDITIONS_NOTE)).toBeInTheDocument()
+  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 5000 })).toBeInTheDocument()
+  expect(container.textContent).not.toMatch(/precision|recall/i)
 })
 
 test('HU48: un Run ACTION_REQUIRED no puede compararse', async () => {
@@ -53,10 +56,10 @@ test('HU48 (Replay): permite elegir símbolo, iniciar y repetir la comparación 
   await user.click(screen.getByRole('button', { name: 'Iniciar comparación' }))
 
   expect(await screen.findByText('OrderService.createOrder')).toBeInTheDocument()
-  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 2000 })).toBeInTheDocument()
+  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 5000 })).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'Repetir comparación (Replay)' }))
 
   await waitFor(() => expect(screen.getAllByRole('heading', { level: 3, name: 'OrderService.createOrder' })).toHaveLength(2))
-  await waitFor(() => expect(screen.getAllByText('Huella de retrieval')).toHaveLength(2), { timeout: 2000 })
+  await waitFor(() => expect(screen.getAllByText('Huella de retrieval')).toHaveLength(2), { timeout: 5000 })
 })

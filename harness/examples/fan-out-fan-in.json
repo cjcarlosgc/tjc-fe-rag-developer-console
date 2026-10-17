@@ -1,0 +1,13 @@
+{
+  "workflow": "fan-out-fan-in-ui-contract",
+  "workItem": "example-console-ui-integration-cut",
+  "impacts": {"uiImpact": true, "contractImpact": true},
+  "sequence": ["leader", "sdd-analyst", "implementer", ["reviewer", "ux-reviewer", "contract-reviewer"], "leader"],
+  "handoffs": {
+    "sdd-analyst": {"status": "APPROVED", "findings": [], "blockers": [], "filesAffected": ["spec/features/example/spec.md"], "evidence": ["decision gate checked"], "recommendedNextStep": "Implement approved UI state."},
+    "implementer": {"status": "APPROVED", "findings": [], "blockers": [], "filesAffected": ["app/src/example.tsx"], "evidence": ["PULL implementation-delivery passed", "tests passed"], "recommendedNextStep": "Run reviews in parallel."},
+    "reviewer": {"status": "APPROVED", "findings": [], "blockers": [], "filesAffected": ["app/src/example.tsx"], "evidence": ["independent technical review passed"], "recommendedNextStep": "Fan in."},
+    "ux-reviewer": {"status": "APPROVED", "findings": [], "blockers": [], "filesAffected": ["app/src/example.tsx"], "evidence": ["states and accessibility reviewed"], "recommendedNextStep": "Fan in."},
+    "contract-reviewer": {"status": "APPROVED", "findings": [], "blockers": [], "filesAffected": ["app/src/api/example.ts"], "evidence": ["Core contract compatibility reviewed"], "recommendedNextStep": "Fan in."}
+  }
+}

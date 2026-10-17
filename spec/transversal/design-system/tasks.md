@@ -1,16 +1,3 @@
-# design-system — Tareas
+# design-system — Planificación vigente
 
-- [ ] Sustituir la dirección índigo parcial por tokens Black Glass.
-- [ ] Integrar Space Grotesk, Geist y JetBrains Mono con fallbacks y carga eficiente.
-- [ ] Implementar primitives de shell, controles, cards, tablas, code/diff, dialogs, drawer y tooltips.
-- [ ] Implementar variantes semánticas RAG/agente sin contaminar la paleta global.
-- [ ] Implementar transiciones y conceptos de partículas con reduced motion.
-- [ ] Migrar todas las pantallas y eliminar estilos ad hoc supersedidos.
-
-## Calidad
-
-- [ ] Agregar/actualizar pruebas visuales y de interacción.
-- [ ] Auditar contraste, teclado, zoom y reduced motion.
-- [ ] Medir rendimiento de blur/partículas y layout shift.
-- [ ] Ejecutar lint/test/build/SDD check.
-- [ ] Registrar evidencia de revisión contra Stitch.
+La implementación visual está agrupada en `ST-CONSOLE-005` / `WI-CONSOLE-005` dentro de `spec/features/010-product-experience/tasks.md`. Este archivo conserva la dependencia transversal, no crea un segundo backlog de casillas.

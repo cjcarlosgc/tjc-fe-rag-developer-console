@@ -1,0 +1,16 @@
+type: CONTRACT_SYNC
+id: CS-CORE-20261010-003
+source: core
+sourceWorkItem: WI-CORE-034
+targets: [console]
+scopePaths: [spec/contracts/system-contract.md, spec/contracts/interoperability-contract.md, spec/contracts/github-integration-contract.md]
+breaking: false
+changed:
+  - GH-INTEROP-1.4 y las referencias SYSTEM-2.6/INTEROP-2.7 precisan la identidad durable y concurrencia de Checks de GitHub Integration.
+requiredAction:
+  - Importar el paquete contractual y actualizar los tres espejos byte por byte; no implementar rutas, despliegue ni cutover.
+sourceRevision: 46c7046d015d18e49b0e737f6b61cceef1d6889c
+consumerImportedAt: 2026-10-11T05:09:14.391Z
+status: C-RESOLVED
+acknowledgementEvidence: harness/reports/wi-console-020-contract-sync-acknowledgement.md
+resolutionEvidence: harness/reports/wi-console-020-contract-sync-acknowledgement.md

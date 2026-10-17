@@ -1,9 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getContextQuestionSet, listActionRequired, listFunctionalKnowledge, submitFunctionalAnswer } from './api'
+import { useIdempotencyKeys } from '../api/idempotency'
+import { isFunctionalQuestionObsolete } from '../control-plane/errors'
+import { getContextQuestionSet, listActionRequired, listAllActionRequired, listFunctionalKnowledge, submitFunctionalAnswer } from './api'
 import type { FunctionalKnowledgeStatus, SubmitFunctionalAnswerRequest } from './types'
 
 export const actionRequiredKeys = {
   list: (projectId?: string) => ['action-required', 'list', projectId ?? null] as const,
+  all: ['action-required', 'list', 'all'] as const,
   questionSet: (analysisRunId: string) => ['action-required', 'question-set', analysisRunId] as const,
   functionalKnowledge: (projectId: string, status?: FunctionalKnowledgeStatus) => ['action-required', 'functional-knowledge', projectId, status ?? null] as const,
 }
@@ -12,6 +15,15 @@ export function useActionRequiredList(projectId?: string) {
   return useQuery({
     queryKey: actionRequiredKeys.list(projectId),
     queryFn: () => listActionRequired(projectId),
+  })
+}
+
+/** Toda la bandeja global para filtrar por workspace incluso cuando Core devuelve varias páginas. */
+export function useAllActionRequiredList(enabled = true) {
+  return useQuery({
+    queryKey: actionRequiredKeys.all,
+    queryFn: listAllActionRequired,
+    enabled,
   })
 }
 
@@ -31,12 +43,27 @@ export function useFunctionalKnowledge(projectId: string, status?: FunctionalKno
   })
 }
 
+/**
+ * INTEROP-2.7: ANSWERED y ABSTAINED invalidan la pregunta vigente y la bandeja. El resultado queda en `data.outcome`:
+ * una abstención (ABSTAINED) no es una respuesta — la pregunta sigue pendiente y la UI la muestra como tal.
+ */
 export function useSubmitFunctionalAnswer(analysisRunId: string) {
   const queryClient = useQueryClient()
+  const idempotency = useIdempotencyKeys()
   return useMutation({
-    mutationFn: ({ questionId, input }: { questionId: string; input: SubmitFunctionalAnswerRequest }) =>
-      submitFunctionalAnswer(analysisRunId, questionId, input),
-    onSuccess: () => {
+    mutationFn: ({ questionId, input }: { questionId: string; input: SubmitFunctionalAnswerRequest }) => {
+      const id = `${questionId}:${JSON.stringify(input)}`
+      return submitFunctionalAnswer(analysisRunId, questionId, input, idempotency.getOrCreate(id))
+    },
+    onSuccess: (_data, variables) => {
+      idempotency.clear(`${variables.questionId}:${JSON.stringify(variables.input)}`)
+      void queryClient.invalidateQueries({ queryKey: actionRequiredKeys.questionSet(analysisRunId) })
+      void queryClient.invalidateQueries({ queryKey: ['action-required', 'list'] })
+    },
+    /** INTEROP-2.9: 404 FUNCTIONAL_QUESTION_NOT_FOUND = pregunta obsoleta; se refrescan Run e inbox y no se reintenta la misma pregunta. */
+    onError: (error, variables) => {
+      if (!isFunctionalQuestionObsolete(error)) return
+      idempotency.clear(`${variables.questionId}:${JSON.stringify(variables.input)}`)
       void queryClient.invalidateQueries({ queryKey: actionRequiredKeys.questionSet(analysisRunId) })
       void queryClient.invalidateQueries({ queryKey: ['action-required', 'list'] })
     },

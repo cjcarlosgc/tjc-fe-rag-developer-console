@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '../api/client'
-import { resetMockBackend } from '../api/mockBackend'
+import { resetMockBackend, setMockFunctionalKnowledgeScenarioForTests } from '../api/mockBackend'
 import { setDataSourceForTests } from '../api/dataSource'
 import { getAnalysisRun, listTestProposals } from '../control-plane/api'
-import { getContextQuestionSet, listActionRequired, listFunctionalKnowledge, submitFunctionalAnswer } from './api'
+import { getContextQuestionSet, listActionRequired, listAllActionRequired, listFunctionalKnowledge, submitFunctionalAnswer } from './api'
 
 beforeEach(() => {
   setDataSourceForTests('mock')
@@ -13,7 +13,7 @@ beforeEach(() => {
 describe('action-required api (mock)', () => {
   it('HU38: lista la pregunta vigente por cada Run con contexto pendiente', async () => {
     const page = await listActionRequired()
-    expect(page.items.map((item) => item.analysisRunId)).toEqual(['arun_billing_pr17', 'arun_checkout_pr42', 'arun_billing_pr24', 'arun_checkout_pr52'])
+    expect(page.items.map((item) => item.analysisRunId)).toEqual(['arun_billing_pr17', 'arun_checkout_pr42', 'arun_billing_pr24', 'arun_org_metrics_pr15', 'arun_checkout_pr52', 'arun_org_writer_pr21']);
     expect(page.items.every((item) => item.status === 'PENDING')).toBe(true)
   })
 
@@ -35,10 +35,28 @@ describe('action-required api (mock)', () => {
     expect(after.currentQuestion?.id).toBe('fq_checkout_pr42_2')
   })
 
-  it('HU37: "No lo sé" (UNKNOWN) cierra la pregunta sin crear conocimiento y continúa el Run', async () => {
+  it('INTEROP-2.7: "No lo sé" (UNKNOWN) devuelve ABSTAINED, deja la pregunta PENDING y registra la abstención', async () => {
     const accepted = await submitFunctionalAnswer('arun_checkout_pr42', 'fq_checkout_pr42_1', { choice: 'UNKNOWN', answer: null })
+    expect(accepted.outcome).toBe('ABSTAINED')
     expect(accepted.knowledgeId).toBeNull()
-    expect(accepted.continuationAttemptId).not.toBeNull()
+    expect(accepted.continuationAttemptId).toBeNull()
+
+    const after = await getContextQuestionSet('arun_checkout_pr42')
+    expect(after.currentQuestion?.id).toBe('fq_checkout_pr42_1')
+    expect(after.currentQuestion?.status).toBe('PENDING')
+    expect(after.currentQuestion?.abstention).toMatchObject({ count: 1, lastByRole: 'ADMIN' })
+  })
+
+  it('INTEROP-2.7: una respuesta no UNKNOWN devuelve outcome ANSWERED', async () => {
+    const accepted = await submitFunctionalAnswer('arun_checkout_pr42', 'fq_checkout_pr42_1', { choice: 'YES', answer: null })
+    expect(accepted.outcome).toBe('ANSWERED')
+  })
+
+  it('PROJECT_ROLE_INSUFFICIENT: un Writer no puede abstenerse ni responder (403 autoritativo de Core)', async () => {
+    const error = await submitFunctionalAnswer('arun_org_writer_pr21', 'fq_org_writer_pr21_1', { choice: 'UNKNOWN', answer: null }).catch((reason: unknown) => reason)
+    expect(error).toBeInstanceOf(ApiError)
+    expect((error as ApiError).code).toBe('PROJECT_ROLE_INSUFFICIENT')
+    expect((await getContextQuestionSet('arun_org_writer_pr21')).currentQuestion?.abstention).toBeNull()
   })
 
   it('HU37: al responder la última pregunta del Run, queda validado y sin pregunta vigente', async () => {
@@ -128,17 +146,35 @@ describe('action-required api (mock) — HU51, conflicto de Functional Knowledge
 })
 
 describe('action-required api (mock) — HU35/HU36 Functional Knowledge', () => {
-  it('lista las reglas de un proyecto, ordenadas por más reciente primero', async () => {
+  it('lista las reglas de un proyecto, ordenadas por más reciente primero (7 reglas en prj_checkout_demo)', async () => {
     const page = await listFunctionalKnowledge('prj_checkout_demo')
-    expect(page.items.map((item) => item.id)).toEqual(['fk_coupon_expiry', 'fk_rounding_v2', 'fk_shipping_zone', 'fk_rounding_v1'])
+    expect(page.items.map((item) => item.id)).toEqual(['fk_total_empty_cart', 'fk_coupon_expiry', 'fk_rounding_v2', 'fk_shipping_zone', 'fk_import_tax', 'fk_rounding_v1', 'fk_rounding_v0'])
   })
 
-  it('filtra por status', async () => {
+  it('filtra por status: 5 ACTIVE y 2 SUPERSEDED en prj_checkout_demo', async () => {
     const active = await listFunctionalKnowledge('prj_checkout_demo', 'ACTIVE')
-    expect(active.items.map((item) => item.id).sort()).toEqual(['fk_coupon_expiry', 'fk_rounding_v2', 'fk_shipping_zone'])
+    expect(active.items.map((item) => item.id).sort()).toEqual(['fk_coupon_expiry', 'fk_import_tax', 'fk_rounding_v2', 'fk_shipping_zone', 'fk_total_empty_cart'])
 
     const superseded = await listFunctionalKnowledge('prj_checkout_demo', 'SUPERSEDED')
-    expect(superseded.items.map((item) => item.id)).toEqual(['fk_rounding_v1'])
+    expect(superseded.items.map((item) => item.id).sort()).toEqual(['fk_rounding_v0', 'fk_rounding_v1'])
+  })
+
+  it('varias ACTIVE pueden compartir target: OrderService.calculateTotal tiene 2 ACTIVE con escenarios distintos', async () => {
+    const active = await listFunctionalKnowledge('prj_checkout_demo', 'ACTIVE')
+    const onTotal = active.items.filter((item) => item.targetRef === 'OrderService.calculateTotal')
+    expect(onTotal.map((item) => [item.id, item.scenarioKind]).sort()).toEqual([
+      ['fk_rounding_v2', 'BOUNDARY'],
+      ['fk_total_empty_cart', 'EXPECTED_RESULT'],
+    ])
+  })
+
+  it('INTEROP-2.7: el mock expone procedencia y escenario; las reglas históricas llegan con nulls', async () => {
+    const page = await listFunctionalKnowledge('prj_checkout_demo')
+    const byId = new Map(page.items.map((item) => [item.id, item]))
+    expect(byId.get('fk_rounding_v1')).toMatchObject({ scenarioKind: 'BOUNDARY', scenarioKey: 'order.calculateTotal.rounding', confirmedByUserId: null, confirmedRole: null, originHeadSha: null, sourceRef: null })
+    expect(byId.get('fk_rounding_v2')).toMatchObject({ confirmedByUserId: 'usr_demo_admin', confirmedRole: 'ADMIN', originHeadSha: '9f8e7d6c5b4a39281706f5e4d3c2b1a098765432', sourceRef: null })
+    expect(byId.get('fk_import_tax')).toMatchObject({ source: 'APPROVED_IMPORT', sourceRef: 'docs/reglas-negocio.md#L12' })
+    expect(page.items.filter((item) => item.source === 'APPROVED_IMPORT')).toHaveLength(1)
   })
 
   it('la regla ACTIVE de rounding referencia a la que reemplaza vía supersedesId', async () => {
@@ -164,6 +200,18 @@ describe('action-required api (live) — HU35-38, Core ya lo implementó (INTERO
     expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/\/action-required$/), expect.anything())
   })
 
+  it('agregado recorre todas las páginas usando cursor opaco y limit máximo', async () => {
+    const firstPage = { items: [{ id: 'q-1', projectId: 'p-1' }], nextCursor: 'opaque-cursor' }
+    const secondPage = { items: [{ id: 'q-2', projectId: 'p-2' }], nextCursor: null }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      return new Response(JSON.stringify(String(input).includes('cursor=opaque-cursor') ? secondPage : firstPage), { status: 200 })
+    })
+    await expect(listAllActionRequired()).resolves.toEqual([...firstPage.items, ...secondPage.items])
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(String(fetchMock.mock.calls[0][0])).toContain('limit=100')
+    expect(String(fetchMock.mock.calls[1][0])).toContain('cursor=opaque-cursor')
+  })
+
   it('getContextQuestionSet pide GET /analysis-runs/{id}/context-questions', async () => {
     const set = { analysisRunId: 'arun_real', currentQuestion: null, functionalBehaviorValidated: true }
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(set), { status: 200 }))
@@ -181,6 +229,19 @@ describe('action-required api (live) — HU35-38, Core ya lo implementó (INTERO
     )
   })
 
+  it.each([
+    ['UNKNOWN', null],
+    ['YES', null],
+  ] as const)('submitFunctionalAnswer envía una Idempotency-Key UUID para %s', async (choice, answer) => {
+    const accepted = { status: 'PENDING', pollAfterMs: 500, analysisRunId: 'arun_real', questionId: 'fq_1', continuationAttemptId: null, knowledgeId: null }
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(accepted), { status: 202 }))
+    await submitFunctionalAnswer('arun_real', 'fq_1', { choice, answer })
+
+    const init = fetchMock.mock.calls[0][1]
+    const headers = new Headers(init?.headers)
+    expect(headers.get('Idempotency-Key')).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
+  })
+
   it('submitFunctionalAnswer: un 409 FUNCTIONAL_KNOWLEDGE_CONFLICT llega como ApiError con details', async () => {
     const conflict = { conflictId: 'fq_1', analysisRunId: 'arun_real', questionId: 'fq_1', conflictingKnowledge: { id: 'fk_1' }, proposedNormalizedRule: 'x' }
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ code: 'FUNCTIONAL_KNOWLEDGE_CONFLICT', message: 'x', details: conflict }), { status: 409 }))
@@ -190,10 +251,84 @@ describe('action-required api (live) — HU35-38, Core ya lo implementó (INTERO
     expect((error as ApiError).details).toEqual(conflict)
   })
 
-  it('listFunctionalKnowledge pide GET /projects/{id}/functional-knowledge con status opcional', async () => {
+  it('INTEROP-2.7: listFunctionalKnowledge live consume la ruta publicada con el filtro', async () => {
     const page = { items: [], nextCursor: null }
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(page), { status: 200 }))
     await expect(listFunctionalKnowledge('prj_real', 'ACTIVE')).resolves.toEqual(page)
     expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/\/projects\/prj_real\/functional-knowledge\?status=ACTIVE$/), expect.anything())
+  })
+})
+
+// WI-CONSOLE-030 (C3, DEC-FK-001 / INTEROP-2.7 §6.11): el conflicto exige scope + targetRef + scenarioKey exactos.
+describe('action-required api (mock) — WI-CONSOLE-030 C3, conflicto por scope + targetRef + scenarioKey', () => {
+  it('con la misma clave (shipping.validate.zones) hay 409 y la regla en conflicto es la de esa clave exacta', async () => {
+    const error = await submitFunctionalAnswer('arun_checkout_pr52', 'fq_checkout_pr52_1', { choice: 'YES', answer: 'sí' }).catch((reason: unknown) => reason) as ApiError
+    expect(error).toBeInstanceOf(ApiError)
+    expect(error.status).toBe(409)
+    expect(error.code).toBe('FUNCTIONAL_KNOWLEDGE_CONFLICT')
+    const details = error.details as { conflictingKnowledge: { id: string; scenarioKey: string; targetRef: string; scope: string } }
+    expect(details.conflictingKnowledge).toMatchObject({ id: 'fk_shipping_zone', scenarioKey: 'shipping.validate.zones', targetRef: 'ShippingAddressValidator.validate', scope: 'METHOD' })
+  })
+
+  it('coexistencia: una regla ACTIVE del mismo target con otro scenarioKey no es conflicto; la respuesta se persiste como ACTIVE sin supersedesId', async () => {
+    setMockFunctionalKnowledgeScenarioForTests('fk_shipping_zone', { scenarioKind: 'BOUNDARY', scenarioKey: 'shipping.validate.other' })
+
+    const accepted = await submitFunctionalAnswer('arun_checkout_pr52', 'fq_checkout_pr52_1', { choice: 'YES', answer: 'sí' })
+    expect(accepted.outcome).toBe('ANSWERED')
+    expect(accepted.knowledgeId).not.toBeNull()
+
+    const rules = await listFunctionalKnowledge('prj_checkout_demo', 'ACTIVE')
+    expect(rules.items.find((item) => item.id === 'fk_shipping_zone')?.status).toBe('ACTIVE')
+    const persisted = rules.items.find((item) => item.id === accepted.knowledgeId)
+    expect(persisted).toMatchObject({
+      status: 'ACTIVE', supersedesId: null, scope: 'METHOD', targetRef: 'ShippingAddressValidator.validate',
+      scenarioKind: 'EXPECTED_RESULT', scenarioKey: 'shipping.validate.zones',
+    })
+  })
+
+  it('LEGACY y null no coinciden con una clave derivada: la regla con LEGACY o sin clave no genera 409', async () => {
+    setMockFunctionalKnowledgeScenarioForTests('fk_shipping_zone', { scenarioKind: null, scenarioKey: 'LEGACY' })
+    await expect(submitFunctionalAnswer('arun_checkout_pr52', 'fq_checkout_pr52_1', { choice: 'YES', answer: 'sí' })).resolves.toMatchObject({ outcome: 'ANSWERED' })
+
+    // Reinicio: regla con scenarioKey null (sin procedencia) tampoco coincide.
+    resetMockBackend()
+    setMockFunctionalKnowledgeScenarioForTests('fk_shipping_zone', { scenarioKey: null })
+    await expect(submitFunctionalAnswer('arun_checkout_pr52', 'fq_checkout_pr52_1', { choice: 'YES', answer: 'sí' })).resolves.toMatchObject({ outcome: 'ANSWERED' })
+  })
+})
+
+describe('action-required api — INTEROP-2.9 pregunta no accionable', () => {
+  it('mock: responder una pregunta que ya no es PENDING devuelve 404 FUNCTIONAL_QUESTION_NOT_FOUND (no 409)', async () => {
+    await submitFunctionalAnswer('arun_checkout_pr42', 'fq_checkout_pr42_1', { choice: 'YES', answer: null })
+    const error = await submitFunctionalAnswer('arun_checkout_pr42', 'fq_checkout_pr42_1', { choice: 'YES', answer: null }).catch((reason: unknown) => reason)
+    expect(error).toBeInstanceOf(ApiError)
+    expect((error as ApiError).status).toBe(404)
+    expect((error as ApiError).code).toBe('FUNCTIONAL_QUESTION_NOT_FOUND')
+  })
+
+  it('mock: una pregunta inexistente sigue siendo 404, ahora con FUNCTIONAL_QUESTION_NOT_FOUND', async () => {
+    const error = await submitFunctionalAnswer('arun_checkout_pr42', 'fq_no_existe', { choice: 'YES', answer: null }).catch((reason: unknown) => reason)
+    expect((error as ApiError).status).toBe(404)
+    expect((error as ApiError).code).toBe('FUNCTIONAL_QUESTION_NOT_FOUND')
+  })
+
+  it('mock: un Run inexistente conserva ANALYSIS_RUN_NOT_FOUND', async () => {
+    const error = await submitFunctionalAnswer('arun_no_existe', 'fq_x', { choice: 'YES', answer: null }).catch((reason: unknown) => reason)
+    expect((error as ApiError).status).toBe(404)
+    expect((error as ApiError).code).toBe('ANALYSIS_RUN_NOT_FOUND')
+  })
+
+  it('live: 404 FUNCTIONAL_QUESTION_NOT_FOUND llega como ApiError con status y code', async () => {
+    setDataSourceForTests('live')
+    const spy = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(JSON.stringify({ code: 'FUNCTIONAL_QUESTION_NOT_FOUND', message: 'No aplica.' }), { status: 404 }))
+    try {
+      const error = await submitFunctionalAnswer('arun-live', 'fq-live', { choice: 'YES', answer: null }).catch((reason: unknown) => reason)
+      expect(error).toBeInstanceOf(ApiError)
+      expect((error as ApiError).status).toBe(404)
+      expect((error as ApiError).code).toBe('FUNCTIONAL_QUESTION_NOT_FOUND')
+    } finally {
+      spy.mockRestore()
+      setDataSourceForTests('mock')
+    }
   })
 })

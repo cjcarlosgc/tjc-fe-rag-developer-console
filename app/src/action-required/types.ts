@@ -1,4 +1,4 @@
-/** SDD 2.0 / INTEROP-2.0 §6.11 — Action Required y Functional Knowledge. */
+/** SDD 3.0 / INTEROP-2.7 §6.11 — Action Required y Functional Knowledge (abstención UNKNOWN y escenarios; base INTEROP-2.4). */
 
 import type { AnalysisSymbolResponse } from '../control-plane/types'
 
@@ -7,6 +7,12 @@ export type { AnalysisSymbolResponse } from '../control-plane/types'
 export type FunctionalScope = 'PROJECT' | 'MODULE' | 'CLASS' | 'METHOD' | 'SYMBOL'
 export type FunctionalQuestionStatus = 'PENDING' | 'ANSWERED' | 'OBSOLETE'
 export type FunctionalAnswerChoice = 'YES' | 'NO' | 'DEPENDS' | 'UNKNOWN' | 'FREE_TEXT'
+/** INTEROP-2.7 §6.11 (DEC-FK-002): `ABSTAINED` es una abstención auditada de UNKNOWN, no una respuesta. */
+export type FunctionalAnswerOutcome = 'ANSWERED' | 'ABSTAINED'
+/** INTEROP-2.7 (DEC-FK-001): un escenario por pregunta atómica. */
+export type ScenarioKind = 'EXPECTED_RESULT' | 'BOUNDARY' | 'EXCEPTION' | 'STATE_TRANSITION' | 'OBSERVABLE_SIDE_EFFECT' | 'FUNCTIONAL_PRECONDITION'
+/** Rol que puede registrar o responder una pregunta funcional (INTEROP-2.7: Writer no responde ni se abstiene). */
+export type ConfirmingRole = 'ADMIN' | 'MAINTAINER'
 export type VisualAidKind = 'STATE_DIAGRAM' | 'SYMBOL_RELATION' | 'MINI_DIFF' | 'CODE_FRAGMENT'
 
 export interface VisualAidResponse {
@@ -14,6 +20,14 @@ export interface VisualAidResponse {
   title: string
   content: string
   language: string | null
+}
+
+/** INTEROP-2.7 §6.11: abstenciones UNKNOWN auditadas de una pregunta; no incluye identidad en la UI. */
+export interface FunctionalAbstentionSummary {
+  count: number
+  lastAt: string
+  lastByUserId: string
+  lastByRole: ConfirmingRole
 }
 
 export interface FunctionalQuestionResponse {
@@ -28,6 +42,12 @@ export interface FunctionalQuestionResponse {
   rationale: string
   status: FunctionalQuestionStatus
   visualAid: VisualAidResponse | null
+  /** INTEROP-2.7: escenario de la pregunta atómica (derivado por Core). */
+  scenarioKind: ScenarioKind
+  /** INTEROP-2.7: clave determinista del escenario; nunca la escribe una persona. */
+  scenarioKey: string
+  /** INTEROP-2.7: abstenciones UNKNOWN auditadas; `null` si nadie se ha abstenido. */
+  abstention: FunctionalAbstentionSummary | null
   createdAt: string
 }
 
@@ -54,6 +74,9 @@ export interface FunctionalAnswerAcceptedResponse {
   pollAfterMs: number
   analysisRunId: string
   questionId: string
+  /** INTEROP-2.7: `ABSTAINED` implica `continuationAttemptId` y `knowledgeId` nulos. */
+  outcome: FunctionalAnswerOutcome
+  /** INTEROP-2.9 §6.11: identificador opaco, no consultable en Console (no hay ruta ni UI que lo siga); `null` cuando no hay continuación. */
   continuationAttemptId: string | null
   knowledgeId: string | null
 }
@@ -67,6 +90,7 @@ export interface ActionRequiredListPage {
 export type FunctionalKnowledgeSource = 'HUMAN_ANSWER' | 'APPROVED_IMPORT'
 export type FunctionalKnowledgeStatus = 'ACTIVE' | 'SUPERSEDED'
 
+/** INTEROP-2.7 §6.11: regla de Functional Knowledge con procedencia y escenario. Console no calcula ni edita `scenarioKey`. */
 export interface FunctionalKnowledgeResponse {
   id: string
   projectId: string
@@ -79,6 +103,18 @@ export interface FunctionalKnowledgeResponse {
   status: FunctionalKnowledgeStatus
   supersedesId: string | null
   createdAt: string
+  /** INTEROP-2.7 (DEC-FK-004): escenario derivado por Core; solo lectura en la Console. */
+  scenarioKind: ScenarioKind
+  /** INTEROP-2.7 (DEC-FK-004): clave determinista derivada por Core; nunca la escribe una persona. */
+  scenarioKey: string
+  /** INTEROP-2.7: id de quien confirmó la regla. Solo el id: la Console no lo resuelve a nombre ni correo. `null` en reglas históricas. */
+  confirmedByUserId: string | null
+  /** INTEROP-2.7: rol con el que se confirmó. `null` en reglas históricas. */
+  confirmedRole: ConfirmingRole | null
+  /** INTEROP-2.7: commit de origen de la confirmación. Es procedencia, no vencimiento: no se compara con el HEAD actual. */
+  originHeadSha: string | null
+  /** INTEROP-2.7: referencia de importación; solo tiene sentido si `source` es `APPROVED_IMPORT`. */
+  sourceRef: string | null
 }
 
 /** `GET /projects/{projectId}/functional-knowledge?status&cursor&limit` -> `Page<FunctionalKnowledgeResponse>`. */

@@ -1,43 +1,14 @@
-# 014 — Plan
+# 014 — Plan experimental de Console
 
-## Dependencias
+1. Auditar los adapters y mocks existentes frente a INTEROP-2.7 §6.5 y retirar selección manual de ProjectVersion/TestTarget que no parta del Run.
+2. Crear subtareas y WIs locales para HU17 al seleccionar implementación; coordinar con Core mediante Contract Sync antes de activar live.
+3. Definir con Core el contrato HU18 de captura one-shot, incluidas carreras y vigencia del HEAD, antes de crear UI productiva. La demo puede mostrarlo solo como simulado.
+4. Verificar métricas, trazas, permisos, estados terminales, accesibilidad y separación mock/live; cerrar gates y revisión independiente.
 
-- **Resuelto 2026-09-15:** Core publicó la forma en
-  `interoperability-contract.md` §6.5 — `CreateExperimentRequest{analysisRunId,
-  symbolFilePath, symbolQualifiedName}`, `ExperimentStatusResponse`/
-  `ExperimentResultsResponse` con `analysisRunId`+`symbol: AnalysisSymbolResponse`,
-  y `GET /analysis-runs/{analysisRunId}/experiments`. **Definido, pendiente
-  de implementación** en Core — sin adapter live todavía. Console ya
-  implementó mock-first contra esa forma (`run-comparison/`). Queda
-  bloqueante real solo para el adapter live (rechaza con
-  `PendingContractError`).
-- HU30/HU32 (repository binding, `AnalysisRun` por PR/HEAD) deben estar
-  operando con datos reales antes de que HU48 tenga sentido en producción
-  (§31 del handoff: "cuando el flujo empresarial pueda producir AnalysisRun
-  reales y suficientemente estables, comenzar P1").
-- `experiments/liveMapping.ts`, `experiments/ExperimentComparison.tsx`
-  (clasificados `KEEP` en `console-experiments-analysisrun-classification.md`).
+## Cortes SMART V3
 
-## Diseño técnico (borrador, sujeto a que exista contrato)
+`WI-CONSOLE-014` (OE2) y `WI-CONSOLE-018` (presentación OE5) se construyen contra el contrato INTEROP-2.7 con mocks y su verificación live es `WI-CONSOLE-020`; `WI-CONSOLE-019` (wording) es independiente. Los mocks siguen rotulados `DEMO · DATOS SIMULADOS` y los adapters live no se escriben contra campos que Core no haya publicado.
 
-- Reusar `ExperimentResultViewModel`/`StrategyMetrics` tal cual — son
-  agnósticos al origen de la unidad experimental.
-- Reemplazar el input de creación: de `startExperiment(projectId, targetId,
-  idempotencyKey)` a algo como `startExperimentFromRun(analysisRunId,
-  idempotencyKey)` — nombre y forma exactos dependen del contrato que Core
-  publique, no se fijan acá.
-- `ExperimentPage.tsx` pierde el `<select>` de targets de inventario; gana un
-  punto de entrada desde `AnalysisRunDetailPage` (o una lista de
-  `AnalysisRun` elegibles dentro de `Experiments`).
+## Diseño técnico SMART V3
 
-## Reutilización del módulo 008 (ver clasificación completa en el reporte)
-
-`KEEP`: `GENERALIST_AGENT`, métricas, comparación, `liveMapping.ts`.
-`DROP/ADAPT`: selector de target por inventario, `startExperiment` actual.
-
-## Cortes futuros (no se ordenan todavía — decisión posterior del usuario)
-
-1. Core define y publica la forma `AnalysisRun`↔`ExperimentRun`.
-2. HU48 mock-first en Console (fixtures nuevas, sin backend real).
-3. HU48 live cuando Core lo implemente.
-4. HU49 (P4), solo después de que HU48 esté operativo.
+OE2 vive en el módulo nuevo `app/src/retrieval-comparison` (tipos, api, queries y página) con un CTA junto a «Run comparison →» en `AnalysisRunDetailPage`; no reutiliza `RunComparisonPage`, que auto-inicia con un único símbolo elegible. OE2 no usa los gates de OE5 y solo requiere un Run visible y rol Writer. Los modelos de OE5 se extienden en `experiments/types.ts` y `experiments/liveMapping.ts`; las tasas se muestran como diferencias neutras. El modelo (`gpt-6-luna`) y el esfuerzo de razonamiento los fija Core por `DEC-EXP-004`; Console solo los muestra.

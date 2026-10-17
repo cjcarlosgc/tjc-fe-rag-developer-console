@@ -1,89 +1,31 @@
-# 013 — Tareas
+# 013 — Subtareas actuales
 
-## Baseline T-001
+- [x] **ST-CONSOLE-004 · T-DONE · WI-CONSOLE-004 · HU03–HU16:** especificar la experiencia de OC01–OC15 desde happy paths; subcasos y evidencia se agregan solo tras aprobación.
+- [x] **ST-CONSOLE-014 [T-DONE] · WI-CONSOLE-012 · HU12, HU14:** reproducir la prueba reportada como rota de `RunsPage`, registrar comando y mensaje, determinar su causa y corregir la causa (no el conteo de aserciones) o cerrar con evidencia si no reproduce.
+- [x] **ST-CONSOLE-015 [T-DONE] · WI-CONSOLE-013 · HU07, HU08, HU14:** rol `WRITER` y abstención `UNKNOWN` en Focus Mode y Action Required según `DEC-FK-002` y `DEC-ORG-003`; la pregunta sigue pendiente y no se muestra como resuelta.
+- [x] **ST-CONSOLE-017 [T-DONE] · WI-CONSOLE-015 · HU07, HU09:** mostrar varias reglas `ACTIVE` por target agrupadas por escenario y su procedencia, y retirar el panel especulativo de procedencia.
+- [x] **ST-CONSOLE-018 [T-DONE] · WI-CONSOLE-016 · HU12, HU15:** vista de trace operativo de nueve enlaces con `retrieval_id`, `context_id` y `execution_id` según INTEROP-2.7 §6.16.
+- [x] **ST-CONSOLE-019 [T-DONE] · WI-CONSOLE-017 · HU12, HU15, HU17:** descarga de evidencia JSON versionada del Run, del experimento y de la comparación de retrieval; los mocks permanecen rotulados como simulados.
 
-- [x] Adoptar SYSTEM-2.2 e INTEROP-2.2.
-- [x] Definir navegación, Focus Mode y nueve escenarios mock-first.
-- [x] Marcar la demo GitHub anterior como superseded.
-- [x] Registrar backlog, state, changelog y reporte de revisión.
+- [x] **ST-CONSOLE-022 · T-DONE · WI-CONSOLE-020 · HU05, HU07, HU08, HU12, HU15, HU17:** activar y verificar contra Core los adapters live de SMART V3 una vez que los WI de Core estén `W-DONE`.
 
-## Implementación posterior — requiere selección humana
+- [x] **ST-CONSOLE-024 · T-DONE · WI-CONSOLE-022 · HU01:** adoptar los contratos canónicos actuales y registrar `CS-CORE-20261011-001` y `CS-CORE-20261011-004`; no crear selector de Project/aplicación ni cambiar DTOs/UI. `projectRoot` es informativo si una vista técnica ya lo muestra.
 
-- [x] HU30: repository binding mock-first user-centric — reconciliado contra
-      INTEROP-2.2 §6.8 (2026-09-17). Discovery (`GET /integrations/github/repositories`,
-      gated en la UI por `authSession.githubProviderToken`, nuevo en `AuthSession`),
-      verificación de acceso de la App (`AUTHORIZED`/`NOT_AUTHORIZED` con CTA de
-      configuración + "Revalidar" — `repo_playground` necesita 2 verificaciones,
-      demuestra el ciclo), ramas reales simuladas por repo, y creación del binding
-      sin `installationId` (`CreateRepositoryBindingRequest`, Core lo resuelve).
-      Auth gana `linkGitHub()` (vincula GitHub a una sesión de correo sin cambiar de
-      usuario, HU29). Ver `harness/reports/HU30-github-app-centric-binding.md`.
-- [x] HU30 (live, 2026-09-18): activados los 6 adapters live contra Core real
-      (Render+Supabase+GitHub), con aprobación humana explícita tras verificar en
-      vivo que Core ya lo implementó (handoff cross-repo). Verificado end-to-end:
-      login GitHub real, discovery de repos reales (paso que ni Core había probado
-      todavía). Durante la prueba se encontró y corrigió un bug real de Console
-      (no de Core): `AuthProvider` sincronizaba el Bearer de `apiRequest` en un
-      `useEffect([session])`, que corre después de los efectos de rutas hijas
-      recién montadas por `RequireAuth` en el mismo commit — la primera consulta
-      tras login salía sin token, Core respondía 401 y la Console deslogueaba
-      sola. Corregido sincronizando durante el render. Ver
-      `harness/reports/HU30-live-adapters-and-auth-race-fix.md`.
-- [x] HU32: Analysis Runs por PR/HEAD y obsolescencia — mock-first, 9 escenarios
-      de `spec.md`. Ver `harness/reports/HU30-HU32-HU39-HU40-control-plane-mock.md`.
-- [x] HU32 (parcial, live): `getAnalysisRun`/`listAnalysisRuns` conectados a los
-      controllers reales de Core (`GET /analysis-runs/{id}`,
-      `GET /projects/{projectId}/analysis-runs`). Ver
-      `harness/reports/console-analysisrun-live-adapters.md`. Repository
-      binding (HU30) y Checks/propuestas/publicación (HU39/HU40) también
-      quedaron activados live después (ver entradas propias abajo).
-- [x] HU35-HU36 (live, 2026-09-19): persistencia real de Functional Knowledge
-      y continuación real del Run — Core lo implementó y desplegó. Activados
-      `listActionRequired`/`getContextQuestionSet`/`submitFunctionalAnswer`/
-      `listFunctionalKnowledge` contra Core real, DTOs verificados byte a
-      byte contra su código fuente. Ver
-      `harness/reports/HU35-HU36-HU39-HU40-live-adapters.md`.
-- [x] HU37-HU38: Focus Mode, bandeja Action Required y deep-link `returnTo` — mock-first,
-      dos escenarios (action required, corrección/HEAD nuevo). Ver
-      `harness/reports/HU37-HU38-focus-mode-action-required.md`.
-- [x] HU39-HU40 (live, 2026-09-19): Checks (Core publica el Check directamente
-      en GitHub, sin API nueva para Console — confirmado que el `details_url`
-      ya apunta a la ruta correcta de Console), review, freshness y
-      publicación por companion PR. Activados `listTestProposals`/
-      `createTestPublication`/`getTestPublication` contra Core real. Ver
-      `harness/reports/HU35-HU36-HU39-HU40-live-adapters.md` y, para el
-      mock-first original, `harness/reports/HU30-HU32-HU39-HU40-control-plane-mock.md`.
-- [ ] HU44-HU45: retiro legacy y colaboración.
+- [x] **ST-CONSOLE-025 · T-DONE · WI-CONSOLE-023 · HU14, HU15:** adoptar los espejos canónicos SYSTEM/GH-INTEROP-1.6 de Core y resolver `CS-CORE-20261011-005`; no implementar el comportamiento 422/reconciliación en Console ni cambiar UI, DTOs, endpoints, selectores o despliegue.
 
-## Propuestas registradas 2026-09-14 (HU50-53, HU55)
+- [x] **ST-CONSOLE-026 · T-DONE · WI-CONSOLE-024 · HU14, HU15:** adoptar SYSTEM-2.8/GH-INTEROP-1.7 desde Core y registrar `CS-CORE-20261011-006`; sin UI, DTOs, endpoints ni código de producto.
 
-Ver detalle de cada una en `spec.md` y en `harness/reports/console-backlog-formalization.md`.
-Contrato de HU51/HU53/HU55 definido por Core el 2026-09-15 (ya no `PROPOSED`
-sin contrato) — HU50/HU52 siguen sin contrato.
+- [x] **ST-CONSOLE-027 · T-DONE · WI-CONSOLE-025 · HU11:** espejar SYSTEM-2.9 e INTEROP-2.8 de Core; sin UI, producto ni GCE.
 
-- [x] HU50: indicador de cobertura previa en Run Detail — especulativo (sin
-      contrato), `control-plane/speculative/priorCoverage.ts`.
-- [x] HU51: detección de conflicto de Functional Knowledge en Focus Mode —
-      contrato heredado en INTEROP-2.2 §6.11, implementado mock-first en
-      Console; pendiente de implementación real en Core.
-- [x] HU52: trazabilidad inversa "Runs que usaron esta regla" — especulativo
-      (sin contrato), `action-required/speculative/ruleUsage.ts`. Coincidencia
-      local por símbolo == `targetRef` dentro del mismo proyecto, panel nuevo
-      en `FunctionalKnowledgeDetailPage`.
-- [x] HU53: historial de transiciones de estado de un AnalysisRun — contrato
-      heredado en INTEROP-2.2 §6.10, implementado mock-first en Console
-      (campo opcional en el mirror, live adapter existente tolera su
-      ausencia hasta que Core lo implemente).
-- [x] HU55: listado de Analysis Runs cross-proyecto — contrato definido
-      (`GET /analysis-runs?status&cursor&limit`). Sin código nuevo: el mock
-      ya cubría esto completo; solo se corrigió el mensaje desactualizado
-      de `PendingContractError` en `control-plane/api.ts`. Pendiente de
-      implementación en Core (antes bloqueado: no existía ruta global — ver
-      `console-analysisrun-live-adapters.md`).
+- [x] **ST-CONSOLE-031 · T-DONE · WI-CONSOLE-029 · HU01, HU11, HU14, HU15:** acusar y clasificar los eventos de Contract Sync de Core pendientes (`CS-CORE-20261009-012`, `20261010-001/-002`, `20261011-002/-003`, `20261012-002/-003/-004`) con evidencia verificable; sin UI, DTOs, endpoints, espejos ni código de producto. Aprobación: `harness/reports/wi-console-029-scope-approval.md`.
 
-El mock-first anterior queda completo salvo lo explícitamente Core-side (HU35/36) y
-P4 (HU44/45). HU30 ya está reconciliado contra el binding user-centric de
-INTEROP-2.2 (ver arriba). Adapters live: Analysis Runs y listado de `ProjectVersion`
-ya conectados contra Core real; el binding, Checks/propuestas/publicación, Action
-Required, Functional Knowledge y context-traces siguen sin live. El binding no se
-conecta a Core hasta recibir aprobación humana explícita.
+- [x] **ST-CONSOLE-033 · T-DONE · WI-CONSOLE-031 · HU01, HU11, HU14, HU15:** sincronizar INTEROP-2.9 y SYSTEM desde el Contract Sync de WI-CORE-045 (`CS-CORE-20261012-005`): espejar byte a byte, tratar `404 FUNCTIONAL_QUESTION_NOT_FOUND` al responder como pregunta obsoleta y no asumir consultable un `continuationAttemptId` no nulo; sin DTO, rutas ni live; no reanuda WI-CONSOLE-004. Aprobación: `harness/reports/wi-console-031-scope-approval.md`.
+
+- [x] **ST-CONSOLE-034 · T-DONE · WI-CONSOLE-032 · HU12, HU16:** publicar tests con seguimiento de la publicación asíncrona: guardar `publicationId` del `202`, consultar `GET /test-publications/{id}` hasta estado terminal, mostrar companion PR/rama/fallo, bloquear duplicados y simular PENDING/PUBLISHED/FAILED en el mock; sin DTO, rutas ni contrato. Aprobación: `harness/reports/wi-console-032-scope-approval.md`.
+- [x] **ST-CONSOLE-035 · T-DONE · WI-CONSOLE-033 · HU01, HU11, HU14, HU15:** sincronizar SYSTEM/INTEROP 2.10, 2.11 y 2.12 desde los Contract Sync de WI-CORE-047 y WI-CORE-049 (`CS-CORE-20261012-007`, `-009` y `-011`): espejar byte a byte, mostrar `resultSummary` de OC11 como texto libre y no ofrecer publicar un Run `INFRASTRUCTURE_FAILURE`; sin DTO, rutas ni live; no reanuda WI-CONSOLE-004. Aprobación: `harness/reports/wi-console-033-scope-approval.md`.
+- [x] **ST-CONSOLE-036 · T-DONE · WI-CONSOLE-035 · HU07, HU08, HU14:** mostrar en Focus Mode y en la lista de Action Required el destino de la regla (`target.qualifiedName`, `target.filePath`, `target.kind`, `scenarioKind`) y la frase «Tu respuesta se registrará como regla para <símbolo>» antes de confirmar; sin heurísticas de texto, lógica de dominio, campos nuevos de contrato ni cambios a Core. Aprobación: `harness/reports/wi-console-035-scope-approval.md`.
+- [x] **ST-CONSOLE-038 · T-DONE · WI-CONSOLE-034 · HU01, HU11, HU14, HU15:** sincronizar SYSTEM-2.12 e INTEROP-2.16 desde Core `7f24c169` y acusar `CS-CORE-20261013-001/-002/-003` y `CS-CORE-20261014-001` (más `-011` ya resuelto): espejar byte a byte; sin DTO, rutas, UI ni live; no abre WI-CONSOLE-037 ni WI-CONSOLE-038. Aprobación: `harness/reports/wi-console-034-scope-approval.md`.
+- [x] **ST-CONSOLE-039 · T-DONE · WI-CONSOLE-037 · HU12, HU14, HU15, HU16:** corregir F1 de WI-CONSOLE-027 (`ContextExplorerPage` compone los parámetros de URL a partir de la URL vigente, no del snapshot del render) y ocultar «Publicar» en `PublishSection` cuando la publicación ya está `PUBLISHED`, con pruebas ROJO→VERDE; sin DTO, rutas, contrato ni pantallas. Aprobación: `harness/reports/wi-console-037-scope-approval.md`.
+- [x] **ST-CONSOLE-040 · T-DONE · WI-CONSOLE-038 · HU12, HU14, HU15, HU16:** estabilizar `PublishSection.test.tsx` esperando las insignias `PUBLISHED` tras el refetch de propuestas (misma aserción, solo en la prueba, con ROJO→VERDE reteniendo el refetch); sin producto, DTO, rutas, contrato ni pantallas. Aprobación: `harness/reports/wi-console-038-scope-approval.md`.
+
+La implementación antigua y sus IDs HU se conservan en `CHANGELOG.md`, `harness/reports/` y Git, no como backlog ejecutable actual.

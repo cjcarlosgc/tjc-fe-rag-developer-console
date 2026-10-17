@@ -1,11 +1,15 @@
 import { FormEvent, useState } from 'react'
 import { useCreateProject } from './queries'
+import type { Workspace } from './types'
+import { bindingErrorMessage, errorCorrelationId } from '../control-plane/errors'
+import { ErrorNote } from '../ui/Feedback'
 
 interface Props {
+  workspace: Workspace
   onCreated: (projectId: string) => void
 }
 
-export function CreateProjectForm({ onCreated }: Props) {
+export function CreateProjectForm({ workspace, onCreated }: Props) {
   const [name, setName] = useState('')
   const createMutation = useCreateProject()
   const trimmedName = name.trim()
@@ -13,7 +17,7 @@ export function CreateProjectForm({ onCreated }: Props) {
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!trimmedName) return
-    createMutation.mutate({ name: trimmedName }, { onSuccess: (project) => onCreated(project.id) })
+    createMutation.mutate({ name: trimmedName, workspaceId: workspace.id }, { onSuccess: (project) => onCreated(project.id) })
   }
 
   return (
@@ -36,9 +40,10 @@ export function CreateProjectForm({ onCreated }: Props) {
           </button>
         </div>
         <span className="field-hint">Usa un nombre reconocible para tu repositorio.</span>
+        <span className="field-hint">Workspace: {workspace.kind === 'PERSONAL' ? `cuenta personal · ${workspace.login ?? 'tu cuenta'}` : workspace.login}</span>
       </div>
       {createMutation.isError && (
-        <p className="inline-error" role="alert">{createMutation.error.message}</p>
+        <ErrorNote message={bindingErrorMessage(createMutation.error)} correlationId={errorCorrelationId(createMutation.error)} />
       )}
     </form>
   )

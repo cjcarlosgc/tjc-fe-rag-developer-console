@@ -1,46 +1,12 @@
-# 014 — Tareas
+# 014-analysisrun-experiments — Subtareas vigentes
 
-HU48: contrato publicado por Core 2026-09-15 y consolidado en INTEROP-2.2 §6.5; mock-first
-implementado en Console (`feature/T-001`). HU49 sigue `PROPOSED`, sin
-contrato propio — implementada como capa especulativa sobre el mock-first de
-HU48 (ver `plan.md` y sección propia abajo).
+- [x] **ST-CONSOLE-016 [T-DONE] · WI-CONSOLE-014 · HU05, HU17:** UI de la comparación de retrieval OE2 SE vs SEM con botón de inicio, ranking, scores, relaciones y P@k/R@k opcionales según INTEROP-2.7 §6.15.
+- [x] **ST-CONSOLE-020 [T-DONE] · WI-CONSOLE-018 · HU17:** presentar la metadata de OE5 (par, orden, modelo, presupuesto, perfil, evaluabilidad) sin ganador automático ni CF/CO derivados.
+- [x] **ST-CONSOLE-021 [T-DONE] · WI-CONSOLE-019 · HU17:** corregir el copy de la comparación a «condiciones experimentales externas controladas» y verificar que la interfaz no declare ganadores automáticos.
+- [x] **ST-CONSOLE-028 [T-DONE] · WI-CONSOLE-026 · HU12, HU15, HU17:** aplicar las decisiones de copy y mock de experimentos: texto de `EXPERIMENT_WORKER_LOST` sin promesa de reanudación, un solo texto compartido para `UNSUPPORTED_PROJECT` en experimentos y OE2, y omitir `attempt`/`technicallyEvaluable` en corridas antiguas sin valores inventados; el proyecto demo PHP queda fuera (backlog). Evidencia: `harness/reports/wi-console-026-closure.md`.
+- [x] **ST-CONSOLE-029 [T-DONE] · WI-CONSOLE-027 · HU12, HU15, HU17:** mostrar el fallo real de un experimento `FAILED` (alerta con el mensaje por `failureCode`, sin «Preparando», sin reanudación ni ganador), alinear el texto de `RETRIEVAL_COMPARISON_WORKER_LOST`, retirar `useEvidence` si no tiene consumidores y estabilizar la suite de pruebas de Vitest con diagnóstico documentado. Evidencia: `harness/reports/wi-console-027-closure.md`.
+- [x] **ST-CONSOLE-032 [T-DONE] · WI-CONSOLE-030 · HU12, HU15, HU17:** completar los datos del mock: proyecto demo PHP propio para `rcmp_demo_seed_php`, Runs QUEUED/PROCESSING visibles si es viable, conflicto 409 de reglas por `targetRef` + `scenarioKey` y un caso demo de `UNSUPPORTED_PROJECT` en OE2; solo mock y pruebas, sin contratos ni live. Aprobación: `harness/reports/wi-console-030-scope-approval.md`. Evidencia: `harness/reports/wi-console-030-closure.md`.
+- [x] **ST-CONSOLE-037 [T-DONE] · WI-CONSOLE-036 · HU12, HU15, HU17:** experimentos: `experimentId` en la URL (`?experimentId=`, reabrir al montar), motivo visible del botón «Ejecutar comparación» y error de consulta con «Reintentar», y selector de target sin constructor preseleccionado (orden por nombre, sin filtrar; `UNRESOLVABLE_TARGET` con mensaje). Heurística de presentación; la raíz es de Core. Aprobación: `harness/reports/wi-console-036-scope-approval.md`.
 
-## HU48 — Run comparison
-
-- [x] Core publica la forma `AnalysisRun`↔símbolo en INTEROP (§6.5,
-      `CreateExperimentRequest{analysisRunId, symbolFilePath,
-      symbolQualifiedName}`; `GET /analysis-runs/{id}/experiments`).
-- [x] Tipos/fixtures mock-first en Console (`run-comparison/types.ts`,
-      `mockStartRunComparison`/`mockGetRunComparison` en `mockBackend.ts`).
-- [x] Punto de entrada desde `AnalysisRunDetailPage` (botón condicionado a
-      símbolo `DIRECTLY_CHANGED` `METHOD`/`FUNCTION` elegible y Run no
-      `ACTION_REQUIRED`).
-- [ ] Core implementa el controller real — Console rechaza en modo live con
-      `PendingContractError` hasta entonces.
-- [x] Selector de símbolo cuando el Run tiene más de uno elegible (2026-09-17):
-      `findEligibleSymbols` en `run-comparison/types.ts` devuelve todos los
-      candidatos; con exactamente uno, `RunComparisonPage` sigue arrancando
-      sola (comportamiento previo intacto); con más de uno, muestra un
-      `<select>` y requiere elegir antes de iniciar.
-- [x] Replay ("Run again"/"New comparison") sobre el mismo `AnalysisRun`
-      (2026-09-17): `listRunComparisons`/`mockListRunComparisons`
-      (`GET /analysis-runs/{id}/experiments`, §6.5) listan todos los trials
-      ya lanzados; cada uno sondea su propio progreso de forma independiente
-      (`TrialCard`), sin perder los anteriores. Botón "Repetir comparación
-      (Replay)" reutiliza el símbolo seleccionado para lanzar un nuevo trial.
-
-## HU49 — Capture next PR
-
-- [x] Capa especulativa (sin contrato) sobre HU48 mock-first:
-      `run-comparison/speculative/captureNextPr.ts`, `ProposedCapabilityError`
-      en live. Estado `ARMED`/`OFF` por proyecto, panel `CaptureNextPrPanel`
-      en `ExperimentPage` ("Modo experimental").
-- [x] Al capturar, navega a `RunComparisonPage` (HU48) — reusa el mismo
-      modelo, no un motor experimental paralelo.
-- [ ] Sin webhook real: no hay forma de que "el próximo AnalysisRun elegible
-      del flujo normal" llegue solo. El mock expone un disparador de demo
-      explícito (`simulateNextEligiblePullRequest`, botón "Simular llegada
-      del PR (demo)") en vez de esperar pasivamente — simplificación
-      documentada, no el mecanismo final.
-- [ ] Depende de que HU48 tenga adapter live antes de que esto tenga sentido
-      en producción (regla explícita del handoff).
+Los checklists anteriores se conservan en Git, CHANGELOG y `harness/reports/open-task-triage-3.0.md`.
+- [x] **ST-CONSOLE-023 · T-DONE · WI-CONSOLE-021 · HU05, HU07, HU12, HU15, HU17:** refrescar los espejos desde Core y adoptar el contrato implementado (guardas de `null`, `failureCode` abierto, límites y errores de OE2 y validación del trace); `/evidence` y las tasas siguen en mock hasta `WI-CONSOLE-020`. Evidencia: `harness/reports/wi-console-021-closure.md`.

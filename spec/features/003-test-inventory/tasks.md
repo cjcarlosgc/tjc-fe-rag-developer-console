@@ -1,15 +1,5 @@
-# 003-test-inventory — Tareas
+# 003-test-inventory — Subtareas vigentes
 
-- [x] Inventory view sobre view model desacoplado.
-- [x] filters/status.
-- [x] target selection.
-- [x] empty/unsupported state.
-- [x] Adapter HTTP de inventario por ProjectVersion.
+- [x] **ST-CONSOLE-011 · T-DONE · WI-CONSOLE-009 · HU04:** sincronizar DTOs de ProjectVersion/inventario con INTEROP-2.6 y probar que `PHP`/`PHPUNIT` se representa como detección, no como readiness de generación/ejecución antes de WI-CORE-013. Evidencia: harness/reports/wi-console-009-closure.md.
 
-## Calidad
-
-- [x] Agregar/actualizar pruebas.
-- [x] Verificar manejo de errores.
-- [x] Verificar observabilidad mínima.
-- [x] Ejecutar lint/test/build.
-- [x] Registrar evidencia de revisión en `harness/reports/`.
+Los checklists anteriores se conservan en Git, CHANGELOG y `harness/reports/open-task-triage-3.0.md`.
