@@ -1,3 +1,5 @@
+import type { ErrorEnvelope } from '../contracts/generated/contract-types'
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -5,6 +7,8 @@ export class ApiError extends Error {
     readonly correlationId?: string,
     readonly code?: string,
     readonly details?: unknown,
+    /** INTEROP-2.17 §4: solo lo declaran los servicios cuyo contrato distingue reintentos (GitHub Integration). */
+    readonly retryable?: boolean,
   ) {
     super(message)
     this.name = 'ApiError'
@@ -88,7 +92,7 @@ async function fetchChecked(serviceBaseUrl: string, path: string, init?: Request
   })
 
   if (!response.ok) {
-    const body = await response.json().catch(() => null) as { message?: string; code?: string; correlationId?: string; details?: unknown } | null
+    const body = await response.json().catch(() => null) as Partial<ErrorEnvelope> | null
     if (response.status === 401) notifyAuthError({ status: 401, code: body?.code })
     else if (response.status === 503 && body?.code === 'IDENTITY_UNAVAILABLE') notifyAuthError({ status: 503, code: body.code })
     throw new ApiError(
@@ -97,6 +101,7 @@ async function fetchChecked(serviceBaseUrl: string, path: string, init?: Request
       body?.correlationId ?? response.headers.get('x-correlation-id') ?? correlationId,
       body?.code,
       body?.details,
+      body?.retryable,
     )
   }
 
