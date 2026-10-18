@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import { LoginPage } from './auth/LoginPage'
 import { RequireAuth } from './auth/RequireAuth'
 import { AppShell } from './ui/AppShell'
+import { NotFoundPage, RouteError } from './ui/RouteError'
 import { ProjectDetailPage } from './projects/ProjectDetailPage'
 import { ProjectsPage } from './projects/ProjectsPage'
 import { InventoryPage } from './inventory/InventoryPage'
@@ -19,9 +20,10 @@ import { RunComparisonPage } from './run-comparison/RunComparisonPage'
 import { RetrievalComparisonPage } from './retrieval-comparison/RetrievalComparisonPage'
 
 export const router = createBrowserRouter([
-  { path: '/login', element: <LoginPage /> },
+  { path: '/login', element: <LoginPage />, errorElement: <RouteError /> },
   {
     element: <RequireAuth />,
+    errorElement: <RouteError />,
     children: [
       {
         path: '/',
@@ -43,6 +45,7 @@ export const router = createBrowserRouter([
           { path: 'projects/:projectId/versions/:projectVersionId/inventory', element: <InventoryPage /> },
           { path: 'projects/:projectId/experimental', element: <ExperimentPage /> },
           { path: 'projects/:projectId/experimental/:experimentId/context', element: <ContextExplorerPage /> },
+          { path: '*', element: <NotFoundPage /> },
         ],
       },
     ],

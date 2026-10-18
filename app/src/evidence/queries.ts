@@ -1,6 +1,7 @@
 import { ApiError } from '../api/client'
 import { PendingContractError } from '../api/dataSource'
 import { isTraceNotFinished } from '../control-plane/operationalTraceErrors'
+import { pollDelayMs } from '../api/polling'
 
 /** Reintentos del 409 `EVIDENCE_NOT_FINISHED` antes de dar el estado por «todavía no»; el usuario puede reintentar a mano. */
 export const EVIDENCE_NOT_FINISHED_MAX_RETRIES = 30
@@ -15,4 +16,4 @@ export function shouldRetryEvidence(failureCount: number, error: unknown): boole
   return isTraceNotFinished(error) && failureCount < EVIDENCE_NOT_FINISHED_MAX_RETRIES
 }
 
-export const evidenceRetryDelayMs = (): number => (import.meta.env.MODE === 'test' ? 10 : 900)
+export const evidenceRetryDelayMs = (): number => pollDelayMs()

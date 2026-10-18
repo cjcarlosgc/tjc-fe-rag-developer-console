@@ -36,7 +36,10 @@ function renderTrace(analysisRunId: string, projectId: string) {
 }
 
 function renderDetail(analysisRunId: string, projectId: string) {
-  return renderApp(<AnalysisRunDetailPage />, { initialEntry: `/projects/${projectId}/runs/${analysisRunId}`, routePath: '/projects/:projectId/runs/:analysisRunId' })
+  return renderApp(<AnalysisRunDetailPage />, {
+    initialEntry: `/projects/${projectId}/runs/${analysisRunId}`,
+    routePath: '/projects/:projectId/runs/:analysisRunId',
+  })
 }
 
 function setClipboard(value: unknown) {
@@ -240,7 +243,14 @@ test('publicación STALE cuando el HEAD cambió después de publicar', async () 
 
 test('companionPullRequestUrl https se enlaza con rel seguro; una URL insegura no se enlaza', async () => {
   const base = await mockGetAnalysisRunTrace('arun_checkout_pr45')
-  const publication = { status: 'PRESENT' as const, checkId: null, companionBranch: 'rag-tests/pr-45', companionPullRequestUrl: 'https://github.com/acme/checkout-service/pull/99', sourceHeadSha: 'e5e5e5e', freshness: 'CURRENT' as const }
+  const publication = {
+    status: 'PRESENT' as const,
+    checkId: null,
+    companionBranch: 'rag-tests/pr-45',
+    companionPullRequestUrl: 'https://github.com/acme/checkout-service/pull/99',
+    sourceHeadSha: 'e5e5e5e',
+    freshness: 'CURRENT' as const,
+  }
   traceMock.mockResolvedValueOnce({ ...base, publication } satisfies AnalysisRunTraceResponse)
   const { unmount } = renderTrace('arun_checkout_pr45', 'prj_checkout_demo')
 

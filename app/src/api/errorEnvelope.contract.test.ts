@@ -13,7 +13,10 @@ describe('ApiError interpreta el ErrorEnvelope canónico', () => {
     ['con retryable (GitHub Integration)', upstreamExample, 503, true],
   ])('%s', async (_name, example, status, retryable) => {
     expect(validateContract('error-envelope.schema.json', null, example).errors).toEqual([])
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify(example), { status, headers: { 'Content-Type': 'application/json' } })))
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify(example), { status, headers: { 'Content-Type': 'application/json' } })),
+    )
 
     const error = await apiRequest('/cualquier-ruta').catch((e: unknown) => e)
 

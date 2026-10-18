@@ -34,17 +34,32 @@ test('la sub-nav del proyecto (ProjectTabs) enlaza a Runs/Historial/Functional K
 
   const nav = await screen.findByRole('navigation', { name: 'Secciones del proyecto' })
   expect(within(nav).getByRole('link', { name: 'Overview' })).toHaveAttribute('aria-current', 'page')
-  expect(within(nav).getByRole('link', { name: 'Runs' })).toHaveAttribute('href', '/analysis-runs?projectId=prj_checkout_demo&workspaceId=1000001')
-  expect(within(nav).getByRole('link', { name: 'Historial' })).toHaveAttribute('href', '/projects/prj_checkout_demo/analyses?workspaceId=1000001')
-  expect(within(nav).getByRole('link', { name: 'Functional Knowledge' })).toHaveAttribute('href', '/projects/prj_checkout_demo/functional-knowledge?workspaceId=1000001')
-  expect(within(nav).getByRole('link', { name: 'Integrations' })).toHaveAttribute('href', '/projects/prj_checkout_demo/integrations/github?workspaceId=1000001')
+  expect(within(nav).getByRole('link', { name: 'Runs' })).toHaveAttribute(
+    'href',
+    '/analysis-runs?projectId=prj_checkout_demo&workspaceId=1000001',
+  )
+  expect(within(nav).getByRole('link', { name: 'Historial' })).toHaveAttribute(
+    'href',
+    '/projects/prj_checkout_demo/analyses?workspaceId=1000001',
+  )
+  expect(within(nav).getByRole('link', { name: 'Functional Knowledge' })).toHaveAttribute(
+    'href',
+    '/projects/prj_checkout_demo/functional-knowledge?workspaceId=1000001',
+  )
+  expect(within(nav).getByRole('link', { name: 'Integrations' })).toHaveAttribute(
+    'href',
+    '/projects/prj_checkout_demo/integrations/github?workspaceId=1000001',
+  )
 })
 
 test('"Modo experimental" es visible como capacidad propia, no legacy', async () => {
   renderDetail('prj_checkout_demo')
 
   await screen.findByText('checkout-service', { selector: '.repo-name' })
-  expect(screen.getByRole('link', { name: /Modo experimental/ })).toHaveAttribute('href', '/projects/prj_checkout_demo/experimental?workspaceId=1000001')
+  expect(screen.getByRole('link', { name: /Modo experimental/ })).toHaveAttribute(
+    'href',
+    '/projects/prj_checkout_demo/experimental?workspaceId=1000001',
+  )
 })
 
 test('el proyecto no ofrece flujos manuales de carga, generación ni herramientas antiguas', async () => {
@@ -62,7 +77,10 @@ test('HU30: un proyecto sin binding ofrece conectar GitHub', async () => {
   renderDetail(project.id)
 
   expect(await screen.findByText('Sin repositorio vinculado')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: /Conectar GitHub/ })).toHaveAttribute('href', `/projects/${project.id}/integrations/github?workspaceId=1000001`)
+  expect(screen.getByRole('link', { name: /Conectar GitHub/ })).toHaveAttribute(
+    'href',
+    `/projects/${project.id}/integrations/github?workspaceId=1000001`,
+  )
 })
 
 test('HU57: un proyecto desconectado muestra el binding como Pausado, no como "sin repositorio"', async () => {
@@ -81,7 +99,7 @@ test('HU56: un proyecto eliminado muestra "El proyecto ya no existe" con enlace 
   renderDetail('prj_checkout_demo')
 
   expect(await screen.findByText('El proyecto ya no existe')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Proyectos' })).toHaveAttribute('href', '/')
+  expect(screen.getByRole('link', { name: 'Volver a Projects' })).toHaveAttribute('href', '/')
   expect(screen.queryByRole('button', { name: 'Reintentar' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Eliminar proyecto' })).not.toBeInTheDocument()
 })
@@ -93,7 +111,9 @@ test('HU56: Eliminar proyecto pide confirmación explícita, permite cancelar y 
   await user.click(await screen.findByRole('button', { name: 'Eliminar proyecto' }))
   const confirmation = screen.getByRole('group', { name: 'Confirmar eliminación del proyecto' })
   expect(within(confirmation).getByText('checkout-service')).toBeInTheDocument()
-  expect(confirmation).toHaveTextContent('El proyecto dejará de verse y se liberará el repositorio vinculado; la evidencia no se borra físicamente')
+  expect(confirmation).toHaveTextContent(
+    'El proyecto dejará de verse y se liberará el repositorio vinculado; la evidencia no se borra físicamente',
+  )
   expect(screen.getByText('DEMO · ELIMINAR SIMULADO')).toBeInTheDocument()
 
   await user.click(within(confirmation).getByRole('button', { name: 'Cancelar' }))
@@ -129,12 +149,17 @@ test('HU56: confirmar la eliminación borra el proyecto, navega a la lista con e
   let sawNotFound = false
   const observer = new MutationObserver(() => {
     const text = document.body.textContent ?? ''
-    if (text.includes('El proyecto ya no existe') || text.includes('No pudimos cargar esta información') || text.includes('No existe el proyecto demo')) sawNotFound = true
+    if (
+      text.includes('El proyecto ya no existe') ||
+      text.includes('No pudimos cargar esta información') ||
+      text.includes('No existe el proyecto demo')
+    )
+      sawNotFound = true
   })
   observer.observe(document.body, { childList: true, subtree: true, characterData: true })
   await user.click(screen.getByRole('button', { name: 'Eliminar checkout-service' }))
 
-  const heading = await screen.findByRole('heading', { name: 'Proyectos', level: 1 })
+  const heading = await screen.findByRole('heading', { name: 'Projects', level: 1 })
   await waitFor(() => expect(heading).toHaveFocus())
   expect(await screen.findByText('Proyecto «checkout-service» eliminado')).toBeInTheDocument()
   expect(await screen.findByRole('heading', { name: 'billing-engine' })).toBeInTheDocument()

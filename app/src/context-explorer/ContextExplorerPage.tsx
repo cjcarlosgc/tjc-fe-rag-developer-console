@@ -16,11 +16,15 @@ import { discardReasonLabel, filterRagCandidates, ragSignalLabel } from './rag/r
 import type { RagSignalKind } from './rag/ragLabels'
 import { RagSidePanel } from './rag/RagSidePanel'
 import type { AgentContextTraceDetail, ContextTraceStrategy, ContextTraceSummary, RagCandidateNode, RagContextTraceDetail } from './types'
+import { EmptyState } from '../ui/EmptyState'
 
 const ALL_SIGNAL_KINDS: Exclude<RagSignalKind, 'NONE'>[] = ['SEMANTIC', 'STRUCTURAL', 'DUAL']
 const signalPillLabel: Record<Exclude<RagSignalKind, 'NONE'>, string> = { SEMANTIC: 'Semántica', STRUCTURAL: 'Estructural', DUAL: 'Dual' }
 
-interface TargetGroup { targetId: string; traces: ContextTraceSummary[] }
+interface TargetGroup {
+  targetId: string
+  traces: ContextTraceSummary[]
+}
 
 function groupByTarget(traces: ContextTraceSummary[]): TargetGroup[] {
   const map = new Map<string, ContextTraceSummary[]>()
@@ -37,7 +41,9 @@ function resolveSelectedTraceId(
 ): string | null {
   if (traceParam && allTraces.some((trace) => trace.id === traceParam)) return traceParam
   if (strategyParam || repetitionParam) {
-    const match = allTraces.find((trace) => (!strategyParam || trace.strategy === strategyParam) && (!repetitionParam || trace.repetition === repetitionParam))
+    const match = allTraces.find(
+      (trace) => (!strategyParam || trace.strategy === strategyParam) && (!repetitionParam || trace.repetition === repetitionParam),
+    )
     if (match) return match.id
   }
   const first = targets[0]
@@ -46,13 +52,15 @@ function resolveSelectedTraceId(
 }
 
 function buildRagRows(detail: RagContextTraceDetail, candidates: RagCandidateNode[]): StructuredRow[] {
-  const rows: StructuredRow[] = [{
-    id: detail.targetId,
-    primary: detail.target.excerpt.symbolName ?? detail.target.excerpt.filePath,
-    secondary: detail.target.excerpt.filePath,
-    status: 'Target',
-    meta: `${detail.target.tokenCount} tokens`,
-  }]
+  const rows: StructuredRow[] = [
+    {
+      id: detail.targetId,
+      primary: detail.target.excerpt.symbolName ?? detail.target.excerpt.filePath,
+      secondary: detail.target.excerpt.filePath,
+      status: 'Target',
+      meta: `${detail.target.tokenCount} tokens`,
+    },
+  ]
   for (const candidate of [...candidates].sort((a, b) => a.rank - b.rank)) {
     const discarded = candidate.decision === 'DISCARDED'
     rows.push({
@@ -67,13 +75,15 @@ function buildRagRows(detail: RagContextTraceDetail, candidates: RagCandidateNod
 }
 
 function buildAgentRows(detail: AgentContextTraceDetail): StructuredRow[] {
-  return [...detail.trajectory].sort((a, b) => a.step - b.step).map((step) => ({
-    id: agentStepNodeId(step.step),
-    primary: agentToolLabel[step.toolName],
-    secondary: step.observations[0]?.filePath ?? undefined,
-    status: agentStatusLabel[step.status],
-    meta: step.resultSummary,
-  }))
+  return [...detail.trajectory]
+    .sort((a, b) => a.step - b.step)
+    .map((step) => ({
+      id: agentStepNodeId(step.step),
+      primary: agentToolLabel[step.toolName],
+      secondary: step.observations[0]?.filePath ?? undefined,
+      status: agentStatusLabel[step.status],
+      meta: step.resultSummary,
+    }))
 }
 
 export function ContextExplorerPage() {
@@ -98,15 +108,18 @@ export function ContextExplorerPage() {
   useEffect(() => {
     latestSearchRef.current = location.search
   }, [location.search])
-  const updateParams = useCallback((patch: Record<string, string | null>) => {
-    const next = new URLSearchParams(latestSearchRef.current)
-    for (const [key, value] of Object.entries(patch)) {
-      if (value === null) next.delete(key)
-      else next.set(key, value)
-    }
-    latestSearchRef.current = next.toString()
-    setSearchParams(next, { replace: true })
-  }, [setSearchParams])
+  const updateParams = useCallback(
+    (patch: Record<string, string | null>) => {
+      const next = new URLSearchParams(latestSearchRef.current)
+      for (const [key, value] of Object.entries(patch)) {
+        if (value === null) next.delete(key)
+        else next.set(key, value)
+      }
+      latestSearchRef.current = next.toString()
+      setSearchParams(next, { replace: true })
+    },
+    [setSearchParams],
+  )
   const updateParam = useCallback((key: string, value: string | null) => updateParams({ [key]: value }), [updateParams])
 
   // strategy/repetition de la URL solo eligen la traza inicial (resolveSelectedTraceId); el listado trae todas las repeticiones para poder alternar entre ellas.
@@ -125,7 +138,11 @@ export function ContextExplorerPage() {
   const ragDetail = detailQuery.data?.kind === 'RAG' ? detailQuery.data : null
   const agentDetail = detailQuery.data?.kind === 'AGENT' ? detailQuery.data : null
 
-  const defaultNodeId = ragDetail ? ragDetail.targetId : agentDetail ? agentStepNodeId([...agentDetail.trajectory].sort((a, b) => a.step - b.step)[0]?.step ?? 1) : null
+  const defaultNodeId = ragDetail
+    ? ragDetail.targetId
+    : agentDetail
+      ? agentStepNodeId([...agentDetail.trajectory].sort((a, b) => a.step - b.step)[0]?.step ?? 1)
+      : null
   useEffect(() => {
     if (detailQuery.data && !nodeParam && defaultNodeId) updateParam('node', defaultNodeId)
   }, [detailQuery.data, nodeParam, defaultNodeId, updateParam])
@@ -152,7 +169,7 @@ export function ContextExplorerPage() {
 
   const discardedCount = ragDetail?.candidates.filter((candidate) => candidate.decision === 'DISCARDED').length ?? 0
   const filteredCandidates = useMemo(
-    () => ragDetail ? filterRagCandidates(ragDetail.candidates, { search: nodeSearch, signalKinds, showDiscarded }) : [],
+    () => (ragDetail ? filterRagCandidates(ragDetail.candidates, { search: nodeSearch, signalKinds, showDiscarded }) : []),
     [ragDetail, nodeSearch, signalKinds, showDiscarded],
   )
 
@@ -162,50 +179,146 @@ export function ContextExplorerPage() {
   if (analysisRunIdParam) backToExperimentQuery.set('analysisRunId', analysisRunIdParam)
 
   if (tracesQuery.isPending) return <ContextTraceLoadingState label="Cargando trazas de contexto…" />
-  if (tracesQuery.isError) return <ErrorState message={contextTraceErrorMessage(tracesQuery.error)} onRetry={() => void tracesQuery.refetch()} />
+  if (tracesQuery.isError)
+    return <ErrorState message={contextTraceErrorMessage(tracesQuery.error)} onRetry={() => void tracesQuery.refetch()} />
 
-  return <section>
-    <Breadcrumbs items={[{ label: 'Proyectos', to: '/' }, { label: projectQuery.data?.name ?? projectId, to: `/projects/${projectId}` }, { label: 'Modo experimental', to: `/projects/${projectId}/experimental?${backToExperimentQuery}` }, { label: 'Explorar contexto' }]} />
-    <div className="page-heading"><div><p className="eyebrow">Contexto / Experimento {experimentId}</p><h1>Explorador de contexto</h1><p>Evidencia de contexto recolectada para las repeticiones del experimento.</p></div></div>
-
-    {allTraces.length === 0 ? <div className="empty-state"><div className="empty-icon">{'{ }'}</div><h2>Sin trazas de contexto</h2><p>Este experimento todavía no registró evidencia de contexto para mostrar.</p></div> : <>
-      <div className="list-toolbar">
-        {allTraces.length > 1 && <nav className="target-switch" aria-label="Repeticiones del experimento">
-          {allTraces.map((trace) => <button type="button" key={trace.id} aria-pressed={trace.id === selectedTraceId} onClick={() => updateParams({ trace: trace.id, node: null })}>{`${trace.strategy === 'RAG' ? 'RAG' : 'Agente'} · rep ${trace.repetition}`}</button>)}
-        </nav>}
-        <label className="checkbox-toggle"><input type="checkbox" checked={includeSuperseded} onChange={(event) => updateParam('includeSuperseded', event.target.checked ? 'true' : null)} /> Incluir intentos anteriores</label>
-        <fieldset className="segmented"><legend>Vista</legend>
-          <button type="button" aria-pressed={view === 'graph'} onClick={() => updateParam('view', 'graph')}>Vista de grafo</button>
-          <button type="button" aria-pressed={view === 'list'} onClick={() => updateParam('view', 'list')}>Vista de lista</button>
-        </fieldset>
+  return (
+    <section>
+      <Breadcrumbs
+        items={[
+          { label: 'Projects', to: '/' },
+          { label: projectQuery.data?.name ?? projectId, to: `/projects/${projectId}` },
+          { label: 'Modo experimental', to: `/projects/${projectId}/experimental?${backToExperimentQuery}` },
+          { label: 'Explorar contexto' },
+        ]}
+      />
+      <div className="page-heading">
+        <div>
+          <p className="eyebrow">Contexto / Experimento {experimentId}</p>
+          <h1>Explorador de contexto</h1>
+          <p>Evidencia de contexto recolectada para las repeticiones del experimento.</p>
+        </div>
       </div>
 
-      {detailQuery.isPending && <ContextTraceLoadingState label="Cargando detalle de la traza…" />}
-      {detailQuery.isError && (isContextTraceNotFinished(detailQuery.error)
-        ? <ContextTraceLoadingState label="La traza todavía se está procesando…" />
-        : <ErrorState message={contextTraceErrorMessage(detailQuery.error)} onRetry={() => void detailQuery.refetch()} />)}
-      {ragDetail && <div className="list-toolbar rag-filter-bar">
-        <div className="field list-search"><label htmlFor="rag-node-search">Buscar nodo, símbolo o hash</label><input id="rag-node-search" value={nodeSearch} onChange={(event) => setNodeSearch(event.target.value)} placeholder="símbolo, archivo o chunk…" /></div>
-        <div className="signal-filter-pills" role="group" aria-label="Filtrar candidatos por señal">
-          {ALL_SIGNAL_KINDS.map((kind) => <button type="button" key={kind} className={`signal-pill signal-pill-${kind.toLowerCase()}`} aria-pressed={signalKinds.has(kind)} onClick={() => toggleSignalKind(kind)}>{signalPillLabel[kind]}</button>)}
+      {allTraces.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-icon">{'{ }'}</div>
+          <h2>Sin trazas de contexto</h2>
+          <p>Este experimento todavía no registró evidencia de contexto para mostrar.</p>
         </div>
-        <label className="checkbox-toggle"><input type="checkbox" checked={showDiscarded} onChange={(event) => setShowDiscarded(event.target.checked)} /> Descartados ({discardedCount})</label>
-      </div>}
-      {detailQuery.data && <div className="context-explorer-body">
-        {ragDetail ? <>
-          {filteredCandidates.length === 0
-            ? <div className="empty-inline"><strong>Sin candidatos coincidentes</strong><p>Ajusta la búsqueda o los filtros de señal/descartados.</p></div>
-            : view === 'graph'
-              ? <RagGraph detail={ragDetail} candidates={filteredCandidates} selectedId={selectedNodeId} onSelect={(id) => updateParam('node', id)} />
-              : <StructuredAlternativeView caption="Candidatos RAG (vista de lista)" rows={buildRagRows(ragDetail, filteredCandidates)} selectedId={selectedNodeId} onSelect={(id) => updateParam('node', id)} />}
-          <RagSidePanel detail={ragDetail} selectedId={selectedNodeId} />
-        </> : agentDetail ? <>
-          {view === 'graph'
-            ? <AgentTrajectory detail={agentDetail} selectedId={selectedNodeId} onSelect={(id) => updateParam('node', id)} />
-            : <StructuredAlternativeView caption="Trayectoria del agente (vista de lista)" rows={buildAgentRows(agentDetail)} selectedId={selectedNodeId} onSelect={(id) => updateParam('node', id)} />}
-          <AgentSidePanel detail={agentDetail} selectedId={selectedNodeId} />
-        </> : null}
-      </div>}
-    </>}
-  </section>
+      ) : (
+        <>
+          <div className="list-toolbar">
+            {allTraces.length > 1 && (
+              <nav className="target-switch" aria-label="Repeticiones del experimento">
+                {allTraces.map((trace) => (
+                  <button
+                    type="button"
+                    key={trace.id}
+                    aria-pressed={trace.id === selectedTraceId}
+                    onClick={() => updateParams({ trace: trace.id, node: null })}
+                  >{`${trace.strategy === 'RAG' ? 'RAG' : 'Agente'} · rep ${trace.repetition}`}</button>
+                ))}
+              </nav>
+            )}
+            <label className="checkbox-toggle">
+              <input
+                type="checkbox"
+                checked={includeSuperseded}
+                onChange={(event) => updateParam('includeSuperseded', event.target.checked ? 'true' : null)}
+              />{' '}
+              Incluir intentos anteriores
+            </label>
+            <fieldset className="segmented">
+              <legend>Vista</legend>
+              <button type="button" aria-pressed={view === 'graph'} onClick={() => updateParam('view', 'graph')}>
+                Vista de grafo
+              </button>
+              <button type="button" aria-pressed={view === 'list'} onClick={() => updateParam('view', 'list')}>
+                Vista de lista
+              </button>
+            </fieldset>
+          </div>
+
+          {detailQuery.isPending && <ContextTraceLoadingState label="Cargando detalle de la traza…" />}
+          {detailQuery.isError &&
+            (isContextTraceNotFinished(detailQuery.error) ? (
+              <ContextTraceLoadingState label="La traza todavía se está procesando…" />
+            ) : (
+              <ErrorState message={contextTraceErrorMessage(detailQuery.error)} onRetry={() => void detailQuery.refetch()} />
+            ))}
+          {ragDetail && (
+            <div className="list-toolbar rag-filter-bar">
+              <div className="field list-search">
+                <label htmlFor="rag-node-search">Buscar nodo, símbolo o hash</label>
+                <input
+                  id="rag-node-search"
+                  value={nodeSearch}
+                  onChange={(event) => setNodeSearch(event.target.value)}
+                  placeholder="símbolo, archivo o chunk…"
+                />
+              </div>
+              <div className="signal-filter-pills" role="group" aria-label="Filtrar candidatos por señal">
+                {ALL_SIGNAL_KINDS.map((kind) => (
+                  <button
+                    type="button"
+                    key={kind}
+                    className={`signal-pill signal-pill-${kind.toLowerCase()}`}
+                    aria-pressed={signalKinds.has(kind)}
+                    onClick={() => toggleSignalKind(kind)}
+                  >
+                    {signalPillLabel[kind]}
+                  </button>
+                ))}
+              </div>
+              <label className="checkbox-toggle">
+                <input type="checkbox" checked={showDiscarded} onChange={(event) => setShowDiscarded(event.target.checked)} /> Descartados (
+                {discardedCount})
+              </label>
+            </div>
+          )}
+          {detailQuery.data && (
+            <div className="context-explorer-body">
+              {ragDetail ? (
+                <>
+                  {filteredCandidates.length === 0 ? (
+                    <EmptyState title="Sin candidatos coincidentes" description="Ajusta la búsqueda o los filtros de señal/descartados." />
+                  ) : view === 'graph' ? (
+                    <RagGraph
+                      detail={ragDetail}
+                      candidates={filteredCandidates}
+                      selectedId={selectedNodeId}
+                      onSelect={(id) => updateParam('node', id)}
+                    />
+                  ) : (
+                    <StructuredAlternativeView
+                      caption="Candidatos RAG (vista de lista)"
+                      rows={buildRagRows(ragDetail, filteredCandidates)}
+                      selectedId={selectedNodeId}
+                      onSelect={(id) => updateParam('node', id)}
+                    />
+                  )}
+                  <RagSidePanel detail={ragDetail} selectedId={selectedNodeId} />
+                </>
+              ) : agentDetail ? (
+                <>
+                  {view === 'graph' ? (
+                    <AgentTrajectory detail={agentDetail} selectedId={selectedNodeId} onSelect={(id) => updateParam('node', id)} />
+                  ) : (
+                    <StructuredAlternativeView
+                      caption="Trayectoria del agente (vista de lista)"
+                      rows={buildAgentRows(agentDetail)}
+                      selectedId={selectedNodeId}
+                      onSelect={(id) => updateParam('node', id)}
+                    />
+                  )}
+                  <AgentSidePanel detail={agentDetail} selectedId={selectedNodeId} />
+                </>
+              ) : null}
+            </div>
+          )}
+        </>
+      )}
+    </section>
+  )
 }

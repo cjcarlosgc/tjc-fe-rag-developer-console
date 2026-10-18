@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
@@ -12,7 +12,10 @@ beforeEach(() => {
 })
 
 function renderPage(projectId: string) {
-  return renderApp(<FunctionalKnowledgePage />, { initialEntry: `/projects/${projectId}/functional-knowledge`, routePath: '/projects/:projectId/functional-knowledge' })
+  return renderApp(<FunctionalKnowledgePage />, {
+    initialEntry: `/projects/${projectId}/functional-knowledge`,
+    routePath: '/projects/:projectId/functional-knowledge',
+  })
 }
 
 function groupHeadings(): string[] {
@@ -52,7 +55,7 @@ test('HU35/HU36: el filtro Active recalcula los grupos y oculta las SUPERSEDED',
   await screen.findByRole('heading', { name: 'Resultado esperado' })
   await user.click(screen.getByRole('button', { name: 'Active' }))
 
-  expect(screen.queryByText('SUPERSEDED')).not.toBeInTheDocument()
+  await waitFor(() => expect(screen.queryByText('SUPERSEDED')).not.toBeInTheDocument())
   expect(screen.getAllByText('ACTIVE')).toHaveLength(5)
   expect(screen.getByRole('button', { name: 'Active' })).toHaveAttribute('aria-pressed', 'true')
   expect(groupHeadings()).toEqual(['Resultado esperado', 'Borde', 'Excepción', 'Precondición funcional'])
@@ -65,7 +68,7 @@ test('HU35/HU36: el filtro Superseded deja solo la cadena reemplazada y el grupo
   await screen.findByRole('heading', { name: 'Resultado esperado' })
   await user.click(screen.getByRole('button', { name: 'Superseded' }))
 
-  expect(screen.getAllByText('SUPERSEDED')).toHaveLength(2)
+  await waitFor(() => expect(screen.getAllByText('SUPERSEDED')).toHaveLength(2))
   expect(screen.queryByText('ACTIVE')).not.toBeInTheDocument()
   expect(groupHeadings()).toEqual(['Borde'])
 })

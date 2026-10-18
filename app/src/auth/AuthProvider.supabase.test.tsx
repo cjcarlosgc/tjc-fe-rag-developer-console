@@ -23,11 +23,15 @@ vi.mock('@supabase/supabase-js', () => ({
 
 function Probe() {
   const { status, sessionNotice, signOut } = useAuth()
-  return <div>
-    <span data-testid="status">{status}</span>
-    <span data-testid="notice-kind">{sessionNotice?.kind ?? ''}</span>
-    <button type="button" onClick={() => void signOut()}>signout</button>
-  </div>
+  return (
+    <div>
+      <span data-testid="status">{status}</span>
+      <span data-testid="notice-kind">{sessionNotice?.kind ?? ''}</span>
+      <button type="button" onClick={() => void signOut()}>
+        signout
+      </button>
+    </div>
+  )
 }
 
 beforeEach(() => {
@@ -50,7 +54,11 @@ afterEach(() => {
 })
 
 async function renderAuthenticated() {
-  renderApp(<AuthProvider><Probe /></AuthProvider>)
+  renderApp(
+    <AuthProvider>
+      <Probe />
+    </AuthProvider>,
+  )
   await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('authenticated'))
 }
 
@@ -75,7 +83,9 @@ describe('AuthProvider con Supabase (HU62, INTEROP-2.4 §6.13)', () => {
   it.each(['GITHUB_ACCOUNT_REQUIRED', 'GITHUB_USER_TOKEN_INVALID'])('401 %s no cierra la sesión ni llama a signOut', async (code) => {
     await renderAuthenticated()
     act(() => notifyAuthError({ status: 401, code }))
-    await act(async () => { await Promise.resolve() })
+    await act(async () => {
+      await Promise.resolve()
+    })
     expect(screen.getByTestId('status')).toHaveTextContent('authenticated')
     expect(signOut).not.toHaveBeenCalled()
   })
@@ -101,7 +111,8 @@ describe('AuthProvider con Supabase (HU62, INTEROP-2.4 §6.13)', () => {
 
   describe('WebSocket ligado a la sesión (HU62)', () => {
     const sessionOf = (id: string, token: string) => ({ access_token: token, user: { id, email: `${id}@example.com` } })
-    const emit = (session: unknown) => act(() => (onAuthStateChange.mock.calls[0][0] as (event: string, session: unknown) => void)('TOKEN_REFRESHED', session))
+    const emit = (session: unknown) =>
+      act(() => (onAuthStateChange.mock.calls[0][0] as (event: string, session: unknown) => void)('TOKEN_REFRESHED', session))
 
     it('token renovado del mismo usuario reconecta el socket con el token vigente, sin descartarlo', async () => {
       await renderAuthenticated()

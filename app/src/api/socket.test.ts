@@ -79,7 +79,9 @@ test('una reconexión vuelve a emitir subscribe para el mismo id', () => {
 function handshakeAuth(): Record<string, unknown> {
   const options = vi.mocked(io).mock.calls[0][1] as { auth: (callback: (data: Record<string, unknown>) => void) => void }
   let data: Record<string, unknown> = {}
-  options.auth((next) => { data = next })
+  options.auth((next) => {
+    data = next
+  })
   return data
 }
 
@@ -150,19 +152,22 @@ test('HU62: una conexión exitosa reinicia el backoff', () => {
   expect(mockSocket.connect).toHaveBeenCalledTimes(2)
 })
 
-test.each(['GITHUB_IDENTITY_REQUIRED', 'INVALID_ACCESS_TOKEN'])('HU62: connect_error %s (no reintentable) dispara el manejo de sesión, sin reintentar ni bucle', (code) => {
-  vi.useFakeTimers()
-  const handler = vi.fn()
-  setAuthErrorHandler(handler)
-  socket.subscribeProjectVersionUpdates('pv-1', vi.fn())
+test.each(['GITHUB_IDENTITY_REQUIRED', 'INVALID_ACCESS_TOKEN'])(
+  'HU62: connect_error %s (no reintentable) dispara el manejo de sesión, sin reintentar ni bucle',
+  (code) => {
+    vi.useFakeTimers()
+    const handler = vi.fn()
+    setAuthErrorHandler(handler)
+    socket.subscribeProjectVersionUpdates('pv-1', vi.fn())
 
-  trigger('connect_error', handshakeError(code, false))
-  vi.advanceTimersByTime(120_000)
+    trigger('connect_error', handshakeError(code, false))
+    vi.advanceTimersByTime(120_000)
 
-  expect(handler).toHaveBeenCalledTimes(1)
-  expect(handler).toHaveBeenCalledWith({ status: 401, code })
-  expect(mockSocket.connect).not.toHaveBeenCalled()
-})
+    expect(handler).toHaveBeenCalledTimes(1)
+    expect(handler).toHaveBeenCalledWith({ status: 401, code })
+    expect(mockSocket.connect).not.toHaveBeenCalled()
+  },
+)
 
 test('un connect_error de transporte (sin data) lo reintenta socket.io: la Console no interviene', () => {
   vi.useFakeTimers()
@@ -198,7 +203,9 @@ test('HU62: A → logout → B no reutiliza la conexión de A: resetSocket desca
   expect(vi.mocked(io)).toHaveBeenCalledTimes(2)
   const secondOptions = vi.mocked(io).mock.calls[1][1] as { auth: (callback: (data: Record<string, unknown>) => void) => void }
   let data: Record<string, unknown> = {}
-  secondOptions.auth((next) => { data = next })
+  secondOptions.auth((next) => {
+    data = next
+  })
   expect(data).toEqual({ token: 'jwt-B' })
 })
 

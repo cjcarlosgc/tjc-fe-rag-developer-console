@@ -63,7 +63,7 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
 
   it('con un único símbolo elegible NO arranca la comparación sola', async () => {
     renderPage(SINGLE_RUN)
-    const select = await screen.findByLabelText('Símbolo a comparar') as HTMLSelectElement
+    const select = (await screen.findByLabelText('Símbolo a comparar')) as HTMLSelectElement
     expect(select.value).toBe('')
     expect(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' })).toBeDisabled()
     expect(screen.getByRole('status')).toHaveTextContent('Elige un símbolo')
@@ -73,7 +73,7 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
   it('con varios símbolos el botón queda deshabilitado con motivo hasta elegir uno', async () => {
     const user = userEvent.setup()
     renderPage(MULTI_RUN)
-    const select = await screen.findByLabelText('Símbolo a comparar') as HTMLSelectElement
+    const select = (await screen.findByLabelText('Símbolo a comparar')) as HTMLSelectElement
     expect(select.options).toHaveLength(4)
     const button = screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' })
     expect(button).toBeDisabled()
@@ -105,17 +105,22 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
     expect(await screen.findByText('Comparación completada. Resultados disponibles abajo.', {}, { timeout: 5000 })).toBeInTheDocument()
     // Dos COMPLETED de seed más la recién completada: la lista debe reflejarlo sin recargar la página.
-    await waitFor(() => {
-      const list = screen.getByRole('list', { name: 'Comparaciones previas del Run' })
-      expect(within(list).getAllByText('Estado: Completada (COMPLETED)')).toHaveLength(3)
-    }, { timeout: 5000 })
+    await waitFor(
+      () => {
+        const list = screen.getByRole('list', { name: 'Comparaciones previas del Run' })
+        expect(within(list).getAllByText('Estado: Completada (COMPLETED)')).toHaveLength(3)
+      },
+      { timeout: 5000 },
+    )
   })
 
   it('N1-N3: SEM no muestra «null» ni «Sin relación estructural»; captions, métricas y regiones distinguen el modo', async () => {
     const user = userEvent.setup()
     renderPage(MULTI_RUN)
     const list = await screen.findByRole('list', { name: 'Comparaciones previas del Run' })
-    const withMetrics = within(list).getAllByRole('listitem').find((item) => item.textContent?.includes('rcmp_demo_seed_completed_con_metricas'))!
+    const withMetrics = within(list)
+      .getAllByRole('listitem')
+      .find((item) => item.textContent?.includes('rcmp_demo_seed_completed_con_metricas'))!
     await user.click(within(withMetrics).getByRole('button', { name: /Ver resultado/ }))
     await screen.findByRole('heading', { level: 2, name: 'Resultado de OrderService.createOrder' })
 
@@ -132,7 +137,9 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
   it('N4: una previa FAILED muestra failureCode y failureMessage visibles', async () => {
     renderPage(MULTI_RUN)
     const list = await screen.findByRole('list', { name: 'Comparaciones previas del Run' })
-    const failed = within(list).getAllByRole('listitem').find((item) => item.textContent?.includes('rcmp_demo_seed_failed'))!
+    const failed = within(list)
+      .getAllByRole('listitem')
+      .find((item) => item.textContent?.includes('rcmp_demo_seed_failed'))!
     expect(within(failed).getByText('RETRIEVAL_COMPARISON_FAILED')).toBeInTheDocument()
     expect(within(failed).getByText(/La comparación de retrieval falló/)).toBeInTheDocument()
     expect(within(failed).getByText(/el índice de embeddings no respondió/)).toBeInTheDocument()
@@ -158,7 +165,9 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     const user = userEvent.setup()
     renderPage(MULTI_RUN)
     const list = await screen.findByRole('list', { name: 'Comparaciones previas del Run' })
-    const withMetrics = within(list).getAllByRole('listitem').find((item) => item.textContent?.includes('rcmp_demo_seed_completed_con_metricas'))!
+    const withMetrics = within(list)
+      .getAllByRole('listitem')
+      .find((item) => item.textContent?.includes('rcmp_demo_seed_completed_con_metricas'))!
     await user.click(within(withMetrics).getByRole('button', { name: /Ver resultado/ }))
     expect(await screen.findByRole('heading', { level: 2, name: 'Resultado de OrderService.createOrder' })).toBeInTheDocument()
     expect(screen.queryByText('no disponible')).not.toBeInTheDocument()
@@ -178,14 +187,19 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     await user.selectOptions(screen.getByLabelText('Símbolo a comparar'), FORMAT_CURRENCY)
     await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
     // La nueva comparación se añade a las cinco previas; ninguna se reemplaza.
-    await waitFor(() => expect(within(screen.getByRole('list', { name: 'Comparaciones previas del Run' })).getAllByRole('listitem')).toHaveLength(6), { timeout: 5000 })
+    await waitFor(
+      () => expect(within(screen.getByRole('list', { name: 'Comparaciones previas del Run' })).getAllByRole('listitem')).toHaveLength(6),
+      { timeout: 5000 },
+    )
   })
 
   it.each([
     [409, 'ANALYSIS_NOT_FINISHED', 'El Run todavía no terminó de analizarse; la comparación estará disponible cuando termine.'],
     [422, 'UNSUPPORTED_PROJECT', UNSUPPORTED_PROJECT_MESSAGE],
   ])('creación con %i %s muestra el mensaje propio y no crea comparación', async (status, code, message) => {
-    overrides.start = async () => { throw new ApiError('crudo de Core', status, 'corr-create', code) }
+    overrides.start = async () => {
+      throw new ApiError('crudo de Core', status, 'corr-create', code)
+    }
     const user = userEvent.setup()
     renderPage(MULTI_RUN)
     await user.selectOptions(await screen.findByLabelText('Símbolo a comparar'), FORMAT_CURRENCY)
@@ -196,11 +210,30 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
   })
 
   it('un FAILED con failureCode desconocido muestra el código tal cual, sin inventar causa', async () => {
-    overrides.start = async () => ({ status: 'PENDING', pollAfterMs: 10, analysisRunId: 'arun_checkout_pr49', retrievalComparisonId: 'rcmp_override_unknown', projectVersionId: 'ver_x' })
+    overrides.start = async () => ({
+      status: 'PENDING',
+      pollAfterMs: 10,
+      analysisRunId: 'arun_checkout_pr49',
+      retrievalComparisonId: 'rcmp_override_unknown',
+      projectVersionId: 'ver_x',
+    })
     overrides.detail = async () => ({
-      id: 'rcmp_override_unknown', analysisRunId: 'arun_checkout_pr49', projectId: 'prj_checkout_demo', projectVersionId: 'ver_x',
-      symbol: { language: 'TYPESCRIPT', kind: 'FUNCTION', qualifiedName: 'formatCurrency', filePath: 'src/x.ts', changeKind: 'DIRECTLY_CHANGED' },
-      status: 'FAILED', failureCode: 'FUTURE_CODE', failureMessage: 'DEMO: código nuevo.', startedAt: null, completedAt: null,
+      id: 'rcmp_override_unknown',
+      analysisRunId: 'arun_checkout_pr49',
+      projectId: 'prj_checkout_demo',
+      projectVersionId: 'ver_x',
+      symbol: {
+        language: 'TYPESCRIPT',
+        kind: 'FUNCTION',
+        qualifiedName: 'formatCurrency',
+        filePath: 'src/x.ts',
+        changeKind: 'DIRECTLY_CHANGED',
+      },
+      status: 'FAILED',
+      failureCode: 'FUTURE_CODE',
+      failureMessage: 'DEMO: código nuevo.',
+      startedAt: null,
+      completedAt: null,
     })
     const user = userEvent.setup()
     renderPage(MULTI_RUN)
@@ -211,11 +244,32 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
   })
 
   it('un FAILED muestra failureCode y failureMessage literales en role=alert y no pide resultados', async () => {
-    overrides.start = async (_run: unknown, symbol: unknown, key: unknown) => ({ status: 'PENDING', pollAfterMs: 10, analysisRunId: 'arun_checkout_pr49', retrievalComparisonId: 'rcmp_override_failed', projectVersionId: 'ver_x', _key: key, _symbol: symbol })
+    overrides.start = async (_run: unknown, symbol: unknown, key: unknown) => ({
+      status: 'PENDING',
+      pollAfterMs: 10,
+      analysisRunId: 'arun_checkout_pr49',
+      retrievalComparisonId: 'rcmp_override_failed',
+      projectVersionId: 'ver_x',
+      _key: key,
+      _symbol: symbol,
+    })
     overrides.detail = async () => ({
-      id: 'rcmp_override_failed', analysisRunId: 'arun_checkout_pr49', projectId: 'prj_checkout_demo', projectVersionId: 'ver_x',
-      symbol: { language: 'TYPESCRIPT', kind: 'FUNCTION', qualifiedName: 'formatCurrency', filePath: 'src/x.ts', changeKind: 'DIRECTLY_CHANGED' },
-      status: 'FAILED', failureCode: 'RETRIEVAL_TARGET_UNRESOLVABLE', failureMessage: 'DEMO: el símbolo no existe en la versión.', startedAt: null, completedAt: null,
+      id: 'rcmp_override_failed',
+      analysisRunId: 'arun_checkout_pr49',
+      projectId: 'prj_checkout_demo',
+      projectVersionId: 'ver_x',
+      symbol: {
+        language: 'TYPESCRIPT',
+        kind: 'FUNCTION',
+        qualifiedName: 'formatCurrency',
+        filePath: 'src/x.ts',
+        changeKind: 'DIRECTLY_CHANGED',
+      },
+      status: 'FAILED',
+      failureCode: 'RETRIEVAL_TARGET_UNRESOLVABLE',
+      failureMessage: 'DEMO: el símbolo no existe en la versión.',
+      startedAt: null,
+      completedAt: null,
     })
     const user = userEvent.setup()
     renderPage(MULTI_RUN)
@@ -232,11 +286,21 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
   it.each([
     [404, 'ANALYSIS_SYMBOL_NOT_FOUND', 'Ese símbolo ya no pertenece a este Run. Actualiza el Run y vuelve a elegirlo.'],
     [422, 'UNSUPPORTED_SYMBOL_KIND', 'Solo se pueden comparar métodos o funciones con cambio directo en este Run.'],
-    [409, 'IDEMPOTENCY_CONFLICT', 'Esa clave de idempotencia ya se usó para otra comparación. Inicia la comparación de nuevo desde la página.'],
+    [
+      409,
+      'IDEMPOTENCY_CONFLICT',
+      'Esa clave de idempotencia ya se usó para otra comparación. Inicia la comparación de nuevo desde la página.',
+    ],
     [403, 'PROJECT_ROLE_INSUFFICIENT', 'Tu rol actual (WRITER) no alcanza para esta acción; se requiere ADMIN.'],
   ])('error %i %s: alerta con mensaje propio y Correlation ID', async (status, code, message) => {
     overrides.start = async () => {
-      throw new ApiError('mensaje crudo', status, 'corr-retrieval-1', code, code === 'PROJECT_ROLE_INSUFFICIENT' ? { requiredRole: 'ADMIN', currentRole: 'WRITER' } : undefined)
+      throw new ApiError(
+        'mensaje crudo',
+        status,
+        'corr-retrieval-1',
+        code,
+        code === 'PROJECT_ROLE_INSUFFICIENT' ? { requiredRole: 'ADMIN', currentRole: 'WRITER' } : undefined,
+      )
     }
     const user = userEvent.setup()
     renderPage(MULTI_RUN)
@@ -254,7 +318,13 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
       calls += 1
       keys.push(args[2] as string)
       if (calls === 1) throw new ApiError('x', 422, 'c1', 'UNSUPPORTED_SYMBOL_KIND')
-      return { status: 'PENDING', pollAfterMs: 10, analysisRunId: 'arun_checkout_pr49', retrievalComparisonId: `rcmp_retry_${calls}`, projectVersionId: 'ver_checkout_7' }
+      return {
+        status: 'PENDING',
+        pollAfterMs: 10,
+        analysisRunId: 'arun_checkout_pr49',
+        retrievalComparisonId: `rcmp_retry_${calls}`,
+        projectVersionId: 'ver_checkout_7',
+      }
     }
     const user = userEvent.setup()
     renderPage(MULTI_RUN)
@@ -268,7 +338,13 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
   })
 
   it('una previa cuyo detalle falla con 404 muestra alerta y no bloquea el resto de la página', async () => {
-    overrides.start = async () => ({ status: 'PENDING', pollAfterMs: 10, analysisRunId: 'arun_checkout_pr49', retrievalComparisonId: 'rcmp_gone', projectVersionId: 'ver_checkout_7' })
+    overrides.start = async () => ({
+      status: 'PENDING',
+      pollAfterMs: 10,
+      analysisRunId: 'arun_checkout_pr49',
+      retrievalComparisonId: 'rcmp_gone',
+      projectVersionId: 'ver_checkout_7',
+    })
     overrides.detail = async () => {
       throw new ApiError('no existe', 404, 'corr-gone', 'RETRIEVAL_COMPARISON_NOT_FOUND')
     }
@@ -304,7 +380,9 @@ describe('RetrievalComparisonPage (WI-CONSOLE-030, C1/C4)', () => {
   it('C1: el Run shop-php-demo lista la semilla PHP rcmp_demo_seed_php como COMPLETED con «Ver resultado»', async () => {
     renderPage(SHOP_PHP_RUN)
     const list = await screen.findByRole('list', { name: 'Comparaciones previas del Run' })
-    const seed = within(list).getAllByRole('listitem').find((item) => item.textContent?.includes('rcmp_demo_seed_php'))
+    const seed = within(list)
+      .getAllByRole('listitem')
+      .find((item) => item.textContent?.includes('rcmp_demo_seed_php'))
     expect(seed).toBeDefined()
     expect(within(seed!).getByText('Estado: Completada (COMPLETED)')).toBeInTheDocument()
     expect(within(seed!).getByRole('button', { name: /Ver resultado/ })).toBeInTheDocument()

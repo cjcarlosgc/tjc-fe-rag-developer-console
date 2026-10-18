@@ -29,7 +29,9 @@ describe('apiRequest — interceptor HU29', () => {
     setAuthErrorHandler(handler)
     setAuthTokenProvider(() => 'super-secret-token')
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ message: 'Sin sesión', code: 'AUTH_REQUIRED' }), { status: 401 }))
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ message: 'Sin sesión', code: 'AUTH_REQUIRED' }), { status: 401 }),
+    )
 
     await expect(apiRequest('/secure')).rejects.toThrow('Sin sesión')
 
@@ -43,7 +45,9 @@ describe('apiRequest — interceptor HU29', () => {
   it('HU62: 401 GITHUB_IDENTITY_REQUIRED entrega su code al handler y lanza ApiError con el code', async () => {
     const handler = vi.fn()
     setAuthErrorHandler(handler)
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ message: 'Falta identidad GitHub', code: 'GITHUB_IDENTITY_REQUIRED' }), { status: 401 }))
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ message: 'Falta identidad GitHub', code: 'GITHUB_IDENTITY_REQUIRED' }), { status: 401 }),
+    )
 
     await expect(apiRequest('/secure')).rejects.toMatchObject({ status: 401, code: 'GITHUB_IDENTITY_REQUIRED' })
 
@@ -64,25 +68,34 @@ describe('apiRequest — interceptor HU29', () => {
     const handler = vi.fn()
     setAuthErrorHandler(handler)
     const fetchMock = vi.spyOn(globalThis, 'fetch')
-    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ message: 'Identidad no disponible', code: 'IDENTITY_UNAVAILABLE' }), { status: 503 }))
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: 'Identidad no disponible', code: 'IDENTITY_UNAVAILABLE' }), { status: 503 }),
+    )
     await expect(apiRequest('/secure')).rejects.toMatchObject({ status: 503, code: 'IDENTITY_UNAVAILABLE' })
     expect(handler).toHaveBeenCalledWith({ status: 503, code: 'IDENTITY_UNAVAILABLE' })
 
     handler.mockClear()
-    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ message: 'Otro', code: 'GITHUB_VERIFICATION_UNAVAILABLE' }), { status: 503 }))
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: 'Otro', code: 'GITHUB_VERIFICATION_UNAVAILABLE' }), { status: 503 }),
+    )
     await expect(apiRequest('/secure')).rejects.toMatchObject({ status: 503 })
     expect(handler).not.toHaveBeenCalled()
   })
 
-  it.each(['GITHUB_ACCOUNT_REQUIRED', 'GITHUB_USER_TOKEN_INVALID'])('401 %s (token OAuth de GitHub, discovery) NO dispara el handler de sesión y se propaga como error normal', async (code) => {
-    const handler = vi.fn()
-    setAuthErrorHandler(handler)
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ message: 'Token GitHub inválido', code }), { status: 401 }))
+  it.each(['GITHUB_ACCOUNT_REQUIRED', 'GITHUB_USER_TOKEN_INVALID'])(
+    '401 %s (token OAuth de GitHub, discovery) NO dispara el handler de sesión y se propaga como error normal',
+    async (code) => {
+      const handler = vi.fn()
+      setAuthErrorHandler(handler)
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response(JSON.stringify({ message: 'Token GitHub inválido', code }), { status: 401 }),
+      )
 
-    await expect(apiRequest('/integrations/github/repositories')).rejects.toMatchObject({ status: 401, code })
+      await expect(apiRequest('/integrations/github/repositories')).rejects.toMatchObject({ status: 401, code })
 
-    expect(handler).not.toHaveBeenCalled()
-  })
+      expect(handler).not.toHaveBeenCalled()
+    },
+  )
 
   it.each(['AUTH_REQUIRED', 'INVALID_ACCESS_TOKEN', 'GITHUB_IDENTITY_REQUIRED'])('401 %s sí dispara el handler de sesión', async (code) => {
     const handler = vi.fn()
@@ -109,7 +122,9 @@ describe('apiRequestText — texto crudo (INTEROP-2.7 §6.16 evidencia)', () => 
   })
 
   it('mismo manejo de error que apiRequest', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ message: 'Sin rol', code: 'PROJECT_ROLE_INSUFFICIENT' }), { status: 403 }))
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ message: 'Sin rol', code: 'PROJECT_ROLE_INSUFFICIENT' }), { status: 403 }),
+    )
     await expect(apiRequestText('/analysis-runs/x/evidence')).rejects.toMatchObject({ status: 403, code: 'PROJECT_ROLE_INSUFFICIENT' })
   })
 })

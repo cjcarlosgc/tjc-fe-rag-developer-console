@@ -17,13 +17,21 @@ afterEach(() => {
 })
 
 function renderDetail(analysisRunId: string, projectId: string) {
-  return renderApp(<AnalysisRunDetailPage />, { initialEntry: `/projects/${projectId}/runs/${analysisRunId}`, routePath: '/projects/:projectId/runs/:analysisRunId' })
+  return renderApp(<AnalysisRunDetailPage />, {
+    initialEntry: `/projects/${projectId}/runs/${analysisRunId}`,
+    routePath: '/projects/:projectId/runs/:analysisRunId',
+  })
 }
 
 /** Registra cada texto que el region role=status toma, para observar PENDING → PUBLISHING → terminal. */
 /** Región de progreso de la publicación (la página tiene otras regiones role=status). */
 function publicationRegion(): HTMLElement {
-  const region = screen.getAllByRole('status').find((element) => /Publicación (en curso|finalizada)|Publicando/.test(element.textContent ?? '') || element.classList.contains('publication-status'))
+  const region = screen
+    .getAllByRole('status')
+    .find(
+      (element) =>
+        /Publicación (en curso|finalizada)|Publicando/.test(element.textContent ?? '') || element.classList.contains('publication-status'),
+    )
   if (!region) throw new Error('Sin región de progreso de publicación')
   return region
 }
@@ -136,7 +144,9 @@ test('WI-CONSOLE-037: PUBLISHED en memoria oculta Publicar y su oferta aunque el
   const realList = controlPlaneApi.listTestProposals
   let initialSnapshot: Awaited<ReturnType<typeof realList>> | null = null
   let releaseRefetch!: () => void
-  const refetchGate = new Promise<void>((resolve) => { releaseRefetch = resolve })
+  const refetchGate = new Promise<void>((resolve) => {
+    releaseRefetch = resolve
+  })
   let refetchDone = false
   let calls = 0
   vi.spyOn(controlPlaneApi, 'listTestProposals').mockImplementation(async (analysisRunId) => {
@@ -172,7 +182,9 @@ test('WI-CONSOLE-038: las insignias PUBLISHED de las filas esperan al refetch de
   const realList = controlPlaneApi.listTestProposals
   let initialSnapshot: Awaited<ReturnType<typeof realList>> | null = null
   let releaseRefetch!: () => void
-  const refetchGate = new Promise<void>((resolve) => { releaseRefetch = resolve })
+  const refetchGate = new Promise<void>((resolve) => {
+    releaseRefetch = resolve
+  })
   let refetchDone = false
   let calls = 0
   vi.spyOn(controlPlaneApi, 'listTestProposals').mockImplementation(async (analysisRunId) => {

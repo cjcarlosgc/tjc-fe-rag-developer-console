@@ -8,7 +8,8 @@ export const actionRequiredKeys = {
   list: (projectId?: string) => ['action-required', 'list', projectId ?? null] as const,
   all: ['action-required', 'list', 'all'] as const,
   questionSet: (analysisRunId: string) => ['action-required', 'question-set', analysisRunId] as const,
-  functionalKnowledge: (projectId: string, status?: FunctionalKnowledgeStatus) => ['action-required', 'functional-knowledge', projectId, status ?? null] as const,
+  functionalKnowledge: (projectId: string, status?: FunctionalKnowledgeStatus) =>
+    ['action-required', 'functional-knowledge', projectId, status ?? null] as const,
 }
 
 export function useActionRequiredList(projectId?: string) {

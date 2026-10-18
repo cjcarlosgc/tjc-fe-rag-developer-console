@@ -1,0 +1,232 @@
+/* Movimiento (design-system spec): espera genérica = nube granular. */
+.spinner {
+  position: relative;
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+.spinner canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.spinner i {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: spinner-flicker ease-in-out infinite;
+}
+.spinner i:nth-child(1) {
+  top: 2px;
+  left: 8px;
+  animation-delay: 0s;
+  animation-duration: 1.1s;
+}
+.spinner i:nth-child(2) {
+  top: 7px;
+  left: 2px;
+  animation-delay: 0.3s;
+  animation-duration: 1.5s;
+}
+.spinner i:nth-child(3) {
+  top: 12px;
+  left: 9px;
+  animation-delay: 0.6s;
+  animation-duration: 1.2s;
+}
+.spinner i:nth-child(4) {
+  top: 6px;
+  left: 14px;
+  animation-delay: 0.15s;
+  animation-duration: 1.6s;
+}
+.spinner i:nth-child(5) {
+  top: 13px;
+  left: 4px;
+  animation-delay: 0.45s;
+  animation-duration: 1.3s;
+}
+@keyframes spinner-flicker {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.6);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.3);
+  }
+}
+
+/* Ingesta = constelación discreta, en rojo (excepción documentada al rojo=error; ver design-system spec). */
+.constellation-icon {
+  position: relative;
+  width: 56px;
+  height: 36px;
+  flex: 0 0 auto;
+}
+.graph-pulse-icon {
+  width: 56px;
+  height: 36px;
+  flex: 0 0 auto;
+}
+.graph-pulse-icon line {
+  stroke: #5c1414;
+  stroke-width: 1;
+}
+.graph-pulse-icon circle {
+  fill: #ff2b2b;
+  animation: graph-node-pulse 1.8s ease-in-out infinite;
+}
+.graph-pulse-icon circle:nth-child(7) {
+  animation-delay: 0s;
+}
+.graph-pulse-icon circle:nth-child(8) {
+  animation-delay: 0.2s;
+}
+.graph-pulse-icon circle:nth-child(9) {
+  animation-delay: 0.4s;
+}
+.graph-pulse-icon circle:nth-child(10) {
+  animation-delay: 0.6s;
+}
+.graph-pulse-icon circle:nth-child(11) {
+  animation-delay: 0.8s;
+}
+.graph-pulse-icon circle:nth-child(12) {
+  animation-delay: 1s;
+}
+@keyframes graph-node-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Generación = forma orbital. */
+.orbital-icon {
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+}
+.orbital-icon canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.orbital-icon .orbit-ring {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  animation: orbit-spin 2.4s linear infinite;
+}
+.orbital-icon .orbit-ring.inner {
+  inset: 7px;
+  animation-duration: 1.5s;
+  animation-direction: reverse;
+}
+.orbital-icon .orbit-ring b {
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+@keyframes orbit-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner i,
+  .graph-pulse-icon circle,
+  .orbital-icon .orbit-ring {
+    animation: none;
+    opacity: 0.75;
+  }
+  .orbital-icon .orbit-ring {
+    transform: none;
+  }
+}
+.empty-state {
+  text-align: center;
+  padding: 72px 28px;
+}
+.empty-icon {
+  color: var(--accent);
+  font:
+    800 28px ui-monospace,
+    monospace;
+  margin-bottom: 20px;
+}
+.empty-state p {
+  margin-bottom: 24px;
+}
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+.project-card {
+  min-height: 210px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: var(--surface-1);
+  padding: 22px;
+  text-decoration: none;
+  transition:
+    border-color 0.15s,
+    transform 0.15s;
+}
+.project-card:hover {
+  border-color: var(--border);
+  transform: translateY(-2px);
+}
+.project-card > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.project-card h2 {
+  margin: 0;
+}
+.project-card p {
+  margin-top: 16px;
+}
+.project-card p + p {
+  margin-top: 6px;
+}
+.card-link {
+  margin-top: auto;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 14px;
+}
+.demo-stamp {
+  align-self: flex-start;
+  width: fit-content;
+  max-width: 100%;
+  color: var(--warning);
+  border: 1px solid var(--warning-border);
+  background: var(--warning-bg);
+  padding: 8px 10px;
+  font: 800 10px var(--font-mono);
+  letter-spacing: 0.12em;
+}

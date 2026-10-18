@@ -40,7 +40,9 @@ export function CreateProjectForm({ workspace, onCreated }: Props) {
           </button>
         </div>
         <span className="field-hint">Usa un nombre reconocible para tu repositorio.</span>
-        <span className="field-hint">Workspace: {workspace.kind === 'PERSONAL' ? `cuenta personal · ${workspace.login ?? 'tu cuenta'}` : workspace.login}</span>
+        <span className="field-hint">
+          Workspace: {workspace.kind === 'PERSONAL' ? `cuenta personal · ${workspace.login ?? 'tu cuenta'}` : workspace.login}
+        </span>
       </div>
       {createMutation.isError && (
         <ErrorNote message={bindingErrorMessage(createMutation.error)} correlationId={errorCorrelationId(createMutation.error)} />

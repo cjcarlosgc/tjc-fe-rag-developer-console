@@ -17,7 +17,9 @@ export class PendingContractError extends Error {
  */
 export class ProposedCapabilityError extends Error {
   constructor(capability: string) {
-    super(`${capability} es una propuesta de producto sin contrato aprobado todavía — no aplica a modo live. Usa VITE_DATA_SOURCE=mock para explorar la propuesta.`)
+    super(
+      `${capability} es una propuesta de producto sin contrato aprobado todavía — no aplica a modo live. Usa VITE_DATA_SOURCE=mock para explorar la propuesta.`,
+    )
     this.name = 'ProposedCapabilityError'
   }
 }

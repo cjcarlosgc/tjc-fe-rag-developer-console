@@ -1,4 +1,5 @@
 import type { ErrorEnvelope } from '../contracts/generated/contract-types'
+import { resolveBaseUrl } from './baseUrl'
 
 export class ApiError extends Error {
   constructor(
@@ -15,7 +16,7 @@ export class ApiError extends Error {
   }
 }
 
-const baseUrl = (import.meta.env.VITE_CORE_API_URL ?? '').replace(/\/$/, '')
+export const baseUrl = resolveBaseUrl('VITE_CORE_API_URL', import.meta.env.VITE_CORE_API_URL)
 
 let authTokenProvider: (() => string | null) | null = null
 let authErrorHandler: ((event: AuthErrorEvent) => void) | null = null
@@ -92,7 +93,7 @@ async function fetchChecked(serviceBaseUrl: string, path: string, init?: Request
   })
 
   if (!response.ok) {
-    const body = await response.json().catch(() => null) as Partial<ErrorEnvelope> | null
+    const body = (await response.json().catch(() => null)) as Partial<ErrorEnvelope> | null
     if (response.status === 401) notifyAuthError({ status: 401, code: body?.code })
     else if (response.status === 503 && body?.code === 'IDENTITY_UNAVAILABLE') notifyAuthError({ status: 503, code: body.code })
     throw new ApiError(

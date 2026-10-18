@@ -12,10 +12,7 @@ export function isConstructorName(name: string): boolean {
 
 /** Orden estable: los no-constructores conservan su orden relativo y los constructores van al final. */
 export function orderConstructorsLast<T>(items: readonly T[], nameOf: (item: T) => string): T[] {
-  return [
-    ...items.filter((item) => !isConstructorName(nameOf(item))),
-    ...items.filter((item) => isConstructorName(nameOf(item))),
-  ]
+  return [...items.filter((item) => !isConstructorName(nameOf(item))), ...items.filter((item) => isConstructorName(nameOf(item)))]
 }
 
 /** Preselección: primer no-constructor; si todos son constructores, el primero (queda preseleccionado con nota). */

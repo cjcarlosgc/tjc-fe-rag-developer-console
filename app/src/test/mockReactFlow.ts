@@ -40,8 +40,18 @@ export function mockReactFlow(): void {
   globalThis.DOMMatrixReadOnly = DOMMatrixReadOnly
 
   Object.defineProperties(globalThis.HTMLElement.prototype, {
-    offsetHeight: { get() { return parseFloat(this.style.height) || 1 }, configurable: true },
-    offsetWidth: { get() { return parseFloat(this.style.width) || 1 }, configurable: true },
+    offsetHeight: {
+      get() {
+        return parseFloat(this.style.height) || 1
+      },
+      configurable: true,
+    },
+    offsetWidth: {
+      get() {
+        return parseFloat(this.style.width) || 1
+      },
+      configurable: true,
+    },
   })
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

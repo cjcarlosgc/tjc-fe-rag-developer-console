@@ -13,7 +13,10 @@ beforeEach(() => {
 })
 
 function renderDetail(projectId: string, knowledgeId: string) {
-  return renderApp(<FunctionalKnowledgeDetailPage />, { initialEntry: `/projects/${projectId}/functional-knowledge/${knowledgeId}`, routePath: '/projects/:projectId/functional-knowledge/:knowledgeId' })
+  return renderApp(<FunctionalKnowledgeDetailPage />, {
+    initialEntry: `/projects/${projectId}/functional-knowledge/${knowledgeId}`,
+    routePath: '/projects/:projectId/functional-knowledge/:knowledgeId',
+  })
 }
 
 function provenanceSection(): HTMLElement {
@@ -23,7 +26,11 @@ function provenanceSection(): HTMLElement {
 test('HU07/HU09: detalle ACTIVE muestra pregunta, respuesta y escenario', async () => {
   renderDetail('prj_checkout_demo', 'fk_coupon_expiry')
 
-  expect(await screen.findByRole('heading', { name: 'Un cupón vencido nunca debe aplicarse, incluso si el pedido ya está marcado como pagado.' })).toBeInTheDocument()
+  expect(
+    await screen.findByRole('heading', {
+      name: 'Un cupón vencido nunca debe aplicarse, incluso si el pedido ya está marcado como pagado.',
+    }),
+  ).toBeInTheDocument()
   expect(screen.getByText('¿"apply" debe rechazar un cupón vencido aunque el pedido ya esté marcado como pagado?')).toBeInTheDocument()
   expect(screen.getByText('Excepción')).toBeInTheDocument()
   expect(screen.getByText('coupon.apply.expired-paid-order')).toBeInTheDocument()

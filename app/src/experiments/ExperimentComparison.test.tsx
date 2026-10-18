@@ -17,19 +17,94 @@ const configuration: ExperimentConfiguration = {
 }
 
 const withValues: ExperimentResultViewModel = {
-  baseline: { strategy: 'GENERALIST_AGENT', validRate: .5, compilationRate: .5, executionRate: .5, passedRate: .5, generationDurationMs: 600, executionDurationMs: 300, totalDurationMs: 1000, totalTokens: 100, estimatedCost: .01, failures: { INFRASTRUCTURE: 1 }, evaluableRepetitions: 2, nonEvaluableRepetitions: 1 },
-  rag: { strategy: 'RAG', validRate: .75, compilationRate: .75, executionRate: .75, passedRate: .75, generationDurationMs: 900, executionDurationMs: 450, totalDurationMs: 1500, totalTokens: 160, estimatedCost: .02, failures: {}, evaluableRepetitions: 3, nonEvaluableRepetitions: 0 },
+  baseline: {
+    strategy: 'GENERALIST_AGENT',
+    validRate: 0.5,
+    compilationRate: 0.5,
+    executionRate: 0.5,
+    passedRate: 0.5,
+    generationDurationMs: 600,
+    executionDurationMs: 300,
+    totalDurationMs: 1000,
+    totalTokens: 100,
+    estimatedCost: 0.01,
+    failures: { INFRASTRUCTURE: 1 },
+    evaluableRepetitions: 2,
+    nonEvaluableRepetitions: 1,
+  },
+  rag: {
+    strategy: 'RAG',
+    validRate: 0.75,
+    compilationRate: 0.75,
+    executionRate: 0.75,
+    passedRate: 0.75,
+    generationDurationMs: 900,
+    executionDurationMs: 450,
+    totalDurationMs: 1500,
+    totalTokens: 160,
+    estimatedCost: 0.02,
+    failures: {},
+    evaluableRepetitions: 3,
+    nonEvaluableRepetitions: 0,
+  },
   configuration,
   repetitions: [
-    { target: 'Cart.total', repetition: 1, strategy: 'GENERALIST_AGENT', valid: true, failureType: 'NONE', generationDurationMs: null, executionDurationMs: null, totalDurationMs: 500, totalTokens: 50, errorSummary: null, pairId: 'pair-visible-1', pairPosition: 2, attempt: 1, technicallyEvaluable: true },
-    { target: 'Cart.total', repetition: 3, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'INFRASTRUCTURE', generationDurationMs: null, executionDurationMs: null, totalDurationMs: 800, totalTokens: 60, errorSummary: 'fallo externo', pairId: 'pair-visible-3', pairPosition: 1, attempt: 2, technicallyEvaluable: false },
+    {
+      target: 'Cart.total',
+      repetition: 1,
+      strategy: 'GENERALIST_AGENT',
+      valid: true,
+      failureType: 'NONE',
+      generationDurationMs: null,
+      executionDurationMs: null,
+      totalDurationMs: 500,
+      totalTokens: 50,
+      errorSummary: null,
+      pairId: 'pair-visible-1',
+      pairPosition: 2,
+      attempt: 1,
+      technicallyEvaluable: true,
+    },
+    {
+      target: 'Cart.total',
+      repetition: 3,
+      strategy: 'GENERALIST_AGENT',
+      valid: false,
+      failureType: 'INFRASTRUCTURE',
+      generationDurationMs: null,
+      executionDurationMs: null,
+      totalDurationMs: 800,
+      totalTokens: 60,
+      errorSummary: 'fallo externo',
+      pairId: 'pair-visible-3',
+      pairPosition: 1,
+      attempt: 2,
+      technicallyEvaluable: false,
+    },
   ],
 }
 
 const withNulls: ExperimentResultViewModel = {
   ...withValues,
   configuration: null,
-  repetitions: [{ target: 'Cart.total', repetition: 2, strategy: 'RAG', valid: true, failureType: 'NONE', generationDurationMs: null, executionDurationMs: null, totalDurationMs: 500, totalTokens: null, errorSummary: null, pairId: null, pairPosition: null, attempt: null, technicallyEvaluable: null }],
+  repetitions: [
+    {
+      target: 'Cart.total',
+      repetition: 2,
+      strategy: 'RAG',
+      valid: true,
+      failureType: 'NONE',
+      generationDurationMs: null,
+      executionDurationMs: null,
+      totalDurationMs: 500,
+      totalTokens: null,
+      errorSummary: null,
+      pairId: null,
+      pairPosition: null,
+      attempt: null,
+      technicallyEvaluable: null,
+    },
+  ],
 }
 
 function openDetail(container: HTMLElement) {
@@ -41,7 +116,59 @@ function rowCells(text: string, index = 0): HTMLElement[] {
   return within(row).getAllByRole('cell')
 }
 
-const result: ExperimentResultViewModel = { baseline: { strategy: 'GENERALIST_AGENT', validRate: .5, compilationRate: .6, executionRate: .5, passedRate: .5, generationDurationMs: 600, executionDurationMs: 300, totalDurationMs: 1000, totalTokens: 100, estimatedCost: .01, failures: { COMPILATION: 2 }, evaluableRepetitions: 3, nonEvaluableRepetitions: 0 }, rag: { strategy: 'RAG', validRate: .75, compilationRate: .8, executionRate: .75, passedRate: .75, generationDurationMs: 900, executionDurationMs: 450, totalDurationMs: 1500, totalTokens: 160, estimatedCost: .02, failures: { COMPILATION: 1 }, retrievedChunks: 20, selectedChunks: 6, contextTokens: 1200, evaluableRepetitions: 3, nonEvaluableRepetitions: 0 }, repetitions: [{ target: 'Cart.total', repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', generationDurationMs: null, executionDurationMs: null, totalDurationMs: 500, totalTokens: 50, errorSummary: null, pairId: null, pairPosition: null, attempt: null, technicallyEvaluable: null }] }
+const result: ExperimentResultViewModel = {
+  baseline: {
+    strategy: 'GENERALIST_AGENT',
+    validRate: 0.5,
+    compilationRate: 0.6,
+    executionRate: 0.5,
+    passedRate: 0.5,
+    generationDurationMs: 600,
+    executionDurationMs: 300,
+    totalDurationMs: 1000,
+    totalTokens: 100,
+    estimatedCost: 0.01,
+    failures: { COMPILATION: 2 },
+    evaluableRepetitions: 3,
+    nonEvaluableRepetitions: 0,
+  },
+  rag: {
+    strategy: 'RAG',
+    validRate: 0.75,
+    compilationRate: 0.8,
+    executionRate: 0.75,
+    passedRate: 0.75,
+    generationDurationMs: 900,
+    executionDurationMs: 450,
+    totalDurationMs: 1500,
+    totalTokens: 160,
+    estimatedCost: 0.02,
+    failures: { COMPILATION: 1 },
+    retrievedChunks: 20,
+    selectedChunks: 6,
+    contextTokens: 1200,
+    evaluableRepetitions: 3,
+    nonEvaluableRepetitions: 0,
+  },
+  repetitions: [
+    {
+      target: 'Cart.total',
+      repetition: 1,
+      strategy: 'RAG',
+      valid: true,
+      failureType: 'NONE',
+      generationDurationMs: null,
+      executionDurationMs: null,
+      totalDurationMs: 500,
+      totalTokens: 50,
+      errorSummary: null,
+      pairId: null,
+      pairPosition: null,
+      attempt: null,
+      technicallyEvaluable: null,
+    },
+  ],
+}
 
 function renderWithRouter(ui: ReactElement) {
   return render(<MemoryRouter>{ui}</MemoryRouter>)
@@ -76,7 +203,27 @@ test('permite abrir la trazabilidad por repetición', async () => {
 
 test('muestra el mensaje de error de la repetición cuando falla por configuración del proyecto', async () => {
   const user = userEvent.setup()
-  const failed: ExperimentResultViewModel = { ...result, repetitions: [{ target: 'Cart.total', repetition: 1, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'COMPILATION', generationDurationMs: null, executionDurationMs: null, totalDurationMs: 500, totalTokens: 50, errorSummary: 'jest.config.js: Cannot find module ts-jest', pairId: null, pairPosition: null, attempt: null, technicallyEvaluable: null }] }
+  const failed: ExperimentResultViewModel = {
+    ...result,
+    repetitions: [
+      {
+        target: 'Cart.total',
+        repetition: 1,
+        strategy: 'GENERALIST_AGENT',
+        valid: false,
+        failureType: 'COMPILATION',
+        generationDurationMs: null,
+        executionDurationMs: null,
+        totalDurationMs: 500,
+        totalTokens: 50,
+        errorSummary: 'jest.config.js: Cannot find module ts-jest',
+        pairId: null,
+        pairPosition: null,
+        attempt: null,
+        technicallyEvaluable: null,
+      },
+    ],
+  }
   renderWithRouter(<ExperimentComparison result={failed} projectId="prj1" experimentId="exp1" />)
   await user.click(screen.getByText('Ver detalle por target y repetición'))
   expect(screen.getByText('jest.config.js: Cannot find module ts-jest')).toBeVisible()
@@ -86,7 +233,10 @@ test('el link "Ver contexto" de cada repetición apunta al explorador con strate
   const user = userEvent.setup()
   renderWithRouter(<ExperimentComparison result={result} projectId="prj1" experimentId="exp1" />)
   await user.click(screen.getByText('Ver detalle por target y repetición'))
-  expect(screen.getByRole('link', { name: /Ver contexto/ })).toHaveAttribute('href', '/projects/prj1/experimental/exp1/context?strategy=RAG&repetition=1')
+  expect(screen.getByRole('link', { name: /Ver contexto/ })).toHaveAttribute(
+    'href',
+    '/projects/prj1/experimental/exp1/context?strategy=RAG&repetition=1',
+  )
 })
 
 test('las tasas usan una clase neutra y ninguna clase de éxito o peligro', () => {
@@ -202,13 +352,43 @@ test('los títulos de sección son encabezados de nivel 3', () => {
   expect(screen.getByRole('heading', { level: 3, name: 'Configuración' })).toBeInTheDocument()
 })
 
-const noData: StrategyMetrics = { strategy: 'GENERALIST_AGENT', validRate: null, compilationRate: null, executionRate: null, passedRate: null, generationDurationMs: null, executionDurationMs: null, totalDurationMs: null, totalTokens: null, estimatedCost: null, failures: {}, evaluableRepetitions: 0, nonEvaluableRepetitions: 3 }
+const noData: StrategyMetrics = {
+  strategy: 'GENERALIST_AGENT',
+  validRate: null,
+  compilationRate: null,
+  executionRate: null,
+  passedRate: null,
+  generationDurationMs: null,
+  executionDurationMs: null,
+  totalDurationMs: null,
+  totalTokens: null,
+  estimatedCost: null,
+  failures: {},
+  evaluableRepetitions: 0,
+  nonEvaluableRepetitions: 3,
+}
 
 function withBaseline(baseline: StrategyMetrics, repetitions: ExperimentResultViewModel['repetitions'] = []): ExperimentResultViewModel {
   return { ...result, baseline, repetitions }
 }
 
-const sandboxRep = (overrides: Partial<ExperimentResultViewModel['repetitions'][number]>) => ({ target: 'Cart.total', repetition: 1 as const, strategy: 'RAG' as const, valid: true, failureType: 'NONE' as const, generationDurationMs: 400, executionDurationMs: null, totalDurationMs: 400, totalTokens: 50, errorSummary: null, pairId: null, pairPosition: null, attempt: null, technicallyEvaluable: null, ...overrides })
+const sandboxRep = (overrides: Partial<ExperimentResultViewModel['repetitions'][number]>) => ({
+  target: 'Cart.total',
+  repetition: 1 as const,
+  strategy: 'RAG' as const,
+  valid: true,
+  failureType: 'NONE' as const,
+  generationDurationMs: 400,
+  executionDurationMs: null,
+  totalDurationMs: 400,
+  totalTokens: 50,
+  errorSummary: null,
+  pairId: null,
+  pairPosition: null,
+  attempt: null,
+  technicallyEvaluable: null,
+  ...overrides,
+})
 
 test('columna «Ejecución en Sandbox»: guion cuando executionDurationMs es null, número formateado cuando hay valor pequeño', async () => {
   const user = userEvent.setup()

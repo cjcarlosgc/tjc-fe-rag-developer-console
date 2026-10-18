@@ -33,8 +33,14 @@ beforeEach(() => {
 })
 
 const EXPERIMENT_ENTRY = { initialEntry: '/projects/prj_checkout_demo/experimental', routePath: '/projects/:projectId/experimental' }
-const COMPARISON_ENTRY = { initialEntry: '/projects/prj_checkout_demo/runs/arun_checkout_pr45/comparison', routePath: '/projects/:projectId/runs/:analysisRunId/comparison' }
-const DETAIL_ENTRY = { initialEntry: '/projects/prj_checkout_demo/runs/arun_checkout_pr45', routePath: '/projects/:projectId/runs/:analysisRunId' }
+const COMPARISON_ENTRY = {
+  initialEntry: '/projects/prj_checkout_demo/runs/arun_checkout_pr45/comparison',
+  routePath: '/projects/:projectId/runs/:analysisRunId/comparison',
+}
+const DETAIL_ENTRY = {
+  initialEntry: '/projects/prj_checkout_demo/runs/arun_checkout_pr45',
+  routePath: '/projects/:projectId/runs/:analysisRunId',
+}
 
 test('Experiment: Writer puede ejecutar la comparación', async () => {
   roleState.role = 'WRITER'
@@ -82,6 +88,8 @@ test('AnalysisRunDetail: Reader ve el mensaje de solo lectura y no puede publica
   roleState.role = 'READER'
   renderApp(<AnalysisRunDetailPage />, DETAIL_ENTRY)
 
-  expect(await screen.findByText('Tu rol es de solo lectura. Un Writer, Maintainer o Admin puede publicar estas propuestas.')).toBeInTheDocument()
+  expect(
+    await screen.findByText('Tu rol es de solo lectura. Un Writer, Maintainer o Admin puede publicar estas propuestas.'),
+  ).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /Publicar/ })).not.toBeInTheDocument()
 })

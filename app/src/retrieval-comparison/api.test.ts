@@ -3,7 +3,13 @@ import { setDataSourceForTests } from '../api/dataSource'
 import { resetMockBackend } from '../api/mockBackend'
 import { ApiError } from '../api/client'
 import type { AnalysisSymbolResponse } from '../control-plane/types'
-import { buildRetrievalComparisonRequest, getRetrievalComparison, getRetrievalComparisonResults, listRetrievalComparisons, startRetrievalComparison } from './api'
+import {
+  buildRetrievalComparisonRequest,
+  getRetrievalComparison,
+  getRetrievalComparisonResults,
+  listRetrievalComparisons,
+  startRetrievalComparison,
+} from './api'
 import { MAX_GROUND_TRUTH_ITEMS, type RetrievalGroundTruthItem } from './types'
 import { retrievalFailureText } from './failureMessages'
 import { retrievalResultsRefetchInterval, shouldRetryRetrievalResults, RETRIEVAL_FALLBACK_POLL_MS } from './queries'
@@ -12,15 +18,42 @@ import { DEMO_RETRIEVAL_NOT_FINISHED_RUN_ID, DEMO_RETRIEVAL_PHP_COMPARISON_ID } 
 const KEY_A = '3f1c2d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f'
 const KEY_B = '9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d'
 
-const calculateTotal: AnalysisSymbolResponse = { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' }
-const createOrder: AnalysisSymbolResponse = { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.createOrder', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' }
-const couponPolicyClass: AnalysisSymbolResponse = { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'CouponPolicy', filePath: 'src/domain/CouponPolicy.ts', changeKind: 'DIRECTLY_CHANGED' }
-const metricsRange: AnalysisSymbolResponse = { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'MetricsQuery.range', filePath: 'src/metrics/MetricsQuery.ts', changeKind: 'DIRECTLY_CHANGED' }
+const calculateTotal: AnalysisSymbolResponse = {
+  language: 'TYPESCRIPT',
+  kind: 'METHOD',
+  qualifiedName: 'OrderService.calculateTotal',
+  filePath: 'src/domain/OrderService.ts',
+  changeKind: 'DIRECTLY_CHANGED',
+}
+const createOrder: AnalysisSymbolResponse = {
+  language: 'TYPESCRIPT',
+  kind: 'METHOD',
+  qualifiedName: 'OrderService.createOrder',
+  filePath: 'src/domain/OrderService.ts',
+  changeKind: 'DIRECTLY_CHANGED',
+}
+const couponPolicyClass: AnalysisSymbolResponse = {
+  language: 'TYPESCRIPT',
+  kind: 'CLASS',
+  qualifiedName: 'CouponPolicy',
+  filePath: 'src/domain/CouponPolicy.ts',
+  changeKind: 'DIRECTLY_CHANGED',
+}
+const metricsRange: AnalysisSymbolResponse = {
+  language: 'TYPESCRIPT',
+  kind: 'METHOD',
+  qualifiedName: 'MetricsQuery.range',
+  filePath: 'src/metrics/MetricsQuery.ts',
+  changeKind: 'DIRECTLY_CHANGED',
+}
 
 const CHECKOUT_RUN_PR49 = 'arun_checkout_pr49'
 
 async function expectApiError(promise: Promise<unknown>, status: number, code: string): Promise<void> {
-  const error = await promise.then(() => null, (reason: unknown) => reason)
+  const error = await promise.then(
+    () => null,
+    (reason: unknown) => reason,
+  )
   expect(error).toBeInstanceOf(ApiError)
   expect((error as ApiError).status).toBe(status)
   expect((error as ApiError).code).toBe(code)
@@ -36,8 +69,20 @@ describe('retrieval-comparison api — INTEROP-2.7 §6.15 (WI-CONSOLE-014, Corte
     beforeEach(() => setDataSourceForTests('live'))
 
     it('consume las cuatro rutas publicadas y conserva Idempotency-Key/cuerpo', async () => {
-      const fetchMock = vi.spyOn(globalThis, 'fetch')
-        .mockResolvedValueOnce(new Response(JSON.stringify({ status: 'PENDING', pollAfterMs: 300, analysisRunId: CHECKOUT_RUN_PR49, retrievalComparisonId: 'rcmp-1', projectVersionId: 'v-1' }), { status: 202 }))
+      const fetchMock = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({
+              status: 'PENDING',
+              pollAfterMs: 300,
+              analysisRunId: CHECKOUT_RUN_PR49,
+              retrievalComparisonId: 'rcmp-1',
+              projectVersionId: 'v-1',
+            }),
+            { status: 202 },
+          ),
+        )
         .mockResolvedValueOnce(new Response(JSON.stringify({ id: 'rcmp-1', status: 'PENDING' }), { status: 200 }))
         .mockResolvedValueOnce(new Response(JSON.stringify({ retrievalComparisonId: 'rcmp-1', modes: [] }), { status: 200 }))
         .mockResolvedValueOnce(new Response(JSON.stringify({ items: [], nextCursor: null }), { status: 200 }))
@@ -46,7 +91,15 @@ describe('retrieval-comparison api — INTEROP-2.7 §6.15 (WI-CONSOLE-014, Corte
       await getRetrievalComparisonResults('rcmp-1')
       await listRetrievalComparisons(CHECKOUT_RUN_PR49, 'opaque')
       expect(fetchMock.mock.calls[0][0]).toContain('/retrieval-comparisons')
-      expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: 'POST', headers: expect.objectContaining({ 'Idempotency-Key': KEY_A }), body: JSON.stringify({ analysisRunId: CHECKOUT_RUN_PR49, symbolFilePath: calculateTotal.filePath, symbolQualifiedName: calculateTotal.qualifiedName }) })
+      expect(fetchMock.mock.calls[0][1]).toMatchObject({
+        method: 'POST',
+        headers: expect.objectContaining({ 'Idempotency-Key': KEY_A }),
+        body: JSON.stringify({
+          analysisRunId: CHECKOUT_RUN_PR49,
+          symbolFilePath: calculateTotal.filePath,
+          symbolQualifiedName: calculateTotal.qualifiedName,
+        }),
+      })
       expect(String(fetchMock.mock.calls[3][0])).toContain('/analysis-runs/arun_checkout_pr49/retrieval-comparisons?cursor=opaque')
     })
   })
@@ -67,7 +120,11 @@ describe('retrieval-comparison api — INTEROP-2.7 §6.15 (WI-CONSOLE-014, Corte
     })
 
     it('DEMO · 409 ANALYSIS_NOT_FINISHED en la creación, sin comparación', async () => {
-      await expectApiError(startRetrievalComparison(DEMO_RETRIEVAL_NOT_FINISHED_RUN_ID, calculateTotal, KEY_A), 409, 'ANALYSIS_NOT_FINISHED')
+      await expectApiError(
+        startRetrievalComparison(DEMO_RETRIEVAL_NOT_FINISHED_RUN_ID, calculateTotal, KEY_A),
+        409,
+        'ANALYSIS_NOT_FINISHED',
+      )
     })
 
     it('DEMO · un proyecto PHP ya no responde 422 UNSUPPORTED_PROJECT: la semilla PHP trae relaciones SAME_NAMESPACE, FULLY_QUALIFIED_REFERENCE y DECLARING_CLASS', async () => {
@@ -81,7 +138,11 @@ describe('retrieval-comparison api — INTEROP-2.7 §6.15 (WI-CONSOLE-014, Corte
   describe('cuerpo del POST', () => {
     it('solo envía analysisRunId, symbolFilePath y symbolQualifiedName; nunca groundTruth', () => {
       const body = buildRetrievalComparisonRequest(CHECKOUT_RUN_PR49, calculateTotal)
-      expect(body).toEqual({ analysisRunId: CHECKOUT_RUN_PR49, symbolFilePath: 'src/domain/OrderService.ts', symbolQualifiedName: 'OrderService.calculateTotal' })
+      expect(body).toEqual({
+        analysisRunId: CHECKOUT_RUN_PR49,
+        symbolFilePath: 'src/domain/OrderService.ts',
+        symbolQualifiedName: 'OrderService.calculateTotal',
+      })
       expect(Object.keys(body)).not.toContain('groundTruth')
     })
   })
@@ -117,7 +178,10 @@ describe('retrieval-comparison api — INTEROP-2.7 §6.15 (WI-CONSOLE-014, Corte
     })
 
     it('Reader → 403 PROJECT_ROLE_INSUFFICIENT con details requiredRole/currentRole (mínimo Writer)', async () => {
-      const error = await startRetrievalComparison('arun_org_metrics_pr15', metricsRange, KEY_A).then(() => null, (reason: unknown) => reason)
+      const error = await startRetrievalComparison('arun_org_metrics_pr15', metricsRange, KEY_A).then(
+        () => null,
+        (reason: unknown) => reason,
+      )
       expect(error).toBeInstanceOf(ApiError)
       expect((error as ApiError).status).toBe(403)
       expect((error as ApiError).code).toBe('PROJECT_ROLE_INSUFFICIENT')
@@ -126,7 +190,11 @@ describe('retrieval-comparison api — INTEROP-2.7 §6.15 (WI-CONSOLE-014, Corte
 
     it('Run inexistente → 404 ANALYSIS_RUN_NOT_FOUND; símbolo fuera del Run → 404 ANALYSIS_SYMBOL_NOT_FOUND', async () => {
       await expectApiError(startRetrievalComparison('arun_no_existe', calculateTotal, KEY_A), 404, 'ANALYSIS_RUN_NOT_FOUND')
-      const absent: AnalysisSymbolResponse = { ...calculateTotal, qualifiedName: 'OrderService.refund', filePath: 'src/domain/OrderService.ts' }
+      const absent: AnalysisSymbolResponse = {
+        ...calculateTotal,
+        qualifiedName: 'OrderService.refund',
+        filePath: 'src/domain/OrderService.ts',
+      }
       await expectApiError(startRetrievalComparison(CHECKOUT_RUN_PR49, absent, KEY_B), 404, 'ANALYSIS_SYMBOL_NOT_FOUND')
     })
 
@@ -135,7 +203,13 @@ describe('retrieval-comparison api — INTEROP-2.7 §6.15 (WI-CONSOLE-014, Corte
     })
 
     it('un Run OBSOLETE con símbolo elegible sí admite la comparación (OE2 no usa los gates de OE5)', async () => {
-      const obsoleteSymbol: AnalysisSymbolResponse = { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'LateFeePolicy.evaluate', filePath: 'src/domain/LateFeePolicy.ts', changeKind: 'DIRECTLY_CHANGED' }
+      const obsoleteSymbol: AnalysisSymbolResponse = {
+        language: 'TYPESCRIPT',
+        kind: 'METHOD',
+        qualifiedName: 'LateFeePolicy.evaluate',
+        filePath: 'src/domain/LateFeePolicy.ts',
+        changeKind: 'DIRECTLY_CHANGED',
+      }
       const accepted = await startRetrievalComparison('arun_billing_pr17', obsoleteSymbol, KEY_A)
       expect(accepted.status).toBe('PENDING')
     })
@@ -238,7 +312,9 @@ describe('retrieval-comparison api — INTEROP-2.7 §6.15 (WI-CONSOLE-014, Corte
       const before = await listRetrievalComparisons(CHECKOUT_RUN_PR49)
       const seedIds = before.items.map((item) => item.id)
       expect(before.items.length).toBeGreaterThanOrEqual(3)
-      expect(seedIds).toEqual(expect.arrayContaining(['rcmp_demo_seed_completed_sin_metricas', 'rcmp_demo_seed_completed_con_metricas', 'rcmp_demo_seed_failed']))
+      expect(seedIds).toEqual(
+        expect.arrayContaining(['rcmp_demo_seed_completed_sin_metricas', 'rcmp_demo_seed_completed_con_metricas', 'rcmp_demo_seed_failed']),
+      )
 
       const created = await startRetrievalComparison(CHECKOUT_RUN_PR49, createOrder, KEY_A)
       const after = await listRetrievalComparisons(CHECKOUT_RUN_PR49)

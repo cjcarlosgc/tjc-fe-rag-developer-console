@@ -25,7 +25,8 @@ export function ragSignalKind(candidate: RagCandidateNode): RagSignalKind {
 
 export function ragSignalLabel(candidate: RagCandidateNode): string {
   const kind = ragSignalKind(candidate)
-  if (kind === 'DUAL' && candidate.structuralMatch) return `Señal dual · semántica + ${structuralRelationName(candidate.structuralMatch).toLowerCase()}`
+  if (kind === 'DUAL' && candidate.structuralMatch)
+    return `Señal dual · semántica + ${structuralRelationName(candidate.structuralMatch).toLowerCase()}`
   if (kind === 'SEMANTIC') return 'Señal semántica'
   if (kind === 'STRUCTURAL' && candidate.structuralMatch) return `Señal estructural · ${structuralRelationName(candidate.structuralMatch)}`
   return 'Sin señal'
@@ -45,7 +46,8 @@ export function filterRagCandidates(candidates: RagCandidateNode[], filters: Rag
     const kind = ragSignalKind(candidate)
     if (kind !== 'NONE' && !filters.signalKinds.has(kind)) return false
     if (!query) return true
-    const haystack = `${candidate.excerpt.symbolName ?? ''} ${candidate.excerpt.filePath} ${candidate.chunkId} ${candidate.excerpt.contentSha256}`.toLowerCase()
+    const haystack =
+      `${candidate.excerpt.symbolName ?? ''} ${candidate.excerpt.filePath} ${candidate.chunkId} ${candidate.excerpt.contentSha256}`.toLowerCase()
     return haystack.includes(query)
   })
 }

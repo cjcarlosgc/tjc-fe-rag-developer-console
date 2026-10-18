@@ -1,19 +1,49 @@
 import { describe, expect, it } from 'vitest'
 import type { FunctionalKnowledgeResponse } from './types'
-import { confirmingRoleLabel, displayScenarioKey, groupByScenarioKind, scenarioLabel, SCENARIO_KIND_LABELS, SCENARIO_KIND_ORDER, shortSha, supersessionChain, UNKNOWN_SCENARIO_LABEL } from './knowledgeScenarios'
+import {
+  confirmingRoleLabel,
+  displayScenarioKey,
+  groupByScenarioKind,
+  scenarioLabel,
+  SCENARIO_KIND_LABELS,
+  SCENARIO_KIND_ORDER,
+  shortSha,
+  supersessionChain,
+  UNKNOWN_SCENARIO_LABEL,
+} from './knowledgeScenarios'
 
 function rule(overrides: Partial<FunctionalKnowledgeResponse> & Pick<FunctionalKnowledgeResponse, 'id'>): FunctionalKnowledgeResponse {
   return {
-    projectId: 'prj_test', scope: 'METHOD', targetRef: 'Svc.run', originalQuestion: 'q', originalAnswer: 'a', normalizedRule: 'r',
-    source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-01T00:00:00.000Z',
-    scenarioKind: 'EXPECTED_RESULT', scenarioKey: 'key', confirmedByUserId: null, confirmedRole: null, originHeadSha: null, sourceRef: null,
+    projectId: 'prj_test',
+    scope: 'METHOD',
+    targetRef: 'Svc.run',
+    originalQuestion: 'q',
+    originalAnswer: 'a',
+    normalizedRule: 'r',
+    source: 'HUMAN_ANSWER',
+    status: 'ACTIVE',
+    supersedesId: null,
+    createdAt: '2026-09-01T00:00:00.000Z',
+    scenarioKind: 'EXPECTED_RESULT',
+    scenarioKey: 'key',
+    confirmedByUserId: null,
+    confirmedRole: null,
+    originHeadSha: null,
+    sourceRef: null,
     ...overrides,
   }
 }
 
 describe('knowledgeScenarios — escenarios de Functional Knowledge (INTEROP-2.7)', () => {
   it('fija el orden de los seis escenarios de INTEROP-2.7', () => {
-    expect(SCENARIO_KIND_ORDER).toEqual(['EXPECTED_RESULT', 'BOUNDARY', 'EXCEPTION', 'STATE_TRANSITION', 'OBSERVABLE_SIDE_EFFECT', 'FUNCTIONAL_PRECONDITION'])
+    expect(SCENARIO_KIND_ORDER).toEqual([
+      'EXPECTED_RESULT',
+      'BOUNDARY',
+      'EXCEPTION',
+      'STATE_TRANSITION',
+      'OBSERVABLE_SIDE_EFFECT',
+      'FUNCTIONAL_PRECONDITION',
+    ])
   })
 
   it('etiqueta cada escenario en español, incluida la excepción con acento', () => {
@@ -106,7 +136,11 @@ describe('knowledgeScenarios — cadena de supersesión', () => {
   it('termina con ciclos de supersesión sin bucle infinito', () => {
     const a = rule({ id: 'a', supersedesId: 'b' })
     const b = rule({ id: 'b', supersedesId: 'a' })
-    expect(supersessionChain([a, b], 'a').map((item) => item.id).sort()).toEqual(['a', 'b'])
+    expect(
+      supersessionChain([a, b], 'a')
+        .map((item) => item.id)
+        .sort(),
+    ).toEqual(['a', 'b'])
   })
 })
 

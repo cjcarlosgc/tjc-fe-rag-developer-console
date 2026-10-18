@@ -3,7 +3,9 @@ import { safePublicationUrl } from './publicationView'
 
 describe('safePublicationUrl', () => {
   it('acepta solo http y https', () => {
-    expect(safePublicationUrl('https://github.com/acme/checkout-service/pull/145')).toBe('https://github.com/acme/checkout-service/pull/145')
+    expect(safePublicationUrl('https://github.com/acme/checkout-service/pull/145')).toBe(
+      'https://github.com/acme/checkout-service/pull/145',
+    )
     expect(safePublicationUrl('http://localhost:8080/pull/1')).toBe('http://localhost:8080/pull/1')
   })
 

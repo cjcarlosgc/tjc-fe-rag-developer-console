@@ -90,11 +90,14 @@ export function useDeleteProject() {
 /** Quita del caché todo lo propio de un Project ya borrado. Llamar después de navegar fuera, no mientras sus páginas siguen montadas. */
 export function usePurgeProjectQueries() {
   const queryClient = useQueryClient()
-  return useCallback((projectId: string) => {
-    queryClient.removeQueries({ queryKey: projectKeys.detail(projectId) }) // incluye ['projects', id, 'analysis-history']
-    queryClient.removeQueries({ queryKey: controlPlaneKeys.binding(projectId) })
-    queryClient.removeQueries({ queryKey: ['control-plane', 'runs', projectId] })
-    queryClient.removeQueries({ queryKey: actionRequiredKeys.list(projectId) })
-    queryClient.removeQueries({ queryKey: ['action-required', 'functional-knowledge', projectId] })
-  }, [queryClient])
+  return useCallback(
+    (projectId: string) => {
+      queryClient.removeQueries({ queryKey: projectKeys.detail(projectId) }) // incluye ['projects', id, 'analysis-history']
+      queryClient.removeQueries({ queryKey: controlPlaneKeys.binding(projectId) })
+      queryClient.removeQueries({ queryKey: ['control-plane', 'runs', projectId] })
+      queryClient.removeQueries({ queryKey: actionRequiredKeys.list(projectId) })
+      queryClient.removeQueries({ queryKey: ['action-required', 'functional-knowledge', projectId] })
+    },
+    [queryClient],
+  )
 }

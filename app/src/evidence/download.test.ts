@@ -5,7 +5,9 @@ describe('evidenceFileName', () => {
   it('usa evidence-{kind}-{subjectId}.json con kind en minúsculas y guiones', () => {
     expect(evidenceFileName('ANALYSIS_RUN', 'arun_checkout_pr45')).toBe('evidence-analysis-run-arun_checkout_pr45.json')
     expect(evidenceFileName('EXPERIMENT', 'exp_demo_1')).toBe('evidence-experiment-exp_demo_1.json')
-    expect(evidenceFileName('RETRIEVAL_COMPARISON', 'rcmp_demo_seed_failed')).toBe('evidence-retrieval-comparison-rcmp_demo_seed_failed.json')
+    expect(evidenceFileName('RETRIEVAL_COMPARISON', 'rcmp_demo_seed_failed')).toBe(
+      'evidence-retrieval-comparison-rcmp_demo_seed_failed.json',
+    )
   })
 
   it('rechaza un kind desconocido', () => {

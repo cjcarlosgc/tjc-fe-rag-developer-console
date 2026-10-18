@@ -25,12 +25,22 @@ beforeEach(() => {
 describe('supabaseAuthAdapter (no probado en vivo)', () => {
   it('mapea una sesión válida del SDK a AuthSession', async () => {
     getSession.mockResolvedValue({ data: { session: { access_token: 'jwt-abc', user: { id: 'u1', email: 'real@empresa.com' } } } })
-    expect(await supabaseAuthAdapter.getSession()).toEqual({ accessToken: 'jwt-abc', user: { id: 'u1', email: 'real@empresa.com' }, githubProviderToken: null })
+    expect(await supabaseAuthAdapter.getSession()).toEqual({
+      accessToken: 'jwt-abc',
+      user: { id: 'u1', email: 'real@empresa.com' },
+      githubProviderToken: null,
+    })
   })
 
   it('HU30: mapea provider_token a githubProviderToken cuando el SDK lo trae', async () => {
-    getSession.mockResolvedValue({ data: { session: { access_token: 'jwt-abc', provider_token: 'gho_demo', user: { id: 'u1', email: 'real@empresa.com' } } } })
-    expect(await supabaseAuthAdapter.getSession()).toEqual({ accessToken: 'jwt-abc', user: { id: 'u1', email: 'real@empresa.com' }, githubProviderToken: 'gho_demo' })
+    getSession.mockResolvedValue({
+      data: { session: { access_token: 'jwt-abc', provider_token: 'gho_demo', user: { id: 'u1', email: 'real@empresa.com' } } },
+    })
+    expect(await supabaseAuthAdapter.getSession()).toEqual({
+      accessToken: 'jwt-abc',
+      user: { id: 'u1', email: 'real@empresa.com' },
+      githubProviderToken: 'gho_demo',
+    })
   })
 
   it('getSession sin sesión activa devuelve null', async () => {

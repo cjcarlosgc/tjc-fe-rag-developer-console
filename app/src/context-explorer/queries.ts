@@ -2,9 +2,11 @@ import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { getAnalysisRunContextTrace, getContextTrace, listDiscoveredFiles, listExperimentContextTraces } from './api'
 import { isContextTraceNotFinished } from './errors'
 import type { ExperimentContextTraceFilters } from './types'
+import { pollDelayMs } from '../api/polling'
 
 export const contextTraceKeys = {
-  experiment: (experimentId: string, filters: ExperimentContextTraceFilters) => ['experiments', experimentId, 'context-traces', filters] as const,
+  experiment: (experimentId: string, filters: ExperimentContextTraceFilters) =>
+    ['experiments', experimentId, 'context-traces', filters] as const,
   detail: (traceId: string) => ['context-traces', traceId] as const,
   discoveredFiles: (traceId: string, step: number) => ['context-traces', traceId, 'discovered-files', step] as const,
   analysisRun: (analysisRunId: string) => ['control-plane', 'analysis-run', analysisRunId, 'context-trace'] as const,
@@ -26,7 +28,7 @@ export function useContextTraceDetail(traceId: string | null) {
     queryKey: contextTraceKeys.detail(traceId ?? ''),
     queryFn: () => getContextTrace(traceId!),
     enabled: Boolean(traceId),
-    refetchInterval: (query) => isContextTraceNotFinished(query.state.error) ? (import.meta.env.MODE === 'test' ? 10 : 900) : false,
+    refetchInterval: (query) => (isContextTraceNotFinished(query.state.error) ? pollDelayMs() : false),
   })
 }
 

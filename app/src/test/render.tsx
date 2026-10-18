@@ -10,8 +10,18 @@ interface RenderAppOptions {
 
 export function renderApp(ui: ReactElement, options: RenderAppOptions = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
-  const content = options.routePath ? <Routes><Route path={options.routePath} element={ui} /></Routes> : ui
-  return render(<QueryClientProvider client={client}><MemoryRouter initialEntries={[options.initialEntry ?? '/']}>{content}</MemoryRouter></QueryClientProvider>)
+  const content = options.routePath ? (
+    <Routes>
+      <Route path={options.routePath} element={ui} />
+    </Routes>
+  ) : (
+    ui
+  )
+  return render(
+    <QueryClientProvider client={client}>
+      <MemoryRouter initialEntries={[options.initialEntry ?? '/']}>{content}</MemoryRouter>
+    </QueryClientProvider>,
+  )
 }
 
 /**

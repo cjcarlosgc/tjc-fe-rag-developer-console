@@ -6,22 +6,7 @@ import {
   verifyGitHubAppAccess as verifyGitHubAppAccessDirect,
 } from './githubIntegrationApi'
 import { getDataSource } from '../api/dataSource'
-import {
-  mockCreateRepositoryBinding,
-  mockCreateTestPublication,
-  mockDisconnectRepository,
-  mockEnableRepository,
-  mockGetAnalysisRun,
-  mockGetAnalysisRunTrace,
-  mockGetRepositoryBinding,
-  mockGetTestPublication,
-  mockListAnalysisRuns,
-  mockListGitHubRepositoryBranches,
-  mockListGitHubUserRepositories,
-  mockListTestProposals,
-  mockPeekGitHubAppAccess,
-  mockVerifyGitHubAppAccess,
-} from '../api/mockBackend'
+import { loadMockBackend } from '../api/loadMockBackend'
 import type { AnalysisRunTraceResponse } from './operationalTraceTypes'
 import type {
   AnalysisRunDetailResponse,
@@ -51,7 +36,7 @@ export function getGitHubAppInfo(): Promise<GitHubAppAccessResponse['app']> {
  * Cualquier otro 404 (p. ej. `PROJECT_NOT_FOUND` de un Project borrado) se propaga: no es "sin binding". Un binding desconectado llega como `DISABLED`, no como `null`.
  */
 export async function getRepositoryBinding(projectId: string): Promise<ProjectRepositoryBindingResponse | null> {
-  if (getDataSource() === 'mock') return mockGetRepositoryBinding(projectId)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockGetRepositoryBinding(projectId))
   try {
     return await apiRequest<ProjectRepositoryBindingResponse>(`/projects/${encodeURIComponent(projectId)}/integrations/github`)
   } catch (error) {
@@ -64,14 +49,22 @@ export async function getRepositoryBinding(projectId: string): Promise<ProjectRe
  * Discovery exige `X-GitHub-Provider-Token` en la ruta de usuario de Integration. El token de la
  * sesión GitHub es efímero, no se incluye en query keys y nunca se persiste ni se envía a Core.
  */
-export function listGitHubUserRepositories(githubProviderToken: string, workspaceId: string, projectId?: string): Promise<GitHubUserRepositoryPage> {
-  if (getDataSource() === 'mock') return mockListGitHubUserRepositories(workspaceId)
+export function listGitHubUserRepositories(
+  githubProviderToken: string,
+  workspaceId: string,
+  projectId?: string,
+): Promise<GitHubUserRepositoryPage> {
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockListGitHubUserRepositories(workspaceId))
   if (!projectId) throw new ApiError('Falta el proyecto para consultar GitHub.', 400, undefined, 'INVALID_REQUEST')
   return listUserRepositoriesDirect(projectId, githubProviderToken)
 }
 
-export function verifyGitHubAppAccess(input: VerifyGitHubAppAccessRequest, projectId?: string, githubProviderToken?: string | null): Promise<GitHubAppAccessResponse> {
-  if (getDataSource() === 'mock') return mockVerifyGitHubAppAccess(input)
+export function verifyGitHubAppAccess(
+  input: VerifyGitHubAppAccessRequest,
+  projectId?: string,
+  githubProviderToken?: string | null,
+): Promise<GitHubAppAccessResponse> {
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockVerifyGitHubAppAccess(input))
   if (!projectId) throw new ApiError('Falta el proyecto para verificar GitHub.', 400, undefined, 'INVALID_REQUEST')
   return verifyGitHubAppAccessDirect(projectId, input, githubProviderToken ?? undefined)
 }
@@ -81,30 +74,39 @@ export function verifyGitHubAppAccess(input: VerifyGitHubAppAccessRequest, proje
  * en mock no cuenta como una verificación (a diferencia de `verifyGitHubAppAccess`), para no alterar el resultado determinista de Reactivar.
  */
 export function getGitHubAppAccess(input: VerifyGitHubAppAccessRequest, projectId?: string): Promise<GitHubAppAccessResponse> {
-  if (getDataSource() === 'mock') return mockPeekGitHubAppAccess(input)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockPeekGitHubAppAccess(input))
   return verifyGitHubAppAccess(input, projectId)
 }
 
 export function listGitHubRepositoryBranches(owner: string, repo: string, projectId?: string): Promise<GitHubRepositoryBranchesResponse> {
-  if (getDataSource() === 'mock') return mockListGitHubRepositoryBranches(owner, repo)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockListGitHubRepositoryBranches(owner, repo))
   if (!projectId) throw new ApiError('Falta el proyecto para consultar ramas.', 400, undefined, 'INVALID_REQUEST')
   return listRepositoriesBranchesDirect(projectId, owner, repo)
 }
 
-export function createRepositoryBinding(projectId: string, input: CreateRepositoryBindingRequest, githubProviderToken?: string | null): Promise<ProjectRepositoryBindingResponse> {
-  if (getDataSource() === 'mock') return mockCreateRepositoryBinding(projectId, input)
-  return verifyGitHubAppAccessDirect(projectId, input, githubProviderToken ?? undefined, input.integrationBranch)
-    .then((verified) => {
-      if (!verified.authorizationEvidence) throw new ApiError('GitHub no devolvió evidencia vigente para vincular el repositorio.', 503, undefined, 'CORE_AUTHORIZATION_UNAVAILABLE')
-      return apiRequest<ProjectRepositoryBindingResponse>(`/projects/${encodeURIComponent(projectId)}/integrations/github/verified`, {
-        method: 'POST',
-        body: JSON.stringify({ ...input, authorizationEvidence: verified.authorizationEvidence }),
-      })
+export function createRepositoryBinding(
+  projectId: string,
+  input: CreateRepositoryBindingRequest,
+  githubProviderToken?: string | null,
+): Promise<ProjectRepositoryBindingResponse> {
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockCreateRepositoryBinding(projectId, input))
+  return verifyGitHubAppAccessDirect(projectId, input, githubProviderToken ?? undefined, input.integrationBranch).then((verified) => {
+    if (!verified.authorizationEvidence)
+      throw new ApiError(
+        'GitHub no devolvió evidencia vigente para vincular el repositorio.',
+        503,
+        undefined,
+        'CORE_AUTHORIZATION_UNAVAILABLE',
+      )
+    return apiRequest<ProjectRepositoryBindingResponse>(`/projects/${encodeURIComponent(projectId)}/integrations/github/verified`, {
+      method: 'POST',
+      body: JSON.stringify({ ...input, authorizationEvidence: verified.authorizationEvidence }),
     })
+  })
 }
 
 export function disconnectRepository(projectId: string): Promise<void> {
-  if (getDataSource() === 'mock') return mockDisconnectRepository(projectId)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockDisconnectRepository(projectId))
   return apiRequest<void>(`/projects/${encodeURIComponent(projectId)}/integrations/github`, { method: 'DELETE' })
 }
 
@@ -114,8 +116,10 @@ export function disconnectRepository(projectId: string): Promise<void> {
  * Idempotente y sin cuerpo: el contrato no define uno.
  */
 export function enableRepository(projectId: string): Promise<ProjectRepositoryBindingResponse> {
-  if (getDataSource() === 'mock') return mockEnableRepository(projectId)
-  return apiRequest<ProjectRepositoryBindingResponse>(`/projects/${encodeURIComponent(projectId)}/integrations/github/enable`, { method: 'POST' })
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockEnableRepository(projectId))
+  return apiRequest<ProjectRepositoryBindingResponse>(`/projects/${encodeURIComponent(projectId)}/integrations/github/enable`, {
+    method: 'POST',
+  })
 }
 
 // HU32 — Analysis Runs por PR/HEAD (INTEROP-2.1 §6.10).
@@ -126,8 +130,13 @@ const AGGREGATE_PAGE_SIZE = 100
  * `GET /projects/{projectId}/analysis-runs?status&cursor&limit` cuando se pide un Project,
  * o `GET /analysis-runs?status&cursor&limit` para los Projects visibles del usuario (HU55).
  */
-export function listAnalysisRuns(projectId?: string, status?: AnalysisRunStatus, cursor?: string | null, limit?: number): Promise<AnalysisRunListPage> {
-  if (getDataSource() === 'mock') return mockListAnalysisRuns(projectId, status)
+export function listAnalysisRuns(
+  projectId?: string,
+  status?: AnalysisRunStatus,
+  cursor?: string | null,
+  limit?: number,
+): Promise<AnalysisRunListPage> {
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockListAnalysisRuns(projectId, status))
   const params = new URLSearchParams()
   if (status) params.set('status', status)
   if (cursor) params.set('cursor', cursor)
@@ -153,7 +162,7 @@ export async function listAllAnalysisRuns(): Promise<AnalysisRunSummaryResponse[
 }
 
 export function getAnalysisRun(analysisRunId: string): Promise<AnalysisRunDetailResponse> {
-  if (getDataSource() === 'mock') return mockGetAnalysisRun(analysisRunId)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockGetAnalysisRun(analysisRunId))
   return apiRequest<AnalysisRunDetailResponse>(`/analysis-runs/${encodeURIComponent(analysisRunId)}`)
 }
 
@@ -162,20 +171,23 @@ export function getAnalysisRun(analysisRunId: string): Promise<AnalysisRunDetail
  * Core expone la ruta publicada; los detalles de UI siguen siendo solo lectores.
  */
 export function getAnalysisRunTrace(analysisRunId: string): Promise<AnalysisRunTraceResponse> {
-  if (getDataSource() === 'mock') return mockGetAnalysisRunTrace(analysisRunId)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockGetAnalysisRunTrace(analysisRunId))
   return apiRequest<AnalysisRunTraceResponse>(`/analysis-runs/${encodeURIComponent(analysisRunId)}/trace`)
 }
 
 // HU39/HU40 — Checks, propuestas y companion PR (INTEROP-2.2 §6.12, implementado y desplegado en Core).
 
 export function listTestProposals(analysisRunId: string): Promise<GeneratedTestProposalSetResponse> {
-  if (getDataSource() === 'mock') return mockListTestProposals(analysisRunId)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockListTestProposals(analysisRunId))
   return apiRequest<GeneratedTestProposalSetResponse>(`/analysis-runs/${encodeURIComponent(analysisRunId)}/test-proposals`)
 }
 
 /** Solo propuestas `AVAILABLE` de un Run `SUCCESS` y vigente — Core valida esto server-side y rechaza si no. */
-export function createTestPublication(analysisRunId: string, input: CreateTestPublicationRequest): Promise<TestPublicationAcceptedResponse> {
-  if (getDataSource() === 'mock') return mockCreateTestPublication(analysisRunId, input)
+export function createTestPublication(
+  analysisRunId: string,
+  input: CreateTestPublicationRequest,
+): Promise<TestPublicationAcceptedResponse> {
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockCreateTestPublication(analysisRunId, input))
   return apiRequest<TestPublicationAcceptedResponse>(`/analysis-runs/${encodeURIComponent(analysisRunId)}/test-publications`, {
     method: 'POST',
     body: JSON.stringify(input),
@@ -184,6 +196,6 @@ export function createTestPublication(analysisRunId: string, input: CreateTestPu
 
 /** `STALE` significa que el HEAD del PR cambió entre pedir publicar y que corriera el job — hay que re-listar `test-proposals` contra el Run vigente. */
 export function getTestPublication(publicationId: string): Promise<TestPublicationResponse> {
-  if (getDataSource() === 'mock') return mockGetTestPublication(publicationId)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockGetTestPublication(publicationId))
   return apiRequest<TestPublicationResponse>(`/test-publications/${encodeURIComponent(publicationId)}`)
 }

@@ -43,7 +43,8 @@ test('mantiene la comparación experimental a partir de un snapshot disponible',
 
   const accepted = await startExperiment(project.id, target.id, crypto.randomUUID())
   let experiment = await getExperiment(accepted.experimentId, target.symbolName)
-  for (let index = 0; index < 3 && experiment.status !== 'COMPLETED'; index += 1) experiment = await getExperiment(accepted.experimentId, target.symbolName)
+  for (let index = 0; index < 3 && experiment.status !== 'COMPLETED'; index += 1)
+    experiment = await getExperiment(accepted.experimentId, target.symbolName)
 
   expect(experiment.result?.rag.validRate).toBeGreaterThan(experiment.result?.baseline.validRate ?? 1)
   expect(fetchMock).not.toHaveBeenCalled()
@@ -54,12 +55,20 @@ test('WI-CONSOLE-021: escenarios DEMO de experimento cubren corrida previa, Sand
   resetMockBackend()
   const fetchMock = vi.spyOn(globalThis, 'fetch')
 
-  const legacy = await getExperiment((await startExperiment('prj_checkout_demo', 'demo-scenario-legacy', crypto.randomUUID())).experimentId, 'DEMO')
+  const legacy = await getExperiment(
+    (await startExperiment('prj_checkout_demo', 'demo-scenario-legacy', crypto.randomUUID())).experimentId,
+    'DEMO',
+  )
   expect(legacy.status).toBe('COMPLETED')
   expect(legacy.configuration).toEqual({ model: null, budget: null, executionProfile: null, runnerHint: null, randomizationSeed: null })
-  expect(legacy.result?.repetitions.every((item) => item.executionDurationMs === null && item.pairId === null && item.pairPosition === null)).toBe(true)
+  expect(
+    legacy.result?.repetitions.every((item) => item.executionDurationMs === null && item.pairId === null && item.pairPosition === null),
+  ).toBe(true)
 
-  const mixed = await getExperiment((await startExperiment('prj_checkout_demo', 'demo-scenario-mixed-sandbox', crypto.randomUUID())).experimentId, 'DEMO')
+  const mixed = await getExperiment(
+    (await startExperiment('prj_checkout_demo', 'demo-scenario-mixed-sandbox', crypto.randomUUID())).experimentId,
+    'DEMO',
+  )
   expect(mixed.configuration?.budget).toBeNull()
   expect(mixed.configuration?.model?.provider).toBe('OpenAI')
   const durations = mixed.result?.repetitions.map((item) => item.executionDurationMs) ?? []
@@ -67,8 +76,17 @@ test('WI-CONSOLE-021: escenarios DEMO de experimento cubren corrida previa, Sand
   expect(durations).toContain(null)
   expect(durations).not.toContain(0)
 
-  const noEvaluable = await getExperiment((await startExperiment('prj_checkout_demo', 'demo-scenario-no-evaluable', crypto.randomUUID())).experimentId, 'DEMO')
-  expect(noEvaluable.result?.baseline).toMatchObject({ validRate: null, passedRate: null, totalDurationMs: null, evaluableRepetitions: 0, nonEvaluableRepetitions: 3 })
+  const noEvaluable = await getExperiment(
+    (await startExperiment('prj_checkout_demo', 'demo-scenario-no-evaluable', crypto.randomUUID())).experimentId,
+    'DEMO',
+  )
+  expect(noEvaluable.result?.baseline).toMatchObject({
+    validRate: null,
+    passedRate: null,
+    totalDurationMs: null,
+    evaluableRepetitions: 0,
+    nonEvaluableRepetitions: 3,
+  })
   expect(noEvaluable.result?.rag.evaluableRepetitions).toBe(3)
 
   // WI-CONSOLE-026: bundle de una corrida legacy sin filas experimental[]/sandbox[] (sin attempt/technicallyEvaluable inventados); generation[] se conserva con attempt null.
@@ -88,14 +106,23 @@ test('WI-CONSOLE-021: escenarios DEMO de experimento cubren corrida previa, Sand
   expect(mixedBundle.experimental.every((row) => typeof row.technicallyEvaluable === 'boolean')).toBe(true)
 
   // WI-CONSOLE-026 C2: el 422 UNSUPPORTED_PROJECT del mock reutiliza el texto compartido, sin variante DEMO.
-  await expect(startExperiment('prj_checkout_demo', 'demo-error-unsupported-project', crypto.randomUUID())).rejects.toMatchObject({ code: 'UNSUPPORTED_PROJECT', message: UNSUPPORTED_PROJECT_MESSAGE })
+  await expect(startExperiment('prj_checkout_demo', 'demo-error-unsupported-project', crypto.randomUUID())).rejects.toMatchObject({
+    code: 'UNSUPPORTED_PROJECT',
+    message: UNSUPPORTED_PROJECT_MESSAGE,
+  })
 
   // WI-CONSOLE-021 C1: proyecto PHP con PHPUnit (CS-CORE-20261009-018). Sin 422 de lenguaje; perfil y runner tal cual.
-  const phpunit = await getExperiment((await startExperiment('prj_checkout_demo', 'demo-scenario-phpunit', crypto.randomUUID())).experimentId, 'DEMO')
+  const phpunit = await getExperiment(
+    (await startExperiment('prj_checkout_demo', 'demo-scenario-phpunit', crypto.randomUUID())).experimentId,
+    'DEMO',
+  )
   expect(phpunit.configuration).toMatchObject({ executionProfile: 'PHP_LARAVEL_PHPUNIT', runnerHint: 'PHPUNIT' })
   expect(phpunit.result?.repetitions.some((row) => row.failureType === 'COMPILATION' && row.attempt === 1)).toBe(true)
 
-  const failed = await getExperiment((await startExperiment('prj_checkout_demo', 'demo-scenario-failed-worker-lost', crypto.randomUUID())).experimentId, 'DEMO')
+  const failed = await getExperiment(
+    (await startExperiment('prj_checkout_demo', 'demo-scenario-failed-worker-lost', crypto.randomUUID())).experimentId,
+    'DEMO',
+  )
   expect(failed).toMatchObject({ status: 'FAILED', failureCode: 'EXPERIMENT_WORKER_LOST' })
   expect(failed.result).toBeUndefined()
   expect(failed.failureMessage).toMatch(/^DEMO:/)
@@ -148,7 +175,13 @@ test('WI-CONSOLE-030 (C1): el Run PHP arun_php_pr7 trae símbolos PHP y la semil
   expect(run.status).toBe('SUCCESS')
   expect(run.symbols.length).toBeGreaterThan(0)
   expect(run.symbols.every((symbol) => symbol.language === 'PHP')).toBe(true)
-  expect(run.symbols).toContainEqual({ language: 'PHP', kind: 'METHOD', qualifiedName: 'CouponService::apply', filePath: 'app/Services/CouponService.php', changeKind: 'DIRECTLY_CHANGED' })
+  expect(run.symbols).toContainEqual({
+    language: 'PHP',
+    kind: 'METHOD',
+    qualifiedName: 'CouponService::apply',
+    filePath: 'app/Services/CouponService.php',
+    changeKind: 'DIRECTLY_CHANGED',
+  })
   expect(run.symbols.some((symbol) => symbol.changeKind === 'POTENTIALLY_IMPACTED')).toBe(true)
   expect(run.createdAt < '2026-09-13').toBe(true)
 
@@ -171,7 +204,10 @@ test('WI-CONSOLE-030 (C4): legacy-php-admin (PHP sin PHPUnit) responde 422 UNSUP
 
   const run = await getAnalysisRun('arun_legacy_php_pr3')
   const symbol = run.symbols[0]
-  const error = await startRetrievalComparison('arun_legacy_php_pr3', symbol, KEY_A).then(() => null, (reason: unknown) => reason)
+  const error = await startRetrievalComparison('arun_legacy_php_pr3', symbol, KEY_A).then(
+    () => null,
+    (reason: unknown) => reason,
+  )
   expect(error).toBeInstanceOf(ApiError)
   expect((error as ApiError).status).toBe(422)
   expect((error as ApiError).code).toBe('UNSUPPORTED_PROJECT')
@@ -206,7 +242,12 @@ test('WI-CONSOLE-030 (F3): shop-php-demo está vinculado a team-sandbox/demo-api
   resetMockBackend()
 
   const binding = await mockGetRepositoryBinding('prj_shop_php_demo')
-  expect(binding).toMatchObject({ projectId: 'prj_shop_php_demo', repositoryId: 'repo_team_sandbox', repositoryName: 'team-sandbox/demo-api', status: 'ENABLED' })
+  expect(binding).toMatchObject({
+    projectId: 'prj_shop_php_demo',
+    repositoryId: 'repo_team_sandbox',
+    repositoryName: 'team-sandbox/demo-api',
+    status: 'ENABLED',
+  })
   expect((await getAnalysisRun('arun_php_pr7')).pullRequest.repositoryName).toBe(binding!.repositoryName)
 })
 

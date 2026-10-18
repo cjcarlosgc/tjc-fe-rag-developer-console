@@ -1,7 +1,13 @@
 import { apiRequest } from '../api/client'
 import { getDataSource, PendingContractError } from '../api/dataSource'
-import { mockGetAnalysisRunContextTrace, mockGetContextTrace, mockListDiscoveredFiles, mockListExperimentContextTraces } from '../api/mockBackend'
-import type { ContextTraceDetail, ContextTracePage, DiscoveredFilePage, ExperimentContextTraceFilters, RagContextTraceDetail } from './types'
+import { loadMockBackend } from '../api/loadMockBackend'
+import type {
+  ContextTraceDetail,
+  ContextTracePage,
+  DiscoveredFilePage,
+  ExperimentContextTraceFilters,
+  RagContextTraceDetail,
+} from './types'
 
 function toQuery(params: Record<string, string | number | boolean | null | undefined>): string {
   const search = new URLSearchParams()
@@ -13,23 +19,29 @@ function toQuery(params: Record<string, string | number | boolean | null | undef
 }
 
 export function listExperimentContextTraces(experimentId: string, filters: ExperimentContextTraceFilters = {}): Promise<ContextTracePage> {
-  if (getDataSource() === 'mock') return mockListExperimentContextTraces(experimentId, filters)
-  const query = toQuery({ strategy: filters.strategy, repetition: filters.repetition, includeSuperseded: filters.includeSuperseded, cursor: filters.cursor, limit: filters.limit })
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockListExperimentContextTraces(experimentId, filters))
+  const query = toQuery({
+    strategy: filters.strategy,
+    repetition: filters.repetition,
+    includeSuperseded: filters.includeSuperseded,
+    cursor: filters.cursor,
+    limit: filters.limit,
+  })
   return apiRequest<ContextTracePage>(`/experiments/${encodeURIComponent(experimentId)}/context-traces${query}`)
 }
 
 export function getContextTrace(traceId: string): Promise<ContextTraceDetail> {
-  if (getDataSource() === 'mock') return mockGetContextTrace(traceId)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockGetContextTrace(traceId))
   return apiRequest<ContextTraceDetail>(`/context-traces/${encodeURIComponent(traceId)}`)
 }
 
 export function listDiscoveredFiles(traceId: string, step: number, cursor: string | null = null): Promise<DiscoveredFilePage> {
-  if (getDataSource() === 'mock') return mockListDiscoveredFiles(traceId, step, cursor)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockListDiscoveredFiles(traceId, step, cursor))
   return apiRequest<DiscoveredFilePage>(`/context-traces/${encodeURIComponent(traceId)}/discovered-files${toQuery({ step, cursor })}`)
 }
 
 /** Vista de contexto RAG asociada a un AnalysisRun PR-driven en la demo. */
 export function getAnalysisRunContextTrace(analysisRunId: string): Promise<RagContextTraceDetail | null> {
-  if (getDataSource() === 'mock') return mockGetAnalysisRunContextTrace(analysisRunId)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockGetAnalysisRunContextTrace(analysisRunId))
   return Promise.reject(new PendingContractError('el contexto recolectado de un Analysis Run'))
 }

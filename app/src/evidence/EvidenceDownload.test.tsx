@@ -101,7 +101,11 @@ describe('EvidenceDownload', () => {
 
   it('mientras genera muestra role=status «Generando evidencia…»', async () => {
     let resolve!: (value: ReturnType<typeof okResult>) => void
-    getEvidenceMock.mockReturnValue(new Promise((done) => { resolve = done }))
+    getEvidenceMock.mockReturnValue(
+      new Promise((done) => {
+        resolve = done
+      }),
+    )
     const user = userEvent.setup()
     renderDownload()
     await user.click(screen.getByRole('button', BUTTON))
@@ -125,7 +129,8 @@ describe('EvidenceDownload', () => {
   })
 
   it('Reintentar tras 409 vuelve a pedir la evidencia y mantiene el foco en el botón', async () => {
-    for (let index = 0; index <= EVIDENCE_NOT_FINISHED_MAX_RETRIES; index += 1) getEvidenceMock.mockRejectedValueOnce(apiError(409, 'EVIDENCE_NOT_FINISHED'))
+    for (let index = 0; index <= EVIDENCE_NOT_FINISHED_MAX_RETRIES; index += 1)
+      getEvidenceMock.mockRejectedValueOnce(apiError(409, 'EVIDENCE_NOT_FINISHED'))
     getEvidenceMock.mockReturnValueOnce(new Promise(() => {}))
     const user = userEvent.setup()
     renderDownload()
@@ -141,7 +146,8 @@ describe('EvidenceDownload', () => {
 
   it('Reintentar tras 409 descarga cuando Core ya terminó', async () => {
     getEvidenceMock.mockRejectedValueOnce(apiError(409, 'EVIDENCE_NOT_FINISHED'))
-    for (let index = 0; index < EVIDENCE_NOT_FINISHED_MAX_RETRIES; index += 1) getEvidenceMock.mockRejectedValueOnce(apiError(409, 'EVIDENCE_NOT_FINISHED'))
+    for (let index = 0; index < EVIDENCE_NOT_FINISHED_MAX_RETRIES; index += 1)
+      getEvidenceMock.mockRejectedValueOnce(apiError(409, 'EVIDENCE_NOT_FINISHED'))
     getEvidenceMock.mockResolvedValue(okResult())
     const user = userEvent.setup()
     renderDownload()

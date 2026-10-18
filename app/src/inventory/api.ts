@@ -1,10 +1,10 @@
 import { apiRequest } from '../api/client'
 import { getDataSource } from '../api/dataSource'
-import { mockGetTestInventory } from '../api/mockBackend'
+import { loadMockBackend } from '../api/loadMockBackend'
 import type { InventoryTargetViewModel, TestInventoryResponse } from './types'
 
 export function getTestInventory(projectVersionId: string, signal?: AbortSignal): Promise<TestInventoryResponse> {
-  if (getDataSource() === 'mock') return mockGetTestInventory(projectVersionId)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockGetTestInventory(projectVersionId))
   return apiRequest<TestInventoryResponse>(`/project-versions/${encodeURIComponent(projectVersionId)}/test-inventory`, { signal })
 }
 

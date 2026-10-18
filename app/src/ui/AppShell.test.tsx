@@ -20,14 +20,21 @@ function renderShell() {
     <QueryClientProvider client={client}>
       <AuthProvider>
         <MemoryRouter initialEntries={['/']}>
-          <Routes><Route path="/" element={<AppShell />}><Route index element={<Home />} /></Route></Routes>
+          <Routes>
+            <Route path="/" element={<AppShell />}>
+              <Route index element={<Home />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </AuthProvider>
     </QueryClientProvider>,
   )
 }
 
-const storedSession = JSON.stringify({ user: { id: 'user_demo_local', email: 'demo@rag-test-studio.local' }, accessToken: 'mock-session-token' })
+const storedSession = JSON.stringify({
+  user: { id: 'user_demo_local', email: 'demo@rag-test-studio.local' },
+  accessToken: 'mock-session-token',
+})
 
 beforeEach(() => {
   localStorage.clear()

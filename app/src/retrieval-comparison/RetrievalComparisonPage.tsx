@@ -15,7 +15,13 @@ import { RepoChip } from '../ui/RepoChip'
 import { findEligibleSymbols } from '../run-comparison/types'
 import { EvidenceDownload } from '../evidence/EvidenceDownload'
 import { retrievalFailureText } from './failureMessages'
-import { retrievalComparisonKeys, useRetrievalComparison, useRetrievalComparisonResults, useRetrievalComparisons, useStartRetrievalComparison } from './queries'
+import {
+  retrievalComparisonKeys,
+  useRetrievalComparison,
+  useRetrievalComparisonResults,
+  useRetrievalComparisons,
+  useStartRetrievalComparison,
+} from './queries'
 import {
   NOT_APPLICABLE_LABEL,
   formatConfigValue,
@@ -103,18 +109,21 @@ export function RetrievalComparisonPage() {
     const symbol = selectedSymbol
     const id = idKeyFor(symbol)
     const idempotencyKey = idempotency.getOrCreate(id)
-    startMutation.mutate({ symbol, idempotencyKey }, {
-      onSuccess: (accepted) => {
-        idempotency.clear(id)
-        focusResultRef.current = true
-        setPollAfterMs(accepted.pollAfterMs)
-        setActiveId(accepted.retrievalComparisonId)
+    startMutation.mutate(
+      { symbol, idempotencyKey },
+      {
+        onSuccess: (accepted) => {
+          idempotency.clear(id)
+          focusResultRef.current = true
+          setPollAfterMs(accepted.pollAfterMs)
+          setActiveId(accepted.retrievalComparisonId)
+        },
+        onError: (error) => {
+          // Un conflicto de idempotencia significa que la key ya se usó para otra solicitud: la siguiente vez se genera una nueva.
+          if (error instanceof ApiError && error.code === 'IDEMPOTENCY_CONFLICT') idempotency.clear(id)
+        },
       },
-      onError: (error) => {
-        // Un conflicto de idempotencia significa que la key ya se usó para otra solicitud: la siguiente vez se genera una nueva.
-        if (error instanceof ApiError && error.code === 'IDEMPOTENCY_CONFLICT') idempotency.clear(id)
-      },
-    })
+    )
   }
 
   function onSelectSymbol(value: string) {
@@ -140,150 +149,300 @@ export function RetrievalComparisonPage() {
         : 'Solo lectura: puedes consultar las comparaciones previas.'
   const statusMessage = !activeId
     ? idleMessage
-    : detail?.status === 'COMPLETED' ? 'Comparación completada. Resultados disponibles abajo.'
-    : detail?.status === 'RUNNING' ? 'Ejecutando retrieval SE y SEM sobre el símbolo elegido.'
-    : detail?.status === 'FAILED' ? ''
-    : 'Comparación pendiente de empezar.'
+    : detail?.status === 'COMPLETED'
+      ? 'Comparación completada. Resultados disponibles abajo.'
+      : detail?.status === 'RUNNING'
+        ? 'Ejecutando retrieval SE y SEM sobre el símbolo elegido.'
+        : detail?.status === 'FAILED'
+          ? ''
+          : 'Comparación pendiente de empezar.'
 
   const results: RetrievalComparisonResultsResponse | undefined = resultsQuery.data
 
-  return <section className="retrieval-page">
-    <Breadcrumbs items={[{ label: 'Proyectos', to: '/' }, { label: 'Runs', to: '/analysis-runs' }, { label: `PR #${run.pullRequest.number}`, to: `/projects/${projectId}/runs/${analysisRunId}` }, { label: 'Comparación de retrieval' }]} />
-    <div className="page-heading">
-      <div>
-        <p className="eyebrow">Modo experimental</p>
-        <div className="run-heading-meta"><RepoChip repositoryName={run.pullRequest.repositoryName} /><span className="pr-number">PR #{run.pullRequest.number}</span></div>
-        <h1>Comparación de retrieval SE vs SEM</h1>
-        <p>Compara ambos modos de retrieval sobre un mismo símbolo de este Run. No altera el resultado operacional del Run.</p>
-      </div>
-      {isMock && <span className="demo-stamp">DEMO · DATOS SIMULADOS</span>}
-    </div>
-
-    <div className="contract-note">
-      <span className="contract-glyph">OE2</span>
-      <div>
-        <strong>SE y SEM no son equivalentes a RAG ni a GA</strong>
-        <p>Son modos de retrieval experimentales. Esta vista no ofrece conclusiones comparativas.</p>
-      </div>
-    </div>
-
-    <div className="panel">
-      <div className="section-heading"><div><h2>Iniciar comparación</h2></div></div>
-
-      {!eligibleSymbols.length && <div className="empty-state"><p>Este Run no tiene símbolos METHOD o FUNCTION con cambio directo. No hay comparación de retrieval posible para él.</p></div>}
-
-      {eligibleSymbols.length > 0 && roleLoading && <p>Comprobando tu rol en el Project…</p>}
-
-      {eligibleSymbols.length > 0 && !roleLoading && !canWrite && <p className="role-note">Solo un Writer, Maintainer o Admin puede crear comparaciones de retrieval. Puedes ver las comparaciones previas.</p>}
-
-      {eligibleSymbols.length > 0 && !roleLoading && canWrite && <>
-        <div className="field">
-          <label htmlFor="retrieval-symbol">Símbolo a comparar</label>
-          <select id="retrieval-symbol" value={selectedKey} onChange={(event) => onSelectSymbol(event.target.value)} aria-describedby="retrieval-symbol-hint">
-            <option value="">Elige un símbolo</option>
-            {eligibleSymbols.map((symbol) => <option key={symbolKey(symbol)} value={symbolKey(symbol)}>{symbol.qualifiedName} · {symbol.kind} · {symbol.filePath}</option>)}
-          </select>
-          <span id="retrieval-symbol-hint" className="field-hint">{selectedSymbol ? `Símbolo elegido: ${selectedSymbol.qualifiedName}` : 'Elige un símbolo para habilitar la comparación.'}</span>
+  return (
+    <section className="retrieval-page">
+      <Breadcrumbs
+        items={[
+          { label: 'Projects', to: '/' },
+          { label: 'Runs', to: '/analysis-runs' },
+          { label: `PR #${run.pullRequest.number}`, to: `/projects/${projectId}/runs/${analysisRunId}` },
+          { label: 'Comparación de retrieval' },
+        ]}
+      />
+      <div className="page-heading">
+        <div>
+          <p className="eyebrow">Modo experimental</p>
+          <div className="run-heading-meta">
+            <RepoChip repositoryName={run.pullRequest.repositoryName} />
+            <span className="pr-number">PR #{run.pullRequest.number}</span>
+          </div>
+          <h1>Comparación de retrieval SE vs SEM</h1>
+          <p>Compara ambos modos de retrieval sobre un mismo símbolo de este Run. No altera el resultado operacional del Run.</p>
         </div>
-        <div className="run-actions">
-          <button type="button" className="button primary" disabled={!canStart} aria-describedby="retrieval-start-hint" onClick={onStart}>
-            {startMutation.isPending ? 'Comparando…' : terminal && selectedSymbol && activeId && detail?.symbol.qualifiedName === selectedSymbol.qualifiedName ? 'Comparar de nuevo' : 'Comparar retrieval SE vs SEM'}
+        {isMock && <span className="demo-stamp">DEMO · DATOS SIMULADOS</span>}
+      </div>
+
+      <div className="contract-note">
+        <span className="contract-glyph">OE2</span>
+        <div>
+          <strong>SE y SEM no son equivalentes a RAG ni a GA</strong>
+          <p>Son modos de retrieval experimentales. Esta vista no ofrece conclusiones comparativas.</p>
+        </div>
+      </div>
+
+      <div className="panel">
+        <div className="section-heading">
+          <div>
+            <h2>Iniciar comparación</h2>
+          </div>
+        </div>
+
+        {!eligibleSymbols.length && (
+          <div className="empty-state">
+            <p>Este Run no tiene símbolos METHOD o FUNCTION con cambio directo. No hay comparación de retrieval posible para él.</p>
+          </div>
+        )}
+
+        {eligibleSymbols.length > 0 && roleLoading && <p>Comprobando tu rol en el Project…</p>}
+
+        {eligibleSymbols.length > 0 && !roleLoading && !canWrite && (
+          <p className="role-note">
+            Solo un Writer, Maintainer o Admin puede crear comparaciones de retrieval. Puedes ver las comparaciones previas.
+          </p>
+        )}
+
+        {eligibleSymbols.length > 0 && !roleLoading && canWrite && (
+          <>
+            <div className="field">
+              <label htmlFor="retrieval-symbol">Símbolo a comparar</label>
+              <select
+                id="retrieval-symbol"
+                value={selectedKey}
+                onChange={(event) => onSelectSymbol(event.target.value)}
+                aria-describedby="retrieval-symbol-hint"
+              >
+                <option value="">Elige un símbolo</option>
+                {eligibleSymbols.map((symbol) => (
+                  <option key={symbolKey(symbol)} value={symbolKey(symbol)}>
+                    {symbol.qualifiedName} · {symbol.kind} · {symbol.filePath}
+                  </option>
+                ))}
+              </select>
+              <span id="retrieval-symbol-hint" className="field-hint">
+                {selectedSymbol ? `Símbolo elegido: ${selectedSymbol.qualifiedName}` : 'Elige un símbolo para habilitar la comparación.'}
+              </span>
+            </div>
+            <div className="run-actions">
+              <button
+                type="button"
+                className="button primary"
+                disabled={!canStart}
+                aria-describedby="retrieval-start-hint"
+                onClick={onStart}
+              >
+                {startMutation.isPending
+                  ? 'Comparando…'
+                  : terminal && selectedSymbol && activeId && detail?.symbol.qualifiedName === selectedSymbol.qualifiedName
+                    ? 'Comparar de nuevo'
+                    : 'Comparar retrieval SE vs SEM'}
+              </button>
+              <span id="retrieval-start-hint" className="field-hint">
+                {!selectedSymbol
+                  ? 'Motivo: falta elegir un símbolo.'
+                  : startMutation.isPending
+                    ? 'Motivo: la comparación se está creando.'
+                    : 'Lista para comparar el símbolo elegido.'}
+              </span>
+            </div>
+            {startMutation.isError && (
+              <ErrorNote message={bindingErrorMessage(startMutation.error)} correlationId={errorCorrelationId(startMutation.error)} />
+            )}
+          </>
+        )}
+      </div>
+
+      <h2>Estado de la comparación</h2>
+      {/* Contenedor de estado único: siempre montado; solo cambia su texto. */}
+      <div role="status" className="panel experiment-progress">
+        <span>{statusMessage}</span>
+        {activeId && detail && (detail.status === 'PENDING' || detail.status === 'RUNNING') && (
+          <strong>{STATUS_TEXT[detail.status]}</strong>
+        )}
+      </div>
+      {detail?.status === 'FAILED' && (
+        <ErrorNote
+          message={`Comparación fallida. ${retrievalFailureText(detail.failureCode)} failureCode: ${detail.failureCode ?? 'sin código'} · failureMessage: ${detail.failureMessage ?? 'sin mensaje'}`}
+        />
+      )}
+      {detailQuery.isError && (
+        <ErrorNote message={bindingErrorMessage(detailQuery.error)} correlationId={errorCorrelationId(detailQuery.error)} />
+      )}
+      {/* Un 409 RETRIEVAL_COMPARISON_FAILED de /results no se reintenta: el detalle es el del status (bloque de arriba). */}
+      {resultsQuery.isError && (
+        <ErrorNote message={bindingErrorMessage(resultsQuery.error)} correlationId={errorCorrelationId(resultsQuery.error)} />
+      )}
+
+      {results && (
+        <div className="panel">
+          <h2 ref={resultHeadingRef} tabIndex={-1} className="retrieval-result-heading">
+            Resultado de {results.symbol.qualifiedName}
+          </h2>
+          <div className="retrieval-modes">
+            {results.modes.map((mode) => (
+              <RetrievalModeView key={mode.mode} mode={mode} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeId && terminal && detail?.id === activeId && (
+        <div className="panel evidence-panel">
+          <div className="section-heading">
+            <div>
+              <h2>Evidencia versionada</h2>
+              <p>Descarga el paquete técnico de esta comparación tal como lo devuelve Core.</p>
+            </div>
+          </div>
+          <EvidenceDownload kind="RETRIEVAL_COMPARISON" subjectId={activeId} terminal />
+        </div>
+      )}
+
+      <h2>Comparaciones previas del Run</h2>
+      <div className="panel">
+        {listQuery.isPending && <p>Cargando comparaciones previas…</p>}
+        {listQuery.isError && (
+          <ErrorNote message={bindingErrorMessage(listQuery.error)} correlationId={errorCorrelationId(listQuery.error)} />
+        )}
+        {listQuery.isSuccess && previous.length === 0 && <p>Todavía no hay comparaciones de retrieval en este Run.</p>}
+        {previous.length > 0 && (
+          <ul className="retrieval-previous" aria-label="Comparaciones previas del Run">
+            {previous.map((item) => (
+              <li key={item.id}>
+                <span>
+                  <strong>{item.symbol.qualifiedName}</strong> · <code>{item.id}</code>
+                </span>
+                <span>
+                  Estado: {STATUS_TEXT[item.status]} ({item.status})
+                </span>
+                {item.status === 'FAILED' && (
+                  <span>
+                    {retrievalFailureText(item.failureCode)} failureCode: <code>{item.failureCode ?? 'sin código'}</code> · failureMessage:{' '}
+                    {item.failureMessage ?? 'sin mensaje'}
+                  </span>
+                )}
+                {item.status === 'COMPLETED' && (
+                  <button type="button" className="button secondary" onClick={() => onViewResult(item)}>
+                    Ver resultado<span className="visually-hidden"> de {item.symbol.qualifiedName}</span>
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+        {listQuery.hasNextPage && (
+          <button
+            type="button"
+            className="button secondary"
+            disabled={listQuery.isFetchingNextPage}
+            onClick={() => void listQuery.fetchNextPage()}
+          >
+            Cargar más comparaciones
           </button>
-          <span id="retrieval-start-hint" className="field-hint">
-            {!selectedSymbol ? 'Motivo: falta elegir un símbolo.' : startMutation.isPending ? 'Motivo: la comparación se está creando.' : 'Lista para comparar el símbolo elegido.'}
-          </span>
-        </div>
-        {startMutation.isError && <ErrorNote message={bindingErrorMessage(startMutation.error)} correlationId={errorCorrelationId(startMutation.error)} />}
-      </>}
-    </div>
-
-    <h2>Estado de la comparación</h2>
-    {/* Contenedor de estado único: siempre montado; solo cambia su texto. */}
-    <div role="status" className="panel experiment-progress">
-      <span>{statusMessage}</span>
-      {activeId && detail && (detail.status === 'PENDING' || detail.status === 'RUNNING') && <strong>{STATUS_TEXT[detail.status]}</strong>}
-    </div>
-    {detail?.status === 'FAILED' && <ErrorNote message={`Comparación fallida. ${retrievalFailureText(detail.failureCode)} failureCode: ${detail.failureCode ?? 'sin código'} · failureMessage: ${detail.failureMessage ?? 'sin mensaje'}`} />}
-    {detailQuery.isError && <ErrorNote message={bindingErrorMessage(detailQuery.error)} correlationId={errorCorrelationId(detailQuery.error)} />}
-    {/* Un 409 RETRIEVAL_COMPARISON_FAILED de /results no se reintenta: el detalle es el del status (bloque de arriba). */}
-    {resultsQuery.isError && <ErrorNote message={bindingErrorMessage(resultsQuery.error)} correlationId={errorCorrelationId(resultsQuery.error)} />}
-
-    {results && <div className="panel">
-      <h2 ref={resultHeadingRef} tabIndex={-1} className="retrieval-result-heading">Resultado de {results.symbol.qualifiedName}</h2>
-      <div className="retrieval-modes">
-        {results.modes.map((mode) => <RetrievalModeView key={mode.mode} mode={mode} />)}
+        )}
       </div>
-    </div>}
-
-    {activeId && terminal && detail?.id === activeId && <div className="panel evidence-panel">
-      <div className="section-heading"><div><h2>Evidencia versionada</h2><p>Descarga el paquete técnico de esta comparación tal como lo devuelve Core.</p></div></div>
-      <EvidenceDownload kind="RETRIEVAL_COMPARISON" subjectId={activeId} terminal />
-    </div>}
-
-    <h2>Comparaciones previas del Run</h2>
-    <div className="panel">
-      {listQuery.isPending && <p>Cargando comparaciones previas…</p>}
-      {listQuery.isError && <ErrorNote message={bindingErrorMessage(listQuery.error)} correlationId={errorCorrelationId(listQuery.error)} />}
-      {listQuery.isSuccess && previous.length === 0 && <p>Todavía no hay comparaciones de retrieval en este Run.</p>}
-      {previous.length > 0 && <ul className="retrieval-previous" aria-label="Comparaciones previas del Run">
-        {previous.map((item) => <li key={item.id}>
-          <span><strong>{item.symbol.qualifiedName}</strong> · <code>{item.id}</code></span>
-          <span>Estado: {STATUS_TEXT[item.status]} ({item.status})</span>
-          {item.status === 'FAILED' && <span>{retrievalFailureText(item.failureCode)} failureCode: <code>{item.failureCode ?? 'sin código'}</code> · failureMessage: {item.failureMessage ?? 'sin mensaje'}</span>}
-          {item.status === 'COMPLETED' && <button type="button" className="button secondary" onClick={() => onViewResult(item)}>Ver resultado<span className="visually-hidden"> de {item.symbol.qualifiedName}</span></button>}
-        </li>)}
-      </ul>}
-      {listQuery.hasNextPage && <button type="button" className="button secondary" disabled={listQuery.isFetchingNextPage} onClick={() => void listQuery.fetchNextPage()}>Cargar más comparaciones</button>}
-    </div>
-  </section>
+    </section>
+  )
 }
 
 function RetrievalModeView({ mode }: { mode: RetrievalModeResultResponse }) {
   const isSE = mode.mode === 'SE'
   const metrics = mode.metrics
-  return <article className="retrieval-mode">
-    <h3>Modo {mode.mode}</h3>
-    <div className="retrieval-table-wrap" role="region" tabIndex={0} aria-label={`Candidatos del modo ${mode.mode}`}>
-    <table>
-      <caption>Candidatos por ranking del modo {mode.mode}</caption>
-      <thead>
-        <tr>
-          <th scope="col">Ranking</th>
-          <th scope="col">Símbolo y archivo</th>
-          <th scope="col">semanticScore</th>
-          <th scope="col">structuralRelation</th>
-          <th scope="col">combinedScore</th>
-          <th scope="col">Selección</th>
-        </tr>
-      </thead>
-      <tbody>
-        {mode.candidates.map((candidate) => <tr key={candidate.chunkId}>
-          <th scope="row">{candidate.rank}</th>
-          <td><strong>{candidate.symbolQualifiedName ?? 'Sin símbolo'}</strong><br /><code>{candidate.filePath}</code></td>
-          <td>{formatRetrievalScore(candidate.semanticScore)}</td>
-          <td>{structuralRelationLabel(candidate.structuralRelation, mode.mode)}</td>
-          <td>{isSE ? formatRetrievalScore(candidate.combinedScore) : NOT_APPLICABLE_LABEL}</td>
-          <td>{candidate.selected ? 'Seleccionado' : 'No seleccionado'}</td>
-        </tr>)}
-      </tbody>
-    </table>
-    </div>
+  return (
+    <article className="retrieval-mode">
+      <h3>Modo {mode.mode}</h3>
+      <div className="retrieval-table-wrap" role="region" tabIndex={0} aria-label={`Candidatos del modo ${mode.mode}`}>
+        <table>
+          <caption>Candidatos por ranking del modo {mode.mode}</caption>
+          <thead>
+            <tr>
+              <th scope="col">Ranking</th>
+              <th scope="col">Símbolo y archivo</th>
+              <th scope="col">semanticScore</th>
+              <th scope="col">structuralRelation</th>
+              <th scope="col">combinedScore</th>
+              <th scope="col">Selección</th>
+            </tr>
+          </thead>
+          <tbody>
+            {mode.candidates.map((candidate) => (
+              <tr key={candidate.chunkId}>
+                <th scope="row">{candidate.rank}</th>
+                <td>
+                  <strong>{candidate.symbolQualifiedName ?? 'Sin símbolo'}</strong>
+                  <br />
+                  <code>{candidate.filePath}</code>
+                </td>
+                <td>{formatRetrievalScore(candidate.semanticScore)}</td>
+                <td>{structuralRelationLabel(candidate.structuralRelation, mode.mode)}</td>
+                <td>{isSE ? formatRetrievalScore(candidate.combinedScore) : NOT_APPLICABLE_LABEL}</td>
+                <td>{candidate.selected ? 'Seleccionado' : 'No seleccionado'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-    <dl className="retrieval-config">
-      <div><dt>semanticTopK</dt><dd>{String(mode.config.semanticTopK)}</dd></div>
-      <div><dt>finalTopK</dt><dd>{formatConfigValue(mode.config.finalTopK)}</dd></div>
-      <div><dt>semanticWeight</dt><dd>{formatConfigValue(mode.config.semanticWeight)}</dd></div>
-      <div><dt>structuralWeight</dt><dd>{formatConfigValue(mode.config.structuralWeight)}</dd></div>
-      <div><dt>embeddingModel</dt><dd>{mode.config.embeddingModel}</dd></div>
-    </dl>
+      <dl className="retrieval-config">
+        <div>
+          <dt>semanticTopK</dt>
+          <dd>{String(mode.config.semanticTopK)}</dd>
+        </div>
+        <div>
+          <dt>finalTopK</dt>
+          <dd>{formatConfigValue(mode.config.finalTopK)}</dd>
+        </div>
+        <div>
+          <dt>semanticWeight</dt>
+          <dd>{formatConfigValue(mode.config.semanticWeight)}</dd>
+        </div>
+        <div>
+          <dt>structuralWeight</dt>
+          <dd>{formatConfigValue(mode.config.structuralWeight)}</dd>
+        </div>
+        <div>
+          <dt>embeddingModel</dt>
+          <dd>{mode.config.embeddingModel}</dd>
+        </div>
+      </dl>
 
-    <h3>Métricas del modo {mode.mode}</h3>
-    <dl className="retrieval-metrics">
-      <div><dt>P@5</dt><dd>{formatRetrievalMetric(metrics?.precisionAt5 ?? null)}</dd></div>
-      <div><dt>R@5</dt><dd>{formatRetrievalMetric(metrics?.recallAt5 ?? null)}</dd></div>
-      <div className="retrieval-metric-key"><dt><strong>P@10</strong></dt><dd><strong>{formatRetrievalMetric(metrics?.precisionAt10 ?? null)}</strong></dd></div>
-      <div className="retrieval-metric-key"><dt><strong>R@10</strong></dt><dd><strong>{formatRetrievalMetric(metrics?.recallAt10 ?? null)}</strong></dd></div>
-    </dl>
-    {!metrics && <p className="field-hint">Este modo no tiene métricas disponibles en esta comparación.</p>}
-  </article>
+      <h3>Métricas del modo {mode.mode}</h3>
+      <dl className="retrieval-metrics">
+        <div>
+          <dt>P@5</dt>
+          <dd>{formatRetrievalMetric(metrics?.precisionAt5 ?? null)}</dd>
+        </div>
+        <div>
+          <dt>R@5</dt>
+          <dd>{formatRetrievalMetric(metrics?.recallAt5 ?? null)}</dd>
+        </div>
+        <div className="retrieval-metric-key">
+          <dt>
+            <strong>P@10</strong>
+          </dt>
+          <dd>
+            <strong>{formatRetrievalMetric(metrics?.precisionAt10 ?? null)}</strong>
+          </dd>
+        </div>
+        <div className="retrieval-metric-key">
+          <dt>
+            <strong>R@10</strong>
+          </dt>
+          <dd>
+            <strong>{formatRetrievalMetric(metrics?.recallAt10 ?? null)}</strong>
+          </dd>
+        </div>
+      </dl>
+      {!metrics && <p className="field-hint">Este modo no tiene métricas disponibles en esta comparación.</p>}
+    </article>
+  )
 }

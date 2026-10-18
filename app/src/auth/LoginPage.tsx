@@ -4,6 +4,7 @@ import { isMockAuth } from './authMode'
 import { authErrorMessage } from './errors'
 import { safeReturnTo } from './returnTo'
 import { useAuth } from './useAuth'
+import { documentTitleFor } from '../ui/routeTitles'
 
 /** HU62 (DEC-ORG-001): GitHub es el único método de acceso; no hay correo, contraseña, recuperación ni solicitud de acceso. */
 export function LoginPage() {
@@ -14,10 +15,15 @@ export function LoginPage() {
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const identityNoticeRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    document.title = documentTitleFor('/login')
+  }, [])
 
   // Volver con Atrás desde GitHub restaura la página desde bfcache con el estado congelado: sin esto «Conectando…» quedaría para siempre.
   useEffect(() => {
-    const onPageShow = (event: PageTransitionEvent) => { if (event.persisted) setPending(false) }
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) setPending(false)
+    }
     window.addEventListener('pageshow', onPageShow)
     return () => window.removeEventListener('pageshow', onPageShow)
   }, [])
@@ -53,26 +59,43 @@ export function LoginPage() {
   }, [identityRequired])
   const failure = error ?? oauthError
 
-  return <section className="auth-page">
-    <div className="panel auth-panel">
-      <p className="eyebrow">RAG Test Studio</p>
-      {isMockAuth() && <span className="environment environment-demo"><i aria-hidden="true" />DEMO · IDENTIDAD SIMULADA</span>}
-      <h1>Iniciar sesión</h1>
-      <p className="empty-inline-note">El acceso a la Console es solo con tu cuenta de GitHub.</p>
-      <div className="auth-form">
-        {notice?.kind === 'identity-required' && <div ref={identityNoticeRef} tabIndex={-1} className="feedback error-state" role="alert">
-          <strong>Esta cuenta no puede entrar todavía</strong>
-          <p>{notice.message}</p>
-        </div>}
-        {notice?.kind === 'expired' && <div className="feedback" role="status"><p>{notice.message}</p></div>}
-        {failure && <div role="alert">
-          <p className="inline-error">{failure}</p>
-          <button type="button" className="button secondary" disabled={pending} onClick={() => void submit()}>Reintentar</button>
-        </div>}
-        <button type="button" className="button primary auth-github-button" disabled={pending} onClick={() => void submit()}>
-          {pending ? 'Conectando…' : 'Continuar con GitHub'}
-        </button>
+  return (
+    <section className="auth-page">
+      <div className="panel auth-panel">
+        <p className="eyebrow">RAG Test Studio</p>
+        {isMockAuth() && (
+          <span className="environment environment-demo">
+            <i aria-hidden="true" />
+            DEMO · IDENTIDAD SIMULADA
+          </span>
+        )}
+        <h1>Iniciar sesión</h1>
+        <p className="empty-inline-note">El acceso a la Console es solo con tu cuenta de GitHub.</p>
+        <div className="auth-form">
+          {notice?.kind === 'identity-required' && (
+            <div ref={identityNoticeRef} tabIndex={-1} className="feedback error-state" role="alert">
+              <strong>Esta cuenta no puede entrar todavía</strong>
+              <p>{notice.message}</p>
+            </div>
+          )}
+          {notice?.kind === 'expired' && (
+            <div className="feedback" role="status">
+              <p>{notice.message}</p>
+            </div>
+          )}
+          {failure && (
+            <div role="alert">
+              <p className="inline-error">{failure}</p>
+              <button type="button" className="button secondary" disabled={pending} onClick={() => void submit()}>
+                Reintentar
+              </button>
+            </div>
+          )}
+          <button type="button" className="button primary auth-github-button" disabled={pending} onClick={() => void submit()}>
+            {pending ? 'Conectando…' : 'Continuar con GitHub'}
+          </button>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+  )
 }

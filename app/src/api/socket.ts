@@ -1,7 +1,5 @@
 import { io, type Socket } from 'socket.io-client'
-import { getAuthToken, notifyAuthError } from './client'
-
-const baseUrl = (import.meta.env.VITE_CORE_API_URL ?? '').replace(/\/$/, '')
+import { baseUrl, getAuthToken, notifyAuthError } from './client'
 
 /** HU62 (INTEROP-2.4 §6.6): `connect_error` de un rechazo de middleware trae `err.data = { code, retryable }`. */
 interface HandshakeError extends Error {
@@ -82,7 +80,9 @@ function getSocket(): Socket {
         callback(token ? { token } : {})
       },
     })
-    client.on('connect', () => { retryAttempts = 0 })
+    client.on('connect', () => {
+      retryAttempts = 0
+    })
     client.on('connect_error', (error: HandshakeError) => handleConnectError(client, error))
     socket = client
   }
@@ -119,7 +119,14 @@ export function subscribeProjectVersionUpdates<T extends { id: string }>(
   projectVersionId: string,
   onUpdate: (payload: T) => void,
 ): () => void {
-  return subscribeById('subscribe:project-version', 'unsubscribe:project-version', 'project-version:update', 'projectVersionId', projectVersionId, onUpdate)
+  return subscribeById(
+    'subscribe:project-version',
+    'unsubscribe:project-version',
+    'project-version:update',
+    'projectVersionId',
+    projectVersionId,
+    onUpdate,
+  )
 }
 
 export function resetSocketForTests(): void {

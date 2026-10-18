@@ -12,18 +12,38 @@ vi.mock('../control-plane/queries', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../control-plane/queries')>()
   return {
     ...actual,
-    useAnalysisRun: () => ({ data: { id: 'arun-1', projectId: 'p-1', status: 'SUCCESS', pullRequest: { number: 1 }, symbols: runHarness.symbols }, isPending: false, isError: false, error: null, refetch: vi.fn() }),
+    useAnalysisRun: () => ({
+      data: { id: 'arun-1', projectId: 'p-1', status: 'SUCCESS', pullRequest: { number: 1 }, symbols: runHarness.symbols },
+      isPending: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    }),
   }
 })
 
-const sym = (qualifiedName: string, kind = 'METHOD') => ({ language: 'TYPESCRIPT', kind, qualifiedName, filePath: 'src/foo.ts', changeKind: 'DIRECTLY_CHANGED' })
+const sym = (qualifiedName: string, kind = 'METHOD') => ({
+  language: 'TYPESCRIPT',
+  kind,
+  qualifiedName,
+  filePath: 'src/foo.ts',
+  changeKind: 'DIRECTLY_CHANGED',
+})
 
 beforeEach(() => {
   vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
     const url = String(input)
     const body = url.includes('/test-inventory')
       ? { projectVersionId: 'v-1', detectedFramework: 'VITEST', targetsTotal: 0, targetsWithTest: 0, targetsMissingTest: 0, targets: [] }
-      : { id: 'p-1', name: 'checkout', currentVersionId: 'v-1', workspace: { kind: 'PERSONAL', id: 'ws-1', login: 'demo-user' }, role: 'ADMIN', createdAt: '2026-09-01', updatedAt: '2026-09-01' }
+      : {
+          id: 'p-1',
+          name: 'checkout',
+          currentVersionId: 'v-1',
+          workspace: { kind: 'PERSONAL', id: 'ws-1', login: 'demo-user' },
+          role: 'ADMIN',
+          createdAt: '2026-09-01',
+          updatedAt: '2026-09-01',
+        }
     return new Response(JSON.stringify(body), { status: 200 })
   })
 })
@@ -31,11 +51,17 @@ beforeEach(() => {
 async function renderLive(symbols: unknown[]) {
   runHarness.symbols = symbols
   setDataSourceForTests('live')
-  renderApp(<ExperimentPage />, { initialEntry: '/projects/p-1/experimental?analysisRunId=arun-1', routePath: '/projects/:projectId/experimental' })
+  renderApp(<ExperimentPage />, {
+    initialEntry: '/projects/p-1/experimental?analysisRunId=arun-1',
+    routePath: '/projects/:projectId/experimental',
+  })
   return screen.findByLabelText('Target experimental')
 }
 
-const optionTexts = (select: HTMLElement) => within(select).getAllByRole('option').map((option) => option.textContent ?? '')
+const optionTexts = (select: HTMLElement) =>
+  within(select)
+    .getAllByRole('option')
+    .map((option) => option.textContent ?? '')
 const selectedText = (select: HTMLElement) => (select as HTMLSelectElement).selectedOptions[0]?.textContent ?? ''
 const hint = () => screen.queryByText(/puede no ser ejecutable/)
 

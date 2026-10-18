@@ -12,7 +12,10 @@ beforeEach(() => {
 })
 
 function renderDetail(analysisRunId: string, projectId: string) {
-  return renderApp(<AnalysisRunDetailPage />, { initialEntry: `/projects/${projectId}/runs/${analysisRunId}`, routePath: '/projects/:projectId/runs/:analysisRunId' })
+  return renderApp(<AnalysisRunDetailPage />, {
+    initialEntry: `/projects/${projectId}/runs/${analysisRunId}`,
+    routePath: '/projects/:projectId/runs/:analysisRunId',
+  })
 }
 
 test('HU39/HU40: un Run SUCCESS lista propuestas AVAILABLE y publica un companion PR', async () => {
@@ -38,7 +41,10 @@ test('HU32: un Run ACTION_REQUIRED enlaza a Focus Mode con returnTo de vuelta al
   renderDetail('arun_checkout_pr42', 'prj_checkout_demo')
 
   const link = await screen.findByRole('link', { name: 'Abrir Focus Mode →' })
-  expect(link).toHaveAttribute('href', `/action-required/arun_checkout_pr42?returnTo=${encodeURIComponent('/projects/prj_checkout_demo/runs/arun_checkout_pr42')}`)
+  expect(link).toHaveAttribute(
+    'href',
+    `/action-required/arun_checkout_pr42?returnTo=${encodeURIComponent('/projects/prj_checkout_demo/runs/arun_checkout_pr42')}`,
+  )
 })
 
 test('HU48: un Run resuelto con símbolo elegible enlaza a Run comparison', async () => {
@@ -73,7 +79,7 @@ test('HU48: un Run ACTION_REQUIRED no ofrece Run comparison todavía', async () 
 test('HU48: un Run sin símbolo METHOD/FUNCTION elegible no ofrece Run comparison', async () => {
   renderDetail('arun_billing_pr22', 'prj_billing_demo')
 
-  await screen.findByText('No relevant changes', { selector: '.status-badge' })
+  await screen.findByText('Sin cambios relevantes', { selector: '.status-badge' })
   expect(screen.queryByRole('link', { name: /Run comparison/ })).not.toBeInTheDocument()
 })
 
@@ -95,7 +101,7 @@ test('HU32: un Run OBSOLETE muestra el aviso de HEAD nuevo sin acciones', async 
 test('HU39: un Run BEHAVIORAL_MISMATCH mantiene sus propuestas HELD, sin botón de publicar', async () => {
   renderDetail('arun_checkout_pr46', 'prj_checkout_demo')
 
-  expect(await screen.findAllByText('Behavioral mismatch')).not.toHaveLength(0)
+  expect(await screen.findAllByText('Discrepancia de comportamiento')).not.toHaveLength(0)
   expect(screen.getByText('HELD')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /Publicar/ })).not.toBeInTheDocument()
 })
@@ -185,7 +191,9 @@ test('un Run incremental normal no muestra el aviso de bootstrap', async () => {
 test('caso PR grande: resume símbolos directos/impactados cuando el changeset es grande', async () => {
   renderDetail('arun_checkout_pr49', 'prj_checkout_demo')
 
-  expect(await screen.findByText(/Changeset grande: 6 símbolo\(s\) con cambio directo, 8 potencialmente impactado\(s\)\./)).toBeInTheDocument()
+  expect(
+    await screen.findByText(/Changeset grande: 6 símbolo\(s\) con cambio directo, 8 potencialmente impactado\(s\)\./),
+  ).toBeInTheDocument()
 })
 
 test('un changeset chico no muestra el resumen de "changeset grande"', async () => {

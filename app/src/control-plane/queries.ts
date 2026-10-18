@@ -30,13 +30,16 @@ import type {
   TestPublicationStatus,
   VerifyGitHubAppAccessRequest,
 } from './types'
+import { pollDelayMs } from '../api/polling'
 
 export const controlPlaneKeys = {
   binding: (projectId: string) => ['control-plane', 'binding', projectId] as const,
   githubRepositories: (projectId: string, userId: string | null) => ['control-plane', 'github-repositories', userId, projectId] as const,
   githubApp: ['control-plane', 'github-app'] as const,
-  githubAppAccess: (projectId: string, repositoryId: string, userId: string | null) => ['control-plane', 'github-app-access', userId, projectId, repositoryId] as const,
-  githubBranches: (projectId: string, repositoryName: string, userId: string | null) => ['control-plane', 'github-branches', userId, projectId, repositoryName] as const,
+  githubAppAccess: (projectId: string, repositoryId: string, userId: string | null) =>
+    ['control-plane', 'github-app-access', userId, projectId, repositoryId] as const,
+  githubBranches: (projectId: string, repositoryName: string, userId: string | null) =>
+    ['control-plane', 'github-branches', userId, projectId, repositoryName] as const,
   runs: (projectId?: string, status?: AnalysisRunStatus) => ['control-plane', 'runs', projectId ?? null, status ?? null] as const,
   allRuns: ['control-plane', 'runs', 'all'] as const,
   run: (analysisRunId: string) => ['control-plane', 'run', analysisRunId] as const,
@@ -125,11 +128,20 @@ export function useVerifyGitHubAppAccess(projectId: string, githubProviderToken:
 }
 
 export function useGitHubAppInfo(enabled = true) {
-  return useQuery({ queryKey: controlPlaneKeys.githubApp, queryFn: getGitHubAppInfo, enabled: enabled && !isMockDataSource(), staleTime: 60_000 })
+  return useQuery({
+    queryKey: controlPlaneKeys.githubApp,
+    queryFn: getGitHubAppInfo,
+    enabled: enabled && !isMockDataSource(),
+    staleTime: 60_000,
+  })
 }
 
 /** Estado de acceso y URL de configuración de la GitHub App para un repositorio ya vinculado (REVOKED, o Reactivar rechazado por falta de acceso). */
-export function useGitHubAppAccessInfo(projectId: string, repository: { repositoryId: string; repositoryName: string } | null, userId: string | undefined) {
+export function useGitHubAppAccessInfo(
+  projectId: string,
+  repository: { repositoryId: string; repositoryName: string } | null,
+  userId: string | undefined,
+) {
   return useQuery({
     queryKey: controlPlaneKeys.githubAppAccess(projectId, repository?.repositoryId ?? '', userId ?? null),
     queryFn: () => getGitHubAppAccess({ repositoryId: repository!.repositoryId, repositoryName: repository!.repositoryName }, projectId),
@@ -157,7 +169,8 @@ export function useGitHubRepositoryBranches(projectId: string, repositoryName: s
 const STALE_BINDING_ERROR_CODES = ['PROJECT_NOT_FOUND', 'REPOSITORY_BINDING_ALREADY_EXISTS', 'REPOSITORY_BINDING_NOT_FOUND']
 
 function refreshBindingOnStaleError(queryClient: QueryClient, projectId: string, error: unknown) {
-  if (error instanceof ApiError && error.code && STALE_BINDING_ERROR_CODES.includes(error.code)) void queryClient.invalidateQueries({ queryKey: controlPlaneKeys.binding(projectId) })
+  if (error instanceof ApiError && error.code && STALE_BINDING_ERROR_CODES.includes(error.code))
+    void queryClient.invalidateQueries({ queryKey: controlPlaneKeys.binding(projectId) })
 }
 
 export function useCreateRepositoryBinding(projectId: string, githubProviderToken: string | null) {
@@ -204,7 +217,7 @@ export function useAnalysisRunTrace(analysisRunId: string) {
     queryFn: () => getAnalysisRunTrace(analysisRunId),
     enabled: Boolean(analysisRunId),
     retry: shouldRetryOperationalTrace,
-    refetchInterval: (query) => (isTraceNotFinished(query.state.error) ? (import.meta.env.MODE === 'test' ? 10 : 900) : false),
+    refetchInterval: (query) => (isTraceNotFinished(query.state.error) ? pollDelayMs() : false),
   })
 }
 
@@ -244,7 +257,10 @@ export function usePublishTests(analysisRunId: string) {
     // El POST solo acepta la publicación (202 PENDING): propuestas y Run se invalidan al llegar a terminal (ver useRefreshOnPublicationTerminal).
     onError: (error) => {
       // 409/422 de dominio: las propuestas o el Run cambiaron; se relee para mostrar lo real.
-      if (error instanceof ApiError && (error.code === 'TEST_PUBLICATION_PROPOSAL_NOT_AVAILABLE' || error.code === 'TEST_PUBLICATION_INVALID_RUN_STATUS')) {
+      if (
+        error instanceof ApiError &&
+        (error.code === 'TEST_PUBLICATION_PROPOSAL_NOT_AVAILABLE' || error.code === 'TEST_PUBLICATION_INVALID_RUN_STATUS')
+      ) {
         void queryClient.invalidateQueries({ queryKey: controlPlaneKeys.proposals(analysisRunId) })
         void queryClient.invalidateQueries({ queryKey: controlPlaneKeys.run(analysisRunId) })
       }

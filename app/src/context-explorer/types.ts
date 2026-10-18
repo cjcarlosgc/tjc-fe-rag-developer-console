@@ -16,7 +16,10 @@ export interface ContextTraceSummary {
   createdAt: string
 }
 
-export interface SourceLine { lineNumber: number; content: string }
+export interface SourceLine {
+  lineNumber: number
+  content: string
+}
 
 export interface SourceExcerpt {
   filePath: string
@@ -37,7 +40,11 @@ export type RagMatchedVia = 'SEMANTIC' | RagStructuralMatch
 export type RagCandidateDecision = 'SELECTED' | 'DISCARDED'
 export type RagDiscardReason = 'BELOW_MINIMUM_SCORE' | 'TOP_K_LIMIT' | 'TOKEN_BUDGET'
 
-export interface RagTargetNode { chunkIds: string[]; excerpt: SourceExcerpt; tokenCount: number }
+export interface RagTargetNode {
+  chunkIds: string[]
+  excerpt: SourceExcerpt
+  tokenCount: number
+}
 
 export interface RagCandidateNode {
   chunkId: string
@@ -94,9 +101,17 @@ export interface AgentContextTraceDetail extends ContextTraceSummary {
 
 export type ContextTraceDetail = RagContextTraceDetail | AgentContextTraceDetail
 
-export interface ContextTracePage { items: ContextTraceSummary[]; nextCursor: string | null }
-export interface DiscoveredFile { filePath: string }
-export interface DiscoveredFilePage { items: DiscoveredFile[]; nextCursor: string | null }
+export interface ContextTracePage {
+  items: ContextTraceSummary[]
+  nextCursor: string | null
+}
+export interface DiscoveredFile {
+  filePath: string
+}
+export interface DiscoveredFilePage {
+  items: DiscoveredFile[]
+  nextCursor: string | null
+}
 
 export interface ExperimentContextTraceFilters {
   strategy?: ContextTraceStrategy

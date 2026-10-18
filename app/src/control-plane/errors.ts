@@ -10,7 +10,8 @@ const codeMessages: Record<string, string> = {
   REPOSITORY_BINDING_NOT_FOUND: 'Este proyecto no tiene un repositorio vinculado.',
   // Un solo caso a propósito (INTEROP-2.4 §6.8): repositorio inexistente, id falso o sin ningún permiso responden lo mismo y no se distinguen.
   GITHUB_REPOSITORY_NOT_FOUND: 'No encontramos ese repositorio o no tienes permiso sobre él. Vuelve a elegirlo de la lista.',
-  REPOSITORY_OUTSIDE_WORKSPACE: 'Este repositorio no pertenece a tu cuenta; en un proyecto personal solo puedes vincular repositorios propios.',
+  REPOSITORY_OUTSIDE_WORKSPACE:
+    'Este repositorio no pertenece a tu cuenta; en un proyecto personal solo puedes vincular repositorios propios.',
   REPOSITORY_PERMISSION_INSUFFICIENT: 'Necesitas permiso maintain, write o admin sobre este repositorio.',
   // 401 de discovery (INTEROP §6.8): habla del token OAuth de GitHub, no de la sesión de la Console; la acción es «Renovar acceso a GitHub».
   GITHUB_ACCOUNT_REQUIRED: 'Tu acceso a GitHub no está disponible o expiró. Renuévalo para descubrir tus repositorios.',
@@ -75,22 +76,33 @@ export function bindingErrorMessage(error: unknown): string {
  * Reactivar (HU57) no permite revincular otro repositorio: «Vuelve a elegirlo de la lista» no aplica. Si Core revalida `repositoryId`
  * (404) o propietario (400) y fallan, el binding sigue REVOKED y el único camino es un proyecto nuevo (INTEROP-2.4 §6.8).
  */
-const reactivateUnavailableMessage = 'El repositorio ya no está disponible para este proyecto; si necesitas otro, elimina el proyecto y crea uno nuevo.'
+const reactivateUnavailableMessage =
+  'El repositorio ya no está disponible para este proyecto; si necesitas otro, elimina el proyecto y crea uno nuevo.'
 
 export function reactivateErrorMessage(error: unknown): string {
-  if (error instanceof ApiError && (error.code === 'GITHUB_REPOSITORY_NOT_FOUND' || error.code === 'REPOSITORY_OUTSIDE_WORKSPACE')) return reactivateUnavailableMessage
+  if (error instanceof ApiError && (error.code === 'GITHUB_REPOSITORY_NOT_FOUND' || error.code === 'REPOSITORY_OUTSIDE_WORKSPACE'))
+    return reactivateUnavailableMessage
   return bindingErrorMessage(error)
 }
 
 /** `401 GITHUB_ACCOUNT_REQUIRED`/`GITHUB_USER_TOKEN_INVALID` en discovery: no cierran la sesión; se resuelven con «Renovar acceso a GitHub». */
 export function isGitHubAccessRenewalRequired(error: unknown): boolean {
-  return error instanceof ApiError && error.status === 401 && (error.code === 'GITHUB_ACCOUNT_REQUIRED' || error.code === 'GITHUB_USER_TOKEN_INVALID')
+  return (
+    error instanceof ApiError &&
+    error.status === 401 &&
+    (error.code === 'GITHUB_ACCOUNT_REQUIRED' || error.code === 'GITHUB_USER_TOKEN_INVALID')
+  )
 }
 
 /** HU64 (INTEROP-2.4 §6.13): GitHub no permitió verificar el permiso o la instalación; reintentar tiene sentido y no implica ningún juicio sobre el repositorio. */
 export function isVerificationUnavailable(error: unknown): boolean {
-  return error instanceof ApiError && error.status === 503 &&
-    (error.code === 'GITHUB_VERIFICATION_UNAVAILABLE' || error.code === 'GITHUB_UPSTREAM_UNAVAILABLE' || error.code === 'CORE_AUTHORIZATION_UNAVAILABLE')
+  return (
+    error instanceof ApiError &&
+    error.status === 503 &&
+    (error.code === 'GITHUB_VERIFICATION_UNAVAILABLE' ||
+      error.code === 'GITHUB_UPSTREAM_UNAVAILABLE' ||
+      error.code === 'CORE_AUTHORIZATION_UNAVAILABLE')
+  )
 }
 
 /** Referencia para soporte: solo existe en errores que vinieron de Core (o del mock) con `correlationId`. */
@@ -104,7 +116,8 @@ export function isFunctionalQuestionObsolete(error: unknown): boolean {
 }
 
 /** Copy de la pregunta obsoleta (INTEROP-2.9): aviso no destructivo; la bandeja y el Run se actualizan. */
-export const FUNCTIONAL_QUESTION_OBSOLETE_MESSAGE = 'Esta pregunta ya no aplica. El Run cambió o ya fue contestada; actualizamos el contexto pendiente.'
+export const FUNCTIONAL_QUESTION_OBSOLETE_MESSAGE =
+  'Esta pregunta ya no aplica. El Run cambió o ya fue contestada; actualizamos el contexto pendiente.'
 
 /** Un Project borrado (o ajeno) responde 404 `PROJECT_NOT_FOUND`: no es un fallo transitorio, así que no tiene sentido ofrecer "Reintentar". */
 export function isProjectNotFound(error: unknown): boolean {

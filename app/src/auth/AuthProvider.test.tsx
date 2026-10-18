@@ -10,15 +10,21 @@ import { useAuth } from './useAuth'
 
 function Probe() {
   const { status, session, signInWithGitHub, signOut, sessionNotice } = useAuth()
-  return <div>
-    <span data-testid="status">{status}</span>
-    <span data-testid="email">{session?.user.email ?? ''}</span>
-    <span data-testid="github-token">{session?.githubProviderToken ?? ''}</span>
-    <span data-testid="notice-kind">{sessionNotice?.kind ?? ''}</span>
-    <span data-testid="notice-message">{sessionNotice?.message ?? ''}</span>
-    <button type="button" onClick={() => void signInWithGitHub()}>signin-github</button>
-    <button type="button" onClick={() => void signOut()}>signout</button>
-  </div>
+  return (
+    <div>
+      <span data-testid="status">{status}</span>
+      <span data-testid="email">{session?.user.email ?? ''}</span>
+      <span data-testid="github-token">{session?.githubProviderToken ?? ''}</span>
+      <span data-testid="notice-kind">{sessionNotice?.kind ?? ''}</span>
+      <span data-testid="notice-message">{sessionNotice?.message ?? ''}</span>
+      <button type="button" onClick={() => void signInWithGitHub()}>
+        signin-github
+      </button>
+      <button type="button" onClick={() => void signOut()}>
+        signout
+      </button>
+    </div>
+  )
 }
 
 beforeEach(() => {
@@ -31,7 +37,11 @@ afterEach(() => vi.restoreAllMocks())
 
 async function renderAuthenticated() {
   const user = userEvent.setup()
-  renderApp(<AuthProvider><Probe /></AuthProvider>)
+  renderApp(
+    <AuthProvider>
+      <Probe />
+    </AuthProvider>,
+  )
   await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('unauthenticated'))
   await user.click(screen.getByText('signin-github'))
   await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('authenticated'))
@@ -49,14 +59,25 @@ describe('AuthProvider', () => {
   })
 
   it('restaura la sesión persistida en localStorage', async () => {
-    localStorage.setItem('rag-console.mock-session', JSON.stringify({ user: { id: 'user_demo_github', email: 'demo@rag-test-studio.local' }, accessToken: 'mock-github-session-token' }))
-    renderApp(<AuthProvider><Probe /></AuthProvider>)
+    localStorage.setItem(
+      'rag-console.mock-session',
+      JSON.stringify({ user: { id: 'user_demo_github', email: 'demo@rag-test-studio.local' }, accessToken: 'mock-github-session-token' }),
+    )
+    renderApp(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>,
+    )
     await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('authenticated'))
   })
 
   it('bloquea VITE_AUTH_MODE=mock junto a datos live, sin formulario alcanzable', () => {
     setDataSourceForTests('live')
-    renderApp(<AuthProvider><Probe /></AuthProvider>)
+    renderApp(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>,
+    )
     expect(screen.getByRole('alert')).toHaveTextContent(/Combinación de entorno no permitida/)
     expect(screen.queryByTestId('status')).not.toBeInTheDocument()
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
@@ -101,14 +122,19 @@ describe('AuthProvider', () => {
       await waitFor(() => expect(screen.getByTestId('notice-kind')).toHaveTextContent('identity-required'))
     })
 
-    it.each(['GITHUB_ACCOUNT_REQUIRED', 'GITHUB_USER_TOKEN_INVALID', 'CODIGO_DESCONOCIDO'])('401 %s (token OAuth de GitHub, no la sesión) NO cierra la sesión', async (code) => {
-      await renderAuthenticated()
-      act(() => notifyAuthError({ status: 401, code }))
-      await act(async () => { await Promise.resolve() })
-      expect(screen.getByTestId('status')).toHaveTextContent('authenticated')
-      expect(screen.getByTestId('notice-kind')).toHaveTextContent('')
-      expect(localStorage.getItem('rag-console.mock-session')).not.toBeNull()
-    })
+    it.each(['GITHUB_ACCOUNT_REQUIRED', 'GITHUB_USER_TOKEN_INVALID', 'CODIGO_DESCONOCIDO'])(
+      '401 %s (token OAuth de GitHub, no la sesión) NO cierra la sesión',
+      async (code) => {
+        await renderAuthenticated()
+        act(() => notifyAuthError({ status: 401, code }))
+        await act(async () => {
+          await Promise.resolve()
+        })
+        expect(screen.getByTestId('status')).toHaveTextContent('authenticated')
+        expect(screen.getByTestId('notice-kind')).toHaveTextContent('')
+        expect(localStorage.getItem('rag-console.mock-session')).not.toBeNull()
+      },
+    )
 
     it('503 IDENTITY_UNAVAILABLE NO cierra la sesión y deja un aviso reintentable', async () => {
       await renderAuthenticated()

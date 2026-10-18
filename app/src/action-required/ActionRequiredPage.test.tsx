@@ -45,7 +45,9 @@ test('INTEROP-2.7: una abstención mantiene la pregunta en la bandeja, sin texto
 
   const line = await screen.findByText(/Abstención registrada · ADMIN · .+ · 2 abstención\(es\)/)
   expect(line).toHaveClass('abstention-note')
-  expect(line.closest('.action-required-item')).toHaveTextContent('¿"applyLateFee" debe aplicarse si la factura ya fue marcada como pagada parcialmente?')
+  expect(line.closest('.action-required-item')).toHaveTextContent(
+    '¿"applyLateFee" debe aplicarse si la factura ya fue marcada como pagada parcialmente?',
+  )
   expect(screen.queryByText(/usr_/)).not.toBeInTheDocument()
   expect(screen.queryByText(/resuelto|continuando|todas las preguntas respondidas/i)).not.toBeInTheDocument()
 })
