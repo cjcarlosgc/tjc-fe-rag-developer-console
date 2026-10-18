@@ -1,12 +1,6 @@
 {
   "schemaVersion": 4,
-  "awayMode": {
-    "enabled": true,
-    "activatedBy": "user",
-    "activatedAt": "2026-10-11T10:09:24.000Z",
-    "quote": "un Modo Noche SDD: Modo fuera de casa del repositorio + un heartbeat en este chat cada 20 minutos"
-  },
-  "sddVersion": "3.0",
+  "sddVersion": "3.1",
   "planningBaseline": "2026-09-24-core-console-transition",
   "allowedStatuses": [
     "W-PLANNED",

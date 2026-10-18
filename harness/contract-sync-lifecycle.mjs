@@ -28,7 +28,9 @@ export function contractSyncImportTime(text) {
   const value = text.match(/^consumerImportedAt:\s*(.+)$/m)?.[1]?.trim();
   if (!value) return null;
   const timestamp = Date.parse(value);
-  if (!Number.isFinite(timestamp) || new Date(timestamp).toISOString() !== value) return Number.NaN;
+  if (!Number.isFinite(timestamp) || new Date(timestamp).toISOString() !== value) {
+    return Number.NaN;
+  }
   return timestamp;
 }
 
@@ -79,7 +81,9 @@ export function contractSyncTransitionText(text, transition, evidencePath) {
 
   const evidenceField = transition === 'acknowledge' ? 'acknowledgementEvidence' : 'resolutionEvidence';
   const existingEvidence = text.match(new RegExp(`^${evidenceField}:\\s*(.*)$`, 'm'))?.[1]?.trim();
-  if (existingEvidence && existingEvidence !== evidencePath) throw new Error(`cannot replace existing ${evidenceField}`);
+  if (existingEvidence && existingEvidence !== evidencePath) {
+    throw new Error(`cannot replace existing ${evidenceField}`);
+  }
   if (current === next && existingEvidence === evidencePath) return text;
 
   let updated = text.replace(/^status:\s*.*$/m, `status: ${next}`);
