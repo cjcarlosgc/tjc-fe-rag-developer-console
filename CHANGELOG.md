@@ -4,6 +4,7 @@ Todos los cambios notables de la línea base SDD se registran aquí. El contenid
 
 ## [Unreleased]
 
+- **Entorno y CI (2026-10-18, decisión del usuario, ejecutado desde cross):** `engines`, `.nvmrc`, `@types/node` ^22 y CI; `VITE_CORE_API_URL` fijada en `.env.test` (un test dependía del `.env` local); `package-lock.json` sincronizado. Ver `harness/reports/cross-fase3-estabilidad-2026-10-18.md`.
 - **INTEROP-2.17 — error envelope canónico (2026-10-18, decisión del usuario, ejecutado desde cross):** `ApiError` expone `retryable` (aditivo) y el cuerpo de error se tipa con el `ErrorEnvelope` generado desde `spec/contracts/schemas`; test de contrato con los ejemplos canónicos. Los demás tipos de respuesta siguen a mano. Ver `harness/reports/cross-fase2-esquemas-contratos-2026-10-18.md`.
 - **Cierre `WI-CONSOLE-038` (2026-10-14, `W-DONE`):** `PublishSection.test.tsx` espera las insignias `PUBLISHED` de las filas tras el refetch de propuestas (`waitFor`, mismo número y texto) en lugar de afirmarlas de forma síncrona, y una prueba nueva retiene el refetch con una puerta (ROJO→VERDE). Solo pruebas: sin producto, DTO, rutas, contrato ni timeouts; 806/806 y 5 corridas completas sin límite de workers verdes. El id `WI-CONSOLE-038` estaba nombrado como reservado a la UI informativa de campos nuevos; ese WI necesitará otro id. Ver `harness/reports/wi-console-038-closure.md`.
 
