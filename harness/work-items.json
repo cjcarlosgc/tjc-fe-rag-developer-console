@@ -3736,6 +3736,217 @@
         }
       ],
       "closedAt": "2026-10-14T17:16:52.768Z"
+    },
+    {
+      "id": "WI-CONSOLE-039",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "title": "Espejar INTEROP-2.17 desde Core y procesar el Contract Sync CS-CORE-20261018-002",
+      "storyIds": [
+        "HU01",
+        "HU11",
+        "HU14",
+        "HU15"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-041"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": true,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md",
+        "spec/contracts/github-integration-contract.md",
+        "spec/contracts/schemas",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-039-scope-approval.md",
+        "harness/reports/wi-console-039-sdd-verification.md",
+        "harness/reports/wi-console-039-contract-sync-review.md",
+        "harness/reports/wi-console-039-implementation.md",
+        "harness/reports/wi-console-039-contract-review.md",
+        "harness/reports/wi-console-039-review.md",
+        "harness/reports/wi-console-039-closure.md"
+      ],
+      "acceptanceCriteria": [
+        "interoperability-contract.md coincide byte a byte con Core 67519a20 (SHA-256 b9ed40dc8d15a414b7cca4ccee4f320ba9da8f7444ef426b8321d17bdc0dea05); system-contract.md (b70f9358…), github-integration-contract.md (6c553ee8…) y el árbol spec/contracts/schemas (c45e4513…) verificados.",
+        "CS-CORE-20261018-002 se acusa y resuelve solo con evidencia real; CS-CORE-20261012-008/-010/-012 y CS-CORE-20261018-001/-003 no apuntan a Console y se clasifican NOT_RELEVANT sin acusarlos.",
+        "contracts:check, lint, tsc -b --noEmit, pruebas, build y validadores SDD/Harness pasan; sin cambio de DTO, rutas ni UI.",
+        "contract-reviewer y reviewer independientes aprueban."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-039-scope-approval.md",
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true,
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-039 no toca bindings, UI ni endpoints. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-039-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-039 no toca autorizacion ni interfaz. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-039-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-039 no cambia login, sesion, tokens ni el cliente HTTP. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-039-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-039 no altera Projects ni visibilidad. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-039-contract-sync-review.md"
+        }
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-040",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-PLANNED",
+      "priority": "P2",
+      "sprint": "SMART V3",
+      "title": "Unificar pnpm como gestor de paquetes único de app/",
+      "storyIds": [
+        "HU01"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-042"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "specPaths": [
+        "spec/transversal/testing/tasks.md",
+        "spec/constitution/tech-stack.md"
+      ],
+      "acceptanceCriteria": [
+        "app/package-lock.json eliminado; un solo lockfile (pnpm-lock.yaml) y packageManager declarado en app/package.json.",
+        "Sin referencias vigentes a npm en scripts, CI, README, tech-stack.md y docs de proceso (excepto contratos espejados, reportes históricos y CHANGELOG pasado).",
+        "lint, tsc -b --noEmit, pruebas, build y validadores pasan con pnpm install --frozen-lockfile; sin cambio de comportamiento ni contrato."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-040-scope-approval.md",
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true,
+      "lane": "FAST"
+    },
+    {
+      "id": "WI-CONSOLE-041",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-PLANNED",
+      "priority": "P2",
+      "sprint": "SMART V3",
+      "title": "Regularizar retroactivamente el trabajo de contratos y estabilización ejecutado desde cross (a464b61, 99e1ecc)",
+      "storyIds": [
+        "HU01",
+        "HU12",
+        "HU14"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-043"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "harness/reports/cross-fase2-esquemas-contratos-2026-10-18.md",
+        "harness/reports/cross-fase3-estabilidad-2026-10-18.md",
+        "harness/reports/wi-console-041-scope-approval.md"
+      ],
+      "acceptanceCriteria": [
+        "El reporte declara explícitamente la retroactividad e implementationAgent: cross; la verificación usa evidencia real (pruebas, tipos generados vs esquemas, contracts:check).",
+        "reviewer independiente de cross revisa a464b61 y 99e1ecc; hallazgos corregidos o registrados.",
+        "lint, tsc -b --noEmit, pruebas, build y validadores pasan; sin duplicar el espejo de WI-CONSOLE-039."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-041-scope-approval.md",
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true
+    },
+    {
+      "id": "WI-CONSOLE-042",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-PLANNED",
+      "priority": "P2",
+      "sprint": "SMART V3",
+      "title": "Regularizar retroactivamente el trabajo de UI ejecutado desde cross (3f6341c)",
+      "storyIds": [
+        "HU01",
+        "HU12",
+        "HU14"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-044"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "specPaths": [
+        "spec/features/010-product-experience/tasks.md",
+        "spec/transversal/design-system/spec.md",
+        "spec/transversal/accessibility/spec.md",
+        "harness/reports/cross-fase4-ui-console-2026-10-18.md",
+        "harness/reports/wi-console-042-scope-approval.md"
+      ],
+      "acceptanceCriteria": [
+        "El reporte declara la retroactividad e implementationAgent: cross; verificación con evidencia real (lint, tipos, pruebas, build, format:check, contraste y comportamiento en navegador).",
+        "reviewer y ux-reviewer independientes revisan 3f6341c (máx. 2 ciclos); idioma de UI en español con términos de dominio en inglés; sin reinterpretar la autoridad MAINTAINER/ADMIN sobre Functional Knowledge.",
+        "WI-CONSOLE-005 y WI-CONSOLE-006 no se cierran; se documenta la cobertura parcial."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-042-scope-approval.md",
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true
     }
   ]
 }
