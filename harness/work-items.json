@@ -3979,7 +3979,7 @@
       "id": "WI-CONSOLE-042",
       "component": "CONSOLE",
       "workItemType": "PRODUCT",
-      "status": "W-PLANNED",
+      "status": "W-DONE",
       "priority": "P2",
       "sprint": "SMART V3",
       "title": "Regularizar retroactivamente el trabajo de UI ejecutado desde cross (3f6341c)",
@@ -4004,7 +4004,13 @@
         "spec/transversal/design-system/spec.md",
         "spec/transversal/accessibility/spec.md",
         "harness/reports/cross-fase4-ui-console-2026-10-18.md",
-        "harness/reports/wi-console-042-scope-approval.md"
+        "harness/reports/wi-console-042-scope-approval.md",
+        "harness/reports/wi-console-042-sdd-verification.md",
+        "harness/reports/wi-console-042-retroactive-verification.md",
+        "harness/reports/wi-console-042-contract-sync-scope-review.md",
+        "harness/reports/wi-console-042-review.md",
+        "harness/reports/wi-console-042-ux-review.md",
+        "harness/reports/wi-console-042-closure.md"
       ],
       "acceptanceCriteria": [
         "El reporte declara la retroactividad e implementationAgent: cross; verificación con evidencia real (lint, tipos, pruebas, build, format:check, contraste y comportamiento en navegador).",
