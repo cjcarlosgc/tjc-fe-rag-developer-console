@@ -4,6 +4,7 @@ Todos los cambios notables de la línea base SDD se registran aquí. El contenid
 
 ## [Unreleased]
 
+- **WI-CONSOLE-040 (2026-10-18):** pnpm como gestor único de `app/`: se elimina `app/package-lock.json`, se declara `packageManager` (pnpm 12.14.0) y se actualizan `.claude/launch.json`, `tech-stack.md`, README y CI. Sin cambio de dependencias, comportamiento ni contrato.
 - **WI-CONSOLE-039 (2026-10-18):** `interoperability-contract.md` re-espejado byte a byte desde Core `67519a20` (INTEROP-2.17, SHA-256 `b9ed40dc…`); SYSTEM-2.13, GH-INTEROP-1.8 y `spec/contracts/schemas` verificados por digest. Se acusa y resuelve `CS-CORE-20261018-002`; los eventos del inbox dirigidos a GitHub Integration/Sandbox no se acusan. Sin cambio de DTO, rutas ni UI.
 - **UI/UX y código (2026-10-18, decisión del usuario, ejecutado desde cross):** tokens completos y `color-scheme: dark`, contraste AA y objetivos de 40 px, enlace «Saltar al contenido», 404, títulos por ruta, glosario de idioma, `StatusBadge`/`EmptyState`/`PageHeader`, CSS dividido, carga diferida del backend simulado, sondeo centralizado que respeta `pollAfterMs`, validación de `VITE_CORE_API_URL`, Prettier y `jsx-a11y`. Ver `harness/reports/cross-fase4-ui-console-2026-10-18.md`.
 - **Entorno y CI (2026-10-18, decisión del usuario, ejecutado desde cross):** `engines`, `.nvmrc`, `@types/node` ^22 y CI; `VITE_CORE_API_URL` fijada en `.env.test` (un test dependía del `.env` local); `package-lock.json` sincronizado. Ver `harness/reports/cross-fase3-estabilidad-2026-10-18.md`.

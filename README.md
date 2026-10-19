@@ -17,6 +17,19 @@ Control plane web PR-driven para proyectos con repositorios vinculados, Analysis
 3. Ejecutar `node scripts/sdd-check.mjs`.
 4. Seleccionar un WI local de `harness/work-items.json` enlazado desde `tasks.md`, registrarlo en `harness/state.json` y ejecutar `node harness/validate-harness.mjs`.
 
+## Desarrollo
+
+Gestor de paquetes único: pnpm (versión fijada en `app/package.json`, campo `packageManager`). Node 22 según `app/.nvmrc`.
+
+```sh
+corepack enable
+cd app && pnpm install --frozen-lockfile
+pnpm dev        # servidor de desarrollo
+pnpm lint
+pnpm test
+pnpm build
+```
+
 ## Pruebas live: configuración de URLs
 
 - `VITE_CORE_API_URL`: Core. Por aquí van todas las rutas de Console, incluidas la publicación de pruebas (`POST /analysis-runs/{id}/test-publications` y `GET /test-publications/{id}`).

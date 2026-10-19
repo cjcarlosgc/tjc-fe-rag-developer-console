@@ -4,7 +4,7 @@
     {
       "name": "console-mock",
       "runtimeExecutable": "env",
-      "runtimeArgs": ["VITE_DATA_SOURCE=mock", "VITE_AUTH_MODE=mock", "npm", "--prefix", "app", "run", "dev", "--", "--port", "5173", "--strictPort"],
+      "runtimeArgs": ["VITE_DATA_SOURCE=mock", "VITE_AUTH_MODE=mock", "pnpm", "--dir", "app", "dev", "--", "--port", "5173", "--strictPort"],
       "port": 5173
     }
   ]
