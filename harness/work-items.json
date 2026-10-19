@@ -3901,7 +3901,7 @@
       "id": "WI-CONSOLE-041",
       "component": "CONSOLE",
       "workItemType": "PRODUCT",
-      "status": "W-PLANNED",
+      "status": "W-DONE",
       "priority": "P2",
       "sprint": "SMART V3",
       "title": "Regularizar retroactivamente el trabajo de contratos y estabilización ejecutado desde cross (a464b61, 99e1ecc)",
@@ -3925,7 +3925,12 @@
         "spec/features/013-pr-driven-control-plane/tasks.md",
         "harness/reports/cross-fase2-esquemas-contratos-2026-10-18.md",
         "harness/reports/cross-fase3-estabilidad-2026-10-18.md",
-        "harness/reports/wi-console-041-scope-approval.md"
+        "harness/reports/wi-console-041-scope-approval.md",
+        "harness/reports/wi-console-041-sdd-verification.md",
+        "harness/reports/wi-console-041-retroactive-verification.md",
+        "harness/reports/wi-console-041-contract-sync-scope-review.md",
+        "harness/reports/wi-console-041-review.md",
+        "harness/reports/wi-console-041-closure.md"
       ],
       "acceptanceCriteria": [
         "El reporte declara explícitamente la retroactividad e implementationAgent: cross; la verificación usa evidencia real (pruebas, tipos generados vs esquemas, contracts:check).",
