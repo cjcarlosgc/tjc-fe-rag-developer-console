@@ -85,3 +85,18 @@ Entorno: Node 22 en `$HOME/.local/node22/bin` (`export PATH=$HOME/.local/node22/
 | Fila «Historial de transiciones» (18 px, WI-042) | **Fuera de alcance** | Ya estaba anotada como fuera del listado aprobado |
 
 Lo que no se toca en este corte, por el alcance: WI-CONSOLE-005 y WI-CONSOLE-006 siguen `W-PLANNED`; este informe no los cierra.
+
+## 6. Ciclo 2 (2026-10-21): decisiones pendientes registradas
+
+Modelo: implementer-high · configurado claude-haiku-5-5 · atendido unknown · esfuerzo high. Corrección del ciclo 2 tras `ux-reviewer` (CHANGES_REQUESTED). Las mediciones de desbordes del ciclo 2 están en `harness/reports/wi-console-047-implementation.md`, sección «Ciclo 2».
+
+Los siguientes objetivos táctiles quedan **sin implementar** (DECISION_REQUIRED para el usuario). Subirlos a 40 px cambia el layout de todas las páginas y excede el listado aprobado de la observación 1:
+
+| # | Elemento | Medida (ciclo 2, navegador) | Estado |
+|---|---|---|---|
+| DR-1 | Migas de pan (`Breadcrumbs`) en todas las páginas de detalle | 17 px de alto (Projects 49×17, Action Required 95×17, Runs 30×17, `checkout-service` 103×17) | DECISION_REQUIRED. Ya listado en §5 (D-a). WCAG 2.2 SC 2.5.8 pide 24 px; las migas son enlaces en línea |
+| DR-2 | «Ver todos →» | 18 px de alto (ya listado en §5, D-a) | DECISION_REQUIRED |
+| DR-3 | Botones «Ver inventario →» de la página Historial (3 ejemplares, 259 px de ancho) | **34 px de alto**. Hallazgo nuevo del `ux-reviewer` (no estaba en el informe del ciclo 1) | DECISION_REQUIRED. Son controles autónomos por debajo de 40 px |
+| DR-4 | Fila «Historial de transiciones» del detalle de Run (`summary` del `details`) | 18 px de alto (ya listada en §5 como fuera de alcance) | DECISION_REQUIRED |
+
+Lo declarado en §5 no cambia: lector de pantalla real, zoom del navegador real y contraste siguen sin probar.

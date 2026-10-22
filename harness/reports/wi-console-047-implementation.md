@@ -332,3 +332,118 @@ Archivos: `app/src/ui/AppShell.tsx`, `app/src/styles/action-required.css`, `app/
 - Servidor de configuración inválida (`localhost:5174`) cerrado.
 - Chrome headless con CDP cerrado.
 - El servidor de `localhost:5173` (mock) estaba levantado antes del corte y se deja activo.
+
+---
+
+## Ciclo 2 — correcciones tras la revisión independiente (2026-10-21)
+
+Modelo: implementer-high · configurado claude-haiku-5-5 · atendido unknown · esfuerzo high
+
+**Entrada:** `harness/reports/wi-console-047-review.md` (reviewer, APPROVED con observaciones menores) y `harness/reports/wi-console-047-ux-review.md` (ux-reviewer, CHANGES_REQUESTED: H1 obligatorio; H2, H3, H4 y observaciones menores). Alcance: `harness/reports/wi-console-047-scope-approval.md`. Sin commit, sin push, sin PR.
+
+### H1 (obligatorio) — desborde del detalle de Run a 320 y 375 px
+
+**Corrección de la causa indicada en el informe del ux-reviewer.** `.symbol-list code` («Símbolos cambiados») ya tenía `overflow-wrap: anywhere; min-width: 0` (commit 28c9cf8 y anteriores). Midiendo en el navegador, el `<code>` de «Símbolos cambiados» mide 222 px a 320 px y parte bien. El desborde viene de otro `<code>` sin `overflow-wrap`: el objetivo de la sección «Trace operativo» (`OperationalTraceSection.tsx`, `<h3>Objetivo: <code>ShippingAddressValidator.validate</code></h3>`). El `<code>` es ítem flex de un `h3` con `display: flex`; su mínimo era el nombre completo (327 px) y arrastraba `scrollWidth` a 376 px.
+
+Cadena medida: `CODE` (327 px) → `H3` (flex) → `ARTICLE.trace-target` → `SECTION.operational-trace` → `MAIN.content` → `DIV.app-shell`.
+
+**Corrección mínima (dos reglas, sin cambio de layout cuando no hay desborde):**
+- `app/src/styles/trace.css`: nueva regla `.operational-trace h3 code { overflow-wrap: anywhere; min-width: 0; }` tras `.operational-trace h3`.
+- `app/src/styles/base.css`: `h1 { overflow-wrap: anywhere; }`. Motivo: el barrido de los demás Runs encontró un segundo desborde en el título de `arun_billing_pr17` y `arun_billing_pr17_2` («Firma nueva de DiscountEngine.applyDiscount», 462 px a 320 y 375 px). El `h1` no tenía ruptura para el token sin espacios. Es la misma clase de defecto que en Focus Mode (corte A).
+
+**Mediciones (`scrollWidth` / `clientWidth` del documento, iframes same-origin de ancho fijo, dev server mock :5173):**
+
+| Página | 320 px antes | 320 px después | 375 px antes | 375 px después | 640 px antes → después | 1280 px antes → después |
+|---|---|---|---|---|---|---|
+| Detalle de Run `arun_checkout_pr52` | 376 / 320 | **320 / 320** | 376 / 375 | **375 / 375** | 640 / 640 → 640 / 640 | 1280 / 1280 → 1280 / 1280 |
+| Detalle de Run `arun_billing_pr17` | 462 / 320 | **320 / 320** | 462 / 375 | **375 / 375** | no medido → 640 / 640 | no medido → 1280 / 1280 |
+| Detalle de Run `arun_billing_pr17_2` | 462 / 320 | **320 / 320** | 462 / 375 | **375 / 375** | — | — |
+
+**Barrido de todos los detalles de Run del mock a 320 y 375 px.** Antes del arreglo: 44 mediciones (22 Runs × 2 anchos), 6 con desborde (las tres filas anteriores). Después del arreglo: 44/44 con `scrollWidth` = `clientWidth`. Tras los cambios de texto de H2 a H4 se repitió el barrido: 50/50 (los 22 Runs × 2 anchos y las tres vistas de Action Required: `/action-required`, `/action-required?workspaceId=1000001` y Focus Mode `arun_billing_pr17`, × 2 anchos). Ningún otro desborde por tokens largos.
+
+**Guardas de regresión:** `app/src/styles/cssRegressionGuards.test.ts`, nueva sección «detalle de Run sin desbordamiento» con tres pruebas (`.operational-trace h3 code`, `h1` y `.symbol-list code`). Son guardas débiles: jsdom no mide layout; la evidencia real es la tabla anterior.
+
+### H2 — ámbito visible del contador del menú
+
+- `app/src/action-required/ActionRequiredPage.tsx`: bajo el encabezado, `<p className="empty-inline-note">` con «Pendientes en todos tus Workspaces.» o, con `?workspaceId=`, «Pendientes del Workspace seleccionado.». Usa la clase existente, sin primitive nueva ni cambio de comportamiento ni de contrato. El contador del nav sigue siendo global (sin cambio).
+- Prueba: `app/src/action-required/ActionRequiredPage.test.tsx`, «WI-CONSOLE-047 (ciclo 2, H2)». Verificado en navegador a 320 y 375 px.
+
+### H3 — residuos en inglés fuera del glosario
+
+Criterio: se traduce el texto visible si no es literal de contrato ni término del glosario de `spec/transversal/design-system/spec.md`. Sin cambios de comportamiento ni de identificadores.
+
+Traducido (rótulos y mensajes visibles, comentarios incluidos cuando el término aparece en ellos):
+- «Analysis Run» / «Analysis Runs» → «AnalysisRun» / «AnalysisRuns» (glosario). Afecta a 25+ textos visibles, a los mensajes de error del mock (`No existe el AnalysisRun demo…`) y a los títulos de carga.
+- «Run comparison» → «Comparación de estrategias» (enlace del detalle de Run, migas, eyebrow y mensajes de `PendingContractError`). Coincide con el título de ruta `Comparación de estrategias` ya existente.
+- «Retrieval» / «retrieval» → «Recuperación» / «recuperación» (paso del trace, «Comparar recuperación SE vs SEM», títulos y mensajes de error de la comparación OE2).
+- «Chunks» / «chunks» → «Fragmentos» / «fragmentos» (Historial y Explorador de contexto, comparación de experimentos).
+- «Buscar target» → «Buscar objetivo» (Inventario).
+- «Behavioral Mismatch» → «Discrepancia de comportamiento» (texto del hero DEMO de Projects; el estado ya se rotula así en `control-plane/status.ts`).
+- «DEMO TIMELINE» → «DEMO · LÍNEA TEMPORAL» (sello del Historial; solo se traducen las palabras sueltas dentro de la etiqueta DEMO).
+- «Demo mode · SDD 3.0» → «Modo demo · SDD 3.0» (palabra suelta dentro de la etiqueta DEMO del hero).
+- «MINI DIFF», «STATE DIAGRAM», «SYMBOL RELATION», «CODE FRAGMENT» (tipo de ayuda visual de Focus Mode): el `kind` es literal de contrato y el rótulo visible salía de `replace(/_/g, ' ')`. Ahora `VISUAL_AID_KIND_LABELS` en `FocusModePage.tsx` muestra «Diferencia reducida», «Diagrama de estados», «Relación de símbolos» y «Fragmento de código». El valor `kind` no cambia.
+- Filtros de Functional Knowledge: «Active» / «Superseded» → «Activas» / «Reemplazadas».
+- «sólo» → «solo» (uniforme, 0 ocurrencias restantes en `app/src`).
+
+**Dejado sin traducir, con motivo:**
+- `ACTIVE`, `SUPERSEDED`, `COMPLETED`, `FAILED`, `PENDING`, `RUNNING`, `BEHAVIORAL_MISMATCH` y demás valores de enum: literales de contrato (`contracts/generated`), mostrados tal cual como chips de estado de Functional Knowledge y en Experimentos.
+- `SE` / `SEM`: claves de modo del contrato OE2.
+- `MINI_DIFF` y demás `kind` de `visualAid` en `mockBackend.ts`: datos y literales de contrato.
+- «Functional Knowledge»: término del producto pendiente de decisión del usuario.
+- Rótulos «DEMO · …» y «EN VIVO · CORE API»: se conservan; solo se traducen palabras sueltas en inglés dentro de la misma etiqueta.
+- «Project» / «Projects» / «Run» / «Workspace» / «Focus Mode» / «Action Required» / «Repository binding» / «PR» / «HEAD» / «Baseline»: términos del glosario.
+
+**Guarda:** `app/src/ui/glossary.test.ts` amplía `FORBIDDEN_VISIBLE` con «Analysis Run», «Run comparison», «Buscar target», «Retrieval» visible, «MINI DIFF», «Chunks» visible, «DEMO TIMELINE», «Behavioral Mismatch», «sólo» y los filtros «Active» / «Superseded». `MUST_CONTAIN` suma «Comparar recuperación SE vs SEM», «Buscar objetivo» y «Discrepancia de comportamiento». Los tests que comprobaban los textos anteriores se actualizaron en la misma pasada (≈40 archivos de prueba).
+
+### H4 — título de Focus Mode
+
+- `app/src/ui/routeTitles.ts`: `/action-required/:id` → «Focus Mode» (antes «Foco de contexto funcional»), igual que el rótulo visible.
+- `app/src/ui/routeTitles.test.ts`: casos para `/action-required/arun_9` («Focus Mode · RAG Test Studio») y para la comparación de recuperación.
+
+### Comentario obsoleto en `api/mockBackend.ts` (~línea 1104)
+
+«sin `AnalysisRun` propio en control-plane» se reemplaza por «Desde WI-CONSOLE-047 (ciclo 2) el Run también existe como `AnalysisRun` propio en control-plane (seed `arun_checkout_pr52` en `analysisRuns`)…». También se corrige el mensaje de `No existe la comparación…` y similares ya citados en H3.
+
+### `main.tsx` — catch de la carga diferida
+
+- `app/src/main.tsx`: `Promise.all([import('./router'), import('./auth/AuthProvider')])` ahora tiene `.catch(...)` que renderiza `AppLoadErrorScreen` dentro de `StrictMode`. Antes, un chunk no descargable dejaba la página en blanco.
+- Nuevo `app/src/config/AppLoadErrorScreen.tsx` (componente local de `config/`, sin primitive en `ui/`, mismas clases que `ConfigurationErrorScreen`): título «No se pudo cargar la aplicación», `role="alert"`, texto «Falta un módulo de la aplicación.», paso accionable «Recarga la página…» y botón «Recargar página» (`window.location.reload()`). Foco en `main`, título de documento en español, sin enlaces al router.
+- No reutiliza `ConfigurationErrorScreen`: sus props son específicas de `VITE_CORE_API_URL` y su texto no aplica a un fallo de carga. Reutilizar sus clases no implica diseño nuevo, así que no se anota como pendiente.
+- Pruebas: `app/src/config/AppLoadErrorScreen.test.tsx` (2 casos) y `app/src/main.test.tsx` (caso «si falla la carga diferida del router…» con `vi.doMock('./router')` que lanza; `vi.doUnmock` en `afterEach`).
+
+### Archivos tocados en el ciclo 2
+
+Estilos: `app/src/styles/base.css`, `app/src/styles/trace.css`, `app/src/styles/cssRegressionGuards.test.ts`.
+Arranque: `app/src/main.tsx`, `app/src/main.test.tsx`, nuevo `app/src/config/AppLoadErrorScreen.tsx` y `app/src/config/AppLoadErrorScreen.test.tsx`.
+Rutas y glosario: `app/src/ui/routeTitles.ts`, `app/src/ui/routeTitles.test.ts`, `app/src/ui/glossary.test.ts`.
+Action Required y Focus Mode: `app/src/action-required/ActionRequiredPage.tsx` (+ test), `FocusModePage.tsx`, `FunctionalKnowledgePage.tsx` (+ test), `FunctionalKnowledgeDetailPage.tsx` (+ test), `speculative/ruleUsage.test.ts`.
+Detalle de Run, trace y comparaciones: `control-plane/AnalysisRunDetailPage.tsx` (+ test), `control-plane/OperationalTraceSection.tsx` (+ test), `control-plane/RunsPage.tsx` (+ test), `control-plane/errors.ts` (+ test), `control-plane/api.ts`, `control-plane/api.test.ts`, `control-plane/queries.ts`, `control-plane/types.ts`, `control-plane/speculative/priorCoverage.test.ts`, `run-comparison/*` (CaptureNextPrPanel, RunComparisonPage, api, api.test, types), `retrieval-comparison/*` (RetrievalComparisonPage, failureMessages, types, test), `experiments/*` (ExperimentComparison, ExperimentPage, tests), `context-explorer/*` (api, api.test, rag/RagSidePanel, rag/ragLabels), `evidence/*` (tests), `analysis/AnalysisHistoryPage.tsx`, `inventory/*` (InventoryView, InventoryPage, test), `projects/*` (ProjectsPage, tests, workspaceOverview.test), `api/mockBackend.ts`.
+Harness: `harness/reports/wi-console-047-a11y-verification.md` (§6 Ciclo 2: DR-1 a DR-4), este informe.
+
+### Pendientes para el usuario (DECISION_REQUIRED, sin implementar)
+
+No se implementan porque subir objetivos a 40 px cambia el layout de todas las páginas y excede el listado aprobado. Registrado en `harness/reports/wi-console-047-a11y-verification.md`, §6:
+- DR-1: migas de pan a 17 px de alto (en todas las páginas de detalle).
+- DR-2: «Ver todos →» a 18 px.
+- DR-3: botones «Ver inventario →» de la página Historial a **34 px** de alto (hallazgo nuevo del ux-reviewer; ×3, 259 px de ancho).
+- DR-4: fila «Historial de transiciones» del detalle de Run a 18 px.
+
+Además siguen pendientes D-b (mayúsculas por `text-transform` que entran en el nombre accesible) y D-c (`user-email` con elipsis), ya registrados en el ciclo 1.
+
+### Gates (en `app/`, resultado real tras todos los cambios del ciclo 2)
+
+| Gate | Comando | Resultado |
+|---|---|---|
+| Lint | `pnpm lint` | exit 0 |
+| Tipos | `pnpm exec tsc -b --noEmit` | exit 0 |
+| Pruebas | `pnpm test --maxWorkers=4` | exit 0: 93 ficheros, 943 pruebas en verde |
+| Build | `pnpm build` | exit 0 (entrada 344.24 kB, gzip 108.48 kB; router 384.92 kB; AuthProvider 218.63 kB) |
+| Formato | `pnpm format:check` | exit 0 (tras `prettier --write` sobre `ProjectsPage.tsx`) |
+| Contratos | `pnpm contracts:check` | exit 0 |
+
+No se ejecutaron `node scripts/sdd-check.mjs`, `validate-work-items.mjs` ni `validate-harness.mjs` en este ciclo; los ejecuta el leader al cierre.
+
+### Entorno al cerrar
+
+- Viewport del Browser pane: no se modificó en este ciclo (todas las mediciones usaron iframes same-origin de ancho fijo), así que no hay nada que restaurar.
+- Servidores: no se arrancó ninguno. El de `localhost:5173` (mock) ya estaba activo y se deja como estaba. El de `localhost:5175` pertenece a otra sesión y no se tocó.
