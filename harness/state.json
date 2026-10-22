@@ -17277,7 +17277,7 @@
   ],
   "activeWorkItem": {
     "id": "WI-CONSOLE-047",
-    "status": "W-IN_PROGRESS",
+    "status": "W-IN_REVIEW",
     "title": "Mejoras de UX de Console: objetivos táctiles de 40 px, Focus Mode a 375 px, glosario es/en, conteos coherentes del demo, error de configuración visible y verificación de accesibilidad pendiente",
     "storyIds": [
       "HU01",
@@ -17299,7 +17299,9 @@
       "CHANGELOG.md",
       "harness/reports/wi-console-047-scope-approval.md",
       "harness/reports/wi-console-047-sdd-verification.md",
-      "harness/reports/wi-console-047-contract-sync-review.md"
+      "harness/reports/wi-console-047-contract-sync-review.md",
+      "harness/reports/wi-console-047-implementation.md",
+      "harness/reports/wi-console-047-a11y-verification.md"
     ],
     "acceptanceCriteria": [
       "Enlace de marca, «Saltar al contenido» y pestañas de proyecto miden al menos 40×40 px (medido en el navegador antes y después) y Focus Mode no tiene scroll horizontal a 375 px, sin romper el layout a 1280 px.",
@@ -17367,7 +17369,7 @@
       "analysisAgent": "sdd-analyst",
       "implementationAgent": "implementer",
       "contractReviewAgent": null,
-      "reviewAgent": null,
+      "reviewAgent": "reviewer",
       "handoffs": [
         {
           "agent": "sdd-analyst",
@@ -17387,6 +17389,60 @@
             "harness/reports/wi-console-047-sdd-verification.md"
           ],
           "recommendedNextStep": "Delegar cortes A, B, C y D al implementer."
+        },
+        {
+          "agent": "implementer",
+          "executedBy": {
+            "agent": "implementer",
+            "configuredModel": "claude-haiku-5-5",
+            "servedModel": "unknown",
+            "effort": "low"
+          },
+          "status": "APPROVED",
+          "findings": [
+            "Corte A (implementer low): objetivos táctiles de 40 px y Focus Mode sin desborde a 375 px (causa: h2 con token largo)."
+          ],
+          "blockers": [],
+          "filesAffected": [
+            "app/src/styles/base.css",
+            "app/src/styles/action-required.css",
+            "app/src/styles/cssRegressionGuards.test.ts"
+          ],
+          "evidence": [
+            "harness/reports/wi-console-047-implementation.md"
+          ],
+          "recommendedNextStep": "Cortes B, C y D."
+        },
+        {
+          "agent": "implementer-high",
+          "executedBy": {
+            "agent": "implementer-high",
+            "configuredModel": "claude-haiku-5-5",
+            "servedModel": "unknown",
+            "effort": "high"
+          },
+          "status": "APPROVED",
+          "findings": [
+            "Cortes B, C y D (escalado a implementer-high: textos y seeds en ~55 archivos, arranque de la app y verificación con navegador): glosario es/en, conteos de Action Required coherentes, pantalla de error de configuración, pruebas de accesibilidad y evidencia manual. Gates reproducidos por el leader."
+          ],
+          "blockers": [],
+          "filesAffected": [
+            "app/src/main.tsx",
+            "app/src/config/",
+            "app/src/api/client.ts",
+            "app/src/api/baseUrl.ts",
+            "app/src/api/mockBackend.ts",
+            "app/src/ui/AppShell.tsx",
+            "app/src/projects/ProjectsPage.tsx",
+            "app/src/ui/glossary.test.ts",
+            "app/src/ui/accessibleNames.test.tsx",
+            "app/src/styles/reducedMotionGuards.test.ts"
+          ],
+          "evidence": [
+            "harness/reports/wi-console-047-implementation.md",
+            "harness/reports/wi-console-047-a11y-verification.md"
+          ],
+          "recommendedNextStep": "Revisión independiente (reviewer y ux-reviewer)."
         }
       ],
       "reviewCycles": 0,
@@ -17395,11 +17451,11 @@
     },
     "gates": {
       "sddVerified": "G-PASSED",
-      "implementationCompleted": "G-NOT_RUN",
+      "implementationCompleted": "G-PASSED",
       "independentReviewPassed": "G-NOT_RUN",
-      "technicalChecksPassed": "G-NOT_RUN",
-      "interopSyncChecked": "G-NOT_RUN",
-      "noMocksPresentedAsLive": "G-NOT_RUN",
+      "technicalChecksPassed": "G-PASSED",
+      "interopSyncChecked": "G-PASSED",
+      "noMocksPresentedAsLive": "G-PASSED",
       "noBlockingDecisions": "G-PASSED",
       "retryLimitRespected": "G-NOT_RUN",
       "uxReviewed": "G-NOT_RUN",
@@ -17467,6 +17523,128 @@
           "deferredSyncIds": [],
           "notRelevantSyncIds": [],
           "checkedAt": "2026-10-22T01:44:12.927Z"
+        },
+        {
+          "checkpoint": "implementation-delivery",
+          "workItem": "WI-CONSOLE-047",
+          "relevantPendingSyncIds": [],
+          "acknowledgedSyncIds": [],
+          "resolvedSyncIds": [
+            "CS-20260920-002",
+            "CS-20260924-001",
+            "CS-CORE-20260926-001",
+            "CS-CORE-20260927-001",
+            "CS-CORE-20260927-003",
+            "CS-CORE-20260927-004",
+            "CS-CORE-20260927-005",
+            "CS-CORE-20260927-006",
+            "CS-CORE-20261008-001",
+            "CS-CORE-20261008-002",
+            "CS-CORE-20261008-003",
+            "CS-CORE-20261008-004",
+            "CS-CORE-20261008-005",
+            "CS-CORE-20261008-006",
+            "CS-CORE-20261008-007",
+            "CS-CORE-20261009-008",
+            "CS-CORE-20261009-009",
+            "CS-CORE-20261009-010",
+            "CS-CORE-20261009-011",
+            "CS-CORE-20261009-013",
+            "CS-CORE-20261009-014",
+            "CS-CORE-20261009-015",
+            "CS-CORE-20261009-016",
+            "CS-CORE-20261009-017",
+            "CS-CORE-20261009-018",
+            "CS-CORE-20261010-003",
+            "CS-CORE-20261011-001",
+            "CS-CORE-20261011-004",
+            "CS-CORE-20261011-005",
+            "CS-CORE-20261011-006",
+            "CS-CORE-20261012-001",
+            "CS-CORE-20261012-002",
+            "CS-CORE-20261012-003",
+            "CS-CORE-20261012-004",
+            "CS-CORE-20261012-005",
+            "CS-CORE-20261012-007",
+            "CS-CORE-20261012-009",
+            "CS-CORE-20261012-011",
+            "CS-CORE-20261013-001",
+            "CS-CORE-20261013-002",
+            "CS-CORE-20261013-003",
+            "CS-CORE-20261014-001",
+            "CS-CORE-20261018-002",
+            "CS-CORE-20261021-001",
+            "CS-CORE-20261021-004"
+          ],
+          "deferredSyncIds": [],
+          "notRelevantSyncIds": [
+            "CS-20260920-003",
+            "CS-20260921-001",
+            "CS-20260921-002",
+            "CS-20260921-003"
+          ],
+          "checkedAt": "2026-10-22T02:32:47.006Z"
+        },
+        {
+          "checkpoint": "before-review",
+          "workItem": "WI-CONSOLE-047",
+          "relevantPendingSyncIds": [],
+          "acknowledgedSyncIds": [],
+          "resolvedSyncIds": [
+            "CS-20260920-002",
+            "CS-20260924-001",
+            "CS-CORE-20260926-001",
+            "CS-CORE-20260927-001",
+            "CS-CORE-20260927-003",
+            "CS-CORE-20260927-004",
+            "CS-CORE-20260927-005",
+            "CS-CORE-20260927-006",
+            "CS-CORE-20261008-001",
+            "CS-CORE-20261008-002",
+            "CS-CORE-20261008-003",
+            "CS-CORE-20261008-004",
+            "CS-CORE-20261008-005",
+            "CS-CORE-20261008-006",
+            "CS-CORE-20261008-007",
+            "CS-CORE-20261009-008",
+            "CS-CORE-20261009-009",
+            "CS-CORE-20261009-010",
+            "CS-CORE-20261009-011",
+            "CS-CORE-20261009-013",
+            "CS-CORE-20261009-014",
+            "CS-CORE-20261009-015",
+            "CS-CORE-20261009-016",
+            "CS-CORE-20261009-017",
+            "CS-CORE-20261009-018",
+            "CS-CORE-20261010-003",
+            "CS-CORE-20261011-001",
+            "CS-CORE-20261011-004",
+            "CS-CORE-20261011-005",
+            "CS-CORE-20261011-006",
+            "CS-CORE-20261012-001",
+            "CS-CORE-20261012-002",
+            "CS-CORE-20261012-003",
+            "CS-CORE-20261012-004",
+            "CS-CORE-20261012-005",
+            "CS-CORE-20261012-007",
+            "CS-CORE-20261012-009",
+            "CS-CORE-20261012-011",
+            "CS-CORE-20261013-001",
+            "CS-CORE-20261013-002",
+            "CS-CORE-20261013-003",
+            "CS-CORE-20261014-001",
+            "CS-CORE-20261018-002",
+            "CS-CORE-20261021-001",
+            "CS-CORE-20261021-004"
+          ],
+          "deferredSyncIds": [],
+          "notRelevantSyncIds": [
+            "CS-20260920-003",
+            "CS-20260921-001",
+            "CS-20260921-002",
+            "CS-20260921-003"
+          ],
+          "checkedAt": "2026-10-22T02:32:47.110Z"
         }
       ],
       "publishedSyncIds": [],
@@ -17476,7 +17654,9 @@
     "evidence": [
       "harness/reports/wi-console-047-scope-approval.md",
       "harness/reports/wi-console-047-sdd-verification.md",
-      "harness/reports/wi-console-047-contract-sync-review.md"
+      "harness/reports/wi-console-047-contract-sync-review.md",
+      "harness/reports/wi-console-047-implementation.md",
+      "harness/reports/wi-console-047-a11y-verification.md"
     ],
     "blockedReason": null,
     "gateEvidence": {
@@ -17485,6 +17665,19 @@
       ],
       "noBlockingDecisions": [
         "harness/reports/wi-console-047-sdd-verification.md"
+      ],
+      "implementationCompleted": [
+        "harness/reports/wi-console-047-implementation.md"
+      ],
+      "noMocksPresentedAsLive": [
+        "harness/reports/wi-console-047-implementation.md"
+      ],
+      "technicalChecksPassed": [
+        "harness/reports/wi-console-047-implementation.md",
+        "harness/reports/wi-console-047-a11y-verification.md"
+      ],
+      "interopSyncChecked": [
+        "harness/reports/wi-console-047-contract-sync-review.md"
       ]
     }
   }
