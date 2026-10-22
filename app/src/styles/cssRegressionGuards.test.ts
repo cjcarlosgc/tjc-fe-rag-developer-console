@@ -43,4 +43,14 @@ describe('guarda débil: Focus Mode sin desbordamiento por texto largo (CSS fuen
   it('.focus-mode-card h2 parte tokens largos con overflow-wrap: anywhere', () => {
     expect(ruleBody(actionRequiredCss, '.focus-mode-card h2')).toContain('overflow-wrap: anywhere')
   })
+
+  it('.action-required-list usa una pista minmax(0, 1fr) para no desbordar a 320 CSS px (corte D)', () => {
+    expect(ruleBody(actionRequiredCss, '.action-required-list')).toContain('grid-template-columns: minmax(0, 1fr)')
+  })
+
+  it('.pr-ref parte el qualifiedName largo y puede encogerse en flex (320 CSS px, corte D)', () => {
+    const body = ruleBody(actionRequiredCss, '.pr-ref')
+    expect(body).toContain('overflow-wrap: anywhere')
+    expect(body).toContain('min-width: 0')
+  })
 })

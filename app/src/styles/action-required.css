@@ -243,6 +243,8 @@
   margin: 0;
   padding: 0;
   display: grid;
+  /* WI-CONSOLE-047 corte D: sin minmax(0, 1fr) la pista auto crecía con el contenido sin partir y desbordaba a 320 CSS px. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
 }
 .action-required-item {
@@ -269,6 +271,9 @@
   color: var(--muted);
   font: 700 12px var(--font-mono);
   letter-spacing: 0.04em;
+  /* WI-CONSOLE-047 corte D: a 320 CSS px el qualifiedName largo desbordaba la tarjeta (scrollWidth 323). */
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .repo-chip {
   display: inline-flex;

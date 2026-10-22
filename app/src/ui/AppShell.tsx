@@ -49,15 +49,18 @@ export function AppShell() {
           </Link>
           <nav className="topbar-nav" aria-label="Navegación principal">
             <NavLink to="/analysis-runs">Runs</NavLink>
-            <NavLink to="/action-required">
+            {/* El nombre accesible se fija completo: el badge es aria-hidden y así no depende de cómo cada motor une los nodos de texto. */}
+            <NavLink
+              to="/action-required"
+              aria-label={
+                actionRequiredCount > 0 ? `Action Required, ${actionRequiredCount} pendientes en todos tus Workspaces` : undefined
+              }
+            >
               Action Required
               {actionRequiredCount > 0 && (
-                <>
-                  <span className="nav-badge" title="Pendientes en todos tus Workspaces">
-                    {actionRequiredCount}
-                  </span>
-                  <span className="visually-hidden"> pendientes en todos tus Workspaces</span>
-                </>
+                <span className="nav-badge" title="Pendientes en todos tus Workspaces" aria-hidden="true">
+                  {actionRequiredCount}
+                </span>
               )}
             </NavLink>
           </nav>
