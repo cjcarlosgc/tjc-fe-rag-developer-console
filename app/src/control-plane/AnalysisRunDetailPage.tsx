@@ -19,6 +19,7 @@ import {
   useRefreshOnPublicationTerminal,
   useTestProposals,
 } from './queries'
+import { useAnalysisRunRealtime } from './useAnalysisRunRealtime'
 import { safePublicationUrl } from './publicationView'
 import { ANALYSIS_RUN_STATUS_LABELS, analysisRunStatusClass } from './status'
 import { getPriorCoverage, PRIOR_COVERAGE_LABELS } from './speculative/priorCoverage'
@@ -264,6 +265,7 @@ export function AnalysisRunDetailPage() {
   const { projectId = '', analysisRunId = '' } = useParams()
   const mock = isMockDataSource()
   const runQuery = useAnalysisRun(analysisRunId)
+  useAnalysisRunRealtime(analysisRunId)
   const retrievalProjectQuery = useProject(projectId)
   const priorCoverageQuery = useQuery({
     queryKey: ['control-plane', 'speculative', 'prior-coverage', analysisRunId],

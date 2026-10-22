@@ -308,7 +308,8 @@ export function subscribeProjectVersionUpdates<T extends { id: string }>(
 
 /**
  * Complemento de `GET /analysis-runs/{id}` (§6.6). Sin limitador de ritmo: el límite de 1500 ms es de progreso de experimento.
- * Sin consumidor de pantalla por ahora (D2 pendiente de decisión del usuario): el polling de la pantalla sigue siendo la base.
+ * Lo consume `useAnalysisRunRealtime` en `AnalysisRunDetailPage`, único consumidor por id: las demás pantallas que usan el Run son
+ * rutas hermanas que no coexisten con el detalle, por eso `unsubscribe` no cuenta referencias.
  */
 export function subscribeAnalysisRunUpdates(
   analysisRunId: string,
