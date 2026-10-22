@@ -4586,7 +4586,7 @@
         "spec/constitution/delivery-workflow.md"
       ],
       "id": "WI-CONSOLE-049",
-      "status": "W-IN_REVIEW",
+      "status": "W-DONE",
       "title": "Glosario es/en de la UI: target, changeset, chunk(s), Functional Knowledge y Ranking pasan a inglés; se mantienen «recuperación» y «discrepancia de comportamiento»; spec del glosario y guarda actualizadas",
       "storyIds": [
         "HU03",
@@ -4610,7 +4610,10 @@
         "harness/reports/wi-console-049-scope-approval.md",
         "harness/reports/wi-console-049-sdd-verification.md",
         "harness/reports/wi-console-049-contract-sync-review.md",
-        "harness/reports/wi-console-049-implementation.md"
+        "harness/reports/wi-console-049-implementation.md",
+        "harness/reports/wi-console-049-review.md",
+        "harness/reports/wi-console-049-ux-review.md",
+        "harness/reports/wi-console-049-closure.md"
       ],
       "acceptanceCriteria": [
         "La UI visible muestra target, changeset, chunk(s), Functional Knowledge y Ranking en inglés (en lugar de «objetivo», «Conjunto de cambios», «fragmento(s)» y variantes en español) según una tabla de decisiones por uso que conserva «objetivo» donde significa objetivo específico (OE) o no es target; «recuperación» y «discrepancia de comportamiento» no cambian.",
