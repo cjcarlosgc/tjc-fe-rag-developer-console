@@ -18286,7 +18286,7 @@
       "spec/constitution/delivery-workflow.md"
     ],
     "id": "WI-CONSOLE-049",
-    "status": "W-IN_PROGRESS",
+    "status": "W-IN_REVIEW",
     "title": "Glosario es/en de la UI: target, changeset, chunk(s), Functional Knowledge y Ranking pasan a inglés; se mantienen «recuperación» y «discrepancia de comportamiento»; spec del glosario y guarda actualizadas",
     "storyIds": [
       "HU03",
@@ -18309,7 +18309,8 @@
       "CHANGELOG.md",
       "harness/reports/wi-console-049-scope-approval.md",
       "harness/reports/wi-console-049-sdd-verification.md",
-      "harness/reports/wi-console-049-contract-sync-review.md"
+      "harness/reports/wi-console-049-contract-sync-review.md",
+      "harness/reports/wi-console-049-implementation.md"
     ],
     "acceptanceCriteria": [
       "La UI visible muestra target, changeset, chunk(s), Functional Knowledge y Ranking en inglés (en lugar de «objetivo», «Conjunto de cambios», «fragmento(s)» y variantes en español) según una tabla de decisiones por uso que conserva «objetivo» donde significa objetivo específico (OE) o no es target; «recuperación» y «discrepancia de comportamiento» no cambian.",
@@ -18385,6 +18386,28 @@
             "harness/reports/wi-console-049-sdd-verification.md"
           ],
           "recommendedNextStep": "Delegar la implementación al implementer."
+        },
+        {
+          "agent": "implementer",
+          "executedBy": {
+            "agent": "implementer",
+            "configuredModel": "claude-haiku-5-5",
+            "servedModel": "unknown",
+            "effort": "low"
+          },
+          "status": "APPROVED",
+          "findings": [
+            "Textos visibles target/changeset/chunks/Functional Knowledge aplicados según la tabla; spec del glosario y guarda actualizadas."
+          ],
+          "blockers": [],
+          "filesAffected": [
+            "app/src/ui/glossary.test.ts",
+            "spec/transversal/design-system/spec.md"
+          ],
+          "evidence": [
+            "harness/reports/wi-console-049-implementation.md"
+          ],
+          "recommendedNextStep": "Revisión independiente (reviewer) y ux-reviewer."
         }
       ],
       "reviewCycles": 0,
@@ -18392,11 +18415,11 @@
     },
     "gates": {
       "sddVerified": "G-PASSED",
-      "implementationCompleted": "G-NOT_RUN",
+      "implementationCompleted": "G-PASSED",
       "independentReviewPassed": "G-NOT_RUN",
-      "technicalChecksPassed": "G-NOT_RUN",
+      "technicalChecksPassed": "G-PASSED",
       "interopSyncChecked": "G-NOT_RUN",
-      "noMocksPresentedAsLive": "G-NOT_RUN",
+      "noMocksPresentedAsLive": "G-PASSED",
       "noBlockingDecisions": "G-PASSED",
       "retryLimitRespected": "G-NOT_RUN",
       "uxReviewed": "G-NOT_RUN",
@@ -18464,6 +18487,128 @@
           "deferredSyncIds": [],
           "notRelevantSyncIds": [],
           "checkedAt": "2026-10-22T03:31:56.989Z"
+        },
+        {
+          "checkpoint": "implementation-delivery",
+          "workItem": "WI-CONSOLE-049",
+          "relevantPendingSyncIds": [],
+          "acknowledgedSyncIds": [],
+          "resolvedSyncIds": [
+            "CS-20260920-002",
+            "CS-20260924-001",
+            "CS-CORE-20260926-001",
+            "CS-CORE-20260927-001",
+            "CS-CORE-20260927-003",
+            "CS-CORE-20260927-004",
+            "CS-CORE-20260927-005",
+            "CS-CORE-20260927-006",
+            "CS-CORE-20261008-001",
+            "CS-CORE-20261008-002",
+            "CS-CORE-20261008-003",
+            "CS-CORE-20261008-004",
+            "CS-CORE-20261008-005",
+            "CS-CORE-20261008-006",
+            "CS-CORE-20261008-007",
+            "CS-CORE-20261009-008",
+            "CS-CORE-20261009-009",
+            "CS-CORE-20261009-010",
+            "CS-CORE-20261009-011",
+            "CS-CORE-20261009-013",
+            "CS-CORE-20261009-014",
+            "CS-CORE-20261009-015",
+            "CS-CORE-20261009-016",
+            "CS-CORE-20261009-017",
+            "CS-CORE-20261009-018",
+            "CS-CORE-20261010-003",
+            "CS-CORE-20261011-001",
+            "CS-CORE-20261011-004",
+            "CS-CORE-20261011-005",
+            "CS-CORE-20261011-006",
+            "CS-CORE-20261012-001",
+            "CS-CORE-20261012-002",
+            "CS-CORE-20261012-003",
+            "CS-CORE-20261012-004",
+            "CS-CORE-20261012-005",
+            "CS-CORE-20261012-007",
+            "CS-CORE-20261012-009",
+            "CS-CORE-20261012-011",
+            "CS-CORE-20261013-001",
+            "CS-CORE-20261013-002",
+            "CS-CORE-20261013-003",
+            "CS-CORE-20261014-001",
+            "CS-CORE-20261018-002",
+            "CS-CORE-20261021-001",
+            "CS-CORE-20261021-004"
+          ],
+          "deferredSyncIds": [],
+          "notRelevantSyncIds": [
+            "CS-20260920-003",
+            "CS-20260921-001",
+            "CS-20260921-002",
+            "CS-20260921-003"
+          ],
+          "checkedAt": "2026-10-22T03:39:33.144Z"
+        },
+        {
+          "checkpoint": "before-review",
+          "workItem": "WI-CONSOLE-049",
+          "relevantPendingSyncIds": [],
+          "acknowledgedSyncIds": [],
+          "resolvedSyncIds": [
+            "CS-20260920-002",
+            "CS-20260924-001",
+            "CS-CORE-20260926-001",
+            "CS-CORE-20260927-001",
+            "CS-CORE-20260927-003",
+            "CS-CORE-20260927-004",
+            "CS-CORE-20260927-005",
+            "CS-CORE-20260927-006",
+            "CS-CORE-20261008-001",
+            "CS-CORE-20261008-002",
+            "CS-CORE-20261008-003",
+            "CS-CORE-20261008-004",
+            "CS-CORE-20261008-005",
+            "CS-CORE-20261008-006",
+            "CS-CORE-20261008-007",
+            "CS-CORE-20261009-008",
+            "CS-CORE-20261009-009",
+            "CS-CORE-20261009-010",
+            "CS-CORE-20261009-011",
+            "CS-CORE-20261009-013",
+            "CS-CORE-20261009-014",
+            "CS-CORE-20261009-015",
+            "CS-CORE-20261009-016",
+            "CS-CORE-20261009-017",
+            "CS-CORE-20261009-018",
+            "CS-CORE-20261010-003",
+            "CS-CORE-20261011-001",
+            "CS-CORE-20261011-004",
+            "CS-CORE-20261011-005",
+            "CS-CORE-20261011-006",
+            "CS-CORE-20261012-001",
+            "CS-CORE-20261012-002",
+            "CS-CORE-20261012-003",
+            "CS-CORE-20261012-004",
+            "CS-CORE-20261012-005",
+            "CS-CORE-20261012-007",
+            "CS-CORE-20261012-009",
+            "CS-CORE-20261012-011",
+            "CS-CORE-20261013-001",
+            "CS-CORE-20261013-002",
+            "CS-CORE-20261013-003",
+            "CS-CORE-20261014-001",
+            "CS-CORE-20261018-002",
+            "CS-CORE-20261021-001",
+            "CS-CORE-20261021-004"
+          ],
+          "deferredSyncIds": [],
+          "notRelevantSyncIds": [
+            "CS-20260920-003",
+            "CS-20260921-001",
+            "CS-20260921-002",
+            "CS-20260921-003"
+          ],
+          "checkedAt": "2026-10-22T03:39:33.252Z"
         }
       ],
       "publishedSyncIds": [],
@@ -18473,7 +18618,8 @@
     "evidence": [
       "harness/reports/wi-console-049-scope-approval.md",
       "harness/reports/wi-console-049-contract-sync-review.md",
-      "harness/reports/wi-console-049-sdd-verification.md"
+      "harness/reports/wi-console-049-sdd-verification.md",
+      "harness/reports/wi-console-049-implementation.md"
     ],
     "blockedReason": null,
     "gateEvidence": {
@@ -18482,6 +18628,15 @@
       ],
       "noBlockingDecisions": [
         "harness/reports/wi-console-049-sdd-verification.md"
+      ],
+      "implementationCompleted": [
+        "harness/reports/wi-console-049-implementation.md"
+      ],
+      "technicalChecksPassed": [
+        "harness/reports/wi-console-049-implementation.md"
+      ],
+      "noMocksPresentedAsLive": [
+        "harness/reports/wi-console-049-implementation.md"
       ]
     }
   }
