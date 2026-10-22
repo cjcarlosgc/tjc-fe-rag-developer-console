@@ -4307,6 +4307,93 @@
         "spec/constitution/delivery-workflow.md"
       ],
       "approved": true
+    },
+    {
+      "id": "WI-CONSOLE-046",
+      "status": "W-DONE",
+      "title": "Conectar AnalysisRunDetailPage al tiempo real (analysis-run:update, INTEROP-2.19 §6.6) invalidando el GET del Run (sin polling del Run que preservar ni añadir)",
+      "storyIds": [
+        "HU12"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-048"
+      ],
+      "dependsOn": [
+        "WI-CONSOLE-044"
+      ],
+      "contractImpact": false,
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/schemas",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-046-scope-approval.md",
+        "harness/reports/wi-console-046-sdd-verification.md",
+        "harness/reports/wi-console-046-contract-sync-review.md",
+        "harness/reports/wi-console-046-implementation.md",
+        "harness/reports/wi-console-046-review.md",
+        "harness/reports/wi-console-046-closure.md"
+      ],
+      "acceptanceCriteria": [
+        "AnalysisRunDetailPage se suscribe a analysis-run:update del Run abierto mediante un hook que solo invalida/reconcilia el GET /analysis-runs/{id} (controlPlaneKeys.run) ante cada aviso y cada reconexión; sin escribir el DTO en la caché, sin cambio de DTO ni de rutas, y sin eliminar ni relajar el polling HTTP.",
+        "Sin sesión o con fuente mock no se abre el socket; al desmontar, cambiar de Run o cerrar sesión la suscripción se libera sin fugas (listeners y timers), verificado con prueba; se evalúa y documenta si el WI crea un segundo consumidor del mismo analysis-run y, solo si lo crea, se resuelve el conteo de referencias de unsubscribe con prueba.",
+        "Pruebas vitest con fake timers y socket simulado; ux-reviewer solo si cambia lo visible (si no, se justifica y se omite); lint, tsc -b --noEmit, pruebas, build, format:check, contracts:check y validadores pasan; reviewer independiente aprueba; sin reinterpretar la autoridad MAINTAINER/ADMIN sobre Functional Knowledge."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-046-scope-approval.md",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true,
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-046 no toca bindings ni endpoints. (tiempo real del detalle de Run)",
+          "report": "harness/reports/wi-console-046-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-046 no toca autorizacion. (tiempo real del detalle de Run)",
+          "report": "harness/reports/wi-console-046-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-046 no cambia login, sesion, tokens ni el cliente HTTP. (tiempo real del detalle de Run)",
+          "report": "harness/reports/wi-console-046-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-046 no altera Projects ni visibilidad. (tiempo real del detalle de Run)",
+          "report": "harness/reports/wi-console-046-contract-sync-review.md"
+        }
+      ],
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-10-22T01:35:00.000Z",
+        "note": "sdd-analyst: ninguna DEC con Blocks alcanza este WI (DEC-RT-001 APPROVED; DEC-VAL-001 PENDING no aplica); D2 de WI-CONSOLE-044 queda resuelta por la cita literal del usuario."
+      },
+      "closedAt": "2026-10-22T01:41:00.000Z"
     }
   ]
 }
