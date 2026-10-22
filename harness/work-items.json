@@ -4054,6 +4054,137 @@
           "report": "harness/reports/wi-console-042-contract-sync-scope-review.md"
         }
       ]
+    },
+    {
+      "id": "WI-CONSOLE-043",
+      "status": "W-DONE",
+      "title": "Espejar INTEROP-2.18 desde Core y procesar el Contract Sync CS-CORE-20261021-001",
+      "storyIds": [
+        "HU01",
+        "HU11",
+        "HU12",
+        "HU14",
+        "HU15"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-045"
+      ],
+      "dependsOn": [],
+      "contractImpact": true,
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md",
+        "spec/contracts/github-integration-contract.md",
+        "spec/contracts/schemas",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-043-scope-approval.md",
+        "harness/reports/wi-console-043-sdd-verification.md",
+        "harness/reports/wi-console-043-contract-sync-review.md",
+        "harness/reports/wi-console-043-implementation.md",
+        "harness/reports/wi-console-043-contract-review.md",
+        "harness/reports/wi-console-043-review.md",
+        "harness/reports/wi-console-043-closure.md"
+      ],
+      "acceptanceCriteria": [
+        "interoperability-contract.md (22b880d1…), github-integration-contract.md (6c553ee8…), system-contract.md (b70f9358…) y el árbol spec/contracts/schemas (a1ba9a19…, con realtime-events.schema.json y ejemplos) coinciden byte a byte con Core 5c82853c vía git show.",
+        "Los tipos generados se regeneran (contracts:generate) y contracts:check pasa; las referencias vigentes de versión (SYSTEM/INTEROP-2.18/GH) se actualizan sin tocar historia ni CHANGELOG pasado.",
+        "CS-CORE-20261021-001 se acusa y resuelve solo con evidencia real, delegando explícitamente la adopción de código a WI-CONSOLE-044; CS-CORE-20261021-002/-003 (otros destinos) no se acusan.",
+        "lint, tsc -b --noEmit, pruebas, build, format:check y validadores pasan; sin cambio de DTO, rutas ni UI; contract-reviewer y reviewer independientes aprueban."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-043-scope-approval.md",
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-043 no toca bindings, UI ni endpoints. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-043-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-043 no toca autorizacion ni interfaz. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-043-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-043 no cambia login, sesion, tokens ni el cliente HTTP. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-043-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-043 no altera Projects ni visibilidad. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-043-contract-sync-review.md"
+        }
+      ],
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true
+    },
+    {
+      "id": "WI-CONSOLE-044",
+      "status": "W-PLANNED",
+      "title": "Conexión de tiempo real de Console: handshake autenticado, subscribe/ack y reconciliación (INTEROP-2.18 §6.6)",
+      "storyIds": [
+        "HU12"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-046"
+      ],
+      "dependsOn": [
+        "WI-CONSOLE-043"
+      ],
+      "contractImpact": true,
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md",
+        "spec/contracts/github-integration-contract.md",
+        "spec/contracts/schemas",
+        "harness/reports/wi-console-044-scope-approval.md"
+      ],
+      "acceptanceCriteria": [
+        "El socket nunca se abre sin sesión y el handshake envía siempre un token no vacío en auth.token (nunca en query); connect_error con AUTH_REQUIRED, INVALID_ACCESS_TOKEN, GITHUB_IDENTITY_REQUIRED (no retryable) e IDENTITY_UNAVAILABLE (retryable) se maneja y los códigos genéricos de §4.1 se toleran (code abierto).",
+        "subscribe/unsubscribe de analysis-run y experiment con SubscribeAck; eventos analysis-run:update y experiment:update; throttle de progreso 1500 ms; sin replay: se reconcilia con GET tras reconectar; el polling HTTP sigue como base.",
+        "ExperimentStatusResponse live alineado a la forma real (targetId; analysisRunId y symbol no llegan, pendientes de HU17; history? opcional) y comentario obsoleto de socket.ts actualizado.",
+        "Pruebas vitest con socket simulado y relojes falsos: handshake sin sesión, cada código de error, subscribe/ack, reconciliación y throttle; lint, tsc, test, build, format:check y contracts:check pasan; reviewer independiente aprueba (ux-reviewer solo si hay UI visible); sin reinterpretar la autoridad MAINTAINER/ADMIN sobre Functional Knowledge."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-044-scope-approval.md",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true
     }
   ]
 }
