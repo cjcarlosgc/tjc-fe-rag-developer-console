@@ -21,6 +21,7 @@ import { experimentFailureMessage, experimentFailureTitle } from './failureMessa
 import { EvidenceDownload } from '../evidence/EvidenceDownload'
 import { defaultTarget, isConstructorName, orderConstructorsLast } from './targetOrdering'
 import { pollDelayMs } from '../api/polling'
+import { useExperimentRealtime } from './useExperimentRealtime'
 
 export function ExperimentPage() {
   const { projectId = '' } = useParams()
@@ -109,6 +110,8 @@ export function ExperimentPage() {
       return query.state.data?.status === 'COMPLETED' || query.state.data?.status === 'FAILED' ? false : pollDelayMs(acceptedPollMs, 560)
     },
   })
+  // INTEROP-2.18 §6.6: el aviso en tiempo real solo invalida la consulta de arriba; el polling anterior sigue como base.
+  useExperimentRealtime(experimentId)
 
   // WI-CONSOLE-036 B3: una única región role="status" bajo el botón; el texto cambia con el motivo concreto. Vacía cuando el botón está habilitado.
   const runNote = !canCreateExperiment

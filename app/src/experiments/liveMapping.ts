@@ -14,12 +14,15 @@ import type {
  * ya consume `ExperimentComparison`.
  */
 
+/**
+ * Forma real de `GET /experiments/{id}` y del evento `experiment:update` (INTEROP-2.18 §6.5 y §6.6): trae `targetId`.
+ * `analysisRunId` y `symbol` NO llegan: quedan pendientes de HU17 (§6.5, nota de INTEROP-2.18) y ningún consumidor depende de ellos.
+ */
 export interface ExperimentStatusResponse {
   id: string
-  analysisRunId: string
   projectId: string
   projectVersionId: string
-  symbol: import('../control-plane/types').AnalysisSymbolResponse
+  targetId: string
   status: 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED'
   completedRepetitions: number
   totalRepetitions: number

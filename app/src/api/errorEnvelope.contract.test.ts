@@ -4,7 +4,7 @@ import { ApiError, apiRequest } from './client'
 import upstreamExample from '../../../spec/contracts/schemas/examples/error-envelope.upstream.json'
 import validationExample from '../../../spec/contracts/schemas/examples/error-envelope.validation.json'
 
-/** Contrato del error envelope (INTEROP-2.17 §4): Console lo interpreta igual venga de Core, Sandbox o GitHub Integration. */
+/** Contrato del error envelope (INTEROP-2.18 §4): Console lo interpreta igual venga de Core, Sandbox o GitHub Integration. */
 afterEach(() => vi.unstubAllGlobals())
 
 describe('ApiError interpreta el ErrorEnvelope canónico', () => {

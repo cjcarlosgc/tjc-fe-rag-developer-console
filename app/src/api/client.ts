@@ -8,7 +8,7 @@ export class ApiError extends Error {
     readonly correlationId?: string,
     readonly code?: string,
     readonly details?: unknown,
-    /** INTEROP-2.17 §4: solo lo declaran los servicios cuyo contrato distingue reintentos (GitHub Integration). */
+    /** INTEROP-2.18 §4: GitHub Integration lo declara en todos sus errores; Core solo en los genéricos de §4.1. */
     readonly retryable?: boolean,
   ) {
     super(message)

@@ -4142,7 +4142,7 @@
     },
     {
       "id": "WI-CONSOLE-044",
-      "status": "W-PLANNED",
+      "status": "W-DONE",
       "title": "Conexión de tiempo real de Console: handshake autenticado, subscribe/ack y reconciliación (INTEROP-2.18 §6.6)",
       "storyIds": [
         "HU12"
@@ -4160,7 +4160,14 @@
         "spec/contracts/system-contract.md",
         "spec/contracts/github-integration-contract.md",
         "spec/contracts/schemas",
-        "harness/reports/wi-console-044-scope-approval.md"
+        "CHANGELOG.md",
+        "harness/reports/wi-console-044-scope-approval.md",
+        "harness/reports/wi-console-044-sdd-verification.md",
+        "harness/reports/wi-console-044-contract-sync-review.md",
+        "harness/reports/wi-console-044-implementation.md",
+        "harness/reports/wi-console-044-contract-review.md",
+        "harness/reports/wi-console-044-review.md",
+        "harness/reports/wi-console-044-closure.md"
       ],
       "acceptanceCriteria": [
         "El socket nunca se abre sin sesión y el handshake envía siempre un token no vacío en auth.token (nunca en query); connect_error con AUTH_REQUIRED, INVALID_ACCESS_TOKEN, GITHUB_IDENTITY_REQUIRED (no retryable) e IDENTITY_UNAVAILABLE (retryable) se maneja y los códigos genéricos de §4.1 se toleran (code abierto).",
@@ -4184,7 +4191,37 @@
         "spec/constitution/project-context.md",
         "spec/constitution/delivery-workflow.md"
       ],
-      "approved": true
+      "approved": true,
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-044 no toca bindings, UI ni endpoints. (conexion de tiempo real)",
+          "report": "harness/reports/wi-console-044-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-044 no toca autorizacion ni interfaz. (conexion de tiempo real)",
+          "report": "harness/reports/wi-console-044-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-044 no cambia login, sesion, tokens ni el cliente HTTP. (conexion de tiempo real)",
+          "report": "harness/reports/wi-console-044-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-044 no altera Projects ni visibilidad. (conexion de tiempo real)",
+          "report": "harness/reports/wi-console-044-contract-sync-review.md"
+        }
+      ]
     }
   ]
 }

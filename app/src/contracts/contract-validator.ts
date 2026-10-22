@@ -2,7 +2,7 @@ import { Ajv2020 } from 'ajv/dist/2020.js'
 import addFormatsModule from 'ajv-formats'
 import { CONTRACT_SCHEMAS } from './generated/contract-schemas.js'
 
-/** Validación de payloads contra los esquemas JSON canónicos de `spec/contracts/schemas` (INTEROP-2.17 §10). */
+/** Validación de payloads contra los esquemas JSON canónicos de `spec/contracts/schemas` (INTEROP-2.18 §10). */
 export type ContractSchemaFile = keyof typeof CONTRACT_SCHEMAS
 
 export interface ContractValidationResult {
