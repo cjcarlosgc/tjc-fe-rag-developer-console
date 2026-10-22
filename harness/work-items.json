@@ -4499,7 +4499,7 @@
         "spec/constitution/delivery-workflow.md"
       ],
       "id": "WI-CONSOLE-048",
-      "status": "W-IN_REVIEW",
+      "status": "W-DONE",
       "title": "Polling de respaldo del detalle de AnalysisRun: refetch periódico del GET solo mientras el Run está en curso (QUEUED/PROCESSING), con pollAfterMs si existe y convivencia con el tiempo real",
       "storyIds": [
         "HU12"
@@ -4517,7 +4517,9 @@
         "harness/reports/wi-console-048-scope-approval.md",
         "harness/reports/wi-console-048-sdd-verification.md",
         "harness/reports/wi-console-048-contract-sync-review.md",
-        "harness/reports/wi-console-048-implementation.md"
+        "harness/reports/wi-console-048-implementation.md",
+        "harness/reports/wi-console-048-review.md",
+        "harness/reports/wi-console-048-closure.md"
       ],
       "acceptanceCriteria": [
         "useAnalysisRun (o el punto equivalente) refetchea el GET /analysis-runs/{id} periódicamente solo mientras el Run está en QUEUED o PROCESSING (definición existente de estados en curso) y se detiene al llegar a un estado terminal o ante un error, sin inventar estados.",

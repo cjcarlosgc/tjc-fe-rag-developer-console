@@ -50,3 +50,19 @@ La prueba de convivencia (`analysisRunPolling.test.tsx`, "convive con el tiempo 
 
 ## Para cerrar
 Corregir H1 (gates en `harness/state.json`; leader) y, opcionalmente, H2 (comentario) y H3. Con H1 resuelto y `validate-harness.mjs` en verde, el ciclo 2 es solo verificación y se espera APPROVED. El árbol de trabajo queda limpio salvo este informe.
+
+# Ciclo 2 (final)
+
+Modelo: reviewer · configurado claude-sonnet-5-5 · atendido unknown · esfuerzo medium
+
+**Veredicto final: APPROVED**
+
+Diff revisado: `git diff 93e91aa HEAD` (commit f4bf898). Solo cambia `app/src/control-plane/useAnalysisRunRealtime.ts` (comentario), `harness/state.json` (gates) y este informe.
+
+- **H1 resuelto:** `technicalChecksPassed` e `interopSyncChecked` pasan a `G-PASSED` con evidencia (`wi-console-048-implementation.md` y `wi-console-048-contract-sync-review.md`); `independentReviewPassed` sigue `G-NOT_RUN` hasta cerrar esta revisión. `node harness/validate-harness.mjs`: passed.
+- **H2 resuelto:** el comentario ahora dice que una invalidación en vuelo cancela y relanza (a lo sumo una petición extra, nunca concurrente). Exacto. Cambio solo de comentario; sin efecto en ejecución.
+- **H3 no es bloqueante:** el caso invalidar-con-lectura-en-vuelo es comportamiento preexistente del realtime, no introducido por este WI, sin corrupción de estado ni ráfagas; el riesgo de fuga queda cubierto por las pruebas de desmontaje y cambio de Run (que mutan en rojo). Queda como limitación menor documentada.
+
+Re-ejecución: `node scripts/sdd-check.mjs` OK; `node harness/validate-work-items.mjs` OK (48 WI); `node harness/validate-harness.mjs` OK; eslint y prettier del archivo tocado OK. Los checks de app/ del ciclo 1 (lint, tsc, 958 pruebas, build, format, contracts) no se ven afectados por un cambio solo de comentario.
+
+**Resumen:** ciclo 1 aprobó código y pruebas (5 mutaciones en rojo, opt-in correcto, alcance respetado) y pidió corregir gates (H1) y un comentario inexacto (H2); ciclo 2 verifica ambas correcciones y acepta H3. Sin hallazgos abiertos.
