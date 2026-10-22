@@ -27,7 +27,7 @@ export function InventoryView({ targets }: Props) {
     <div className="inventory-stack">
       <div className="list-toolbar">
         <div className="field list-search">
-          <label htmlFor="inventory-query">Buscar objetivo</label>
+          <label htmlFor="inventory-query">Buscar target</label>
           <input id="inventory-query" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="path, clase o método" />
         </div>
         <fieldset className="segmented">
@@ -40,13 +40,13 @@ export function InventoryView({ targets }: Props) {
         </fieldset>
       </div>
       {filtered.length === 0 ? (
-        <EmptyState title="Sin objetivos coincidentes" description="Ajusta el texto o el filtro de cobertura." />
+        <EmptyState title="Sin targets coincidentes" description="Ajusta el texto o el filtro de cobertura." />
       ) : (
         <div className="table-frame">
           <table>
             <thead>
               <tr>
-                <th scope="col">Objetivo</th>
+                <th scope="col">Target</th>
                 <th scope="col">Tipo</th>
                 <th scope="col">Archivo</th>
                 <th scope="col">Cobertura</th>

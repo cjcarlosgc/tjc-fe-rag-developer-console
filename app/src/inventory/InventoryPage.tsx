@@ -37,7 +37,7 @@ export function InventoryPage() {
         <div>
           <p className="eyebrow">Cobertura existente · {projectVersionId ?? 'sin versión'}</p>
           <h1>Inventario testable</h1>
-          <p>Objetivos detectados por RAG Core, organizados por estado de cobertura.</p>
+          <p>Targets detectados por RAG Core, organizados por estado de cobertura.</p>
         </div>
         {historical && <span className="demo-stamp">INSTANTÁNEA HISTÓRICA</span>}
       </div>
@@ -68,7 +68,7 @@ export function InventoryPage() {
             </div>
             <dl className="metric-grid">
               <div>
-                <dt>Objetivos</dt>
+                <dt>Targets</dt>
                 <dd>{inventoryQuery.data.targetsTotal}</dd>
               </div>
               <div>

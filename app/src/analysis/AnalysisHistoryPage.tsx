@@ -80,11 +80,11 @@ export function AnalysisHistoryPage() {
                     <dd>{metric(version.filesProcessed)}</dd>
                   </div>
                   <div>
-                    <dt>Fragmentos</dt>
+                    <dt>Chunks</dt>
                     <dd>{metric(version.chunksCount)}</dd>
                   </div>
                   <div>
-                    <dt>Objetivos</dt>
+                    <dt>Targets</dt>
                     <dd>{metric(version.targetsTotal)}</dd>
                   </div>
                   <div>

@@ -192,7 +192,7 @@ test('caso PR grande: resume símbolos directos/impactados cuando el changeset e
   renderDetail('arun_checkout_pr49', 'prj_checkout_demo')
 
   expect(
-    await screen.findByText(/Conjunto de cambios grande: 6 símbolo\(s\) con cambio directo, 8 potencialmente impactado\(s\)\./),
+    await screen.findByText(/Changeset grande: 6 símbolo\(s\) con cambio directo, 8 potencialmente impactado\(s\)\./),
   ).toBeInTheDocument()
 })
 
@@ -200,7 +200,7 @@ test('un changeset chico no muestra el resumen de "changeset grande"', async () 
   renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
 
   await screen.findByText('checkout-service', { selector: '.repo-name' })
-  expect(screen.queryByText(/Conjunto de cambios grande/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/Changeset grande/)).not.toBeInTheDocument()
 })
 
 test('caso propuestas STALE: un intento anterior queda STALE y el vigente AVAILABLE', async () => {

@@ -53,18 +53,18 @@ function headingTexts(): string[] {
 test('orden de secciones del trace: nueve enlaces en orden para un Run con dos targets', async () => {
   renderTrace('arun_checkout_pr45', 'prj_checkout_demo')
 
-  await screen.findByRole('heading', { name: 'Conjunto de cambios' })
+  await screen.findByRole('heading', { name: 'Changeset' })
   expect(headingTexts()).toEqual([
     'Traza operativa',
     'Repositorio y Pull Request',
     'AnalysisRun',
-    'Conjunto de cambios',
-    'Objetivo: OrderService.calculateTotal',
+    'Changeset',
+    'Target: OrderService.calculateTotal',
     'Recuperación PRESENT',
     'Contexto PRESENT',
     'Generación PRESENT',
     'Ejecuciones PRESENT',
-    'Objetivo: formatCurrency',
+    'Target: formatCurrency',
     'Recuperación PRESENT',
     'Contexto PRESENT',
     'Generación PRESENT',
@@ -77,7 +77,7 @@ test('orden de secciones del trace: nueve enlaces en orden para un Run con dos t
 test('PRESENT y NOT_APPLICABLE: badge con texto, NOT_APPLICABLE informativo y sin error', async () => {
   renderTrace('arun_checkout_pr42', 'prj_checkout_demo')
 
-  await screen.findByRole('heading', { name: 'Conjunto de cambios' })
+  await screen.findByRole('heading', { name: 'Changeset' })
   expect(screen.getAllByText('NOT_APPLICABLE').length).toBeGreaterThan(0)
   expect(screen.getAllByText('No aplica: el flujo terminó antes de este paso.').length).toBeGreaterThan(0)
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
@@ -86,7 +86,7 @@ test('PRESENT y NOT_APPLICABLE: badge con texto, NOT_APPLICABLE informativo y si
 test('outcome se muestra tal cual y no aparecen veredictos CUMPLE / NO CUMPLE', async () => {
   renderTrace('arun_checkout_pr46', 'prj_checkout_demo')
 
-  await screen.findByRole('heading', { name: 'Conjunto de cambios' })
+  await screen.findByRole('heading', { name: 'Changeset' })
   expect(screen.getByText('BEHAVIORAL_MISMATCH', { selector: 'code' })).toBeInTheDocument()
   expect(screen.queryByText(/CUMPLE/)).not.toBeInTheDocument()
   expect(screen.queryByText(/NO CUMPLE/)).not.toBeInTheDocument()
@@ -95,7 +95,7 @@ test('outcome se muestra tal cual y no aparecen veredictos CUMPLE / NO CUMPLE', 
 test('Run sin targets: estado informativo con targetCount', async () => {
   renderTrace('arun_billing_pr22', 'prj_billing_demo')
 
-  expect(await screen.findByText('Sin objetivos')).toBeInTheDocument()
+  expect(await screen.findByText('Sin targets')).toBeInTheDocument()
   expect(screen.getByText('targetCount')).toBeInTheDocument()
   expect(screen.getByText('targetCount').nextElementSibling).toHaveTextContent('0')
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
@@ -114,7 +114,7 @@ test('FK existente enlaza a la regla; FK ausente queda como texto plano', async 
 test('botones Copiar con nombre accesible específico', async () => {
   renderTrace('arun_checkout_pr45', 'prj_checkout_demo')
 
-  await screen.findByRole('heading', { name: 'Conjunto de cambios' })
+  await screen.findByRole('heading', { name: 'Changeset' })
   for (const label of ['analysisRunId', 'headSha', 'retrieval_id', 'context_id', 'execution_id']) {
     expect(screen.getAllByRole('button', { name: new RegExp(`^Copiar ${label} `) }).length).toBeGreaterThan(0)
   }
@@ -181,7 +181,7 @@ test('QUEUED sondea hasta que el Run termina y muestra el trace', async () => {
   await screen.findByText(/El Run aún se procesa/)
   setMockAnalysisRunForTests('arun_checkout_pr53', { status: 'NO_TEST_RELEVANT_CHANGES' })
 
-  expect(await screen.findByRole('heading', { name: 'Conjunto de cambios' })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Changeset' })).toBeInTheDocument()
   expect(screen.getByText('arun_checkout_pr53')).toBeInTheDocument()
   expect(screen.queryByText(/El Run aún se procesa/)).not.toBeInTheDocument()
   expect(traceMock.mock.calls.length).toBeGreaterThan(1)
@@ -292,15 +292,15 @@ test('la sección se monta en el detalle con rótulo de datos simulados en mock'
 test('orden de targets en la UI: sigue el orden de §6.16 (filePath) también con ACTION_REQUIRED', async () => {
   renderTrace('arun_checkout_pr42', 'prj_checkout_demo')
 
-  await screen.findByRole('heading', { name: 'Conjunto de cambios' })
-  const targets = headingTexts().filter((text) => text.startsWith('Objetivo:'))
-  expect(targets).toEqual(['Objetivo: CouponPolicy.apply', 'Objetivo: OrderService.calculateTotal'])
+  await screen.findByRole('heading', { name: 'Changeset' })
+  const targets = headingTexts().filter((text) => text.startsWith('Target:'))
+  expect(targets).toEqual(['Target: CouponPolicy.apply', 'Target: OrderService.calculateTotal'])
 })
 
 test('publicación solo con Check: sin dato en checkId, rama y freshness; sin conteos, omitidas ni knowledgeId', async () => {
   renderTrace('arun_checkout_pr47', 'prj_checkout_demo')
 
-  await screen.findByRole('heading', { name: 'Conjunto de cambios' })
+  await screen.findByRole('heading', { name: 'Changeset' })
   expect(screen.getByText('checkId').nextElementSibling).toHaveTextContent('sin dato')
   expect(screen.getByText('companionBranch').nextElementSibling).toHaveTextContent('sin dato')
   expect(screen.getByText('Vigencia').nextElementSibling).toHaveTextContent('sin dato')

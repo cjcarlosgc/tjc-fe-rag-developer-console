@@ -57,7 +57,7 @@ function buildRagRows(detail: RagContextTraceDetail, candidates: RagCandidateNod
       id: detail.targetId,
       primary: detail.target.excerpt.symbolName ?? detail.target.excerpt.filePath,
       secondary: detail.target.excerpt.filePath,
-      status: 'Objetivo',
+      status: 'Target',
       meta: `${detail.target.tokenCount} tokens`,
     },
   ]

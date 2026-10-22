@@ -206,11 +206,11 @@ export function ExperimentComparison({
         <dl>
           <div>
             <dt>Recuperados</dt>
-            <dd>{result.rag.retrievedChunks ?? '—'} fragmentos</dd>
+            <dd>{result.rag.retrievedChunks ?? '—'} chunks</dd>
           </div>
           <div>
             <dt>Seleccionados</dt>
-            <dd>{result.rag.selectedChunks ?? '—'} fragmentos</dd>
+            <dd>{result.rag.selectedChunks ?? '—'} chunks</dd>
           </div>
           <div>
             <dt>Contexto</dt>
@@ -239,10 +239,10 @@ export function ExperimentComparison({
       <details className="repetition-detail">
         <summary>Ver detalle por target y repetición</summary>
         <div className="table-frame" role="region" aria-label="Detalle por target y repetición" tabIndex={0}>
-          <table aria-label="Tabla de repeticiones por objetivo">
+          <table aria-label="Tabla de repeticiones por target">
             <thead>
               <tr>
-                <th scope="col">Objetivo</th>
+                <th scope="col">Target</th>
                 <th scope="col">Repetición</th>
                 <th scope="col">Estrategia</th>
                 <th scope="col">Válida</th>

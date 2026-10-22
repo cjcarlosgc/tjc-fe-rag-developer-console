@@ -86,7 +86,7 @@ export function ExperimentPage() {
   const startMutation = useMutation({
     mutationFn: () => startExperiment(selectedTarget!.input, createIdempotencyKey()),
     onSuccess: (accepted) => {
-      setSubmittedLabel(selectedTarget?.name ?? 'objetivo')
+      setSubmittedLabel(selectedTarget?.name ?? 'target')
       setAcceptedPollMs(accepted.pollAfterMs)
       setSearchParams(
         (previous) => {
@@ -171,7 +171,7 @@ export function ExperimentPage() {
           {canCreateExperiment && !liveRunEligibilityMessage && (
             <>
               <div className="field experiment-field">
-                <label htmlFor="experiment-target">Objetivo experimental</label>
+                <label htmlFor="experiment-target">Target experimental</label>
                 <select
                   id="experiment-target"
                   value={selectedTarget?.id ?? ''}

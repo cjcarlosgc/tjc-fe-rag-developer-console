@@ -191,7 +191,7 @@ test('presenta diferencias absolutas y relativas para tiempo, tokens y costo', (
 test('presenta retrieval únicamente como explicación RAG', () => {
   renderWithRouter(<ExperimentComparison result={result} projectId="prj1" experimentId="exp1" />)
   expect(screen.getByText('Huella de recuperación')).toBeInTheDocument()
-  expect(screen.getByText('20 fragmentos')).toBeInTheDocument()
+  expect(screen.getByText('20 chunks')).toBeInTheDocument()
 })
 
 test('permite abrir la trazabilidad por repetición', async () => {
@@ -285,7 +285,7 @@ test('null en par y posición se muestra como «no disponible», nunca como 0; s
   const user = userEvent.setup()
   renderWithRouter(<ExperimentComparison result={withNulls} projectId="prj1" experimentId="exp1" />)
   await user.click(screen.getByText('Ver detalle por target y repetición'))
-  const table = screen.getByRole('table', { name: 'Tabla de repeticiones por objetivo' })
+  const table = screen.getByRole('table', { name: 'Tabla de repeticiones por target' })
   expect(within(table).queryByRole('columnheader', { name: 'Intento' })).toBeNull()
   expect(within(table).queryByRole('columnheader', { name: 'Evaluable' })).toBeNull()
   const cells = rowCells('Cart.total')
@@ -458,7 +458,7 @@ test('corrida mixta: una repetición sin intento ni evaluabilidad muestra «—�
   }
   renderWithRouter(<ExperimentComparison result={mixed} projectId="prj1" experimentId="exp1" />)
   await user.click(screen.getByText('Ver detalle por target y repetición'))
-  const table = screen.getByRole('table', { name: 'Tabla de repeticiones por objetivo' })
+  const table = screen.getByRole('table', { name: 'Tabla de repeticiones por target' })
   expect(within(table).getByRole('columnheader', { name: 'Intento' })).toBeInTheDocument()
   expect(within(table).getByRole('columnheader', { name: 'Evaluable' })).toBeInTheDocument()
   const cells = rowCells('Mixed.b')

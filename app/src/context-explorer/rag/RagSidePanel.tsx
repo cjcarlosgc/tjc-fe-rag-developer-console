@@ -12,8 +12,8 @@ export function RagSidePanel({ detail, selectedId }: Props) {
   if (!selectedId || selectedId === detail.targetId) {
     const target = detail.target
     return (
-      <aside className="side-panel" aria-label="Detalle del objetivo">
-        <p className="eyebrow">Objetivo</p>
+      <aside className="side-panel" aria-label="Detalle del target">
+        <p className="eyebrow">Target</p>
         <h3>{target.excerpt.symbolName ?? target.excerpt.filePath}</h3>
         <dl className="side-panel-meta">
           <div>
@@ -31,7 +31,7 @@ export function RagSidePanel({ detail, selectedId }: Props) {
             <dd>{target.tokenCount}</dd>
           </div>
           <div>
-            <dt>Fragmentos</dt>
+            <dt>Chunks</dt>
             <dd>{target.chunkIds.length}</dd>
           </div>
         </dl>

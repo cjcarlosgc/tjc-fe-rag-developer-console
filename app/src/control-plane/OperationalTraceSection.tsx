@@ -91,7 +91,7 @@ function TargetTrace({ target, index, lookup }: { target: TraceTargetResponse; i
   return (
     <article className="trace-target" aria-labelledby={headingId}>
       <h3 id={headingId}>
-        Objetivo: <code>{symbol.qualifiedName}</code>
+        Target: <code>{symbol.qualifiedName}</code>
       </h3>
       <p className="trace-target-meta">
         {CHANGE_KIND_LABELS[symbol.changeKind] ?? symbol.changeKind} · <code>{symbol.filePath}</code>
@@ -270,7 +270,7 @@ function TraceContent({ trace, lookup }: { trace: AnalysisRunTraceResponse; look
         <IdRow label="analysisRunId" value={trace.analysisRunId} copyLabel="analysisRunId" />
       </dl>
 
-      <h3>Conjunto de cambios</h3>
+      <h3>Changeset</h3>
       <dl className="trace-fields">
         <div className="trace-field">
           <dt>Estado</dt>
@@ -288,7 +288,7 @@ function TraceContent({ trace, lookup }: { trace: AnalysisRunTraceResponse; look
       {trace.targets.length === 0 ? (
         <div className="panel contract-note trace-empty">
           <div>
-            <strong>Sin objetivos</strong>
+            <strong>Sin targets</strong>
             <p>El changeset no tiene símbolos con enlaces por target (targetCount: {trace.changeset.targetCount}).</p>
           </div>
         </div>

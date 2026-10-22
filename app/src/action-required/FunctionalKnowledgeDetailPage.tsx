@@ -75,7 +75,7 @@ export function FunctionalKnowledgeDetailPage() {
             <dd>{item.scope}</dd>
           </div>
           <div>
-            <dt>Objetivo</dt>
+            <dt>Target</dt>
             <dd>
               <code>{item.targetRef ?? '—'}</code>
             </dd>

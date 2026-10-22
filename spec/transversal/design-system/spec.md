@@ -47,9 +47,18 @@ Definir una identidad visual Black Glass coherente para toda la consola RAG Test
 ## Idioma y glosario de la interfaz
 
 - El texto visible de la interfaz está en **español**. Se conservan en inglés, tal cual, los **términos de dominio** del producto, porque son los nombres de las entidades y de los contratos con Core:
-  `Project` / `Projects`, `Workspace`, `Run`, `AnalysisRun`, `Action Required`, `Focus Mode`, `PR` / `Pull Request`, `HEAD`, `RAG`, `Sandbox`, `Check`, `companion PR`, `Baseline` y `Repository binding`.
+  `Project` / `Projects`, `Workspace`, `Run`, `AnalysisRun`, `Action Required`, `Focus Mode`, `PR` / `Pull Request`, `HEAD`, `RAG`, `Sandbox`, `Check`, `companion PR`, `Baseline`, `Repository binding`, `target` / `targets`, `changeset` / `changesets`, `chunk` / `chunks`, `Functional Knowledge` y `Ranking`.
 - Todo lo demás (estados, acciones, mensajes de error, ayudas, encabezados) se escribe en español. No se mezclan los dos idiomas dentro de una misma etiqueta salvo por esos términos.
 - Un mismo concepto tiene una sola escritura en toda la interfaz (por ejemplo «Projects», nunca «Proyectos» en unos sitios y «Projects» en otros).
+- Convención de los términos ingleses en el texto visible (solo copy; los identificadores de código como `targetId`, `chunkId` o `changesetBaseSha` no se traducen):
+  1. Se escriben tal cual, sin cursiva ni comillas, con el género del equivalente español: el target / los targets, el changeset / los changesets, el chunk / los chunks (masculino). `Functional Knowledge` es masculino e invariable, sin plural («reglas de Functional Knowledge»). `Ranking` es masculino; en frase se usa `ranking` en minúscula.
+  2. El plural añade «-s», sin apóstrofo: targets, chunks, changesets.
+  3. Mayúscula inicial solo en posición de rótulo (encabezado, columna, `dt`, badge o label). Dentro de frase: minúscula (target, changeset, chunks, ranking), salvo `Functional Knowledge`, que siempre va capitalizado.
+  4. Adjetivos y participios concuerdan en masculino: «Changeset grande», «Targets detectados», «Target experimental», «Sin targets coincidentes».
+  5. Contadores: «N chunks», nunca «N fragmentos». «N símbolo(s)» no cambia.
+  6. Se conservan en español «recuperación» y «discrepancia de comportamiento» (no se usan «Retrieval» ni «Behavioral Mismatch»).
+  7. «objetivo» sigue en español cuando no designa un target: «objetivos táctiles» (`--target-min`), objetivos específicos (OE) de la tesis y usos generales.
+  8. Sin cambio: «Fragmento de código» (alcance `CODE_FRAGMENT`) y «Destino de la regla».
 - Los estados de `AnalysisRun` se rotulan con `ANALYSIS_RUN_STATUS_LABELS` (`control-plane/status.ts`): En cola, Procesando, Action Required, Exitoso, Discrepancia de comportamiento, Falla técnica de generación, Falla de infraestructura, Baseline fallido, Tests existentes suficientes, Sin cambios relevantes y Obsoleto (HEAD nuevo).
 - Cada ruta fija el título del documento (`ui/routeTitles.ts`) y la aplicación ofrece un enlace «Saltar al contenido», navegación con estado activo (`aria-current`), una página 404 dentro del shell y un `errorElement` en español.
 

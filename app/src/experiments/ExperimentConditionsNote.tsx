@@ -1,5 +1,5 @@
 export const EXPERIMENT_CONDITIONS_NOTE =
-  'Comparación bajo condiciones experimentales externas controladas. RAG usa recuperación SE + ContextBuilder + conocimiento funcional aplicable; el agente generalista explora en solo lectura sin conocimiento persistente.'
+  'Comparación bajo condiciones experimentales externas controladas. RAG usa recuperación SE + ContextBuilder + Functional Knowledge aplicable; el agente generalista explora en solo lectura sin conocimiento persistente.'
 
 export function ExperimentConditionsNote() {
   return (

@@ -66,7 +66,7 @@ export function FunctionalKnowledgePage() {
       {knowledgeQuery.isError && <ErrorState message={knowledgeQuery.error.message} onRetry={() => void knowledgeQuery.refetch()} />}
       <div role="status">
         {knowledgeQuery.data && groups.length === 0 && (
-          <EmptyState title="Sin reglas" description="Todavía no hay conocimiento funcional persistido para este filtro." />
+          <EmptyState title="Sin reglas" description="Todavía no hay Functional Knowledge persistido para este filtro." />
         )}
       </div>
       {knowledgeQuery.data &&

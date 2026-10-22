@@ -2030,7 +2030,7 @@ function seedControlPlane(): void {
       ],
       functionalBehaviorValidated: true,
       resultSummary:
-        'Conjunto de cambios grande: 6 símbolos con cambio directo y 8 potencialmente impactados. 4 pruebas generadas y validadas contra el HEAD vigente.',
+        'Changeset grande: 6 símbolos con cambio directo y 8 potencialmente impactados. 4 pruebas generadas y validadas contra el HEAD vigente.',
       detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr49',
       __proposals: [
         {
@@ -4302,7 +4302,7 @@ export async function mockSubmitFunctionalAnswer(
       proposedNormalizedRule: `Regla propuesta a partir de la respuesta: "${input.answer?.trim() || question.question}".`,
     }
     throw new ApiError(
-      'La respuesta propuesta contradice una regla de conocimiento funcional vigente — resuelve el conflicto antes de continuar.',
+      'La respuesta propuesta contradice una regla de Functional Knowledge vigente — resuelve el conflicto antes de continuar.',
       409,
       'demo-correlation-id',
       'FUNCTIONAL_KNOWLEDGE_CONFLICT',

@@ -363,7 +363,7 @@ export function AnalysisRunDetailPage() {
             <h2>Símbolos cambiados</h2>
             {isLargeChangeset && (
               <p className="empty-inline-note">
-                Conjunto de cambios grande: {directCount} símbolo(s) con cambio directo, {impactedCount} potencialmente impactado(s).
+                Changeset grande: {directCount} símbolo(s) con cambio directo, {impactedCount} potencialmente impactado(s).
               </p>
             )}
             <ul className="symbol-list">
