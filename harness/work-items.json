@@ -4222,6 +4222,91 @@
           "report": "harness/reports/wi-console-044-contract-sync-review.md"
         }
       ]
+    },
+    {
+      "id": "WI-CONSOLE-045",
+      "status": "W-DONE",
+      "title": "Espejar SYSTEM-2.14 e INTEROP-2.19 desde Core y procesar el Contract Sync CS-CORE-20261021-004",
+      "storyIds": [
+        "HU01",
+        "HU11",
+        "HU12",
+        "HU14",
+        "HU15"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-047"
+      ],
+      "dependsOn": [],
+      "contractImpact": true,
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md",
+        "spec/contracts/github-integration-contract.md",
+        "spec/contracts/schemas",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-045-scope-approval.md",
+        "harness/reports/wi-console-045-sdd-verification.md",
+        "harness/reports/wi-console-045-contract-sync-review.md",
+        "harness/reports/wi-console-045-implementation.md",
+        "harness/reports/wi-console-045-contract-review.md",
+        "harness/reports/wi-console-045-review.md",
+        "harness/reports/wi-console-045-closure.md"
+      ],
+      "acceptanceCriteria": [
+        "system-contract.md (f60d6c4b…) e interoperability-contract.md (f9866d16…) coinciden byte a byte con Core 3d2383e4 vía git show; github-integration-contract.md (6c553ee8…) y el árbol spec/contracts/schemas (a1ba9a19…) no cambian y son idénticos a los de 3d2383e4.",
+        "Las referencias vigentes de versión (SYSTEM-2.13→2.14, INTEROP-2.18→2.19) se actualizan en spec/ sin tocar historia, CHANGELOG pasado ni código de producto.",
+        "CS-CORE-20261021-004 (informativo, breaking=false) se acusa y resuelve solo con evidencia real; sin cambio de código, DTO, rutas ni UI.",
+        "lint, tsc -b --noEmit, pruebas, build, format:check, contracts:check y validadores pasan; contract-reviewer y reviewer independientes aprueban."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-045-scope-approval.md",
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-045 no toca bindings, UI ni endpoints. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-045-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-045 no toca autorizacion ni interfaz. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-045-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-045 no cambia login, sesion, tokens ni el cliente HTTP. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-045-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-045 no altera Projects ni visibilidad. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-045-contract-sync-review.md"
+        }
+      ],
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true
     }
   ]
 }

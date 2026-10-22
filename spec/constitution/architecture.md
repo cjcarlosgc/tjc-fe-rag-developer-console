@@ -1,6 +1,6 @@
 # Arquitectura
 
-**Contratos compartidos:** SYSTEM-2.13 / INTEROP-2.18 / GH-INTEROP-1.8
+**Contratos compartidos:** SYSTEM-2.14 / INTEROP-2.19 / GH-INTEROP-1.8
 
 ```text
 Browser ──Projects/workspaces, bindings, RAG──> RAG Core ──> Test Execution Sandbox
