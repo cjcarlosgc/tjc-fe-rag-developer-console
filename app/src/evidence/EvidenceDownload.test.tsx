@@ -91,7 +91,7 @@ describe('EvidenceDownload', () => {
     expect(await screen.findByText('Esquema de evidencia: v1')).toBeInTheDocument()
   })
 
-  it('usa el nombre de archivo esperado para experimentos y comparaciones de retrieval', async () => {
+  it('usa el nombre de archivo esperado para experimentos y comparaciones de recuperación', async () => {
     getEvidenceMock.mockResolvedValue({ ...okResult(), bundle: { ...bundle, kind: 'EXPERIMENT' } } as never)
     const user = userEvent.setup()
     renderDownload(true, 'EXPERIMENT')

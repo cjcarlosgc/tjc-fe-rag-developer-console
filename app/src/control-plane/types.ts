@@ -69,7 +69,7 @@ export interface ProjectRepositoryBindingResponse {
   updatedAt: string
 }
 
-// §6.10 — Analysis Runs (HU32)
+// §6.10 — AnalysisRuns (HU32)
 
 export type AnalysisRunStatus =
   | 'QUEUED'

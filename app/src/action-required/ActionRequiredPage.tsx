@@ -42,6 +42,8 @@ export function ActionRequiredPage() {
         description="Runs que necesitan una respuesta funcional antes de continuar el análisis."
         aside={mock && <span className="demo-stamp">DEMO · DATOS SIMULADOS</span>}
       />
+      {/* WI-CONSOLE-047 (ciclo 2, H2): el ámbito del contador del menú (todos los Workspaces o el filtrado) también es visible, no solo título/aria. */}
+      <p className="empty-inline-note">{workspaceId ? 'Pendientes del Workspace seleccionado.' : 'Pendientes en todos tus Workspaces.'}</p>
       {isPending && !isError && <LoadingState label="Cargando bandeja…" />}
       {isError && <ErrorState message={error?.message ?? 'No se pudieron cargar los Projects de este workspace.'} onRetry={retry} />}
       {!isPending &&

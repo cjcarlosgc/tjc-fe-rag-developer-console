@@ -20,7 +20,7 @@ describe('prior coverage (mock) — HU50, especulativo', () => {
   })
 
   it('rechaza con id de Run inexistente', async () => {
-    await expect(getPriorCoverage('arun_does_not_exist')).rejects.toThrow(/No existe el Analysis Run/)
+    await expect(getPriorCoverage('arun_does_not_exist')).rejects.toThrow(/No existe el AnalysisRun/)
   })
 })
 

@@ -122,7 +122,7 @@ export function enableRepository(projectId: string): Promise<ProjectRepositoryBi
   })
 }
 
-// HU32 — Analysis Runs por PR/HEAD (INTEROP-2.1 §6.10).
+// HU32 — AnalysisRuns por PR/HEAD (INTEROP-2.1 §6.10).
 
 const AGGREGATE_PAGE_SIZE = 100
 
@@ -152,7 +152,7 @@ export async function listAllAnalysisRuns(): Promise<AnalysisRunSummaryResponse[
   const seenCursors = new Set<string>()
   let cursor: string | null = null
   do {
-    if (cursor && seenCursors.has(cursor)) throw new Error('La paginación de Analysis Runs no avanzó; vuelve a intentarlo.')
+    if (cursor && seenCursors.has(cursor)) throw new Error('La paginación de AnalysisRuns no avanzó; vuelve a intentarlo.')
     if (cursor) seenCursors.add(cursor)
     const page = await listAnalysisRuns(undefined, undefined, cursor, AGGREGATE_PAGE_SIZE)
     items.push(...page.items)

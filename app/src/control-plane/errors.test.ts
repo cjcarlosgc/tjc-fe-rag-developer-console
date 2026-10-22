@@ -97,7 +97,7 @@ it.each(['GITHUB_ACCOUNT_REQUIRED', 'GITHUB_USER_TOKEN_INVALID'])(
   },
 )
 
-it('WI-CONSOLE-014 (INTEROP-2.7 §6.15): los errores de comparación de retrieval tienen mensaje propio en español', () => {
+it('WI-CONSOLE-014 (INTEROP-2.7 §6.15): los errores de comparación de recuperación tienen mensaje propio en español', () => {
   const cases: Array<[number, string]> = [
     [404, 'ANALYSIS_SYMBOL_NOT_FOUND'],
     [422, 'UNSUPPORTED_SYMBOL_KIND'],

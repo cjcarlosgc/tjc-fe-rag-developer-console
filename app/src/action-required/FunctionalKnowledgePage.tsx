@@ -16,8 +16,8 @@ type StatusFilter = 'ALL' | FunctionalKnowledgeStatus
 
 const STATUS_FILTERS: Array<{ value: StatusFilter; label: string }> = [
   { value: 'ALL', label: 'Todas' },
-  { value: 'ACTIVE', label: 'Active' },
-  { value: 'SUPERSEDED', label: 'Superseded' },
+  { value: 'ACTIVE', label: 'Activas' },
+  { value: 'SUPERSEDED', label: 'Reemplazadas' },
 ]
 
 /** HU07/HU09 · INTEROP-2.7 §6.11 — reglas de Functional Knowledge agrupadas por escenario; varias ACTIVE pueden compartir target. */

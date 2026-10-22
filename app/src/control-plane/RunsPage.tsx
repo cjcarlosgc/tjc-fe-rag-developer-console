@@ -11,7 +11,7 @@ import { StatusBadge } from '../ui/StatusBadge'
 import { EmptyState } from '../ui/EmptyState'
 import { PageHeader } from '../ui/PageHeader'
 
-/** HU32/HU39 — listado global de Analysis Runs (control plane PR-driven), opcionalmente filtrado por proyecto vía `?projectId=`. */
+/** HU32/HU39 — listado global de AnalysisRuns (control plane PR-driven), opcionalmente filtrado por proyecto vía `?projectId=`. */
 export function RunsPage() {
   const mock = isMockDataSource()
   const [searchParams] = useSearchParams()
@@ -56,7 +56,7 @@ export function RunsPage() {
       <PageHeader
         eyebrow="Plano de control / dirigido por PR"
         title="Runs"
-        description="Un Analysis Run por PR/HEAD vigente. Un HEAD nuevo obsoleta al anterior."
+        description="Un AnalysisRun por PR/HEAD vigente. Un HEAD nuevo obsoleta al anterior."
         aside={mock && <span className="demo-stamp">DEMO · DATOS SIMULADOS</span>}
       />
       {projectScopeMismatch && (
@@ -75,7 +75,7 @@ export function RunsPage() {
         !isError &&
         visibleRuns &&
         (visibleRuns.length === 0 ? (
-          <EmptyState title="Sin Runs" description="Todavía no hay Analysis Runs para este filtro." />
+          <EmptyState title="Sin Runs" description="Todavía no hay AnalysisRuns para este filtro." />
         ) : (
           <ul className="analysis-run-list">
             {visibleRuns.map((run) => (

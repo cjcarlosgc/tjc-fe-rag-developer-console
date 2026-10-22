@@ -29,16 +29,16 @@ const codeMessages: Record<string, string> = {
   UNRESOLVABLE_TARGET: 'No pudimos localizar el target elegido en el código de este Run. Prueba con otro símbolo del Run.',
   ANALYSIS_SYMBOL_NOT_FOUND: 'Ese símbolo ya no pertenece a este Run. Actualiza el Run y vuelve a elegirlo.',
   UNSUPPORTED_SYMBOL_KIND: 'Solo se pueden comparar métodos o funciones con cambio directo en este Run.',
-  RETRIEVAL_COMPARISON_NOT_FOUND: 'Esa comparación de retrieval ya no existe o no está disponible.',
+  RETRIEVAL_COMPARISON_NOT_FOUND: 'Esa comparación de recuperación ya no existe o no está disponible.',
   RETRIEVAL_COMPARISON_NOT_FINISHED: 'La comparación todavía no terminó; los resultados aparecerán cuando termine.',
   IDEMPOTENCY_CONFLICT: 'Esa clave de idempotencia ya se usó para otra comparación. Inicia la comparación de nuevo desde la página.',
-  // WI-CONSOLE-021 (INTEROP-2.7 §6.5.1 y §6.15): errores de creación de experimento (OE5) y de comparación de retrieval (OE2).
+  // WI-CONSOLE-021 (INTEROP-2.7 §6.5.1 y §6.15): errores de creación de experimento (OE5) y de comparación de recuperación (OE2).
   // Ninguno crea el recurso; `UNSUPPORTED_PROJECT` vale para ambos y solo significa que no hay framework JEST, VITEST o PHPUNIT detectado (CS-CORE-20261009-017/-018).
   UNSUPPORTED_PROJECT: UNSUPPORTED_PROJECT_MESSAGE,
   // Reintentable: el experimento no se creó, así que volver a intentarlo es seguro.
   LLM_PROVIDER_UNAVAILABLE: 'El modelo de experimentos no está disponible ahora. Inténtalo de nuevo en unos minutos.',
   ANALYSIS_NOT_FINISHED: 'El Run todavía no terminó de analizarse; la comparación estará disponible cuando termine.',
-  RETRIEVAL_COMPARISON_FAILED: 'La comparación de retrieval falló. Revisa el detalle del estado de la comparación.',
+  RETRIEVAL_COMPARISON_FAILED: 'La comparación de recuperación falló. Revisa el detalle del estado de la comparación.',
 }
 
 /** INTEROP-2.7 §6.5.1: `422 REASONING_EFFORT_UNSUPPORTED` trae `details.supportedEfforts: string[]`; si falta o no es una lista de cadenas, el mensaje no la menciona. */

@@ -41,7 +41,7 @@ export function findEligibleSymbols(symbols: AnalysisSymbolResponse[]): Analysis
   return symbols.filter((symbol) => symbol.changeKind === 'DIRECTLY_CHANGED' && (symbol.kind === 'METHOD' || symbol.kind === 'FUNCTION'))
 }
 
-/** Primer símbolo elegible, usado donde solo importa si existe alguno (p.ej. habilitar el CTA "Run comparison" en `AnalysisRunDetailPage`). */
+/** Primer símbolo elegible, usado donde solo importa si existe alguno (p.ej. habilitar el CTA "Comparación de estrategias" en `AnalysisRunDetailPage`). */
 export function findEligibleSymbol(symbols: AnalysisSymbolResponse[]): AnalysisSymbolResponse | null {
   return findEligibleSymbols(symbols)[0] ?? null
 }

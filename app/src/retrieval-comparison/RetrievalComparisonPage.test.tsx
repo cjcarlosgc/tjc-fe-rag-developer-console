@@ -65,9 +65,9 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     renderPage(SINGLE_RUN)
     const select = (await screen.findByLabelText('Símbolo a comparar')) as HTMLSelectElement
     expect(select.value).toBe('')
-    expect(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Comparar recuperación SE vs SEM' })).toBeDisabled()
     expect(screen.getByRole('status')).toHaveTextContent('Elige un símbolo')
-    expect(screen.getByText('Todavía no hay comparaciones de retrieval en este Run.')).toBeInTheDocument()
+    expect(screen.getByText('Todavía no hay comparaciones de recuperación en este Run.')).toBeInTheDocument()
   })
 
   it('con varios símbolos el botón queda deshabilitado con motivo hasta elegir uno', async () => {
@@ -75,7 +75,7 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     renderPage(MULTI_RUN)
     const select = (await screen.findByLabelText('Símbolo a comparar')) as HTMLSelectElement
     expect(select.options).toHaveLength(4)
-    const button = screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' })
+    const button = screen.getByRole('button', { name: 'Comparar recuperación SE vs SEM' })
     expect(button).toBeDisabled()
     expect(button).toHaveAccessibleDescription('Motivo: falta elegir un símbolo.')
     await user.selectOptions(select, FORMAT_CURRENCY)
@@ -86,7 +86,7 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
   it('un Reader ve la nota de rol y las previas, pero no la acción', async () => {
     renderPage(READER_RUN)
     expect(await screen.findByText(/Solo un Writer, Maintainer o Admin/)).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Comparar retrieval SE vs SEM' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Comparar recuperación SE vs SEM' })).not.toBeInTheDocument()
     expect(screen.queryByLabelText('Símbolo a comparar')).not.toBeInTheDocument()
   })
 
@@ -102,7 +102,7 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     const user = userEvent.setup()
     renderPage(MULTI_RUN)
     await user.selectOptions(await screen.findByLabelText('Símbolo a comparar'), CREATE_ORDER)
-    await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
+    await user.click(screen.getByRole('button', { name: 'Comparar recuperación SE vs SEM' }))
     expect(await screen.findByText('Comparación completada. Resultados disponibles abajo.', {}, { timeout: 5000 })).toBeInTheDocument()
     // Dos COMPLETED de seed más la recién completada: la lista debe reflejarlo sin recargar la página.
     await waitFor(
@@ -141,7 +141,7 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
       .getAllByRole('listitem')
       .find((item) => item.textContent?.includes('rcmp_demo_seed_failed'))!
     expect(within(failed).getByText('RETRIEVAL_COMPARISON_FAILED')).toBeInTheDocument()
-    expect(within(failed).getByText(/La comparación de retrieval falló/)).toBeInTheDocument()
+    expect(within(failed).getByText(/La comparación de recuperación falló/)).toBeInTheDocument()
     expect(within(failed).getByText(/el índice de embeddings no respondió/)).toBeInTheDocument()
   })
 
@@ -149,7 +149,7 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     const user = userEvent.setup()
     renderPage(MULTI_RUN)
     await user.selectOptions(await screen.findByLabelText('Símbolo a comparar'), CREATE_ORDER)
-    await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
+    await user.click(screen.getByRole('button', { name: 'Comparar recuperación SE vs SEM' }))
 
     expect(await screen.findByText('Comparación completada. Resultados disponibles abajo.', {}, { timeout: 5000 })).toBeInTheDocument()
     const heading = await screen.findByRole('heading', { level: 2, name: 'Resultado de OrderService.createOrder' })
@@ -185,7 +185,7 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     expect(screen.getByText('Estado: Fallida (FAILED)')).toBeInTheDocument()
 
     await user.selectOptions(screen.getByLabelText('Símbolo a comparar'), FORMAT_CURRENCY)
-    await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
+    await user.click(screen.getByRole('button', { name: 'Comparar recuperación SE vs SEM' }))
     // La nueva comparación se añade a las cinco previas; ninguna se reemplaza.
     await waitFor(
       () => expect(within(screen.getByRole('list', { name: 'Comparaciones previas del Run' })).getAllByRole('listitem')).toHaveLength(6),
@@ -203,7 +203,7 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     const user = userEvent.setup()
     renderPage(MULTI_RUN)
     await user.selectOptions(await screen.findByLabelText('Símbolo a comparar'), FORMAT_CURRENCY)
-    await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
+    await user.click(screen.getByRole('button', { name: 'Comparar recuperación SE vs SEM' }))
     expect(await screen.findByText(message)).toBeInTheDocument()
     expect(screen.queryByText('crudo de Core')).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { level: 2, name: /Resultado de/ })).not.toBeInTheDocument()
@@ -238,7 +238,7 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     const user = userEvent.setup()
     renderPage(MULTI_RUN)
     await user.selectOptions(await screen.findByLabelText('Símbolo a comparar'), FORMAT_CURRENCY)
-    await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
+    await user.click(screen.getByRole('button', { name: 'Comparar recuperación SE vs SEM' }))
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent('código FUTURE_CODE')
   })
@@ -274,7 +274,7 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     const user = userEvent.setup()
     renderPage(MULTI_RUN)
     await user.selectOptions(await screen.findByLabelText('Símbolo a comparar'), FORMAT_CURRENCY)
-    await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
+    await user.click(screen.getByRole('button', { name: 'Comparar recuperación SE vs SEM' }))
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent('RETRIEVAL_TARGET_UNRESOLVABLE')
     expect(alert).toHaveTextContent('No se pudo resolver el símbolo elegido')
@@ -305,7 +305,7 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     const user = userEvent.setup()
     renderPage(MULTI_RUN)
     await user.selectOptions(await screen.findByLabelText('Símbolo a comparar'), FORMAT_CURRENCY)
-    await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
+    await user.click(screen.getByRole('button', { name: 'Comparar recuperación SE vs SEM' }))
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent(message)
     expect(alert).toHaveTextContent('corr-retrieval-1')
@@ -329,9 +329,9 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     const user = userEvent.setup()
     renderPage(MULTI_RUN)
     await user.selectOptions(await screen.findByLabelText('Símbolo a comparar'), FORMAT_CURRENCY)
-    await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
+    await user.click(screen.getByRole('button', { name: 'Comparar recuperación SE vs SEM' }))
     await screen.findByRole('alert')
-    await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
+    await user.click(screen.getByRole('button', { name: 'Comparar recuperación SE vs SEM' }))
     await waitFor(() => expect(calls).toBe(2))
     expect(keys[0]).toBe(keys[1])
     expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/)
@@ -351,19 +351,19 @@ describe('RetrievalComparisonPage (WI-CONSOLE-014, Corte B)', () => {
     const user = userEvent.setup()
     renderPage(MULTI_RUN)
     await user.selectOptions(await screen.findByLabelText('Símbolo a comparar'), FORMAT_CURRENCY)
-    await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('Esa comparación de retrieval ya no existe o no está disponible.')
+    await user.click(screen.getByRole('button', { name: 'Comparar recuperación SE vs SEM' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Esa comparación de recuperación ya no existe o no está disponible.')
     expect(screen.getByRole('list', { name: 'Comparaciones previas del Run' })).toBeInTheDocument()
   })
 })
 
-describe('WI-CONSOLE-017: descarga de evidencia en la comparación de retrieval', () => {
+describe('WI-CONSOLE-017: descarga de evidencia en la comparación de recuperación', () => {
   it('no aparece antes de un estado terminal y sí al completarse la comparación', async () => {
     const user = userEvent.setup()
     renderPage(MULTI_RUN)
     const select = await screen.findByLabelText('Símbolo a comparar')
     await user.selectOptions(select, FORMAT_CURRENCY)
-    await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
+    await user.click(screen.getByRole('button', { name: 'Comparar recuperación SE vs SEM' }))
     expect(screen.queryByRole('button', { name: 'Descargar evidencia (JSON)' })).not.toBeInTheDocument()
 
     expect(await screen.findByRole('heading', { name: /Resultado de/ }, { timeout: 5000 })).toBeInTheDocument()
@@ -392,7 +392,7 @@ describe('RetrievalComparisonPage (WI-CONSOLE-030, C1/C4)', () => {
     const user = userEvent.setup()
     renderPage(LEGACY_PHP_RUN)
     await user.selectOptions(await screen.findByLabelText('Símbolo a comparar'), PHP_COUPON_APPLY)
-    await user.click(screen.getByRole('button', { name: 'Comparar retrieval SE vs SEM' }))
+    await user.click(screen.getByRole('button', { name: 'Comparar recuperación SE vs SEM' }))
     expect(await screen.findByText(UNSUPPORTED_PROJECT_MESSAGE)).toBeInTheDocument()
     expect(screen.queryByRole('heading', { level: 2, name: /Resultado de/ })).not.toBeInTheDocument()
   })

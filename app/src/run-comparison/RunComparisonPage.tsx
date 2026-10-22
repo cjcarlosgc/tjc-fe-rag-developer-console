@@ -120,7 +120,7 @@ export function RunComparisonPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eligibleSymbols.length, comparisonsQuery.isSuccess, trials.length, canCreateExperiment])
 
-  if (runQuery.isPending || projectQuery.isPending || comparisonsQuery.isPending) return <LoadingState label="Cargando Analysis Run…" />
+  if (runQuery.isPending || projectQuery.isPending || comparisonsQuery.isPending) return <LoadingState label="Cargando AnalysisRun…" />
   if (runQuery.isError) return <ErrorState message={runQuery.error.message} onRetry={() => void runQuery.refetch()} />
   if (projectQuery.isError) return <ErrorState message={projectQuery.error.message} onRetry={() => void projectQuery.refetch()} />
   if (comparisonsQuery.isError)
@@ -135,12 +135,12 @@ export function RunComparisonPage() {
           { label: 'Projects', to: '/' },
           { label: 'Runs', to: '/analysis-runs' },
           { label: `PR #${run.pullRequest.number}`, to: `/projects/${projectId}/runs/${analysisRunId}` },
-          { label: 'Run comparison' },
+          { label: 'Comparación de estrategias' },
         ]}
       />
       <div className="page-heading">
         <div>
-          <p className="eyebrow">Experimentación / Run comparison</p>
+          <p className="eyebrow">Experimentación / Comparación de estrategias</p>
           <div className="run-heading-meta">
             <RepoChip repositoryName={run.pullRequest.repositoryName} />
             <span className="pr-number">PR #{run.pullRequest.number}</span>

@@ -10,6 +10,11 @@
   flex-wrap: wrap;
   gap: 8px;
 }
+/* WI-CONSOLE-047 (ciclo 2, H1): el <code> del objetivo es un ítem flex del h3; sin overflow-wrap su mínimo era el nombre completo y desbordaba a 320 px. */
+.operational-trace h3 code {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
 .operational-trace h4 {
   margin: 0 0 8px;
   font-size: 14px;

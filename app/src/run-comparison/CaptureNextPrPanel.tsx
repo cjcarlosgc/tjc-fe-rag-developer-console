@@ -43,7 +43,7 @@ export function CaptureNextPrPanel({ projectId }: { projectId: string }) {
         <div>
           <h2>Capturar el próximo PR</h2>
           <p>
-            Arma la captura del próximo Analysis Run elegible que dispare un PR real, para demostrar en vivo que la comparación no está
+            Arma la captura del próximo AnalysisRun elegible que dispare un PR real, para demostrar en vivo que la comparación no está
             precalculada. No es un modo permanente: se apaga solo tras capturar uno.
           </p>
         </div>

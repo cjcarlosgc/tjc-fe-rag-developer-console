@@ -258,7 +258,7 @@ test('live sin analysisRunId explica cómo llegar a un Run elegible y no muestra
 
   renderApp(<ExperimentPage />, { initialEntry: '/projects/p-1/experimental', routePath: '/projects/:projectId/experimental' })
 
-  expect(await screen.findByText(/Abre esta comparación desde un Analysis Run vigente/)).toBeInTheDocument()
+  expect(await screen.findByText(/Abre esta comparación desde un AnalysisRun vigente/)).toBeInTheDocument()
   expect(screen.queryByLabelText('Objetivo experimental')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Ejecutar comparación' })).not.toBeInTheDocument()
 })

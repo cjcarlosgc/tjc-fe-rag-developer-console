@@ -43,5 +43,5 @@ export function listDiscoveredFiles(traceId: string, step: number, cursor: strin
 /** Vista de contexto RAG asociada a un AnalysisRun PR-driven en la demo. */
 export function getAnalysisRunContextTrace(analysisRunId: string): Promise<RagContextTraceDetail | null> {
   if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockGetAnalysisRunContextTrace(analysisRunId))
-  return Promise.reject(new PendingContractError('el contexto recolectado de un Analysis Run'))
+  return Promise.reject(new PendingContractError('el contexto recolectado de un AnalysisRun'))
 }

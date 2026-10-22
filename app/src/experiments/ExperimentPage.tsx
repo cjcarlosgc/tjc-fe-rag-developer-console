@@ -72,9 +72,9 @@ export function ExperimentPage() {
   const liveRunEligibilityMessage = isMock
     ? null
     : !analysisRunId
-      ? 'Abre esta comparación desde un Analysis Run vigente con un método o función cambiado directamente.'
+      ? 'Abre esta comparación desde un AnalysisRun vigente con un método o función cambiado directamente.'
       : runQuery.data?.status === 'OBSOLETE'
-        ? 'Este Run quedó obsoleto por un HEAD nuevo. Abre el Analysis Run vigente del PR para comparar.'
+        ? 'Este Run quedó obsoleto por un HEAD nuevo. Abre el AnalysisRun vigente del PR para comparar.'
         : runQuery.data?.status === 'ACTION_REQUIRED'
           ? 'Responde primero las preguntas funcionales pendientes de este Run para habilitar la comparación.'
           : runQuery.data && (runQuery.data.status === 'QUEUED' || runQuery.data.status === 'PROCESSING')

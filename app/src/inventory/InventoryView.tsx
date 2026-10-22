@@ -27,7 +27,7 @@ export function InventoryView({ targets }: Props) {
     <div className="inventory-stack">
       <div className="list-toolbar">
         <div className="field list-search">
-          <label htmlFor="inventory-query">Buscar target</label>
+          <label htmlFor="inventory-query">Buscar objetivo</label>
           <input id="inventory-query" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="path, clase o método" />
         </div>
         <fieldset className="segmented">

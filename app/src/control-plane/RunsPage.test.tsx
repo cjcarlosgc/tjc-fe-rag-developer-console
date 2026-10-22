@@ -10,7 +10,7 @@ beforeEach(() => {
   resetMockBackend()
 })
 
-test('HU32: lista todos los Analysis Runs con su badge de estado', async () => {
+test('HU32: lista todos los AnalysisRuns con su badge de estado', async () => {
   const { container } = renderApp(<RunsPage />, { initialEntry: '/analysis-runs' })
 
   expect(await screen.findByText('PR #42', { selector: '.pr-ref' })).toBeInTheDocument()

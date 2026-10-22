@@ -48,7 +48,7 @@ describe('getEvidence (modo mock)', () => {
   it('EXPERIMENT: 409 mientras está PENDING/RUNNING y bundle al COMPLETED', async () => {
     const accepted = await mockStartExperiment('prj_checkout_demo', 'ver_checkout_7-method-total')
     await expect(mockGetEvidence('EXPERIMENT', accepted.experimentId)).rejects.toMatchObject({ status: 409, code: 'EVIDENCE_NOT_FINISHED' })
-    // La evidencia no avanza el experimento: sólo el GET de estado lo hace.
+    // La evidencia no avanza el experimento: solo el GET de estado lo hace.
     await mockGetExperiment(accepted.experimentId)
     await mockGetExperiment(accepted.experimentId)
     await mockGetExperiment(accepted.experimentId)

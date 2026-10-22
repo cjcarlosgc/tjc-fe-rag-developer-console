@@ -46,7 +46,7 @@ const STATUS_TEXT: Record<RetrievalComparisonStatus, string> = {
 const symbolKey = (symbol: Pick<AnalysisSymbolResponse, 'filePath' | 'qualifiedName'>) => `${symbol.filePath}::${symbol.qualifiedName}`
 
 /**
- * INTEROP-2.7 §6.15 (WI-CONSOLE-014, Corte B). Comparación experimental de retrieval SE vs SEM sobre un símbolo
+ * INTEROP-2.7 §6.15 (WI-CONSOLE-014, Corte B). Comparación experimental de recuperación SE vs SEM sobre un símbolo
  * DIRECTLY_CHANGED METHOD/FUNCTION del Run. OE2 no usa los gates de OE5: ACTION_REQUIRED y OBSOLETE no bloquean.
  * No hay ganador, deltas, estadística, barras normalizadas ni verdad de terreno en este corte.
  *
@@ -95,7 +95,7 @@ export function RetrievalComparisonPage() {
     }
   }, [resultsQuery.data])
 
-  if (runQuery.isPending || projectQuery.isPending) return <LoadingState label="Cargando Analysis Run…" />
+  if (runQuery.isPending || projectQuery.isPending) return <LoadingState label="Cargando AnalysisRun…" />
   if (runQuery.isError) return <ErrorState message={runQuery.error.message} onRetry={() => void runQuery.refetch()} />
   if (projectQuery.isError) return <ErrorState message={projectQuery.error.message} onRetry={() => void projectQuery.refetch()} />
 
@@ -145,7 +145,7 @@ export function RetrievalComparisonPage() {
     : !eligibleSymbols.length
       ? 'Este Run no tiene símbolos para comparar.'
       : canWrite
-        ? 'Elige un símbolo y pulsa «Comparar retrieval SE vs SEM» para iniciar una comparación.'
+        ? 'Elige un símbolo y pulsa «Comparar recuperación SE vs SEM» para iniciar una comparación.'
         : 'Solo lectura: puedes consultar las comparaciones previas.'
   const statusMessage = !activeId
     ? idleMessage
@@ -166,7 +166,7 @@ export function RetrievalComparisonPage() {
           { label: 'Projects', to: '/' },
           { label: 'Runs', to: '/analysis-runs' },
           { label: `PR #${run.pullRequest.number}`, to: `/projects/${projectId}/runs/${analysisRunId}` },
-          { label: 'Comparación de retrieval' },
+          { label: 'Comparación de recuperación' },
         ]}
       />
       <div className="page-heading">
@@ -176,8 +176,8 @@ export function RetrievalComparisonPage() {
             <RepoChip repositoryName={run.pullRequest.repositoryName} />
             <span className="pr-number">PR #{run.pullRequest.number}</span>
           </div>
-          <h1>Comparación de retrieval SE vs SEM</h1>
-          <p>Compara ambos modos de retrieval sobre un mismo símbolo de este Run. No altera el resultado operacional del Run.</p>
+          <h1>Comparación de recuperación SE vs SEM</h1>
+          <p>Compara ambos modos de recuperación sobre un mismo símbolo de este Run. No altera el resultado operacional del Run.</p>
         </div>
         {isMock && <span className="demo-stamp">DEMO · DATOS SIMULADOS</span>}
       </div>
@@ -186,7 +186,7 @@ export function RetrievalComparisonPage() {
         <span className="contract-glyph">OE2</span>
         <div>
           <strong>SE y SEM no son equivalentes a RAG ni a GA</strong>
-          <p>Son modos de retrieval experimentales. Esta vista no ofrece conclusiones comparativas.</p>
+          <p>Son modos de recuperación experimentales. Esta vista no ofrece conclusiones comparativas.</p>
         </div>
       </div>
 
@@ -199,7 +199,7 @@ export function RetrievalComparisonPage() {
 
         {!eligibleSymbols.length && (
           <div className="empty-state">
-            <p>Este Run no tiene símbolos METHOD o FUNCTION con cambio directo. No hay comparación de retrieval posible para él.</p>
+            <p>Este Run no tiene símbolos METHOD o FUNCTION con cambio directo. No hay comparación de recuperación posible para él.</p>
           </div>
         )}
 
@@ -207,7 +207,7 @@ export function RetrievalComparisonPage() {
 
         {eligibleSymbols.length > 0 && !roleLoading && !canWrite && (
           <p className="role-note">
-            Solo un Writer, Maintainer o Admin puede crear comparaciones de retrieval. Puedes ver las comparaciones previas.
+            Solo un Writer, Maintainer o Admin puede crear comparaciones de recuperación. Puedes ver las comparaciones previas.
           </p>
         )}
 
@@ -244,7 +244,7 @@ export function RetrievalComparisonPage() {
                   ? 'Comparando…'
                   : terminal && selectedSymbol && activeId && detail?.symbol.qualifiedName === selectedSymbol.qualifiedName
                     ? 'Comparar de nuevo'
-                    : 'Comparar retrieval SE vs SEM'}
+                    : 'Comparar recuperación SE vs SEM'}
               </button>
               <span id="retrieval-start-hint" className="field-hint">
                 {!selectedSymbol
@@ -313,7 +313,7 @@ export function RetrievalComparisonPage() {
         {listQuery.isError && (
           <ErrorNote message={bindingErrorMessage(listQuery.error)} correlationId={errorCorrelationId(listQuery.error)} />
         )}
-        {listQuery.isSuccess && previous.length === 0 && <p>Todavía no hay comparaciones de retrieval en este Run.</p>}
+        {listQuery.isSuccess && previous.length === 0 && <p>Todavía no hay comparaciones de recuperación en este Run.</p>}
         {previous.length > 0 && (
           <ul className="retrieval-previous" aria-label="Comparaciones previas del Run">
             {previous.map((item) => (

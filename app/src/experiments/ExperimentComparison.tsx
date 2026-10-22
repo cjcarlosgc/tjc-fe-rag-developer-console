@@ -206,11 +206,11 @@ export function ExperimentComparison({
         <dl>
           <div>
             <dt>Recuperados</dt>
-            <dd>{result.rag.retrievedChunks ?? '—'} chunks</dd>
+            <dd>{result.rag.retrievedChunks ?? '—'} fragmentos</dd>
           </div>
           <div>
             <dt>Seleccionados</dt>
-            <dd>{result.rag.selectedChunks ?? '—'} chunks</dd>
+            <dd>{result.rag.selectedChunks ?? '—'} fragmentos</dd>
           </div>
           <div>
             <dt>Contexto</dt>

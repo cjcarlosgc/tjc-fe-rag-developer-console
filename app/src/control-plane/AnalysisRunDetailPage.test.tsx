@@ -47,10 +47,10 @@ test('HU32: un Run ACTION_REQUIRED enlaza a Focus Mode con returnTo de vuelta al
   )
 })
 
-test('HU48: un Run resuelto con símbolo elegible enlaza a Run comparison', async () => {
+test('HU48: un Run resuelto con símbolo elegible enlaza a Comparación de estrategias', async () => {
   renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
 
-  const link = await screen.findByRole('link', { name: /Run comparison/ })
+  const link = await screen.findByRole('link', { name: /Comparación de estrategias/ })
   expect(link).toHaveAttribute('href', '/projects/prj_checkout_demo/runs/arun_checkout_pr45/comparison')
 })
 
@@ -66,21 +66,21 @@ test('WI-CONSOLE-020: un Run OBSOLETE no ofrece iniciar OE5', async () => {
 
   await screen.findByText('Run obsoleto')
   expect(screen.queryByRole('link', { name: 'Comparar RAG vs GA' })).not.toBeInTheDocument()
-  expect(screen.getByRole('link', { name: /Run comparison/ })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: /Comparación de estrategias/ })).toBeInTheDocument()
 })
 
-test('HU48: un Run ACTION_REQUIRED no ofrece Run comparison todavía', async () => {
+test('HU48: un Run ACTION_REQUIRED no ofrece Comparación de estrategias todavía', async () => {
   renderDetail('arun_checkout_pr42', 'prj_checkout_demo')
 
   await screen.findByRole('link', { name: 'Abrir Focus Mode →' })
-  expect(screen.queryByRole('link', { name: /Run comparison/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /Comparación de estrategias/ })).not.toBeInTheDocument()
 })
 
-test('HU48: un Run sin símbolo METHOD/FUNCTION elegible no ofrece Run comparison', async () => {
+test('HU48: un Run sin símbolo METHOD/FUNCTION elegible no ofrece Comparación de estrategias', async () => {
   renderDetail('arun_billing_pr22', 'prj_billing_demo')
 
   await screen.findByText('Sin cambios relevantes', { selector: '.status-badge' })
-  expect(screen.queryByRole('link', { name: /Run comparison/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /Comparación de estrategias/ })).not.toBeInTheDocument()
 })
 
 test('HU50 (especulativo): cada símbolo muestra su cobertura previa fabricada', async () => {
@@ -223,19 +223,19 @@ test('HU53 (INTEROP-2.1 §6.10, definido/no implementado): el historial de trans
   expect(screen.getByText('Generación completada')).toBeInTheDocument()
 })
 
-test('WI-CONSOLE-014: el CTA «Comparar retrieval SE vs SEM» aparece con rol Writer y navega a la ruta nueva', async () => {
+test('WI-CONSOLE-014: el CTA «Comparar recuperación SE vs SEM» aparece con rol Writer y navega a la ruta nueva', async () => {
   renderDetail('arun_checkout_pr49', 'prj_checkout_demo')
 
-  const cta = await screen.findByRole('link', { name: 'Comparar retrieval SE vs SEM' })
+  const cta = await screen.findByRole('link', { name: 'Comparar recuperación SE vs SEM' })
   expect(cta).toHaveAttribute('href', '/projects/prj_checkout_demo/runs/arun_checkout_pr49/retrieval-comparison')
-  expect(screen.getByRole('link', { name: 'Run comparison →' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Comparación de estrategias →' })).toBeInTheDocument()
 })
 
-test('WI-CONSOLE-014: un Reader no ve el CTA de comparación de retrieval', async () => {
+test('WI-CONSOLE-014: un Reader no ve el CTA de comparación de recuperación', async () => {
   renderDetail('arun_org_metrics_pr15', 'prj_org_metrics_demo')
 
   expect(await screen.findByRole('heading', { level: 1 })).toBeInTheDocument()
-  expect(screen.queryByRole('link', { name: 'Comparar retrieval SE vs SEM' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Comparar recuperación SE vs SEM' })).not.toBeInTheDocument()
 })
 
 test('WI-CONSOLE-017: la descarga de evidencia aparece en estado terminal, incluidos ACTION_REQUIRED, SUCCESS y el rol Reader', async () => {

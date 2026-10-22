@@ -54,3 +54,25 @@ describe('guarda débil: Focus Mode sin desbordamiento por texto largo (CSS fuen
     expect(body).toContain('min-width: 0')
   })
 })
+
+describe('guarda débil: detalle de Run sin desbordamiento por símbolos y títulos largos (CSS fuente, ciclo 2)', () => {
+  const baseCss = readStyle('./base.css')
+  const traceCss = readStyle('./trace.css')
+  const actionRequiredCss = readStyle('./action-required.css')
+
+  it('.operational-trace h3 code (objetivo con ShippingAddressValidator.validate) parte tokens largos y puede encogerse', () => {
+    const body = ruleBody(traceCss, '.operational-trace h3 code')
+    expect(body).toContain('overflow-wrap: anywhere')
+    expect(body).toContain('min-width: 0')
+  })
+
+  it('h1 (título de Run con DiscountEngine.applyDiscount) parte tokens largos con overflow-wrap: anywhere', () => {
+    expect(ruleBody(baseCss, 'h1')).toContain('overflow-wrap: anywhere')
+  })
+
+  it('.symbol-list code parte el símbolo cambiado con overflow-wrap: anywhere', () => {
+    const body = ruleBody(actionRequiredCss, '.symbol-list code')
+    expect(body).toContain('overflow-wrap: anywhere')
+    expect(body).toContain('min-width: 0')
+  })
+})

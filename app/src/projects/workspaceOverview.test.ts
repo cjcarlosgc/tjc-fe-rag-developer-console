@@ -9,7 +9,7 @@ beforeEach(() => {
   resetMockBackend()
 })
 
-describe('workspaceOverview (contra los 22 Analysis Runs demo reales; WI-CONSOLE-030 suma 2 PHP de team-sandbox y 2 en curso)', () => {
+describe('workspaceOverview (contra los 22 AnalysisRuns demo reales; WI-CONSOLE-030 suma 2 PHP de team-sandbox y 2 en curso)', () => {
   it('countActivePullRequests cuenta PRs distintos entre runs vigentes y abiertos (excluye el attempt obsoleto de PR#17)', async () => {
     const { items } = await listAnalysisRuns()
     // checkout: 8 (incluye PR#53 QUEUED) · billing: 7 (incluye PR#25 PROCESSING; PR#17 cuenta una sola vez) · organizations: PR#8, PR#15 y PR#21 (WRITER) · team-sandbox: PR#7 y PR#3 (WI-CONSOLE-030).

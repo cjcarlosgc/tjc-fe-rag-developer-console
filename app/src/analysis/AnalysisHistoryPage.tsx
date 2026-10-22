@@ -43,7 +43,7 @@ export function AnalysisHistoryPage() {
             <br />
             analizadas
           </span>
-          {isMockDataSource() && <span className="demo-stamp">DEMO TIMELINE</span>}
+          {isMockDataSource() && <span className="demo-stamp">DEMO · LÍNEA TEMPORAL</span>}
         </div>
       </div>
       {versions.length === 0 ? (
@@ -80,7 +80,7 @@ export function AnalysisHistoryPage() {
                     <dd>{metric(version.filesProcessed)}</dd>
                   </div>
                   <div>
-                    <dt>Chunks</dt>
+                    <dt>Fragmentos</dt>
                     <dd>{metric(version.chunksCount)}</dd>
                   </div>
                   <div>
@@ -97,7 +97,7 @@ export function AnalysisHistoryPage() {
                   </div>
                 </dl>
                 <footer>
-                  <span>{version.current ? 'Base activa para nuevos análisis' : 'Instantánea histórica · sólo lectura'}</span>
+                  <span>{version.current ? 'Base activa para nuevos análisis' : 'Instantánea histórica · solo lectura'}</span>
                   {version.status === 'COMPLETED' && (
                     <Link className="button secondary button-link" to={`/projects/${projectId}/versions/${version.id}/inventory`}>
                       Ver inventario <span aria-hidden="true">→</span>

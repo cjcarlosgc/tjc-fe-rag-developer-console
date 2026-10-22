@@ -190,7 +190,7 @@ export function useAnalysisRuns(projectId?: string, status?: AnalysisRunStatus, 
   })
 }
 
-/** Todos los Analysis Runs globales para aplicar el workspace sobre el listado completo. */
+/** Todos los AnalysisRuns globales para aplicar el workspace sobre el listado completo. */
 export function useAllAnalysisRuns(enabled = true) {
   return useQuery({
     queryKey: controlPlaneKeys.allRuns,

@@ -11,6 +11,7 @@ describe('arranque de main.tsx con la configuración del entorno', () => {
 
   afterEach(() => {
     vi.unstubAllEnvs()
+    vi.doUnmock('./router')
     document.body.innerHTML = ''
   })
 
@@ -31,5 +32,17 @@ describe('arranque de main.tsx con la configuración del entorno', () => {
     await waitFor(() => expect(document.getElementById('root')!.childElementCount).toBeGreaterThan(0))
     expect(screen.queryByText('Configuración no válida')).not.toBeInTheDocument()
     expect(document.title).not.toBe('Configuración no válida · RAG Test Studio')
+  })
+
+  it('si falla la carga diferida del router muestra una pantalla de error accionable en lugar de una página en blanco', async () => {
+    vi.stubEnv('VITE_DATA_SOURCE', 'mock')
+    vi.doMock('./router', () => {
+      throw new Error('Failed to fetch dynamically imported module')
+    })
+    await import('./main')
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('Falta un módulo de la aplicación.')
+    expect(screen.getByRole('button', { name: 'Recargar página' })).toBeInTheDocument()
+    expect(document.title).toBe('No se pudo cargar la aplicación · RAG Test Studio')
   })
 })

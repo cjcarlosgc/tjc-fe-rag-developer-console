@@ -74,7 +74,7 @@ describe('context-explorer api (live)', () => {
     expect(urls[2]).toContain('/context-traces/trace-1/discovered-files?step=3')
   })
 
-  it('el contexto de un Analysis Run sigue pendiente de contrato en Core', async () => {
+  it('el contexto de un AnalysisRun sigue pendiente de contrato en Core', async () => {
     setDataSourceForTests('live')
     await expect(getAnalysisRunContextTrace('arun-1')).rejects.toThrow(/RAG Core/)
   })

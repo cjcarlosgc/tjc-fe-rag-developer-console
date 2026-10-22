@@ -2,7 +2,7 @@ import type { AnalysisSymbolResponse } from '../control-plane/types'
 
 /**
  * INTEROP-2.7 §6.15 (WI-CONSOLE-014) — **implementado en Core (WI-CORE-022); el adapter live sigue pendiente de WI-CONSOLE-020.**
- * Comparación de retrieval OE2 (SE vs SEM): capacidad experimental, separada de OE5 y del producto operativo.
+ * Comparación de recuperación OE2 (SE vs SEM): capacidad experimental, separada de OE5 y del producto operativo.
  * Los tipos reproducen §6.15 sin campos extra. La Console nunca envía `groundTruth` desde la UI.
  */
 

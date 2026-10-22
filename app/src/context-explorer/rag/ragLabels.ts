@@ -1,7 +1,7 @@
 import type { RagCandidateNode, RagStructuralMatch } from '../types'
 import { STRUCTURAL_RELATION_LABELS } from '../../retrieval-comparison/types'
 
-/** Única fuente de etiquetas de relación estructural (compartida con la comparación de retrieval OE2). */
+/** Única fuente de etiquetas de relación estructural (compartida con la comparación de recuperación OE2). */
 export function structuralRelationName(relation: RagStructuralMatch): string {
   return STRUCTURAL_RELATION_LABELS[relation]
 }

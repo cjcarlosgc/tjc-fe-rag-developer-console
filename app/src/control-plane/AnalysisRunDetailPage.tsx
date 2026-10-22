@@ -273,7 +273,7 @@ export function AnalysisRunDetailPage() {
     enabled: Boolean(analysisRunId),
   })
 
-  if (runQuery.isPending) return <LoadingState label="Cargando Analysis Run…" />
+  if (runQuery.isPending) return <LoadingState label="Cargando AnalysisRun…" />
   if (runQuery.isError) return <ErrorState message={runQuery.error.message} onRetry={() => void runQuery.refetch()} />
 
   const run = runQuery.data
@@ -292,7 +292,7 @@ export function AnalysisRunDetailPage() {
       />
       <div className="page-heading">
         <div>
-          <p className="eyebrow">Analysis Run</p>
+          <p className="eyebrow">AnalysisRun</p>
           <div className="run-heading-meta">
             <RepoChip repositoryName={run.pullRequest.repositoryName} />
             <span className="pr-number">PR #{run.pullRequest.number}</span>
@@ -307,7 +307,7 @@ export function AnalysisRunDetailPage() {
         <div className="run-heading-actions">
           {canCompare && (
             <Link className="button secondary button-link" to={`/projects/${run.projectId}/runs/${run.id}/comparison`}>
-              Run comparison →
+              Comparación de estrategias →
             </Link>
           )}
           {canCompareOe5 && (
@@ -320,7 +320,7 @@ export function AnalysisRunDetailPage() {
           )}
           {canCompareRetrieval && (
             <Link className="button secondary button-link" to={`/projects/${run.projectId}/runs/${run.id}/retrieval-comparison`}>
-              Comparar retrieval SE vs SEM
+              Comparar recuperación SE vs SEM
             </Link>
           )}
           {mock && <span className="demo-stamp">DEMO · DATOS SIMULADOS</span>}

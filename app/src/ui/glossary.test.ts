@@ -30,10 +30,24 @@ const FORBIDDEN_VISIBLE: Array<{ term: string; pattern: RegExp }> = [
   { term: 'Capture next PR', pattern: /Capture next PR/ },
   { term: 'Sin test / Con test', pattern: /(['">])(Sin|Con) test(['"<])/ },
   { term: 'LIVE · CORE API', pattern: /LIVE · CORE API/ },
+  // WI-CONSOLE-047 (ciclo 2, H3): residuos en inglés del demo y de los rótulos fuera del glosario.
+  { term: 'Analysis Run (debe ser AnalysisRun)', pattern: /Analysis Runs?\b/ },
+  { term: 'Run comparison', pattern: /Run comparison/ },
+  { term: 'Buscar target', pattern: /Buscar target/ },
+  { term: 'Retrieval (visible)', pattern: /[Cc]omparaci[oó]n de retrieval|[Cc]omparar retrieval|^\s*Retrieval\b|>Retrieval</ },
+  { term: 'MINI DIFF (visible)', pattern: /MINI DIFF/ },
+  { term: 'Chunks (visible)', pattern: /<dt>Chunks<|\} chunks</ },
+  { term: 'DEMO TIMELINE', pattern: /DEMO TIMELINE/ },
+  { term: 'Behavioral Mismatch (visible)', pattern: /Behavioral Mismatch/ },
+  { term: 'sólo (usar solo)', pattern: /\bsólo\b/ },
+  { term: 'Active / Superseded (filtro)', pattern: /label: '(Active|Superseded)'/ },
 ]
 
 // Términos de dominio que deben seguir en inglés (glosario), y rótulos en español que deben existir.
 const MUST_CONTAIN = [
+  'Comparar recuperación SE vs SEM',
+  'Buscar objetivo',
+  'Discrepancia de comportamiento',
   'Action Required',
   'Focus Mode',
   'Repository binding',

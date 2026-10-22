@@ -442,7 +442,7 @@ test('un proyecto eliminado deja de aparecer en la lista', async () => {
   expect(screen.queryByRole('heading', { name: 'checkout-service' })).not.toBeInTheDocument()
 })
 
-test('"Actividad reciente" enlaza cada Run a su Analysis Run Detail', async () => {
+test('"Actividad reciente" enlaza cada Run a su AnalysisRun Detail', async () => {
   setDataSourceForTests('mock')
   resetMockBackend()
   const { container } = renderApp(<ProjectsPage />)

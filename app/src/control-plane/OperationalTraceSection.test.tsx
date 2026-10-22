@@ -57,15 +57,15 @@ test('orden de secciones del trace: nueve enlaces en orden para un Run con dos t
   expect(headingTexts()).toEqual([
     'Traza operativa',
     'Repositorio y Pull Request',
-    'Analysis Run',
+    'AnalysisRun',
     'Conjunto de cambios',
     'Objetivo: OrderService.calculateTotal',
-    'Retrieval PRESENT',
+    'Recuperación PRESENT',
     'Contexto PRESENT',
     'Generación PRESENT',
     'Ejecuciones PRESENT',
     'Objetivo: formatCurrency',
-    'Retrieval PRESENT',
+    'Recuperación PRESENT',
     'Contexto PRESENT',
     'Generación PRESENT',
     'Ejecuciones PRESENT',
@@ -196,7 +196,7 @@ test('PROCESSING (409) del run solo-trace también se muestra como en proceso', 
 
 test('404: ErrorState con reintento y correlationId', async () => {
   const user = userEvent.setup()
-  traceMock.mockRejectedValueOnce(new ApiError('No existe el Analysis Run demo.', 404, 'corr-404', 'ANALYSIS_RUN_NOT_FOUND'))
+  traceMock.mockRejectedValueOnce(new ApiError('No existe el AnalysisRun demo.', 404, 'corr-404', 'ANALYSIS_RUN_NOT_FOUND'))
   renderTrace('arun_inexistente', 'prj_checkout_demo')
 
   const alert = await screen.findByRole('alert')
@@ -216,7 +216,7 @@ test('error genérico muestra ErrorState con correlationId (tras los reintentos 
 
 test('contrato pendiente (live) muestra el mensaje del adapter sin crash', async () => {
   setDataSourceForTests('live')
-  traceMock.mockRejectedValueOnce(new PendingContractError('la traza operativa de un Analysis Run'))
+  traceMock.mockRejectedValueOnce(new PendingContractError('la traza operativa de un AnalysisRun'))
   renderTrace('arun_checkout_pr45', 'prj_checkout_demo')
 
   expect(await screen.findByText('Contrato pendiente')).toBeInTheDocument()

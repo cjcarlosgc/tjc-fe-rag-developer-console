@@ -339,7 +339,7 @@ function findVisibleRun(analysisRunId: string): AnalysisRunDetailResponse | unde
 /** Un Run existente de un Project borrado se comporta como inexistente; un id desconocido conserva el comportamiento propio de cada lectura. */
 function hideRunOfDeletedProject(analysisRunId: string): void {
   const run = analysisRuns.get(analysisRunId)
-  if (run && isProjectDeleted(run.projectId)) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (run && isProjectDeleted(run.projectId)) notFound(`No existe el AnalysisRun demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
 }
 
 function findVisibleActionRequiredRun(analysisRunId: string): MockActionRequiredRunState | undefined {
@@ -1101,7 +1101,7 @@ function seedActionRequired(): void {
       },
     ],
   })
-  /** Caso HU51 (INTEROP-2.7 §6.11, DEC-FK-001): responder esta pregunta choca con `fk_shipping_zone` (ACTIVE, mismo scope/targetRef/scenarioKey) — ver mockSubmitFunctionalAnswer. Solo demo en Focus Mode: sin `AnalysisRun` propio en control-plane. */
+  /** Caso HU51 (INTEROP-2.7 §6.11, DEC-FK-001): responder esta pregunta choca con `fk_shipping_zone` (ACTIVE, mismo scope/targetRef/scenarioKey) — ver mockSubmitFunctionalAnswer. Solo demo en Focus Mode. Desde WI-CONSOLE-047 (ciclo 2) el Run también existe como `AnalysisRun` propio en control-plane (seed `arun_checkout_pr52` en `analysisRuns`), para su detalle y su trazabilidad. */
   actionRequiredRuns.set('arun_checkout_pr52', {
     analysisRunId: 'arun_checkout_pr52',
     projectId: 'prj_checkout_demo',
@@ -2386,7 +2386,7 @@ function seedControlPlane(): void {
         },
       ],
       functionalBehaviorValidated: false,
-      resultSummary: 'Project PHP sin PHPUnit detectado: no hay framework de pruebas para generar comparaciones de retrieval.',
+      resultSummary: 'Project PHP sin PHPUnit detectado: no hay framework de pruebas para generar comparaciones de recuperación.',
       detailsUrl: '/projects/prj_legacy_php_demo/runs/arun_legacy_php_pr3',
     },
     {
@@ -3657,7 +3657,7 @@ export async function mockGetExperiment(experimentId: string): Promise<Experimen
 export async function mockStartRunComparison(analysisRunId: string, symbol: AnalysisSymbolResponse): Promise<RunComparisonAccepted> {
   await latency()
   const run = findVisibleRun(analysisRunId)
-  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (!run) notFound(`No existe el AnalysisRun demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   requireProjectRole(run.projectId, 'WRITER')
   if (run.status === 'ACTION_REQUIRED')
     throw new ApiError(
@@ -3773,7 +3773,7 @@ function retrievalFingerprint(analysisRunId: string, filePath: string, qualified
 function requireRetrievalComparison(retrievalComparisonId: string): MockRetrievalComparisonState {
   const state = retrievalComparisons.get(retrievalComparisonId)
   if (!state || isProjectDeleted(state.projectId))
-    notFound(`No existe la comparación de retrieval demo "${retrievalComparisonId}".`, 'RETRIEVAL_COMPARISON_NOT_FOUND')
+    notFound(`No existe la comparación de recuperación demo "${retrievalComparisonId}".`, 'RETRIEVAL_COMPARISON_NOT_FOUND')
   return state
 }
 
@@ -3815,7 +3815,7 @@ export async function mockStartRetrievalComparison(
   if (analysisRunId === DEMO_RETRIEVAL_NOT_FINISHED_RUN_ID)
     throw new ApiError('DEMO · el Run todavía no terminó de analizarse.', 409, 'demo-correlation-id', 'ANALYSIS_NOT_FINISHED')
   const run = findVisibleRun(analysisRunId)
-  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (!run) notFound(`No existe el AnalysisRun demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   requireProjectRole(run.projectId, 'WRITER')
   const fingerprint = retrievalFingerprint(analysisRunId, symbol.filePath, symbol.qualifiedName)
   const replayedId = retrievalComparisonByIdempotencyKey.get(idempotencyKey)
@@ -3835,7 +3835,7 @@ export async function mockStartRetrievalComparison(
   if (!inRun) notFound(`El símbolo "${symbol.qualifiedName}" no pertenece a este Run.`, 'ANALYSIS_SYMBOL_NOT_FOUND')
   if (inRun.changeKind !== 'DIRECTLY_CHANGED' || (inRun.kind !== 'METHOD' && inRun.kind !== 'FUNCTION')) {
     throw new ApiError(
-      `"${inRun.qualifiedName}" no es un METHOD/FUNCTION con cambio directo; no se puede comparar retrieval.`,
+      `"${inRun.qualifiedName}" no es un METHOD/FUNCTION con cambio directo; no se puede comparar recuperación.`,
       422,
       'demo-correlation-id',
       'UNSUPPORTED_SYMBOL_KIND',
@@ -3912,7 +3912,7 @@ export const DEMO_RETRIEVAL_NOT_FINISHED_RUN_ID = 'arun_demo_retrieval_not_finis
 export async function mockListRetrievalComparisons(analysisRunId: string, cursor: string | null): Promise<RetrievalComparisonListPage> {
   await latency()
   const run = analysisRuns.get(analysisRunId)
-  if (!run || isProjectDeleted(run.projectId)) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (!run || isProjectDeleted(run.projectId)) notFound(`No existe el AnalysisRun demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   const all = Array.from(retrievalComparisons.values())
     .filter((state) => state.operation.analysisRunId === analysisRunId)
     .reverse()
@@ -4695,7 +4695,7 @@ export async function mockGetAnalysisRun(analysisRunId: string): Promise<Analysi
   await latency()
   // WI-CONSOLE-016 / WI-CONSOLE-030 (C2): los Runs QUEUED/PROCESSING se resuelven aquí como cualquier otro Run (aparecen también en listados y contadores).
   const run = findVisibleRun(analysisRunId)
-  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (!run) notFound(`No existe el AnalysisRun demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   return { ...clone(run), history: deriveRunHistory(run) }
 }
 
@@ -4869,10 +4869,10 @@ function traceFor(run: AnalysisRunDetailResponse): AnalysisRunTraceResponse {
 export async function mockGetAnalysisRunTrace(analysisRunId: string): Promise<AnalysisRunTraceResponse> {
   await latency()
   const run = findVisibleRun(analysisRunId)
-  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (!run) notFound(`No existe el AnalysisRun demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   if (run.status === 'QUEUED' || run.status === 'PROCESSING') {
     throw new ApiError(
-      'La evidencia de este Analysis Run todavía no está disponible: el Run sigue en proceso.',
+      'La evidencia de este AnalysisRun todavía no está disponible: el Run sigue en proceso.',
       409,
       'demo-correlation-id',
       'EVIDENCE_NOT_FINISHED',
@@ -4986,7 +4986,7 @@ export async function mockGetEvidence(kind: EvidenceKind, subjectId: string): Pr
   const generatedAt = nowIso()
   if (kind === 'ANALYSIS_RUN') {
     const run = findVisibleRun(subjectId)
-    if (!run) notFound(`No existe el Analysis Run demo "${subjectId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+    if (!run) notFound(`No existe el AnalysisRun demo "${subjectId}".`, 'ANALYSIS_RUN_NOT_FOUND')
     if (run.status === 'QUEUED' || run.status === 'PROCESSING')
       throw new ApiError(DEMO_EVIDENCE_NOT_FINISHED, 409, 'demo-correlation-id', 'EVIDENCE_NOT_FINISHED')
     return clone(evidenceAnalysisRun(run, generatedAt))
@@ -5065,7 +5065,7 @@ export function setMockAnalysisRunForTests(
   patch: { status?: AnalysisRunStatus; headSha?: string; resultSummary?: string | null },
 ): void {
   const run = analysisRuns.get(analysisRunId)
-  if (!run) throw new Error(`No existe el Analysis Run demo "${analysisRunId}".`)
+  if (!run) throw new Error(`No existe el AnalysisRun demo "${analysisRunId}".`)
   if (patch.status) run.status = patch.status
   if (patch.resultSummary !== undefined) run.resultSummary = patch.resultSummary
   if (patch.headSha) run.pullRequest = { ...run.pullRequest, headSha: patch.headSha }
@@ -5088,7 +5088,7 @@ function fallbackPriorCoverage(qualifiedName: string): PriorCoverageLevel {
 export async function mockGetPriorCoverage(analysisRunId: string): Promise<Record<string, PriorCoverageLevel>> {
   await latency()
   const run = findVisibleRun(analysisRunId)
-  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (!run) notFound(`No existe el AnalysisRun demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   const result: Record<string, PriorCoverageLevel> = {}
   for (const symbol of run.symbols)
     result[symbol.qualifiedName] = PRIOR_COVERAGE_FIXTURES[symbol.qualifiedName] ?? fallbackPriorCoverage(symbol.qualifiedName)
@@ -5099,7 +5099,7 @@ export async function mockGetPriorCoverage(analysisRunId: string): Promise<Recor
 export async function mockListTestProposals(analysisRunId: string): Promise<GeneratedTestProposalSetResponse> {
   await latency()
   const run = findVisibleRun(analysisRunId)
-  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (!run) notFound(`No existe el AnalysisRun demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   const items = testProposals.get(analysisRunId) ?? []
   return clone({ analysisRunId, headSha: run.pullRequest.headSha, items })
 }
@@ -5111,7 +5111,7 @@ export async function mockCreateTestPublication(
 ): Promise<TestPublicationAcceptedResponse> {
   await latency()
   const run = findVisibleRun(analysisRunId)
-  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (!run) notFound(`No existe el AnalysisRun demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   requireProjectRole(run.projectId, 'WRITER')
   if (run.status !== 'SUCCESS')
     throw new ApiError('Solo un Run SUCCESS admite publicación.', 409, 'demo-correlation-id', 'TEST_PUBLICATION_INVALID_RUN_STATUS')

@@ -57,7 +57,7 @@ describe('run-comparison api (mock) — HU48, INTEROP-2.1 §6.5 definido/no impl
   })
 
   it('rechaza con id de Run inexistente', async () => {
-    await expect(startRunComparison('arun_does_not_exist', calculateTotal)).rejects.toThrow(/No existe el Analysis Run/)
+    await expect(startRunComparison('arun_does_not_exist', calculateTotal)).rejects.toThrow(/No existe el AnalysisRun/)
   })
 
   it('rechaza con id de comparación inexistente', async () => {

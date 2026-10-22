@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from 'react-router-dom'
 import { getDataSource } from './api/dataSource'
+import { AppLoadErrorScreen } from './config/AppLoadErrorScreen'
 import { ConfigurationErrorScreen } from './config/ConfigurationErrorScreen'
 import { resolveConfigurationError } from './config/configurationError'
 import './styles.css'
@@ -28,15 +29,24 @@ if (configurationError) {
     </StrictMode>,
   )
 } else {
-  void Promise.all([import('./router'), import('./auth/AuthProvider')]).then(([{ router }, { AuthProvider }]) => {
-    root.render(
-      <StrictMode>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <RouterProvider router={router} />
-          </AuthProvider>
-        </QueryClientProvider>
-      </StrictMode>,
-    )
-  })
+  void Promise.all([import('./router'), import('./auth/AuthProvider')])
+    .then(([{ router }, { AuthProvider }]) => {
+      root.render(
+        <StrictMode>
+          <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+              <RouterProvider router={router} />
+            </AuthProvider>
+          </QueryClientProvider>
+        </StrictMode>,
+      )
+    })
+    // Si un chunk diferido no se descarga (corte de red o despliegue nuevo), se muestra una pantalla accionable en vez de una página en blanco.
+    .catch(() => {
+      root.render(
+        <StrictMode>
+          <AppLoadErrorScreen />
+        </StrictMode>,
+      )
+    })
 }

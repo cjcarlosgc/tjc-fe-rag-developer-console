@@ -424,9 +424,9 @@ describe('control-plane api (mock) — HU30 repository binding user-centric (INT
   })
 })
 
-describe('control-plane api (mock) — HU32 Analysis Runs, los 16 escenarios', () => {
+describe('control-plane api (mock) — HU32 AnalysisRuns, los 16 escenarios', () => {
   // WI-CONSOLE-030: 21 Runs = 17 previos + arun_php_pr7 y arun_legacy_php_pr3 (team-sandbox) + arun_checkout_pr53 (QUEUED) y arun_billing_pr25 (PROCESSING), estos dos antes fuera de listados.
-  it('lista los 22 Analysis Runs (incluye los escenarios de organizaciones, los Runs PHP y los dos en curso)', async () => {
+  it('lista los 22 AnalysisRuns (incluye los escenarios de organizaciones, los Runs PHP y los dos en curso)', async () => {
     const page = await listAnalysisRuns()
     expect(page.items).toHaveLength(22)
   })
@@ -837,7 +837,7 @@ describe('control-plane api (live) — HU30 repository binding, Core ya lo imple
   })
 })
 
-describe('control-plane api (live) — HU32 Analysis Runs, Core ya lo implementa', () => {
+describe('control-plane api (live) — HU32 AnalysisRuns, Core ya lo implementa', () => {
   beforeEach(() => setDataSourceForTests('live'))
 
   it('getAnalysisRun pide GET /analysis-runs/{id}', async () => {

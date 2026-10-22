@@ -206,6 +206,8 @@ h2 {
 }
 h1 {
   font-size: clamp(32px, 5vw, 48px);
+  /* WI-CONSOLE-047 (ciclo 2): un identificador sin espacios en el título (p. ej. DiscountEngine.applyDiscount) desbordaba a 320 px. */
+  overflow-wrap: anywhere;
   margin-bottom: 8px;
   letter-spacing: -0.04em;
 }

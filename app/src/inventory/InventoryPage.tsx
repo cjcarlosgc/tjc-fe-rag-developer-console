@@ -45,7 +45,7 @@ export function InventoryPage() {
         <div className="contract-note history-readonly">
           <span className="contract-glyph">READ</span>
           <div>
-            <strong>Inventario de sólo lectura</strong>
+            <strong>Inventario de solo lectura</strong>
             <p>Esta ProjectVersion permanece disponible como evidencia; el inventario es de consulta.</p>
           </div>
         </div>

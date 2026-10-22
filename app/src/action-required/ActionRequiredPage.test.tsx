@@ -76,3 +76,13 @@ test('WI-CONSOLE-035: cada tarjeta de Action Required muestra archivo, tipo y es
   expect(within(item).getByText('EXCEPTION')).toBeInTheDocument()
   expect(item.querySelector('a')).toHaveAttribute('href', expect.stringContaining('/action-required/arun_checkout_pr42'))
 })
+
+test('WI-CONSOLE-047 (ciclo 2, H2): el ámbito del contador se ve en la página, sin filtro y con filtro de Workspace', async () => {
+  const { unmount } = renderApp(<ActionRequiredPage />, { initialEntry: '/action-required' })
+  expect(await screen.findByText('Pendientes en todos tus Workspaces.')).toBeInTheDocument()
+  unmount()
+
+  renderApp(<ActionRequiredPage />, { initialEntry: '/action-required?workspaceId=2000002' })
+  expect(await screen.findByText('Pendientes del Workspace seleccionado.')).toBeInTheDocument()
+  expect(screen.queryByText('Pendientes en todos tus Workspaces.')).not.toBeInTheDocument()
+})

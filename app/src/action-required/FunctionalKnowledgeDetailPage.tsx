@@ -194,14 +194,14 @@ export function FunctionalKnowledgeDetailPage() {
           <div className="section-heading">
             <div>
               <h2>Runs que usaron esta regla</h2>
-              <p>Analysis Runs cuyo símbolo cambiado coincide con el target de esta regla.</p>
+              <p>AnalysisRuns cuyo símbolo cambiado coincide con el target de esta regla.</p>
             </div>
             <span className="proposal-stamp" title="HU52 — propuesta sin contrato aprobado, coincidencia inferida localmente por símbolo">
               PROPUESTA
             </span>
           </div>
           {usageQuery.data.length === 0 ? (
-            <p className="empty-inline-note">Ningún Analysis Run demo tocó este símbolo todavía.</p>
+            <p className="empty-inline-note">Ningún AnalysisRun demo tocó este símbolo todavía.</p>
           ) : (
             <ul className="context-provenance-list">
               {usageQuery.data.map((run) => (

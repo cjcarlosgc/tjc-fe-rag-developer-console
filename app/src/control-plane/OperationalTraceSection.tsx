@@ -99,7 +99,7 @@ function TargetTrace({ target, index, lookup }: { target: TraceTargetResponse; i
       <ol className="trace-steps">
         <li className="trace-step">
           <h4>
-            Retrieval <StatusBadge status={target.retrieval.status} />
+            Recuperación <StatusBadge status={target.retrieval.status} />
           </h4>
           {target.retrieval.status === 'PRESENT' ? (
             <dl className="trace-fields">
@@ -265,7 +265,7 @@ function TraceContent({ trace, lookup }: { trace: AnalysisRunTraceResponse; look
         <IdRow label="HEAD" value={trace.headSha} copyLabel="headSha" />
       </dl>
 
-      <h3>Analysis Run</h3>
+      <h3>AnalysisRun</h3>
       <dl className="trace-fields">
         <IdRow label="analysisRunId" value={trace.analysisRunId} copyLabel="analysisRunId" />
       </dl>
@@ -351,7 +351,7 @@ export function OperationalTraceSection({ analysisRunId, projectId }: { analysis
       <div className="section-heading">
         <div>
           <h2 id="operational-trace-title">Traza operativa</h2>
-          <p>Cadena de evidencia de este Run: repositorio, changeset, retrieval, contexto, generación, ejecuciones y publicación.</p>
+          <p>Cadena de evidencia de este Run: repositorio, changeset, recuperación, contexto, generación, ejecuciones y publicación.</p>
           {mock && (
             <p className="trace-demo-note">Datos simulados: los ids de esta sección son de demo y no corresponden a ejecuciones reales.</p>
           )}

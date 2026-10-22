@@ -16,7 +16,13 @@ import {
 import { useContextQuestionSet, useSubmitFunctionalAnswer } from './queries'
 import { abstentionLabel } from './abstention'
 import { RuleRegistrationNote, RuleTargetSummary } from './RuleTargetSummary'
-import type { ConflictResolution, FunctionalAnswerChoice, FunctionalKnowledgeConflictResponse, VisualAidResponse } from './types'
+import type {
+  ConflictResolution,
+  FunctionalAnswerChoice,
+  FunctionalKnowledgeConflictResponse,
+  VisualAidKind,
+  VisualAidResponse,
+} from './types'
 import { PageHeader } from '../ui/PageHeader'
 
 /** Evita open-redirect: `returnTo` solo puede ser una ruta interna. */
@@ -32,11 +38,19 @@ const CHOICE_LABELS: Record<Exclude<FunctionalAnswerChoice, 'FREE_TEXT'>, string
   UNKNOWN: 'No lo sé',
 }
 
+/** Rótulo visible del tipo de ayuda visual (el enum `kind` es literal de contrato y no se muestra tal cual). */
+const VISUAL_AID_KIND_LABELS: Record<VisualAidKind, string> = {
+  STATE_DIAGRAM: 'Diagrama de estados',
+  SYMBOL_RELATION: 'Relación de símbolos',
+  MINI_DIFF: 'Diferencia reducida',
+  CODE_FRAGMENT: 'Fragmento de código',
+}
+
 function VisualAid({ aid }: { aid: VisualAidResponse }) {
   return (
     <div className="visual-aid">
       <div className="visual-aid-heading">
-        <span className="visual-aid-kind">{aid.kind.replace(/_/g, ' ')}</span>
+        <span className="visual-aid-kind">{VISUAL_AID_KIND_LABELS[aid.kind] ?? aid.kind.replace(/_/g, ' ')}</span>
         <strong>{aid.title}</strong>
       </div>
       <pre className="visual-aid-content">{aid.content}</pre>

@@ -121,7 +121,7 @@ test('HU07: un proyecto inexistente muestra el error con role="alert"', async ()
   expect(await screen.findByRole('alert')).toHaveTextContent('No existe el Project demo')
 })
 
-test('HU52 (propuesta): lista los Analysis Runs cuyo símbolo coincide con el target de la regla', async () => {
+test('HU52 (propuesta): lista los AnalysisRuns cuyo símbolo coincide con el target de la regla', async () => {
   renderDetail('prj_checkout_demo', 'fk_coupon_expiry')
 
   expect(await screen.findByText('Runs que usaron esta regla')).toBeInTheDocument()
@@ -133,7 +133,7 @@ test('HU52 (propuesta): sin coincidencias muestra el estado vacío en vez de la 
   renderDetail('prj_billing_demo', 'fk_discount_engine')
 
   expect(await screen.findByText('Runs que usaron esta regla')).toBeInTheDocument()
-  expect(screen.getByText('Ningún Analysis Run demo tocó este símbolo todavía.')).toBeInTheDocument()
+  expect(screen.getByText('Ningún AnalysisRun demo tocó este símbolo todavía.')).toBeInTheDocument()
 })
 
 test('INTEROP-2.7 §6.11: escenario nulo o clave LEGACY muestran estado vacío, no la clave ni «Otros»', async () => {

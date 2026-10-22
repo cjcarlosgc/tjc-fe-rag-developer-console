@@ -509,7 +509,7 @@ export function ProjectsPage() {
             </Link>
           </div>
           {runs.length === 0 ? (
-            <EmptyState title="Sin actividad todavía" description="Los Analysis Runs de tus PRs aparecerán aquí." />
+            <EmptyState title="Sin actividad todavía" description="Los AnalysisRuns de tus PRs aparecerán aquí." />
           ) : (
             <ul className="analysis-run-list">
               {runs.slice(0, RECENT_ACTIVITY_LIMIT).map((run) => (
@@ -532,11 +532,11 @@ export function ProjectsPage() {
       {mock && workspace && (
         <div className="demo-strip">
           <div>
-            <span className="demo-kicker">Demo mode · SDD 3.0</span>
+            <span className="demo-kicker">Modo demo · SDD 3.0</span>
             <strong>Plano de control dirigido por PR</strong>
             <p>
-              Explora escenarios preparados del nuevo flujo: Action Required, Behavioral Mismatch, corrección por nuevo HEAD y publicación
-              de tests.
+              Explora escenarios preparados del nuevo flujo: Action Required, Discrepancia de comportamiento, corrección por nuevo HEAD y
+              publicación de tests.
             </p>
           </div>
           <Link className="button secondary button-link" to={`/analysis-runs?workspaceId=${encodeURIComponent(workspace?.id ?? '')}`}>

@@ -31,7 +31,7 @@ export function RagSidePanel({ detail, selectedId }: Props) {
             <dd>{target.tokenCount}</dd>
           </div>
           <div>
-            <dt>Chunks</dt>
+            <dt>Fragmentos</dt>
             <dd>{target.chunkIds.length}</dd>
           </div>
         </dl>

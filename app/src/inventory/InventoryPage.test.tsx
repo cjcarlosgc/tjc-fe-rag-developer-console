@@ -89,7 +89,7 @@ test('abre el inventario de una versión histórica en modo lectura', async () =
   })
 
   expect(await screen.findByText('INSTANTÁNEA HISTÓRICA')).toBeInTheDocument()
-  expect(screen.getByText('Inventario de sólo lectura')).toBeInTheDocument()
+  expect(screen.getByText('Inventario de solo lectura')).toBeInTheDocument()
   expect(screen.getByText('3', { selector: 'dd' })).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /Usar target/ })).not.toBeInTheDocument()
   expect(fetchMock).not.toHaveBeenCalled()

@@ -53,11 +53,11 @@ test('HU35/HU36: el filtro Active recalcula los grupos y oculta las SUPERSEDED',
   renderPage('prj_checkout_demo')
 
   await screen.findByRole('heading', { name: 'Resultado esperado' })
-  await user.click(screen.getByRole('button', { name: 'Active' }))
+  await user.click(screen.getByRole('button', { name: 'Activas' }))
 
   await waitFor(() => expect(screen.queryByText('SUPERSEDED')).not.toBeInTheDocument())
   expect(screen.getAllByText('ACTIVE')).toHaveLength(5)
-  expect(screen.getByRole('button', { name: 'Active' })).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.getByRole('button', { name: 'Activas' })).toHaveAttribute('aria-pressed', 'true')
   expect(groupHeadings()).toEqual(['Resultado esperado', 'Borde', 'Excepción', 'Precondición funcional'])
 })
 
@@ -66,7 +66,7 @@ test('HU35/HU36: el filtro Superseded deja solo la cadena reemplazada y el grupo
   renderPage('prj_checkout_demo')
 
   await screen.findByRole('heading', { name: 'Resultado esperado' })
-  await user.click(screen.getByRole('button', { name: 'Superseded' }))
+  await user.click(screen.getByRole('button', { name: 'Reemplazadas' }))
 
   await waitFor(() => expect(screen.getAllByText('SUPERSEDED')).toHaveLength(2))
   expect(screen.queryByText('ACTIVE')).not.toBeInTheDocument()
@@ -78,7 +78,7 @@ test('HU35/HU36: un filtro sin reglas muestra el estado vacío', async () => {
   renderPage('prj_org_orders_demo')
 
   await screen.findByRole('heading', { name: 'Resultado esperado' })
-  await user.click(screen.getByRole('button', { name: 'Superseded' }))
+  await user.click(screen.getByRole('button', { name: 'Reemplazadas' }))
 
   expect(await screen.findByText('Sin reglas')).toBeInTheDocument()
   expect(screen.getByRole('status')).toHaveTextContent('Sin reglas')
@@ -92,7 +92,7 @@ test('HU35/HU36: el vacío tras filtrar vive en una región role="status" que se
   await screen.findByRole('heading', { name: 'Resultado esperado' })
   const status = screen.getByRole('status')
   expect(status).toBeEmptyDOMElement()
-  await user.click(screen.getByRole('button', { name: 'Superseded' }))
+  await user.click(screen.getByRole('button', { name: 'Reemplazadas' }))
 
   expect(await screen.findByText('Sin reglas')).toBeInTheDocument()
   expect(screen.getByRole('status')).toBe(status)
@@ -164,7 +164,7 @@ describe('HU07/HU09: la lectura no depende del rol y no ofrece acciones de edici
     renderPage(projectId)
 
     await screen.findAllByRole('heading', { level: 2 })
-    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual(['Todas', 'Active', 'Superseded'])
+    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual(['Todas', 'Activas', 'Reemplazadas'])
     expect(screen.getByText('DEMO · DATOS SIMULADOS')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /editar|eliminar|confirmar|guardar/i })).not.toBeInTheDocument()
   })

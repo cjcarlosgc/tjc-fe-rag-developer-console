@@ -191,7 +191,7 @@ test('presenta diferencias absolutas y relativas para tiempo, tokens y costo', (
 test('presenta retrieval únicamente como explicación RAG', () => {
   renderWithRouter(<ExperimentComparison result={result} projectId="prj1" experimentId="exp1" />)
   expect(screen.getByText('Huella de recuperación')).toBeInTheDocument()
-  expect(screen.getByText('20 chunks')).toBeInTheDocument()
+  expect(screen.getByText('20 fragmentos')).toBeInTheDocument()
 })
 
 test('permite abrir la trazabilidad por repetición', async () => {
