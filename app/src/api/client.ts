@@ -1,5 +1,6 @@
 import type { ErrorEnvelope } from '../contracts/generated/contract-types'
-import { resolveBaseUrl } from './baseUrl'
+import { parseBaseUrl, resolveBaseUrl } from './baseUrl'
+import { isMockDataSource } from './dataSource'
 
 export class ApiError extends Error {
   constructor(
@@ -16,7 +17,18 @@ export class ApiError extends Error {
   }
 }
 
-export const baseUrl = resolveBaseUrl('VITE_CORE_API_URL', import.meta.env.VITE_CORE_API_URL)
+/**
+ * En live una URL inválida lanza aquí; `main.tsx` la detecta antes de cargar este módulo y muestra la pantalla de configuración.
+ * En mock la URL no se usa: una inválida no debe impedir cargar el demo, así que cae a mismo origen (sin cambiar el valor válido).
+ */
+function coreApiBaseUrl(): string {
+  const raw = import.meta.env.VITE_CORE_API_URL
+  if (!isMockDataSource()) return resolveBaseUrl('VITE_CORE_API_URL', raw)
+  const result = parseBaseUrl(raw)
+  return result.ok ? result.value : ''
+}
+
+export const baseUrl = coreApiBaseUrl()
 
 let authTokenProvider: (() => string | null) | null = null
 let authErrorHandler: ((event: AuthErrorEvent) => void) | null = null
