@@ -114,6 +114,10 @@
   overflow-x: auto;
 }
 .project-tabs a {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: var(--target-min);
   padding: 10px 14px;
   color: var(--muted);
   font: 700 13px var(--font-mono);
@@ -332,6 +336,7 @@
   margin: 0;
   font-size: 22px;
   line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 .focus-mode-rationale {
   color: var(--muted);

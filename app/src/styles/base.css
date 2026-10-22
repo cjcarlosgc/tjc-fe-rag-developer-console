@@ -102,6 +102,8 @@ a {
 .brand {
   display: flex;
   align-items: center;
+  box-sizing: border-box;
+  min-height: var(--target-min);
   gap: 12px;
   flex: 0 0 auto;
   font-weight: 700;
@@ -449,6 +451,10 @@ a:focus-visible,
   left: var(--space-3);
   top: -64px;
   z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: var(--target-min);
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
   background: var(--accent);
