@@ -17939,8 +17939,8 @@
       "sddVerified": "G-PASSED",
       "implementationCompleted": "G-PASSED",
       "independentReviewPassed": "G-NOT_RUN",
-      "technicalChecksPassed": "G-NOT_RUN",
-      "interopSyncChecked": "G-NOT_RUN",
+      "technicalChecksPassed": "G-PASSED",
+      "interopSyncChecked": "G-PASSED",
       "noMocksPresentedAsLive": "G-PASSED",
       "noBlockingDecisions": "G-PASSED",
       "retryLimitRespected": "G-NOT_RUN",
@@ -18156,6 +18156,12 @@
       ],
       "noMocksPresentedAsLive": [
         "harness/reports/wi-console-048-implementation.md"
+      ],
+      "technicalChecksPassed": [
+        "harness/reports/wi-console-048-implementation.md"
+      ],
+      "interopSyncChecked": [
+        "harness/reports/wi-console-048-contract-sync-review.md"
       ]
     },
     "decisionGate": {
