@@ -30,7 +30,7 @@ import type {
   TestPublicationStatus,
   VerifyGitHubAppAccessRequest,
 } from './types'
-import { pollDelayMs } from '../api/polling'
+import { clampPollMs, pollDelayMs, TEST_POLL_MS } from '../api/polling'
 
 export const controlPlaneKeys = {
   binding: (projectId: string) => ['control-plane', 'binding', projectId] as const,
@@ -199,11 +199,41 @@ export function useAllAnalysisRuns(enabled = true) {
   })
 }
 
-export function useAnalysisRun(analysisRunId: string) {
+/** Estados en curso de un `AnalysisRun` (INTEROP-2.19 §6.10 y §6.16): el Run sigue procesándose en Core. */
+export function isInProgressAnalysisRunStatus(status: AnalysisRunStatus | null | undefined): boolean {
+  return status === 'QUEUED' || status === 'PROCESSING'
+}
+
+/**
+ * Intervalo de sondeo de respaldo del detalle de un `AnalysisRun`. `false` (sin intervalo) si hay error, si aún no hay
+ * datos o si el Run no está en `QUEUED`/`PROCESSING`. En curso: en tests, `TEST_POLL_MS`; si no, `pollAfterMs` acotado
+ * con `clampPollMs` (250 ms–30 s, por defecto 900 ms).
+ */
+export function analysisRunPollIntervalMs(
+  state: { status?: AnalysisRunStatus | null; hasError: boolean; pollAfterMs?: number | null },
+  testMode = import.meta.env.MODE === 'test',
+): number | false {
+  if (state.hasError || !isInProgressAnalysisRunStatus(state.status)) return false
+  if (testMode) return TEST_POLL_MS
+  return clampPollMs(state.pollAfterMs)
+}
+
+/**
+ * Consulta `GET /analysis-runs/{id}`. Sin opciones no sondea; con `pollWhileInProgress` refresca mientras el Run está en
+ * curso y se detiene al terminal o ante error (el tiempo real sigue invalidando la misma consulta).
+ *
+ * `pollAfterMs` es opcional porque el GET del Run no lo incluye: solo lo informa el `202` de creación (INTEROP-2.19 §5).
+ * Sin él se usa `DEFAULT_POLL_MS` (900 ms), el mismo intervalo que el sondeo análogo de la traza.
+ */
+export function useAnalysisRun(analysisRunId: string, options: { pollWhileInProgress?: boolean; pollAfterMs?: number | null } = {}) {
+  const { pollWhileInProgress = false, pollAfterMs } = options
   return useQuery({
     queryKey: controlPlaneKeys.run(analysisRunId),
     queryFn: () => getAnalysisRun(analysisRunId),
     enabled: Boolean(analysisRunId),
+    refetchInterval: pollWhileInProgress
+      ? (query) => analysisRunPollIntervalMs({ status: query.state.data?.status, hasError: query.state.error !== null, pollAfterMs })
+      : false,
   })
 }
 

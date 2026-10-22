@@ -11,6 +11,7 @@ import { ErrorState, LoadingState } from '../ui/Feedback'
 import { RepoChip } from '../ui/RepoChip'
 import { OperationalTraceSection } from './OperationalTraceSection'
 import {
+  isInProgressAnalysisRunStatus,
   isInProgressPublicationStatus,
   isTerminalPublicationStatus,
   useAnalysisRun,
@@ -264,7 +265,7 @@ function ContextSection({ analysisRunId }: { analysisRunId: string }) {
 export function AnalysisRunDetailPage() {
   const { projectId = '', analysisRunId = '' } = useParams()
   const mock = isMockDataSource()
-  const runQuery = useAnalysisRun(analysisRunId)
+  const runQuery = useAnalysisRun(analysisRunId, { pollWhileInProgress: true })
   useAnalysisRunRealtime(analysisRunId)
   const retrievalProjectQuery = useProject(projectId)
   const priorCoverageQuery = useQuery({
@@ -466,7 +467,7 @@ export function AnalysisRunDetailPage() {
         <PublishSection analysisRunId={run.id} projectId={run.projectId} targetBranch={run.pullRequest.headRef} />
       )}
 
-      {run.status !== 'QUEUED' && run.status !== 'PROCESSING' && (
+      {!isInProgressAnalysisRunStatus(run.status) && (
         <div className="panel evidence-panel">
           <div className="section-heading">
             <div>

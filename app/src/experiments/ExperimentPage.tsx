@@ -8,7 +8,7 @@ import { DEMO_EXPERIMENT_SELECTOR_OPTIONS } from '../api/demoExperimentOptions'
 import { toInventoryTargets } from '../inventory/api'
 import { useTestInventory } from '../inventory/queries'
 import { useProject } from '../projects/queries'
-import { useAnalysisRun } from '../control-plane/queries'
+import { isInProgressAnalysisRunStatus, useAnalysisRun } from '../control-plane/queries'
 import { findEligibleSymbols } from '../run-comparison/types'
 import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
@@ -77,7 +77,7 @@ export function ExperimentPage() {
         ? 'Este Run quedó obsoleto por un HEAD nuevo. Abre el AnalysisRun vigente del PR para comparar.'
         : runQuery.data?.status === 'ACTION_REQUIRED'
           ? 'Responde primero las preguntas funcionales pendientes de este Run para habilitar la comparación.'
-          : runQuery.data && (runQuery.data.status === 'QUEUED' || runQuery.data.status === 'PROCESSING')
+          : runQuery.data && isInProgressAnalysisRunStatus(runQuery.data.status)
             ? 'Espera a que termine el análisis para que el Run tenga contexto suficiente para comparar.'
             : analysisRunId && runQuery.data && !eligibleRunSymbols.length
               ? 'Este Run no tiene un símbolo METHOD o FUNCTION con cambio DIRECTLY_CHANGED. Abre un Run que sí tenga uno para comparar.'
