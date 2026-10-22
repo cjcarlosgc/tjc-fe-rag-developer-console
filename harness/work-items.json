@@ -4663,6 +4663,92 @@
       },
       "uiImpact": true,
       "lane": "STANDARD"
+    },
+    {
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "priority": "P2",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "id": "WI-CONSOLE-050",
+      "status": "W-IN_PROGRESS",
+      "title": "Desborde horizontal del documento en Experimento con resultado: el visually-hidden de la ultima columna escapa de .table-frame; causa raiz corregida, auditoria de tablas y guarda CSS",
+      "storyIds": [
+        "HU17",
+        "HU18"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-052"
+      ],
+      "dependsOn": [
+        "WI-CONSOLE-047"
+      ],
+      "specPaths": [
+        "spec/features/014-analysisrun-experiments/tasks.md",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-050-scope-approval.md",
+        "harness/reports/wi-console-050-sdd-verification.md",
+        "harness/reports/wi-console-050-contract-sync-review.md"
+      ],
+      "acceptanceCriteria": [
+        "En la pagina de Experimento con resultado el documento no desborda: scrollWidth == clientWidth a 1280 y 375 px (y 320 px si es viable) en modo demo; el .table-frame conserva su scroll horizontal interno. Antes/despues medidos en navegador real.",
+        "La causa raiz se corrige con el cambio minimo (ancestro posicionado del visually-hidden en el contenedor de la tabla o equivalente) sin alterar el diseno; sin cambios de copy, DTO, rutas, contratos, realtime ni primitives nuevas.",
+        "Auditoria del patron (visually-hidden dentro de th/td en contenedor con overflow) en las demas tablas y paginas (Historial, Inventario, Runs, comparaciones, Functional Knowledge) con mediciones antes/despues; solo se corrigen las que tengan desborde real medido.",
+        "Guarda estatica vitest del CSS (en jsdom no se mide layout) que falla (ROJA) al revertir el arreglo; lint, tsc -b --noEmit, pruebas sin reloj real, build, format:check, contracts:check y validadores pasan.",
+        "reviewer y ux-reviewer independientes aprueban en maximo 2 ciclos; el ux-reviewer mide por su cuenta."
+      ],
+      "approved": true,
+      "scopeApprovalReport": "harness/reports/wi-console-050-scope-approval.md",
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-050 solo cambia una regla CSS de layout, sin bindings ni endpoints.",
+          "report": "harness/reports/wi-console-050-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-050 no toca autorizacion ni rutas.",
+          "report": "harness/reports/wi-console-050-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-050 no cambia login, sesion, tokens ni el cliente HTTP.",
+          "report": "harness/reports/wi-console-050-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-050 no altera visibilidad de Projects ni Runs.",
+          "report": "harness/reports/wi-console-050-contract-sync-review.md"
+        }
+      ],
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-10-22T04:30:00.000Z",
+        "note": "sdd-analyst: ninguna DEC con Blocks alcanza este WI (sin DEC aplicable, verificado); el usuario aprobo el alcance en el chat (ver scope-approval)."
+      },
+      "uiImpact": true,
+      "lane": "STANDARD"
     }
   ]
 }
