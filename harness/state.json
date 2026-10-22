@@ -17803,5 +17803,212 @@
       "closedAt": "2026-10-22T03:30:00.000Z"
     }
   ],
-  "activeWorkItem": null
+  "activeWorkItem": {
+    "component": "CONSOLE",
+    "workItemType": "PRODUCT",
+    "priority": "P2",
+    "sprint": "SMART V3",
+    "caseIds": [],
+    "contractImpact": false,
+    "publishesContract": false,
+    "syncScopePaths": [
+      "spec/contracts/interoperability-contract.md",
+      "spec/contracts/system-contract.md"
+    ],
+    "transversalPaths": [
+      "spec/backlog.md",
+      "spec/constitution/project-context.md",
+      "spec/constitution/delivery-workflow.md"
+    ],
+    "id": "WI-CONSOLE-048",
+    "status": "W-IN_PROGRESS",
+    "title": "Polling de respaldo del detalle de AnalysisRun: refetch periódico del GET solo mientras el Run está en curso (QUEUED/PROCESSING), con pollAfterMs si existe y convivencia con el tiempo real",
+    "storyIds": [
+      "HU12"
+    ],
+    "taskIds": [
+      "ST-CONSOLE-050"
+    ],
+    "dependsOn": [
+      "WI-CONSOLE-046"
+    ],
+    "specPaths": [
+      "spec/features/013-pr-driven-control-plane/tasks.md",
+      "spec/contracts/interoperability-contract.md",
+      "CHANGELOG.md",
+      "harness/reports/wi-console-048-scope-approval.md",
+      "harness/reports/wi-console-048-sdd-verification.md",
+      "harness/reports/wi-console-048-contract-sync-review.md"
+    ],
+    "acceptanceCriteria": [
+      "useAnalysisRun (o el punto equivalente) refetchea el GET /analysis-runs/{id} periódicamente solo mientras el Run está en QUEUED o PROCESSING (definición existente de estados en curso) y se detiene al llegar a un estado terminal o ante un error, sin inventar estados.",
+      "El intervalo respeta pollAfterMs si existe (acotado a 250 ms–30 s, INTEROP-2.19 §5) y, sin él, usa el intervalo por defecto del polling análogo del repositorio; la elección se documenta; en pruebas el intervalo es el modo acelerado ya centralizado.",
+      "Convive con useAnalysisRunRealtime sin peticiones duplicadas innecesarias ni fugas: el aviso en tiempo real sigue solo invalidando el GET, y al desmontar, cambiar de Run o cerrar sesión no quedan timers ni suscripciones; sin cambio de DTO, rutas, markup, copy ni socket.",
+      "Pruebas vitest con fake timers o reloj inyectado (nunca reloj real): polling activo en estado en curso, parada en terminal, pollAfterMs y su tope, default sin pollAfterMs, limpieza al desmontar y convivencia con la invalidación del realtime; alguna prueba falla (ROJA) al mutar la lógica clave.",
+      "lint, tsc -b --noEmit, pruebas, build, format:check, contracts:check y validadores pasan; reviewer independiente aprueba en máximo 2 ciclos; ux-reviewer se omite con justificación si no cambia lo visible."
+    ],
+    "scopeApprovalReport": "harness/reports/wi-console-048-scope-approval.md",
+    "contractSyncReview": [
+      {
+        "eventId": "CS-20260920-003",
+        "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+        "disposition": "NOT_RELEVANT",
+        "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-048 solo agrega un refetch periodico del GET del Run, sin bindings ni endpoints.",
+        "report": "harness/reports/wi-console-048-contract-sync-review.md"
+      },
+      {
+        "eventId": "CS-20260921-001",
+        "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+        "disposition": "NOT_RELEVANT",
+        "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-048 no toca autorizacion ni rutas.",
+        "report": "harness/reports/wi-console-048-contract-sync-review.md"
+      },
+      {
+        "eventId": "CS-20260921-002",
+        "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+        "disposition": "NOT_RELEVANT",
+        "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-048 no cambia login, sesion, tokens ni el cliente HTTP.",
+        "report": "harness/reports/wi-console-048-contract-sync-review.md"
+      },
+      {
+        "eventId": "CS-20260921-003",
+        "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+        "disposition": "NOT_RELEVANT",
+        "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-048 no altera visibilidad de Projects ni Runs.",
+        "report": "harness/reports/wi-console-048-contract-sync-review.md"
+      }
+    ],
+    "approved": true,
+    "execution": {
+      "leaderAgent": "leader",
+      "analysisAgent": "sdd-analyst",
+      "implementationAgent": "implementer",
+      "contractReviewAgent": null,
+      "reviewAgent": null,
+      "handoffs": [
+        {
+          "agent": "sdd-analyst",
+          "executedBy": {
+            "agent": "sdd-analyst",
+            "configuredModel": "claude-sonnet-5-5",
+            "servedModel": "unknown",
+            "effort": "low"
+          },
+          "status": "APPROVED",
+          "findings": [
+            "SUFFICIENT_WITH_NOTES: pollAfterMs no está en el GET del Run (solo en 202 de creación): parámetro opcional del hook con clampPollMs y default 900 ms; en curso = QUEUED/PROCESSING; useAnalysisRun tiene 4 consumidores, usar opt-in solo en el detalle; sin DEC bloqueantes; ux-reviewer omitible (sin markup ni copy)."
+          ],
+          "blockers": [],
+          "filesAffected": [],
+          "evidence": [
+            "harness/reports/wi-console-048-sdd-verification.md"
+          ],
+          "recommendedNextStep": "Delegar la implementación al implementer."
+        }
+      ],
+      "reviewCycles": 0,
+      "maxReviewCycles": 2
+    },
+    "gates": {
+      "sddVerified": "G-PASSED",
+      "implementationCompleted": "G-NOT_RUN",
+      "independentReviewPassed": "G-NOT_RUN",
+      "technicalChecksPassed": "G-NOT_RUN",
+      "interopSyncChecked": "G-NOT_RUN",
+      "noMocksPresentedAsLive": "G-NOT_RUN",
+      "noBlockingDecisions": "G-PASSED",
+      "retryLimitRespected": "G-NOT_RUN",
+      "uxReviewed": "G-NOT_APPLICABLE",
+      "contractReviewed": "G-NOT_APPLICABLE",
+      "canonicalContractSynced": "G-NOT_APPLICABLE",
+      "contractSyncPublished": "G-NOT_APPLICABLE"
+    },
+    "coordination": {
+      "contractImpact": false,
+      "publishesContract": false,
+      "uiImpact": false,
+      "pullCheckpoints": [
+        {
+          "checkpoint": "start",
+          "workItem": "WI-CONSOLE-048",
+          "relevantPendingSyncIds": [],
+          "acknowledgedSyncIds": [],
+          "resolvedSyncIds": [
+            "CS-20260920-002",
+            "CS-20260924-001",
+            "CS-CORE-20260926-001",
+            "CS-CORE-20260927-001",
+            "CS-CORE-20260927-003",
+            "CS-CORE-20260927-004",
+            "CS-CORE-20260927-005",
+            "CS-CORE-20260927-006",
+            "CS-CORE-20261008-001",
+            "CS-CORE-20261008-002",
+            "CS-CORE-20261008-003",
+            "CS-CORE-20261008-004",
+            "CS-CORE-20261008-005",
+            "CS-CORE-20261008-006",
+            "CS-CORE-20261008-007",
+            "CS-CORE-20261009-008",
+            "CS-CORE-20261009-009",
+            "CS-CORE-20261009-010",
+            "CS-CORE-20261009-011",
+            "CS-CORE-20261009-013",
+            "CS-CORE-20261009-014",
+            "CS-CORE-20261009-015",
+            "CS-CORE-20261009-016",
+            "CS-CORE-20261009-017",
+            "CS-CORE-20261009-018",
+            "CS-CORE-20261010-003",
+            "CS-CORE-20261011-001",
+            "CS-CORE-20261011-004",
+            "CS-CORE-20261011-005",
+            "CS-CORE-20261011-006",
+            "CS-CORE-20261012-001",
+            "CS-CORE-20261012-002",
+            "CS-CORE-20261012-003",
+            "CS-CORE-20261012-004",
+            "CS-CORE-20261012-005",
+            "CS-CORE-20261012-007",
+            "CS-CORE-20261012-009",
+            "CS-CORE-20261012-011",
+            "CS-CORE-20261013-001",
+            "CS-CORE-20261013-002",
+            "CS-CORE-20261013-003",
+            "CS-CORE-20261014-001",
+            "CS-CORE-20261018-002",
+            "CS-CORE-20261021-001",
+            "CS-CORE-20261021-004"
+          ],
+          "deferredSyncIds": [],
+          "notRelevantSyncIds": [],
+          "checkedAt": "2026-10-22T03:04:31.059Z"
+        }
+      ],
+      "publishedSyncIds": [],
+      "pendingRelevantSyncIds": [],
+      "knownIncompatibilities": []
+    },
+    "evidence": [
+      "harness/reports/wi-console-048-scope-approval.md",
+      "harness/reports/wi-console-048-contract-sync-review.md",
+      "harness/reports/wi-console-048-sdd-verification.md"
+    ],
+    "blockedReason": null,
+    "gateEvidence": {
+      "sddVerified": [
+        "harness/reports/wi-console-048-sdd-verification.md"
+      ],
+      "noBlockingDecisions": [
+        "harness/reports/wi-console-048-sdd-verification.md"
+      ]
+    },
+    "decisionGate": {
+      "checked": true,
+      "blockingDecisionIds": [],
+      "nonBlockingDecisionIds": [],
+      "checkedAt": "2026-10-22T03:08:00.000Z",
+      "note": "sdd-analyst: ninguna DEC con Blocks alcanza este WI; el usuario aprobó el alcance en el chat (ver scope-approval)."
+    }
+  }
 }
