@@ -139,3 +139,4 @@ Todos los cambios notables de la línea base SDD se registran aquí. El contenid
 - Se adopta `CHANGELOG.md` en lugar de enmiendas acumulativas dentro de las specs.
 - Se conserva trazabilidad mediante `storyIds` y `sprint`.
 - El código fuente se reserva para `app/`.
+- **WI-CONSOLE-050 (2026-10-22, pendiente de revisión del usuario):** corrige el desborde horizontal del documento en la página de Experimento con resultado (HU17, HU18; 1342 px a 1280, 375 y 320 px) causado por el `visually-hidden` del `th` de la última columna, que escapaba de `.table-frame`; `position: relative` en `.table-frame`, guarda estática del CSS (ROJA al revertir) y mediciones antes/después en navegador (modo demo). Sin cambios de copy, DTO, rutas, contratos ni primitives. `reviewer` y `ux-reviewer` APPROVED en 1 ciclo. Pendientes a 320 px fuera de alcance: FK lista, comparación de recuperación y de estrategias pr52. Cierre: `harness/reports/wi-console-050-closure.md`.
