@@ -416,6 +416,7 @@ code {
   border-color: var(--accent);
 }
 .table-frame {
+  position: relative; /* ancestro posicionado: contiene el .visually-hidden (absolute) de th/td y evita que desborde el documento */
   overflow-x: auto;
 }
 .table-frame table {

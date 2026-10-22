@@ -1,5 +1,6 @@
 /// <reference types="node" />
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
@@ -74,5 +75,65 @@ describe('guarda débil: detalle de Run sin desbordamiento por símbolos y títu
     const body = ruleBody(actionRequiredCss, '.symbol-list code')
     expect(body).toContain('overflow-wrap: anywhere')
     expect(body).toContain('min-width: 0')
+  })
+})
+
+/*
+ * GUARDA DÉBIL (WI-CONSOLE-050).
+ * El .visually-hidden es position: absolute. Dentro de una tabla sin ancestro posicionado
+ * escapa de .table-frame (overflow-x: auto) y provoca scroll horizontal del documento.
+ * jsdom no mide layout: estas pruebas solo comprueban declaraciones CSS y una
+ * comprobación estática de los .tsx. La evidencia de layout va en
+ * harness/reports/wi-console-050-implementation.md.
+ */
+
+// Excepciones explícitas: ficheros con visually-hidden dentro de th/td que no usan table-frame. Debe estar vacía.
+const VISUALLY_HIDDEN_CELL_EXCEPTIONS: readonly string[] = []
+
+const listTsxFiles = (dirRelativePath: string): string[] => {
+  const root = fileURLToPath(new URL(dirRelativePath, import.meta.url))
+  const out: string[] = []
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name)
+      if (entry.isDirectory()) walk(full)
+      else if (entry.name.endsWith('.tsx') && !/\.test\.tsx$/.test(entry.name)) out.push(full)
+    }
+  }
+  walk(root)
+  return out
+}
+
+describe('guarda débil: tablas con visually-hidden dentro de .table-frame (WI-CONSOLE-050, CSS fuente)', () => {
+  const componentsCss = readStyle('./components.css')
+
+  it('.table-frame declara position: relative (ancestro posicionado) y conserva overflow-x: auto', () => {
+    const body = ruleBody(componentsCss, '.table-frame')
+    expect(body).toContain('position: relative')
+    expect(body).toContain('overflow-x: auto')
+  })
+
+  it('.visually-hidden sigue siendo position: absolute', () => {
+    expect(ruleBody(componentsCss, '.visually-hidden')).toContain('position: absolute')
+  })
+
+  it('todo .tsx de app/src con visually-hidden dentro de th/td usa table-frame (o está en la lista de excepciones vacía)', () => {
+    const srcDir = '../'
+    const offenders: string[] = []
+    const cellWithHidden = /<(th|td)\b[\s\S]*?visually-hidden[\s\S]*?<\/\1>/
+    for (const file of listTsxFiles(srcDir)) {
+      const source = readFileSync(file, 'utf8')
+      if (!cellWithHidden.test(source)) continue
+      const relative = file.slice(file.indexOf('/src/') + 1)
+      if (VISUALLY_HIDDEN_CELL_EXCEPTIONS.includes(relative)) continue
+      if (!source.includes('table-frame')) offenders.push(relative)
+    }
+    expect(offenders).toEqual([])
+  })
+
+  it('ExperimentComparison.tsx envuelve su tabla en table-frame y tiene visually-hidden dentro de th', () => {
+    const source = readStyle('../experiments/ExperimentComparison.tsx')
+    expect(source).toContain('className="table-frame"')
+    expect(source).toMatch(/<th\b[\s\S]*?visually-hidden[\s\S]*?<\/th>/)
   })
 })
