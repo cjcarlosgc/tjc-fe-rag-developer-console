@@ -4399,7 +4399,7 @@
       "id": "WI-CONSOLE-047",
       "component": "CONSOLE",
       "workItemType": "PRODUCT",
-      "status": "W-IN_REVIEW",
+      "status": "W-DONE",
       "priority": "P2",
       "sprint": "SMART V3",
       "title": "Mejoras de UX de Console: objetivos táctiles de 40 px, Focus Mode a 375 px, glosario es/en, conteos coherentes del demo, error de configuración visible y verificación de accesibilidad pendiente",
@@ -4431,7 +4431,10 @@
         "harness/reports/wi-console-047-sdd-verification.md",
         "harness/reports/wi-console-047-contract-sync-review.md",
         "harness/reports/wi-console-047-implementation.md",
-        "harness/reports/wi-console-047-a11y-verification.md"
+        "harness/reports/wi-console-047-a11y-verification.md",
+        "harness/reports/wi-console-047-review.md",
+        "harness/reports/wi-console-047-ux-review.md",
+        "harness/reports/wi-console-047-closure.md"
       ],
       "scopeApprovalReport": "harness/reports/wi-console-047-scope-approval.md",
       "acceptanceCriteria": [

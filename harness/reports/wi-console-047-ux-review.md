@@ -31,3 +31,37 @@ Lector de pantalla real (VoiceOver/NVDA; solo árbol de accesibilidad); zoom 200
 Implementer: corregir H1 (`overflow-wrap: anywhere` en el símbolo del Run y una guarda CSS/medición a 320 px), valorar H2/H3 y registrar los botones de 34 px como DECISION_REQUIRED. Ciclo 2 con nuevas mediciones.
 
 Archivos: `/Users/cjcarlosgc/Development/Tesis/tjc-fe-rag-developer-console/app/src/styles/action-required.css`, `/Users/cjcarlosgc/Development/Tesis/tjc-fe-rag-developer-console/app/src/ui/AppShell.tsx`.
+
+---
+
+# Ciclo 2 de 2
+
+Modelo: ux-reviewer · configurado claude-sonnet-5-5 · atendido unknown · esfuerzo low
+
+**Veredicto: APPROVED con 2 hallazgos nuevos menores registrados (H5, H6) y la lista DECISION_REQUIRED de objetivos < 40 px pendiente del usuario (no bloqueante).** Medido en Browser pane sobre el dev server mock :5173 ya en marcha (no levanté ni cerré servidores; los iframes de medición se eliminaron). Anchos 320, 375, 640 (parcial) y 1280 px.
+
+## Verificación de hallazgos del ciclo 1
+
+- **H1 resuelto.** `scrollWidth` = ancho del viewport (320 y 375) en el detalle de `arun_checkout_pr52`, `arun_billing_pr17`, `arun_billing_pr17_2`, `arun_checkout_pr42/45/46/47/49` y `arun_billing_pr24` (9 Runs x 2 anchos). En pr45 un nodo del grafo (react-flow) queda fuera del recuadro pero no produce scroll de página. A 1280 px sin cambios.
+- **H2 resuelto.** `/action-required` muestra «Pendientes en todos tus Workspaces.» con 5 tarjetas; con `?workspaceId=1000001` muestra «Pendientes del Workspace seleccionado.» con 3 tarjetas. Texto visible, discreto, y coherente con badge 5 (todos los Workspaces) y KPI 3 (Workspace seleccionado).
+- **H3 mayormente resuelto.** Títulos y rótulos ahora en español: «Comparación de estrategias», «Comparación de recuperación», «Comparar recuperación SE vs SEM», «Recuperación», filtros «Todas / Activas / Reemplazadas», sin los residuos «Buscar target», «MINI DIFF», «CHUNKS». Recorridas Projects, Action Required, Focus Mode, Runs, detalle de Run, Experimental, Retrieval, Comparación, Functional Knowledge y Context Explorer: sin mezclas incomprensibles ni traducciones forzadas. Residuos menores, no bloqueantes: chips de estado `ACTIVE/SUPERSEDED` (literales de contrato) junto a filtros «Activas/Reemplazadas»; enums crudos `METHOD`, `EXCEPTION`, `EXPECTED_RESULT`, `NOT_APPLICABLE`, `PRESENT`; en Comparación, «trial» y «Replay» dentro de texto en español; «Functional Knowledge» sigue en inglés por decisión pendiente del usuario (coherente en toda la UI); eyebrow «ANALYSISRUN» (término del glosario).
+- **H4 resuelto.** Título de documento «Focus Mode · RAG Test Studio» = rótulo visible «Focus Mode».
+- **Fallo de carga diferida:** no provoqué el fallo en navegador (no bloqueé chunks). Evaluado por código y prueba: `AppLoadErrorScreen` con `h1` «No se pudo cargar la aplicación», `role="alert"`, foco en `main`, título en español, botón «Recargar página», sin enlaces al router; `main.tsx` lo monta en el `.catch` de la carga diferida. `vitest` de `AppLoadErrorScreen.test.tsx` y `main.test.tsx`: 5/5 pasan (incluye el caso de fallo del router).
+
+## Hallazgos nuevos (barrido a 320 px)
+
+- **H5 (baja):** `/projects/prj_checkout_demo/functional-knowledge` a 320 px: `scrollWidth` 328 (8 px). Causa: `fieldset.segmented` «Estado / Todas / Activas / Reemplazadas» se extiende a 328. A 375 y 640 sin desborde.
+- **H6 (baja):** `/projects/prj_checkout_demo/runs/arun_checkout_pr52/comparison` a 320 px: `scrollWidth` 354 (34 px). Causa: la rejilla `HEAD / Símbolo` (`div`/`dt`/`dd`, símbolo largo sin romper). A 375 y 640 sin desborde.
+Ambos solo a 320 px (reflow WCAG 1.4.10); no estaban en el ciclo 1 porque no se midieron esas pantallas a 320. No los atribuyo con certeza al WI-047 (pueden ser preexistentes). Recomendación: corregir con `flex-wrap`/`overflow-wrap: anywhere` en un corte pequeño, o diferir por decisión del usuario.
+
+## DECISION_REQUIRED de objetivos < 40 px
+
+Registradas en `harness/reports/wi-console-047-a11y-verification.md` (§5 D-a y tabla DR-1 a DR-4): migas 17 px (DR-1), «Ver todos →» 18 px (DR-2), «Ver inventario →» 34 px x3 (DR-3, el hallazgo del ciclo 1), fila «Historial de transiciones» 18 px (DR-4). Siguen sin implementar y son **no bloqueantes** por estar fuera del listado aprobado (marca, saltar, pestañas) y requerir cambio de layout global; decide el usuario.
+
+## Sin regresión
+
+Objetivos de 40 px de A intactos a 320 y 1280: `a.brand` 161x40; pestañas de Project 85x40, 61x40, 102x40, 192x40, 134x40. 1280 px: `scrollWidth` = 1280 en las 12 rutas barridas. Rótulos DEMO presentes (nav «DEMO · DATOS SIMULADOS», identidad simulada, páginas, tarjetas; 3 en la página de Project).
+
+## No probado
+
+Lector de pantalla real; zoom 200 % real; fallo de carga diferida en navegador; modo `live`; contraste; barrido de 320 px en las rutas no listadas (p. ej. detalle de Functional Knowledge, Inventario por versión); reduced motion (me remito al reporte a11y).
