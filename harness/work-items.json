@@ -4682,7 +4682,7 @@
         "spec/constitution/delivery-workflow.md"
       ],
       "id": "WI-CONSOLE-050",
-      "status": "W-IN_PROGRESS",
+      "status": "W-IN_REVIEW",
       "title": "Desborde horizontal del documento en Experimento con resultado: el visually-hidden de la ultima columna escapa de .table-frame; causa raiz corregida, auditoria de tablas y guarda CSS",
       "storyIds": [
         "HU17",
@@ -4699,7 +4699,8 @@
         "CHANGELOG.md",
         "harness/reports/wi-console-050-scope-approval.md",
         "harness/reports/wi-console-050-sdd-verification.md",
-        "harness/reports/wi-console-050-contract-sync-review.md"
+        "harness/reports/wi-console-050-contract-sync-review.md",
+        "harness/reports/wi-console-050-implementation.md"
       ],
       "acceptanceCriteria": [
         "En la pagina de Experimento con resultado el documento no desborda: scrollWidth == clientWidth a 1280 y 375 px (y 320 px si es viable) en modo demo; el .table-frame conserva su scroll horizontal interno. Antes/despues medidos en navegador real.",
