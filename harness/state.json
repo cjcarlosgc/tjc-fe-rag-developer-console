@@ -18365,8 +18365,8 @@
       "analysisAgent": "sdd-analyst",
       "implementationAgent": "implementer",
       "contractReviewAgent": null,
-      "reviewAgent": null,
-      "uxReviewAgent": null,
+      "reviewAgent": "reviewer",
+      "uxReviewAgent": "ux-reviewer",
       "handoffs": [
         {
           "agent": "sdd-analyst",
@@ -18418,7 +18418,7 @@
       "implementationCompleted": "G-PASSED",
       "independentReviewPassed": "G-NOT_RUN",
       "technicalChecksPassed": "G-PASSED",
-      "interopSyncChecked": "G-NOT_RUN",
+      "interopSyncChecked": "G-PASSED",
       "noMocksPresentedAsLive": "G-PASSED",
       "noBlockingDecisions": "G-PASSED",
       "retryLimitRespected": "G-NOT_RUN",
@@ -18637,6 +18637,9 @@
       ],
       "noMocksPresentedAsLive": [
         "harness/reports/wi-console-049-implementation.md"
+      ],
+      "interopSyncChecked": [
+        "harness/reports/wi-console-049-contract-sync-review.md"
       ]
     }
   }
