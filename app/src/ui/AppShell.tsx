@@ -41,7 +41,7 @@ export function AppShell() {
       </a>
       <header className="topbar">
         <div className="topbar-inner">
-          <Link className="brand" to="/" aria-label="RAG Test Studio, proyectos">
+          <Link className="brand" to="/" aria-label="RAG Test Studio, Projects">
             <span className="brand-mark" aria-hidden="true">
               R
             </span>
@@ -50,13 +50,21 @@ export function AppShell() {
           <nav className="topbar-nav" aria-label="Navegación principal">
             <NavLink to="/analysis-runs">Runs</NavLink>
             <NavLink to="/action-required">
-              Action Required{actionRequiredCount > 0 && <span className="nav-badge">{actionRequiredCount}</span>}
+              Action Required
+              {actionRequiredCount > 0 && (
+                <>
+                  <span className="nav-badge" title="Pendientes en todos tus Workspaces">
+                    {actionRequiredCount}
+                  </span>
+                  <span className="visually-hidden"> pendientes en todos tus Workspaces</span>
+                </>
+              )}
             </NavLink>
           </nav>
           <div className="topbar-badges">
             <span className={`environment ${mockData ? 'environment-demo' : ''}`}>
               <i aria-hidden="true" />
-              {mockData ? 'DEMO · DATOS SIMULADOS' : 'LIVE · CORE API'}
+              {mockData ? 'DEMO · DATOS SIMULADOS' : 'EN VIVO · CORE API'}
             </span>
             {mockAuth && (
               <span className="environment environment-demo">

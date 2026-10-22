@@ -134,12 +134,12 @@ test('HU57: reactivar un REVOKED sin acceso de la App muestra el error con corre
   expect(screen.getByText('Revocado')).toBeInTheDocument()
 })
 
-test('HU56: un proyecto eliminado muestra "El proyecto ya no existe" con enlace a Proyectos y sin Reintentar', async () => {
+test('HU56: un proyecto eliminado muestra "El Project ya no existe" con enlace a Proyectos y sin Reintentar', async () => {
   seedSession('mock-github-provider-token')
   await deleteProject('prj_checkout_demo')
   renderIntegrations('prj_checkout_demo')
 
-  expect(await screen.findByText('El proyecto ya no existe')).toBeInTheDocument()
+  expect(await screen.findByText('El Project ya no existe')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Volver a Projects' })).toHaveAttribute('href', '/')
   expect(screen.queryByRole('button', { name: 'Reintentar' })).not.toBeInTheDocument()
 })
@@ -233,7 +233,7 @@ test('HU30: camino feliz — repo AUTHORIZED de una, elige rama real y crea el b
   await user.click(await screen.findByRole('button', { name: /notifications-service/ }))
 
   expect(await screen.findByText('Acceso autorizado a acme/notifications-service')).toBeInTheDocument()
-  const branchSelect = (await screen.findByLabelText('Integration branch')) as HTMLSelectElement
+  const branchSelect = (await screen.findByLabelText('Rama de integración')) as HTMLSelectElement
   expect(Array.from(branchSelect.options).map((option) => option.value)).toEqual(
     expect.arrayContaining(['main', 'develop', 'feature/webhooks-v2']),
   )
@@ -257,12 +257,12 @@ test('HU30: repo NOT_AUTHORIZED muestra CTA de configuración y "Revalidar" la a
 
   expect(await screen.findByText(/no tiene acceso a acme\/integration-playground/)).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Configurar acceso en GitHub →' }).getAttribute('href')).toMatch(/github\.com/)
-  expect(screen.queryByLabelText('Integration branch')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Rama de integración')).not.toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'Revalidar' }))
   expect(await screen.findByText('Acceso autorizado a acme/integration-playground')).toBeInTheDocument()
 
-  const branchSelect = (await screen.findByLabelText('Integration branch')) as HTMLSelectElement
+  const branchSelect = (await screen.findByLabelText('Rama de integración')) as HTMLSelectElement
   await user.selectOptions(branchSelect, 'main')
   await user.click(screen.getByRole('button', { name: 'Vincular repositorio' }))
   expect(await screen.findByText('integration-playground', { selector: '.repo-name' })).toBeInTheDocument()
@@ -289,19 +289,19 @@ test('409 REPOSITORY_ALREADY_BOUND muestra el mensaje de dominio, conserva repo 
 
   // `acme/checkout-service` ya está vinculado al Project demo prj_checkout_demo.
   await user.click(await screen.findByRole('button', { name: /checkout-service/ }))
-  await user.selectOptions(await screen.findByLabelText('Integration branch'), 'develop')
+  await user.selectOptions(await screen.findByLabelText('Rama de integración'), 'develop')
   await user.click(screen.getByRole('button', { name: 'Vincular repositorio' }))
 
   const alert = await screen.findByRole('alert')
-  expect(alert).toHaveTextContent('Este repositorio ya está vinculado a otro proyecto. Elige otro repositorio.')
-  expect(screen.getByLabelText('Integration branch')).toHaveValue('develop')
+  expect(alert).toHaveTextContent('Este repositorio ya está vinculado a otro Project. Elige otro repositorio.')
+  expect(screen.getByLabelText('Rama de integración')).toHaveValue('develop')
   expect(screen.getByText('Acceso autorizado a acme/checkout-service')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Vincular repositorio' })).toBeEnabled()
 
   // Se puede elegir otro repositorio y vincularlo tras el 409.
   await user.click(screen.getByRole('button', { name: 'Elegir otro repositorio' }))
   await user.click(await screen.findByRole('button', { name: /notifications-service/ }))
-  await user.selectOptions(await screen.findByLabelText('Integration branch'), 'develop')
+  await user.selectOptions(await screen.findByLabelText('Rama de integración'), 'develop')
   await user.click(screen.getByRole('button', { name: 'Vincular repositorio' }))
   expect(await screen.findByText('notifications-service', { selector: '.repo-name' })).toBeInTheDocument()
 })
@@ -313,8 +313,8 @@ test('409 REPOSITORY_BINDING_ALREADY_EXISTS relee el binding y la pantalla muest
   renderIntegrations(projectId)
   await screen.findByLabelText('Buscar repositorio')
   await user.click(await screen.findByRole('button', { name: /notifications-service/ }))
-  await user.selectOptions(await screen.findByLabelText('Integration branch'), 'develop')
-  // Otro cliente vincula el proyecto entre que se abrió la pantalla y se confirmó.
+  await user.selectOptions(await screen.findByLabelText('Rama de integración'), 'develop')
+  // Otro cliente vincula el Project entre que se abrió la pantalla y se confirmó.
   await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'acme/integration-playground' })
   await verifyGitHubAppAccess({ repositoryId: 'repo_playground', repositoryName: 'acme/integration-playground' })
   await createRepositoryBinding(projectId, {
@@ -344,7 +344,7 @@ test('403 GITHUB_APP_ACCESS_REQUIRED al vincular revalida y muestra el enlace pa
   renderIntegrations(await createUnboundProject())
   await screen.findByLabelText('Buscar repositorio')
   await user.click(await screen.findByRole('button', { name: /integration-playground/ }))
-  await user.selectOptions(await screen.findByLabelText('Integration branch'), 'main')
+  await user.selectOptions(await screen.findByLabelText('Rama de integración'), 'main')
   mockSimulateAppAccessLoss(other)
 
   await user.click(screen.getByRole('button', { name: 'Vincular repositorio' }))
@@ -369,15 +369,15 @@ test('un 409 de un repositorio A no reaparece al elegir otro repositorio B', asy
   await screen.findByLabelText('Buscar repositorio')
 
   await user.click(await screen.findByRole('button', { name: /checkout-service/ }))
-  await user.selectOptions(await screen.findByLabelText('Integration branch'), 'develop')
+  await user.selectOptions(await screen.findByLabelText('Rama de integración'), 'develop')
   await user.click(screen.getByRole('button', { name: 'Vincular repositorio' }))
-  expect(await screen.findByRole('alert')).toHaveTextContent('Este repositorio ya está vinculado a otro proyecto')
+  expect(await screen.findByRole('alert')).toHaveTextContent('Este repositorio ya está vinculado a otro Project')
 
   await user.click(screen.getByRole('button', { name: 'Elegir otro repositorio' }))
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   await user.click(await screen.findByRole('button', { name: /notifications-service/ }))
   await screen.findByText('Acceso autorizado a acme/notifications-service')
-  expect(screen.queryByText(/ya está vinculado a otro proyecto/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/ya está vinculado a otro Project/)).not.toBeInTheDocument()
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })
 
@@ -421,7 +421,7 @@ test('un 5xx al vincular muestra un mensaje genérico con correlationId', async 
   renderIntegrations(await createUnboundProject())
   await screen.findByLabelText('Buscar repositorio')
   await user.click(await screen.findByRole('button', { name: /notifications-service/ }))
-  await user.selectOptions(await screen.findByLabelText('Integration branch'), 'develop')
+  await user.selectOptions(await screen.findByLabelText('Rama de integración'), 'develop')
   setDataSourceForTests('live')
   vi.stubEnv('VITE_GITHUB_INTEGRATION_API_URL', 'http://localhost:3002')
   vi.spyOn(globalThis, 'fetch').mockResolvedValue(

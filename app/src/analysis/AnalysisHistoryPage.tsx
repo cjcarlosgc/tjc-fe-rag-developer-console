@@ -32,9 +32,9 @@ export function AnalysisHistoryPage() {
       <ProjectTabs projectId={projectId} />
       <div className="page-heading analysis-history-heading">
         <div>
-          <p className="eyebrow">Snapshots del repositorio</p>
+          <p className="eyebrow">Instantáneas del repositorio</p>
           <h1>Historial de análisis</h1>
-          <p>{projectQuery.data.name} conserva snapshots derivados de PR y sus resultados técnicos.</p>
+          <p>{projectQuery.data.name} conserva instantáneas derivadas de PR y sus resultados técnicos.</p>
         </div>
         <div className="history-heading-meta">
           <strong>{versions.length}</strong>
@@ -50,7 +50,7 @@ export function AnalysisHistoryPage() {
         <div className="empty-state">
           <div className="empty-icon">∅</div>
           <h2>Sin análisis registrados</h2>
-          <p>El historial comienza cuando un PR vinculado produce un snapshot.</p>
+          <p>El historial comienza cuando un PR vinculado produce una instantánea.</p>
         </div>
       ) : (
         <ol className="analysis-timeline">
@@ -67,7 +67,7 @@ export function AnalysisHistoryPage() {
                       <span className={`run-status status-${version.status.toLowerCase()}`}>{version.status}</span>
                       {version.current && <span className="current-chip">VERSIÓN ACTUAL</span>}
                     </div>
-                    <h2>Snapshot de repositorio</h2>
+                    <h2>Instantánea de repositorio</h2>
                     <p>
                       <code>{version.id}</code> · {formatDate(version.completedAt ?? version.createdAt)}
                     </p>
@@ -84,20 +84,20 @@ export function AnalysisHistoryPage() {
                     <dd>{metric(version.chunksCount)}</dd>
                   </div>
                   <div>
-                    <dt>Targets</dt>
+                    <dt>Objetivos</dt>
                     <dd>{metric(version.targetsTotal)}</dd>
                   </div>
                   <div>
-                    <dt>Con test</dt>
+                    <dt>Con pruebas</dt>
                     <dd>{metric(version.targetsWithTest)}</dd>
                   </div>
                   <div>
-                    <dt>Sin test</dt>
+                    <dt>Sin pruebas</dt>
                     <dd>{metric(version.targetsMissingTest)}</dd>
                   </div>
                 </dl>
                 <footer>
-                  <span>{version.current ? 'Base activa para nuevos análisis' : 'Snapshot histórico · sólo lectura'}</span>
+                  <span>{version.current ? 'Base activa para nuevos análisis' : 'Instantánea histórica · sólo lectura'}</span>
                   {version.status === 'COMPLETED' && (
                     <Link className="button secondary button-link" to={`/projects/${projectId}/versions/${version.id}/inventory`}>
                       Ver inventario <span aria-hidden="true">→</span>

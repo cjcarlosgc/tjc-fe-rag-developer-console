@@ -38,7 +38,7 @@ export function FunctionalKnowledgeDetailPage() {
 
   const items = knowledgeQuery.data.items
   const item = items.find((entry) => entry.id === knowledgeId)
-  if (!item) return <EmptyState title="Regla no encontrada" description="No existe esta regla de Functional Knowledge en este proyecto." />
+  if (!item) return <EmptyState title="Regla no encontrada" description="No existe esta regla de Functional Knowledge en este Project." />
 
   const chain = supersessionChain(items, item.id)
   const workspaceQuery = projectQuery.data ? `?workspaceId=${encodeURIComponent(projectQuery.data.workspace.id)}` : ''
@@ -71,11 +71,11 @@ export function FunctionalKnowledgeDetailPage() {
         <StatusBadge statusClass={item.status === 'ACTIVE' ? 'status-success' : 'status-muted'}>{item.status}</StatusBadge>
         <dl className="metadata">
           <div>
-            <dt>Scope</dt>
+            <dt>Alcance</dt>
             <dd>{item.scope}</dd>
           </div>
           <div>
-            <dt>Target</dt>
+            <dt>Objetivo</dt>
             <dd>
               <code>{item.targetRef ?? '—'}</code>
             </dd>

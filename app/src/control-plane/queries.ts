@@ -163,7 +163,7 @@ export function useGitHubRepositoryBranches(projectId: string, repositoryName: s
 
 /**
  * Códigos de error que indican que la pantalla quedó desfasada respecto del servidor: se relee el binding para mostrar lo real.
- * `PROJECT_NOT_FOUND` (Project borrado o ajeno) hace que la lectura devuelva 404 y la pantalla muestre "el proyecto ya no existe";
+ * `PROJECT_NOT_FOUND` (Project borrado o ajeno) hace que la lectura devuelva 404 y la pantalla muestre "el Project ya no existe";
  * `REPOSITORY_BINDING_ALREADY_EXISTS` muestra el binding que otro cliente creó; `REPOSITORY_BINDING_NOT_FOUND` vuelve al flujo de vincular.
  */
 const STALE_BINDING_ERROR_CODES = ['PROJECT_NOT_FOUND', 'REPOSITORY_BINDING_ALREADY_EXISTS', 'REPOSITORY_BINDING_NOT_FOUND']

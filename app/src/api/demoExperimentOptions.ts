@@ -3,7 +3,7 @@ export const DEMO_EXPERIMENT_SELECTOR_OPTIONS: ReadonlyArray<{ id: string; label
   { id: 'demo-scenario-legacy', label: 'DEMO · corrida previa sin datos OE5' },
   { id: 'demo-scenario-mixed-sandbox', label: 'DEMO · Sandbox mixto y configuración parcial' },
   { id: 'demo-scenario-no-evaluable', label: 'DEMO · sin datos evaluables' },
-  { id: 'demo-scenario-phpunit', label: 'DEMO · proyecto PHP con PHPUnit' },
+  { id: 'demo-scenario-phpunit', label: 'DEMO · Project PHP con PHPUnit' },
   { id: 'demo-scenario-failed-experiment-failed', label: 'DEMO · FAILED EXPERIMENT_FAILED' },
   { id: 'demo-scenario-failed-worker-lost', label: 'DEMO · FAILED EXPERIMENT_WORKER_LOST' },
   { id: 'demo-scenario-failed-unknown', label: 'DEMO · FAILED código desconocido' },

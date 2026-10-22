@@ -91,7 +91,7 @@ function TargetTrace({ target, index, lookup }: { target: TraceTargetResponse; i
   return (
     <article className="trace-target" aria-labelledby={headingId}>
       <h3 id={headingId}>
-        Target: <code>{symbol.qualifiedName}</code>
+        Objetivo: <code>{symbol.qualifiedName}</code>
       </h3>
       <p className="trace-target-meta">
         {CHANGE_KIND_LABELS[symbol.changeKind] ?? symbol.changeKind} · <code>{symbol.filePath}</code>
@@ -169,7 +169,7 @@ function TargetTrace({ target, index, lookup }: { target: TraceTargetResponse; i
                         </dd>
                       </div>
                       <div className="trace-field">
-                        <dt>Outcome</dt>
+                        <dt>Resultado</dt>
                         <dd>
                           <code>{item.outcome}</code>
                         </dd>
@@ -238,7 +238,7 @@ function PublicationTrace({ publication }: { publication: AnalysisRunTraceRespon
             </dd>
           </div>
           <div className="trace-field">
-            <dt>Freshness</dt>
+            <dt>Vigencia</dt>
             <dd>{publication.freshness ? FRESHNESS_LABELS[publication.freshness] : <span className="trace-no-data">sin dato</span>}</dd>
           </div>
         </dl>
@@ -270,7 +270,7 @@ function TraceContent({ trace, lookup }: { trace: AnalysisRunTraceResponse; look
         <IdRow label="analysisRunId" value={trace.analysisRunId} copyLabel="analysisRunId" />
       </dl>
 
-      <h3>Changeset</h3>
+      <h3>Conjunto de cambios</h3>
       <dl className="trace-fields">
         <div className="trace-field">
           <dt>Estado</dt>
@@ -288,7 +288,7 @@ function TraceContent({ trace, lookup }: { trace: AnalysisRunTraceResponse; look
       {trace.targets.length === 0 ? (
         <div className="panel contract-note trace-empty">
           <div>
-            <strong>Sin targets</strong>
+            <strong>Sin objetivos</strong>
             <p>El changeset no tiene símbolos con enlaces por target (targetCount: {trace.changeset.targetCount}).</p>
           </div>
         </div>
@@ -304,7 +304,7 @@ function TraceContent({ trace, lookup }: { trace: AnalysisRunTraceResponse; look
 }
 
 /**
- * INTEROP-2.7 §6.16 (HU15, WI-CONSOLE-016): trace operativo de nueve enlaces. No es el contexto recolectado experimental (§6.7).
+ * INTEROP-2.7 §6.16 (HU15, WI-CONSOLE-016): traza operativa de nueve enlaces. No es el contexto recolectado experimental (§6.7).
  * Los enlaces 1-2 (repositorio/PR/HEAD y Run) no llevan badge: siempre existen cuando hay trace.
  */
 export function OperationalTraceSection({ analysisRunId, projectId }: { analysisRunId: string; projectId: string }) {
@@ -319,7 +319,7 @@ export function OperationalTraceSection({ analysisRunId, projectId }: { analysis
 
   let body
   if (traceQuery.isPending) {
-    body = <LoadingState label="Cargando trace operativo…" />
+    body = <LoadingState label="Cargando traza operativa…" />
   } else if (traceQuery.isError) {
     const error = traceQuery.error
     if (isTraceNotFinished(error)) {
@@ -339,7 +339,7 @@ export function OperationalTraceSection({ analysisRunId, projectId }: { analysis
         </div>
       )
     } else {
-      const message = error instanceof Error ? error.message : 'No se pudo cargar el trace operativo.'
+      const message = error instanceof Error ? error.message : 'No se pudo cargar la traza operativa.'
       body = <ErrorState message={message} correlationId={errorCorrelationId(error)} onRetry={() => void traceQuery.refetch()} />
     }
   } else {
@@ -350,7 +350,7 @@ export function OperationalTraceSection({ analysisRunId, projectId }: { analysis
     <section className="panel operational-trace" aria-labelledby="operational-trace-title">
       <div className="section-heading">
         <div>
-          <h2 id="operational-trace-title">Trace operativo</h2>
+          <h2 id="operational-trace-title">Traza operativa</h2>
           <p>Cadena de evidencia de este Run: repositorio, changeset, retrieval, contexto, generación, ejecuciones y publicación.</p>
           {mock && (
             <p className="trace-demo-note">Datos simulados: los ids de esta sección son de demo y no corresponden a ejecuciones reales.</p>

@@ -25,7 +25,7 @@ const EMPTY_RUNS: AnalysisRunSummaryResponse[] = []
 const EMPTY_ACTION_REQUIRED: FunctionalQuestionResponse[] = []
 const EMPTY_PROJECTS: Project[] = []
 
-/** Nombre del proyecto recién eliminado, pasado por el `state` de navegación de react-router (HU56): un aviso de una sola vez, nunca persistido. */
+/** Nombre del Project recién eliminado, pasado por el `state` de navegación de react-router (HU56): un aviso de una sola vez, nunca persistido. */
 function deletedProjectNameFrom(state: unknown): string | null {
   const name = (state as { deletedProjectName?: unknown } | null)?.deletedProjectName
   return typeof name === 'string' ? name : null
@@ -138,7 +138,7 @@ export function ProjectOverviewCard({ project, runsForProject, actionRequiredCou
         <div>
           <span className="project-icon">{project.name.slice(0, 2).toUpperCase()}</span>
           <h2>{project.name}</h2>
-          <StatusBadge tone="muted">NOT CONNECTED</StatusBadge>
+          <StatusBadge tone="muted">SIN CONECTAR</StatusBadge>
         </div>
         <p className="workspace-project-meta">
           <span>{project.workspace.login ?? 'Cuenta personal'}</span>
@@ -187,7 +187,7 @@ export function ProjectOverviewCard({ project, runsForProject, actionRequiredCou
       <div>
         <span className="project-icon">{project.name.slice(0, 2).toUpperCase()}</span>
         <h2>{project.name}</h2>
-        <StatusBadge tone="success">CONNECTED</StatusBadge>
+        <StatusBadge tone="success">CONECTADO</StatusBadge>
       </div>
       <p className="workspace-project-meta">
         <span>{project.workspace.login ?? 'Cuenta personal'}</span>
@@ -197,11 +197,11 @@ export function ProjectOverviewCard({ project, runsForProject, actionRequiredCou
         <RepoChip repositoryName={binding.repositoryName} />
       </p>
       <p>
-        Integration branch <code>{binding.integrationBranch}</code>
+        Rama de integración <code>{binding.integrationBranch}</code>
       </p>
       <dl className="project-stats">
         <div>
-          <dt>Active PRs</dt>
+          <dt>PR activos</dt>
           <dd>{activePrs ?? '—'}</dd>
         </div>
         <div>
@@ -213,14 +213,14 @@ export function ProjectOverviewCard({ project, runsForProject, actionRequiredCou
         <p>{runsLoading ? 'Cargando actividad de análisis…' : 'Actividad de análisis no disponible.'}</p>
       ) : latestRun ? (
         <p>
-          Latest: PR #{latestRun.pullRequest.number} ·{' '}
+          Último: PR #{latestRun.pullRequest.number} ·{' '}
           <StatusBadge statusClass={analysisRunStatusClass(latestRun.status)}>{ANALYSIS_RUN_STATUS_LABELS[latestRun.status]}</StatusBadge> ·{' '}
           {formatRelativeAge(latestRun.createdAt)}
         </p>
       ) : (
         <p>Sin análisis todavía.</p>
       )}
-      <span className="card-link">Abrir proyecto →</span>
+      <span className="card-link">Abrir Project →</span>
     </Link>
   )
 }
@@ -320,7 +320,7 @@ export function ProjectsPage() {
     <section>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">Workspace / Overview</p>
+          <p className="eyebrow">Workspace / Resumen</p>
           <h1 ref={headingRef} tabIndex={-1}>
             Projects
           </h1>
@@ -366,20 +366,20 @@ export function ProjectsPage() {
                 ? 'Tus Projects personales solo son visibles para ti.'
                 : workspace.role === 'ADMIN'
                   ? 'Puedes administrar Projects de esta organización.'
-                  : 'Puedes acceder según tus permisos de repositorio; solo un owner crea Projects.'}
+                  : 'Puedes acceder según tus permisos de repositorio; solo un propietario crea Projects.'}
             </p>
           </div>
         )}
       </div>
       {!canCreateProject && workspace && (
         <p id="workspace-create-hint" className="empty-inline-note">
-          Solo un owner activo de {workspace.login} puede crear Projects en esta organización.
+          Solo un propietario activo de {workspace.login} puede crear Projects en esta organización.
         </p>
       )}
 
       {deletedProjectName && (
         <p className="panel success-note" role="status">
-          Proyecto «{deletedProjectName}» eliminado
+          Project «{deletedProjectName}» eliminado
         </p>
       )}
 
@@ -399,6 +399,7 @@ export function ProjectsPage() {
         <div className={`kpi-card${(actionRequiredCount ?? 0) > 0 ? ' kpi-card-alert' : ''}`}>
           <strong>{actionRequiredCount ?? '—'}</strong>
           <span>Action Required</span>
+          <small className="kpi-scope">Workspace seleccionado</small>
         </div>
         <div className="kpi-card">
           <strong>{runsThisWeek ?? '—'}</strong>
@@ -425,7 +426,7 @@ export function ProjectsPage() {
         />
       )}
       {projectsQuery.isPending && !workspacesQuery.isPending && workspace && (
-        <LoadingState label={mock ? 'Preparando proyectos demo…' : 'Cargando proyectos…'} />
+        <LoadingState label={mock ? 'Preparando Projects demo…' : 'Cargando Projects…'} />
       )}
       {hasProjectListError && (
         <ErrorState
@@ -443,18 +444,13 @@ export function ProjectsPage() {
           </div>
           {projects.length > 4 && (
             <div className="field list-search">
-              <label htmlFor="project-query">Buscar proyecto</label>
-              <input
-                id="project-query"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="nombre del proyecto"
-              />
+              <label htmlFor="project-query">Buscar Project</label>
+              <input id="project-query" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="nombre del Project" />
             </div>
           )}
           {filteredProjects.length === 0 ? (
             <div className="empty-inline">
-              <strong>{projects.length === 0 ? 'No hay Projects visibles en este workspace ahora.' : 'Sin proyectos coincidentes'}</strong>
+              <strong>{projects.length === 0 ? 'No hay Projects visibles en este workspace ahora.' : 'Sin Projects coincidentes'}</strong>
               <p>
                 {projects.length === 0
                   ? 'La lista puede depender de verificaciones de acceso en GitHub. Puedes volver a intentar cargarla.'
@@ -465,7 +461,7 @@ export function ProjectsPage() {
                   Conectar repositorio
                 </button>
               )}
-              {projects.length === 0 && !canCreateProject && <p>Solo un owner activo puede crear Projects en esta organización.</p>}
+              {projects.length === 0 && !canCreateProject && <p>Solo un propietario activo puede crear Projects en esta organización.</p>}
             </div>
           ) : (
             <div className="project-grid">
@@ -537,7 +533,7 @@ export function ProjectsPage() {
         <div className="demo-strip">
           <div>
             <span className="demo-kicker">Demo mode · SDD 3.0</span>
-            <strong>Control plane PR-driven</strong>
+            <strong>Plano de control dirigido por PR</strong>
             <p>
               Explora escenarios preparados del nuevo flujo: Action Required, Behavioral Mismatch, corrección por nuevo HEAD y publicación
               de tests.

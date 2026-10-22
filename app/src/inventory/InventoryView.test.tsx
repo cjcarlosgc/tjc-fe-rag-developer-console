@@ -27,7 +27,7 @@ const targets = [
 test('filtra targets sin cobertura', async () => {
   const user = userEvent.setup()
   render(<InventoryView targets={targets} />)
-  await user.click(screen.getByRole('button', { name: 'Sin test' }))
+  await user.click(screen.getByRole('button', { name: 'Sin pruebas' }))
   expect(screen.getByText('total')).toBeInTheDocument()
   expect(screen.queryByText('User')).not.toBeInTheDocument()
 })

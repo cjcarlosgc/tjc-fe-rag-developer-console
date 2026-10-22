@@ -80,7 +80,7 @@ for (const invert of [false, true]) {
     })
 
     await user.click(await screen.findByRole('button', { name: 'Ejecutar comparación' }))
-    expect(await screen.findByText('Huella de retrieval', {}, { timeout: 5000 })).toBeInTheDocument()
+    expect(await screen.findByText('Huella de recuperación', {}, { timeout: 5000 })).toBeInTheDocument()
 
     expect(screen.getByText(EXPERIMENT_CONDITIONS_NOTE)).toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Configuración' })).toBeInTheDocument()
@@ -97,7 +97,7 @@ for (const invert of [false, true]) {
       routePath: '/projects/:projectId/runs/:analysisRunId/comparison',
     })
 
-    expect(await screen.findByText('Huella de retrieval', {}, { timeout: 5000 })).toBeInTheDocument()
+    expect(await screen.findByText('Huella de recuperación', {}, { timeout: 5000 })).toBeInTheDocument()
 
     expect(screen.getByText(EXPERIMENT_CONDITIONS_NOTE)).toBeInTheDocument()
     assertNoAutomaticVerdict(container)

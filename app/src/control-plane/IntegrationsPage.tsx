@@ -213,14 +213,14 @@ export function IntegrationsPage() {
             label: project?.name ?? projectId,
             to: `/projects/${projectId}?workspaceId=${encodeURIComponent(project?.workspace.id ?? '')}`,
           },
-          { label: 'Integrations / GitHub' },
+          { label: 'Integraciones / GitHub' },
         ]}
       />
       <ProjectTabs projectId={projectId} />
       <div className="page-heading">
         <div>
           <p className="eyebrow">
-            {project?.workspace.login ?? 'Cuenta personal'} · {project?.role} / Integrations
+            {project?.workspace.login ?? 'Cuenta personal'} · {project?.role} / Integraciones
           </p>
           <h1>Repository binding</h1>
           <p>
@@ -244,7 +244,7 @@ export function IntegrationsPage() {
               </dd>
             </div>
             <div>
-              <dt>Integration branch</dt>
+              <dt>Rama de integración</dt>
               <dd>
                 <code>{binding.integrationBranch}</code>
               </dd>
@@ -363,7 +363,7 @@ export function IntegrationsPage() {
           <EmptyState
             title="Sin repositorio vinculado"
             description="El contrato oculta Projects de organización sin repositorio a roles que no sean Admin. Si tu rol fue actualizado
-              recientemente, vuelve al Overview y refresca."
+              recientemente, vuelve al Resumen y refresca."
           />
         </div>
       ) : !hasGitHub ? (
@@ -486,7 +486,7 @@ export function IntegrationsPage() {
                 )}
                 {branchesQuery.data && (
                   <div className="field">
-                    <label htmlFor="integration-branch">Integration branch</label>
+                    <label htmlFor="integration-branch">Rama de integración</label>
                     <select
                       id="integration-branch"
                       value={integrationBranch}

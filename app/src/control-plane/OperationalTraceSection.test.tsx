@@ -53,31 +53,31 @@ function headingTexts(): string[] {
 test('orden de secciones del trace: nueve enlaces en orden para un Run con dos targets', async () => {
   renderTrace('arun_checkout_pr45', 'prj_checkout_demo')
 
-  await screen.findByRole('heading', { name: 'Changeset' })
+  await screen.findByRole('heading', { name: 'Conjunto de cambios' })
   expect(headingTexts()).toEqual([
-    'Trace operativo',
+    'Traza operativa',
     'Repositorio y Pull Request',
     'Analysis Run',
-    'Changeset',
-    'Target: OrderService.calculateTotal',
+    'Conjunto de cambios',
+    'Objetivo: OrderService.calculateTotal',
     'Retrieval PRESENT',
     'Contexto PRESENT',
     'Generación PRESENT',
     'Ejecuciones PRESENT',
-    'Target: formatCurrency',
+    'Objetivo: formatCurrency',
     'Retrieval PRESENT',
     'Contexto PRESENT',
     'Generación PRESENT',
     'Ejecuciones PRESENT',
     'Publicación NOT_APPLICABLE',
   ])
-  expect(screen.getByRole('region', { name: 'Trace operativo' })).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Traza operativa' })).toBeInTheDocument()
 })
 
 test('PRESENT y NOT_APPLICABLE: badge con texto, NOT_APPLICABLE informativo y sin error', async () => {
   renderTrace('arun_checkout_pr42', 'prj_checkout_demo')
 
-  await screen.findByRole('heading', { name: 'Changeset' })
+  await screen.findByRole('heading', { name: 'Conjunto de cambios' })
   expect(screen.getAllByText('NOT_APPLICABLE').length).toBeGreaterThan(0)
   expect(screen.getAllByText('No aplica: el flujo terminó antes de este paso.').length).toBeGreaterThan(0)
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
@@ -86,7 +86,7 @@ test('PRESENT y NOT_APPLICABLE: badge con texto, NOT_APPLICABLE informativo y si
 test('outcome se muestra tal cual y no aparecen veredictos CUMPLE / NO CUMPLE', async () => {
   renderTrace('arun_checkout_pr46', 'prj_checkout_demo')
 
-  await screen.findByRole('heading', { name: 'Changeset' })
+  await screen.findByRole('heading', { name: 'Conjunto de cambios' })
   expect(screen.getByText('BEHAVIORAL_MISMATCH', { selector: 'code' })).toBeInTheDocument()
   expect(screen.queryByText(/CUMPLE/)).not.toBeInTheDocument()
   expect(screen.queryByText(/NO CUMPLE/)).not.toBeInTheDocument()
@@ -95,7 +95,7 @@ test('outcome se muestra tal cual y no aparecen veredictos CUMPLE / NO CUMPLE', 
 test('Run sin targets: estado informativo con targetCount', async () => {
   renderTrace('arun_billing_pr22', 'prj_billing_demo')
 
-  expect(await screen.findByText('Sin targets')).toBeInTheDocument()
+  expect(await screen.findByText('Sin objetivos')).toBeInTheDocument()
   expect(screen.getByText('targetCount')).toBeInTheDocument()
   expect(screen.getByText('targetCount').nextElementSibling).toHaveTextContent('0')
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
@@ -114,7 +114,7 @@ test('FK existente enlaza a la regla; FK ausente queda como texto plano', async 
 test('botones Copiar con nombre accesible específico', async () => {
   renderTrace('arun_checkout_pr45', 'prj_checkout_demo')
 
-  await screen.findByRole('heading', { name: 'Changeset' })
+  await screen.findByRole('heading', { name: 'Conjunto de cambios' })
   for (const label of ['analysisRunId', 'headSha', 'retrieval_id', 'context_id', 'execution_id']) {
     expect(screen.getAllByRole('button', { name: new RegExp(`^Copiar ${label} `) }).length).toBeGreaterThan(0)
   }
@@ -181,7 +181,7 @@ test('QUEUED sondea hasta que el Run termina y muestra el trace', async () => {
   await screen.findByText(/El Run aún se procesa/)
   setMockAnalysisRunForTests('arun_checkout_pr53', { status: 'NO_TEST_RELEVANT_CHANGES' })
 
-  expect(await screen.findByRole('heading', { name: 'Changeset' })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Conjunto de cambios' })).toBeInTheDocument()
   expect(screen.getByText('arun_checkout_pr53')).toBeInTheDocument()
   expect(screen.queryByText(/El Run aún se procesa/)).not.toBeInTheDocument()
   expect(traceMock.mock.calls.length).toBeGreaterThan(1)
@@ -216,11 +216,11 @@ test('error genérico muestra ErrorState con correlationId (tras los reintentos 
 
 test('contrato pendiente (live) muestra el mensaje del adapter sin crash', async () => {
   setDataSourceForTests('live')
-  traceMock.mockRejectedValueOnce(new PendingContractError('el trace operativo de un Analysis Run'))
+  traceMock.mockRejectedValueOnce(new PendingContractError('la traza operativa de un Analysis Run'))
   renderTrace('arun_checkout_pr45', 'prj_checkout_demo')
 
   expect(await screen.findByText('Contrato pendiente')).toBeInTheDocument()
-  expect(screen.getByText(/RAG Core todavía no publicó el contrato live para el trace operativo/)).toBeInTheDocument()
+  expect(screen.getByText(/RAG Core todavía no publicó el contrato live para la traza operativa/)).toBeInTheDocument()
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })
 
@@ -284,7 +284,7 @@ test('el detalle del run PROCESSING (mock) resuelve el Run', async () => {
 test('la sección se monta en el detalle con rótulo de datos simulados en mock', async () => {
   renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
 
-  expect(await screen.findByRole('region', { name: 'Trace operativo' })).toBeInTheDocument()
+  expect(await screen.findByRole('region', { name: 'Traza operativa' })).toBeInTheDocument()
   expect(screen.getByText(/Datos simulados: los ids de esta sección son de demo/)).toBeInTheDocument()
   expect(screen.getAllByText('DEMO · DATOS SIMULADOS').length).toBeGreaterThanOrEqual(1)
 })
@@ -292,18 +292,18 @@ test('la sección se monta en el detalle con rótulo de datos simulados en mock'
 test('orden de targets en la UI: sigue el orden de §6.16 (filePath) también con ACTION_REQUIRED', async () => {
   renderTrace('arun_checkout_pr42', 'prj_checkout_demo')
 
-  await screen.findByRole('heading', { name: 'Changeset' })
-  const targets = headingTexts().filter((text) => text.startsWith('Target:'))
-  expect(targets).toEqual(['Target: CouponPolicy.apply', 'Target: OrderService.calculateTotal'])
+  await screen.findByRole('heading', { name: 'Conjunto de cambios' })
+  const targets = headingTexts().filter((text) => text.startsWith('Objetivo:'))
+  expect(targets).toEqual(['Objetivo: CouponPolicy.apply', 'Objetivo: OrderService.calculateTotal'])
 })
 
 test('publicación solo con Check: sin dato en checkId, rama y freshness; sin conteos, omitidas ni knowledgeId', async () => {
   renderTrace('arun_checkout_pr47', 'prj_checkout_demo')
 
-  await screen.findByRole('heading', { name: 'Changeset' })
+  await screen.findByRole('heading', { name: 'Conjunto de cambios' })
   expect(screen.getByText('checkId').nextElementSibling).toHaveTextContent('sin dato')
   expect(screen.getByText('companionBranch').nextElementSibling).toHaveTextContent('sin dato')
-  expect(screen.getByText('Freshness').nextElementSibling).toHaveTextContent('sin dato')
+  expect(screen.getByText('Vigencia').nextElementSibling).toHaveTextContent('sin dato')
   expect(screen.queryByText(/omitid/i)).not.toBeInTheDocument()
   expect(screen.queryByText(/knowledgeId/)).not.toBeInTheDocument()
 })

@@ -37,7 +37,7 @@ export function ActionRequiredPage() {
         ]}
       />
       <PageHeader
-        eyebrow="Control plane / human-in-the-loop"
+        eyebrow="Plano de control / intervención humana"
         title="Action Required"
         description="Runs que necesitan una respuesta funcional antes de continuar el análisis."
         aside={mock && <span className="demo-stamp">DEMO · DATOS SIMULADOS</span>}

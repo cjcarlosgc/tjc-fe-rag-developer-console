@@ -55,7 +55,7 @@ async function renderLive(symbols: unknown[]) {
     initialEntry: '/projects/p-1/experimental?analysisRunId=arun-1',
     routePath: '/projects/:projectId/experimental',
   })
-  return screen.findByLabelText('Target experimental')
+  return screen.findByLabelText('Objetivo experimental')
 }
 
 const optionTexts = (select: HTMLElement) =>

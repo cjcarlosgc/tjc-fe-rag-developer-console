@@ -14,7 +14,6 @@ describe('action-required api (mock)', () => {
   it('HU38: lista la pregunta vigente por cada Run con contexto pendiente', async () => {
     const page = await listActionRequired()
     expect(page.items.map((item) => item.analysisRunId)).toEqual([
-      'arun_billing_pr17',
       'arun_checkout_pr42',
       'arun_billing_pr24',
       'arun_org_metrics_pr15',

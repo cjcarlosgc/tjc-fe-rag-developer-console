@@ -54,7 +54,7 @@ export function RunsPage() {
       <Breadcrumbs items={[{ label: 'Projects', to: workspaceQuery ? `/${workspaceQuery}` : '/' }, { label: 'Runs' }]} />
       {projectId && <ProjectTabs projectId={projectId} />}
       <PageHeader
-        eyebrow="Control plane / PR-driven"
+        eyebrow="Plano de control / dirigido por PR"
         title="Runs"
         description="Un Analysis Run por PR/HEAD vigente. Un HEAD nuevo obsoleta al anterior."
         aside={mock && <span className="demo-stamp">DEMO · DATOS SIMULADOS</span>}

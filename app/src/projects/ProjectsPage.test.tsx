@@ -144,7 +144,7 @@ test('mantiene las tarjetas navegables y muestra métricas desconocidas cuando f
   const projectHeading = screen.getByRole('heading', { name: 'live-project' })
   const card = projectHeading.closest('a.project-card') as HTMLAnchorElement
   expect(card).toHaveAttribute('href', '/projects/p-1?workspaceId=ws-1')
-  expect(within(card).getByText('Active PRs').closest('div')).toHaveTextContent('—')
+  expect(within(card).getByText('PR activos').closest('div')).toHaveTextContent('—')
   expect(within(card).getByText('Action Required').closest('div')).toHaveTextContent('0')
   expect(within(card).getByText('Actividad de análisis no disponible.')).toBeInTheDocument()
   expect(screen.getByRole('alert')).toHaveTextContent('No pudimos cargar esta información')
@@ -195,7 +195,7 @@ test('mantiene Runs como cargando si Action Required falla antes de que Runs ter
   const card = screen.getByRole('heading', { name: 'live-project' }).closest('a.project-card') as HTMLAnchorElement
   const alert = await screen.findByRole('alert')
   expect(alert).toHaveTextContent('No pudimos cargar esta información')
-  expect(within(card).getByText('Active PRs').closest('div')).toHaveTextContent('—')
+  expect(within(card).getByText('PR activos').closest('div')).toHaveTextContent('—')
   expect(within(card).getByText('Action Required').closest('div')).toHaveTextContent('—')
   expect(within(card).getByText('Cargando actividad de análisis…')).toBeInTheDocument()
   expect(screen.getByText('Cargando actividad y pendientes del workspace…')).toBeInTheDocument()
@@ -283,7 +283,7 @@ test('presenta el escenario semilla en modo demo sin consultar la red', async ()
   const fetchMock = vi.spyOn(globalThis, 'fetch')
   renderApp(<ProjectsPage />)
   expect(await screen.findByRole('heading', { name: 'checkout-service' })).toBeInTheDocument()
-  expect(screen.getByText('Control plane PR-driven')).toBeInTheDocument()
+  expect(screen.getByText('Plano de control dirigido por PR')).toBeInTheDocument()
   expect(fetchMock).not.toHaveBeenCalled()
 })
 
@@ -291,7 +291,7 @@ test('la franja de demo apunta al tour de Runs de SDD 3.0, no al flujo ZIP', asy
   setDataSourceForTests('mock')
   resetMockBackend()
   renderApp(<ProjectsPage />)
-  await screen.findByText('Control plane PR-driven')
+  await screen.findByText('Plano de control dirigido por PR')
   expect(screen.getByRole('link', { name: /Explorar escenarios/ })).toHaveAttribute('href', '/analysis-runs?workspaceId=1000001')
   expect(screen.queryByText(/demostrar la carga ZIP/)).not.toBeInTheDocument()
 })
@@ -308,7 +308,7 @@ test('HU25: filtra proyectos por nombre cuando hay más de cuatro', async () => 
   expect(await screen.findByText('alpha-service')).toBeInTheDocument()
   expect(screen.getByRole('heading', { name: 'checkout-service' })).toBeInTheDocument()
 
-  await user.type(screen.getByLabelText('Buscar proyecto'), 'checkout')
+  await user.type(screen.getByLabelText('Buscar Project'), 'checkout')
   expect(screen.getByRole('heading', { name: 'checkout-service' })).toBeInTheDocument()
   expect(screen.queryByText('alpha-service')).not.toBeInTheDocument()
   expect(screen.queryByText('beta-service')).not.toBeInTheDocument()
@@ -319,7 +319,7 @@ test('no ofrece buscador con pocos proyectos', async () => {
   resetMockBackend()
   renderApp(<ProjectsPage />)
   expect(await screen.findByRole('heading', { name: 'checkout-service' })).toBeInTheDocument()
-  expect(screen.queryByLabelText('Buscar proyecto')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Buscar Project')).not.toBeInTheDocument()
 })
 
 test('crea un proyecto con el contrato implementado, tras abrir el panel "Conectar repositorio"', async () => {
@@ -345,15 +345,15 @@ test('crea un proyecto con el contrato implementado, tras abrir el panel "Conect
   renderApp(<ProjectsPage />)
   await screen.findByText('No hay Projects visibles en este workspace ahora.')
   await user.click(screen.getByRole('button', { name: '+ Conectar repositorio' }))
-  await user.type(screen.getByLabelText('Nombre del proyecto'), ' checkout ')
-  await user.click(screen.getByRole('button', { name: 'Crear proyecto' }))
+  await user.type(screen.getByLabelText('Nombre del Project'), ' checkout ')
+  await user.click(screen.getByRole('button', { name: 'Crear Project' }))
   expect(fetchMock).toHaveBeenCalledWith(
     expect.stringContaining('/projects'),
     expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'checkout', workspaceId: '1000001' }) }),
   )
 })
 
-test('KPIs reflejan el estado real del workspace demo (2 proyectos, 4 Action Required resaltado)', async () => {
+test('KPIs reflejan el estado real del workspace demo (2 Projects, 3 Action Required resaltado)', async () => {
   setDataSourceForTests('mock')
   resetMockBackend()
   renderApp(<ProjectsPage />)
@@ -364,17 +364,17 @@ test('KPIs reflejan el estado real del workspace demo (2 proyectos, 4 Action Req
 
   // WI-CONSOLE-030 (C2): los Runs QUEUED/PROCESSING de acme (PR#53 y PR#25) ahora cuentan como PR activos: 13 → 15.
   const activePrCard = screen.getByText('PR activos', { selector: '.kpi-card span' }).closest('.kpi-card')
-  expect(activePrCard).toHaveTextContent('15')
+  expect(activePrCard).toHaveTextContent('16')
 
   const actionRequiredCard = screen.getByText('Action Required', { selector: '.kpi-card span' }).closest('.kpi-card')
-  expect(actionRequiredCard).toHaveTextContent('4')
+  expect(actionRequiredCard).toHaveTextContent('3')
   expect(actionRequiredCard).toHaveClass('kpi-card-alert')
 
   const runsWeekCard = screen.getByText('Runs esta semana', { selector: '.kpi-card span' }).closest('.kpi-card')
   expect(runsWeekCard).not.toHaveTextContent('—')
 })
 
-test('"Requieren tu atención" lista PR#42 (checkout) y PR#17 (billing) con link a Focus Mode', async () => {
+test('"Requieren tu atención" lista los Runs vigentes (PR#42) y no PR#17, cuyo HEAD ya fue superado, con link a Focus Mode', async () => {
   setDataSourceForTests('mock')
   resetMockBackend()
   const { container } = renderApp(<ProjectsPage />)
@@ -382,11 +382,12 @@ test('"Requieren tu atención" lista PR#42 (checkout) y PR#17 (billing) con link
   const heading = await screen.findByText('Requieren tu atención')
   const scope = within(heading.closest('.panel') as HTMLElement)
   expect(scope.getByText('PR #42', { selector: '.pr-ref' })).toBeInTheDocument()
-  expect(scope.getByText('PR #17', { selector: '.pr-ref' })).toBeInTheDocument()
+  // WI-CONSOLE-047 (obs. 4): PR#17 es OBSOLETE (no vigente) y no entra en la bandeja.
+  expect(scope.queryByText('PR #17', { selector: '.pr-ref' })).not.toBeInTheDocument()
   expect(container.querySelector('a[href^="/action-required/arun_checkout_pr42?returnTo="]')).toBeInTheDocument()
 })
 
-test('la tarjeta de un proyecto conectado muestra binding, Active PRs, Action Required y la última corrida', async () => {
+test('la tarjeta de un proyecto conectado muestra binding, PR activos, Action Required y la última corrida', async () => {
   setDataSourceForTests('mock')
   resetMockBackend()
   renderApp(<ProjectsPage />)
@@ -398,28 +399,28 @@ test('la tarjeta de un proyecto conectado muestra binding, Active PRs, Action Re
   const heading = screen.getByRole('heading', { name: 'checkout-service' })
   const checkoutCard = heading.closest('.project-card') as HTMLElement
   const scope = within(checkoutCard)
-  expect(scope.getByText('CONNECTED')).toBeInTheDocument()
+  expect(scope.getByText('CONECTADO')).toBeInTheDocument()
   expect(scope.getByText('develop')).toBeInTheDocument()
   // WI-CONSOLE-030 (C2): arun_checkout_pr53 (QUEUED) suma un PR activo al checkout: 7 → 8.
-  expect(scope.getByText('Active PRs').closest('div')).toHaveTextContent('8')
+  expect(scope.getByText('PR activos').closest('div')).toHaveTextContent('9')
   expect(scope.getByText('Action Required').closest('div')).toHaveTextContent('2')
   // WI-CONSOLE-030 (C2): la última corrida del checkout es ahora el Run en cola PR#53 (createdAt 2026-10-07), no PR#50.
   expect(scope.getByText(/PR #53/, { selector: 'p' })).toBeInTheDocument()
 })
 
-test('un proyecto sin binding muestra NOT CONNECTED y enlaza a integrations/github', async () => {
+test('un proyecto sin binding muestra SIN CONECTAR y enlaza a integrations/github', async () => {
   setDataSourceForTests('mock')
   resetMockBackend()
   const project = await mockCreateProject({ name: 'sin-binding' })
   renderApp(<ProjectsPage />)
 
-  const badge = await screen.findByText('NOT CONNECTED')
+  const badge = await screen.findByText('SIN CONECTAR')
   const link = badge.closest('a')
   expect(link).toHaveAttribute('href', `/projects/${project.id}/integrations/github?workspaceId=1000001`)
   expect(within(link as HTMLElement).getByRole('heading', { name: 'sin-binding' })).toBeInTheDocument()
 })
 
-test('un proyecto desconectado (DISABLED tras Desconectar) sigue visible como Pausado y no como NOT CONNECTED', async () => {
+test('un proyecto desconectado (DISABLED tras Desconectar) sigue visible como Pausado y no como SIN CONECTAR', async () => {
   setDataSourceForTests('mock')
   resetMockBackend()
   await disconnectRepository('prj_checkout_demo')
@@ -428,7 +429,7 @@ test('un proyecto desconectado (DISABLED tras Desconectar) sigue visible como Pa
   const badge = await screen.findByText('Pausado')
   expect(badge.closest('a')).toHaveAttribute('href', '/projects/prj_checkout_demo/integrations/github?workspaceId=1000001')
   expect(within(badge.closest('a') as HTMLElement).getByRole('heading', { name: 'checkout-service' })).toBeInTheDocument()
-  expect(screen.queryByText('NOT CONNECTED')).not.toBeInTheDocument()
+  expect(screen.queryByText('SIN CONECTAR')).not.toBeInTheDocument()
 })
 
 test('un proyecto eliminado deja de aparecer en la lista', async () => {
@@ -529,7 +530,7 @@ test('el aviso «Proyecto eliminado» llega por el state de navegación, se anun
     </QueryClientProvider>,
   )
 
-  const notice = await screen.findByText('Proyecto «demo-eliminado» eliminado')
+  const notice = await screen.findByText('Project «demo-eliminado» eliminado')
   expect(notice).toHaveAttribute('role', 'status')
   expect(screen.getByRole('heading', { name: 'Projects', level: 1 })).toHaveFocus()
   // El state se limpia (history.state sobrevive a una recarga): el aviso no se repite al volver a montar la lista.
@@ -543,4 +544,20 @@ test('sin state de navegación no aparece ningún aviso de eliminación', async 
 
   await screen.findByRole('heading', { name: 'billing-engine' })
   expect(screen.queryByText(/eliminado/)).not.toBeInTheDocument()
+})
+
+// WI-CONSOLE-047 (obs. 4): el KPI Action Required es del workspace seleccionado y coincide con la suma de las tarjetas de sus Projects.
+test('WI-CONSOLE-047 (obs. 4): el KPI Action Required del workspace coincide con la suma de sus tarjetas y está rotulado', async () => {
+  setDataSourceForTests('mock')
+  resetMockBackend()
+  renderApp(<ProjectsPage />)
+  await screen.findByRole('heading', { name: 'checkout-service' })
+  await waitFor(() => expect(screen.queryAllByText('Cargando integración…')).toHaveLength(0))
+  const kpi = screen.getByText('Action Required', { selector: '.kpi-card span' }).closest('.kpi-card') as HTMLElement
+  expect(kpi).toHaveTextContent('Workspace seleccionado')
+  const kpiValue = Number(kpi.querySelector('strong')?.textContent)
+  expect(kpiValue).toBe(3)
+  const perProject = screen.getAllByText('Action Required', { selector: 'dt' }).map((term) => Number(term.nextElementSibling?.textContent))
+  expect(perProject).toHaveLength(2)
+  expect(perProject.reduce((total, count) => total + count, 0)).toBe(kpiValue)
 })

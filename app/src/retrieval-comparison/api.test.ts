@@ -127,7 +127,7 @@ describe('retrieval-comparison api — INTEROP-2.7 §6.15 (WI-CONSOLE-014, Corte
       )
     })
 
-    it('DEMO · un proyecto PHP ya no responde 422 UNSUPPORTED_PROJECT: la semilla PHP trae relaciones SAME_NAMESPACE, FULLY_QUALIFIED_REFERENCE y DECLARING_CLASS', async () => {
+    it('DEMO · un Project PHP ya no responde 422 UNSUPPORTED_PROJECT: la semilla PHP trae relaciones SAME_NAMESPACE, FULLY_QUALIFIED_REFERENCE y DECLARING_CLASS', async () => {
       const results = await getRetrievalComparisonResults(DEMO_RETRIEVAL_PHP_COMPARISON_ID)
       const relations = results.modes.flatMap((mode) => mode.candidates.map((candidate) => candidate.structuralRelation))
       expect(relations).toEqual(expect.arrayContaining(['SAME_NAMESPACE', 'FULLY_QUALIFIED_REFERENCE', 'DECLARING_CLASS']))

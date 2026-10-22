@@ -178,7 +178,7 @@ test('caso Bootstrap: un Run con indexMode BOOTSTRAP muestra el aviso de primer 
   renderDetail('arun_billing_pr23', 'prj_billing_demo')
 
   expect(await screen.findByText('Primer análisis de este repositorio')).toBeInTheDocument()
-  expect(screen.getByText(/se indexó el repositorio completo \(bootstrap\)/)).toBeInTheDocument()
+  expect(screen.getByText(/se indexó el repositorio completo \(indexación inicial\)/)).toBeInTheDocument()
 })
 
 test('un Run incremental normal no muestra el aviso de bootstrap', async () => {
@@ -192,7 +192,7 @@ test('caso PR grande: resume símbolos directos/impactados cuando el changeset e
   renderDetail('arun_checkout_pr49', 'prj_checkout_demo')
 
   expect(
-    await screen.findByText(/Changeset grande: 6 símbolo\(s\) con cambio directo, 8 potencialmente impactado\(s\)\./),
+    await screen.findByText(/Conjunto de cambios grande: 6 símbolo\(s\) con cambio directo, 8 potencialmente impactado\(s\)\./),
   ).toBeInTheDocument()
 })
 
@@ -200,7 +200,7 @@ test('un changeset chico no muestra el resumen de "changeset grande"', async () 
   renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
 
   await screen.findByText('checkout-service', { selector: '.repo-name' })
-  expect(screen.queryByText(/Changeset grande/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/Conjunto de cambios grande/)).not.toBeInTheDocument()
 })
 
 test('caso propuestas STALE: un intento anterior queda STALE y el vigente AVAILABLE', async () => {
@@ -219,7 +219,7 @@ test('HU53 (INTEROP-2.1 §6.10, definido/no implementado): el historial de trans
   await user.click(summary)
 
   expect(screen.getByText('Run creado')).toBeInTheDocument()
-  expect(screen.getByText('Snapshot indexado, análisis iniciado')).toBeInTheDocument()
+  expect(screen.getByText('Instantánea indexada, análisis iniciado')).toBeInTheDocument()
   expect(screen.getByText('Generación completada')).toBeInTheDocument()
 })
 

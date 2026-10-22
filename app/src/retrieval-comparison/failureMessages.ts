@@ -3,7 +3,7 @@
  * cualquier otro se tolera y se muestra con su código, sin inventar una causa.
  */
 const KNOWN_FAILURE_MESSAGES: Record<string, string> = {
-  RETRIEVAL_TARGET_UNRESOLVABLE: 'No se pudo resolver el símbolo elegido en la versión del proyecto de este Run.',
+  RETRIEVAL_TARGET_UNRESOLVABLE: 'No se pudo resolver el símbolo elegido en la versión del Project de este Run.',
   RETRIEVAL_COMPARISON_FAILED: 'La comparación de retrieval falló y no produjo resultados.',
   RETRIEVAL_COMPARISON_WORKER_LOST: 'La comparación se interrumpió; vuelve a crearla.',
 }

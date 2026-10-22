@@ -15,8 +15,9 @@ test('HU38: lista los Runs con contexto funcional pendiente y enlaza a Focus Mod
 
   expect(await screen.findAllByText('checkout-service', { selector: '.repo-name' })).toHaveLength(2)
   expect(screen.getByText('PR #42', { selector: '.pr-ref' })).toBeInTheDocument()
-  expect(screen.getAllByText('billing-engine', { selector: '.repo-name' }).length).toBe(2)
-  expect(screen.getByText('PR #17', { selector: '.pr-ref' })).toBeInTheDocument()
+  // WI-CONSOLE-047 (obs. 4): PR #17 es un Run OBSOLETE (HEAD superado), no vigente, y sale de la bandeja.
+  expect(screen.getAllByText('billing-engine', { selector: '.repo-name' }).length).toBe(1)
+  expect(screen.queryByText('PR #17', { selector: '.pr-ref' })).not.toBeInTheDocument()
   expect(screen.getByText('PR #24', { selector: '.pr-ref' })).toBeInTheDocument()
   expect(screen.getByText('PR #52', { selector: '.pr-ref' })).toBeInTheDocument()
 

@@ -412,7 +412,7 @@ function buildInventory(projectVersionId: string, revision = 7): TestInventoryRe
   }
 }
 
-/** DEMO · WI-CONSOLE-030 (C1): inventario de un Project PHP con PHPUnit. `framework: null` modela un proyecto PHP sin framework de pruebas incluido (C4, `UNSUPPORTED_PROJECT`). */
+/** DEMO · WI-CONSOLE-030 (C1): inventario de un Project PHP con PHPUnit. `framework: null` modela un Project PHP sin framework de pruebas incluido (C4, `UNSUPPORTED_PROJECT`). */
 function buildPhpInventory(projectVersionId: string, framework: 'PHPUNIT' | null = 'PHPUNIT'): TestInventoryResponse {
   // WI-CONSOLE-030 (F4): sin framework de pruebas detectado ningún target puede tener test (hasTest false, testFilePaths vacío).
   const withTests = framework !== null
@@ -1202,6 +1202,24 @@ interface AnalysisRunSeed extends AnalysisRunDetailResponse {
   __proposals?: GeneratedTestProposalResponse[]
 }
 
+/**
+ * WI-CONSOLE-047 (obs. 4): fuente única de Action Required del demo. Las preguntas `PENDING` de `actionRequiredRuns` mandan:
+ * un Run vigente con pregunta pendiente queda `ACTION_REQUIRED` y su `actionRequiredCount` cuenta esas preguntas.
+ * Un Run `ACTION_REQUIRED` sin pregunta pendiente vigente es un seed incoherente y falla al cargar. Un Run no vigente
+ * (HEAD superado) no entra en la bandeja aunque conserve una pregunta de su escenario.
+ */
+function deriveActionRequiredRunStatus(seeds: AnalysisRunSeed[]): void {
+  for (const seed of seeds) {
+    const pending = actionRequiredRuns.get(seed.id)?.questions.filter((question) => question.status === 'PENDING').length ?? 0
+    if (pending > 0 && seed.current) {
+      seed.status = 'ACTION_REQUIRED'
+      seed.actionRequiredCount = pending
+    } else if (seed.status === 'ACTION_REQUIRED') {
+      throw new Error(`Seed incoherente: ${seed.id} figura ACTION_REQUIRED sin pregunta pendiente vigente`)
+    }
+  }
+}
+
 /** HU30/HU32/HU39/HU40: repository bindings de los dos proyectos demo y los 9 escenarios mock-first de `spec.md` de la feature 013 (un `AnalysisRun` por escenario, más el par pr17/pr17-2 para "corrección/HEAD nuevo"). */
 function seedControlPlane(): void {
   repositoryBindings.set('prj_checkout_demo', {
@@ -1334,6 +1352,43 @@ function seedControlPlane(): void {
       functionalBehaviorValidated: false,
       resultSummary: null,
       detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr42',
+    },
+    {
+      id: 'arun_checkout_pr52',
+      projectId: 'prj_checkout_demo',
+      pullRequest: pr(
+        'repo_checkout',
+        'acme/checkout-service',
+        52,
+        'Agrega excepción corporativa a zonas de envío',
+        'feature/corporate-shipping',
+        'b2c3d4e',
+        'devA',
+      ),
+      status: 'ACTION_REQUIRED',
+      current: true,
+      actionRequiredCount: 1,
+      generatedTestsCount: 0,
+      createdAt: '2026-09-15T10:00:00.000Z',
+      updatedAt: '2026-09-15T10:05:00.000Z',
+      completedAt: null,
+      attemptCount: 1,
+      indexMode: 'INCREMENTAL',
+      changesetBaseSha: 'c1c1c1c',
+      changesetHeadSha: 'b2c3d4e',
+      indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [
+        {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'ShippingAddressValidator.validate',
+          filePath: 'src/domain/ShippingAddressValidator.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+      ],
+      functionalBehaviorValidated: false,
+      resultSummary: null,
+      detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr52',
     },
     {
       id: 'arun_checkout_pr45',
@@ -1751,7 +1806,7 @@ function seedControlPlane(): void {
       ],
       functionalBehaviorValidated: false,
       resultSummary:
-        'La GitHub Compare API no respondió al materializar el snapshot del HEAD — falla de infraestructura, no del código. El Run puede reintentarse.',
+        'La GitHub Compare API no respondió al materializar la instantánea del HEAD — falla de infraestructura, no del código. El Run puede reintentarse.',
       detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr48',
       // Datos simulados: propuestas conservadas en AVAILABLE aunque el Run es INFRASTRUCTURE_FAILURE (no publicable).
       __proposals: [
@@ -1818,7 +1873,7 @@ function seedControlPlane(): void {
       ],
       functionalBehaviorValidated: true,
       resultSummary:
-        'Primer AnalysisRun de este proyecto tras conectar el repositorio — bootstrap completo. 2 pruebas generadas y validadas.',
+        'Primer AnalysisRun de este Project tras conectar el repositorio — indexación inicial completa. 2 pruebas generadas y validadas.',
       detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr23',
       __proposals: [
         {
@@ -1975,7 +2030,7 @@ function seedControlPlane(): void {
       ],
       functionalBehaviorValidated: true,
       resultSummary:
-        'Changeset grande: 6 símbolos con cambio directo y 8 potencialmente impactados. 4 pruebas generadas y validadas contra el HEAD vigente.',
+        'Conjunto de cambios grande: 6 símbolos con cambio directo y 8 potencialmente impactados. 4 pruebas generadas y validadas contra el HEAD vigente.',
       detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr49',
       __proposals: [
         {
@@ -2331,7 +2386,7 @@ function seedControlPlane(): void {
         },
       ],
       functionalBehaviorValidated: false,
-      resultSummary: 'Proyecto PHP sin PHPUnit detectado: no hay framework de pruebas para generar comparaciones de retrieval.',
+      resultSummary: 'Project PHP sin PHPUnit detectado: no hay framework de pruebas para generar comparaciones de retrieval.',
       detailsUrl: '/projects/prj_legacy_php_demo/runs/arun_legacy_php_pr3',
     },
     {
@@ -2396,6 +2451,7 @@ function seedControlPlane(): void {
     },
   ]
 
+  deriveActionRequiredRunStatus(seeds)
   for (const { __proposals, ...run } of seeds) {
     analysisRuns.set(run.id, run)
     if (__proposals) testProposals.set(run.id, __proposals)
@@ -2614,9 +2670,9 @@ function seedFunctionalKnowledge(): void {
       projectId: 'prj_org_metrics_demo',
       scope: 'METHOD',
       targetRef: 'MetricsRange.toUtc',
-      originalQuestion: '¿"toUtc" debe interpretar el rango en la zona horaria del proyecto?',
+      originalQuestion: '¿"toUtc" debe interpretar el rango en la zona horaria del Project?',
       originalAnswer: 'Sí',
-      normalizedRule: 'El rango de métricas se interpreta en la zona horaria del proyecto antes de convertir a UTC.',
+      normalizedRule: 'El rango de métricas se interpreta en la zona horaria del Project antes de convertir a UTC.',
       source: 'HUMAN_ANSWER',
       status: 'ACTIVE',
       supersedesId: null,
@@ -2701,14 +2757,14 @@ export async function mockListProjects(workspaceId: string): Promise<Project[]> 
 export async function mockGetProject(projectId: string): Promise<Project> {
   await latency()
   const project = projects.get(projectId)
-  if (!project || !canSeeProject(project)) notFound(`No existe el proyecto demo "${projectId}".`, 'PROJECT_NOT_FOUND')
+  if (!project || !canSeeProject(project)) notFound(`No existe el Project demo "${projectId}".`, 'PROJECT_NOT_FOUND')
   return clone(project)
 }
 
 export async function mockListAnalysisHistory(projectId: string): Promise<AnalysisHistoryItem[]> {
   await latency()
   const project = projects.get(projectId)
-  if (!project) notFound(`No existe el proyecto demo "${projectId}".`, 'PROJECT_NOT_FOUND')
+  if (!project) notFound(`No existe el Project demo "${projectId}".`, 'PROJECT_NOT_FOUND')
   return Array.from(versions.values())
     .filter((state) => state.history.projectId === projectId)
     .map((state) => ({ ...state.history, current: project.currentVersionId === state.history.id }))
@@ -2721,7 +2777,7 @@ export async function mockCreateProject(input: CreateProjectInput): Promise<Proj
   const workspace = findDemoWorkspace(input.workspaceId ?? DEMO_WORKSPACES[0].id)
   if (workspace.kind === 'ORGANIZATION' && workspace.role !== 'ADMIN') {
     throw new ApiError(
-      'Solo un owner activo de la organización puede crear Projects en ese workspace.',
+      'Solo un propietario activo de la organización puede crear Projects en ese workspace.',
       403,
       'demo-correlation-id',
       'WORKSPACE_ADMIN_REQUIRED',
@@ -3218,7 +3274,7 @@ function demoScenarioOperation(scenario: DemoExperimentScenario, experimentId: s
       }
     }
     case 'phpunit': {
-      // (f) Proyecto PHP con PHPUnit (CS-CORE-20261009-018): runnerHint y perfil se muestran tal cual; una respuesta sin <?php es INVALID/COMPILATION sin reintento.
+      // (f) Project PHP con PHPUnit (CS-CORE-20261009-018): runnerHint y perfil se muestran tal cual; una respuesta sin <?php es INVALID/COMPILATION sin reintento.
       const configuration: ExperimentConfiguration = {
         model: {
           provider: 'OpenAI',
@@ -3431,7 +3487,7 @@ function buildAgentTrajectory(targetFilePath: string): AgentTrajectoryStep[] {
       toolName: 'search_text',
       arguments: { query: 'applyCoupon' },
       status: 'EMPTY',
-      resultSummary: 'Sin coincidencias en el proyecto',
+      resultSummary: 'Sin coincidencias en el Project',
       resultSha256: fakeSha256('search_text:applyCoupon'),
       truncated: false,
       observations: [],
@@ -3785,7 +3841,7 @@ export async function mockStartRetrievalComparison(
       'UNSUPPORTED_SYMBOL_KIND',
     )
   }
-  // WI-CONSOLE-030 (C4, INTEROP-2.7 §6.5.1): un proyecto PHP sin PHPUnit detectado no tiene framework de pruebas → 422 UNSUPPORTED_PROJECT.
+  // WI-CONSOLE-030 (C4, INTEROP-2.7 §6.5.1): un Project PHP sin PHPUnit detectado no tiene framework de pruebas → 422 UNSUPPORTED_PROJECT.
   // Solo aplica con versión actual existente y sin framework; un Project sin versión (currentVersionId null) conserva su comportamiento.
   const runProject = projects.get(run.projectId)
   const currentVersion = runProject?.currentVersionId ? versions.get(runProject.currentVersionId) : undefined
@@ -3934,7 +3990,7 @@ function seedRetrievalComparisons(): void {
     finalStatus: 'COMPLETED',
     withMetrics: true,
   })
-  // DEMO · proyecto PHP (CS-CORE-20261009-017): la comparación ya no devuelve 422 por lenguaje; semilla con símbolo PHP
+  // DEMO · Project PHP (CS-CORE-20261009-017): la comparación ya no devuelve 422 por lenguaje; semilla con símbolo PHP
   // del Run `arun_php_pr7` (WI-CONSOLE-030, C1). Antes vivía en `arun_checkout_pr49` porque no había Project PHP.
   const phpRun = analysisRuns.get(DEMO_RETRIEVAL_PHP_RUN_ID)
   const phpSymbol = phpRun?.symbols.find((item) => item.qualifiedName === 'CouponService::apply')
@@ -4015,11 +4071,11 @@ export async function mockSimulateNextEligiblePullRequest(projectId: string): Pr
   requireProject(projectId)
   const state = captureNextPrStates.get(projectId)
   if (!state || state.status !== 'ARMED')
-    throw new ApiError('"Capture next PR" no está armado para este proyecto.', 409, 'demo-correlation-id', 'CAPTURE_NOT_ARMED')
+    throw new ApiError('"Capturar el próximo PR" no está armado para este Project.', 409, 'demo-correlation-id', 'CAPTURE_NOT_ARMED')
   const binding = repositoryBindings.get(projectId)
-  if (!binding) notFound(`El proyecto demo "${projectId}" no tiene un repositorio vinculado.`, 'REPOSITORY_BINDING_NOT_FOUND')
+  if (!binding) notFound(`El Project demo "${projectId}" no tiene un repositorio vinculado.`, 'REPOSITORY_BINDING_NOT_FOUND')
   const symbol = CAPTURE_SYMBOL_BY_PROJECT[projectId]
-  if (!symbol) notFound(`No hay un símbolo demo configurado para capturar en el proyecto "${projectId}".`, 'CAPTURE_NOT_CONFIGURED')
+  if (!symbol) notFound(`No hay un símbolo demo configurado para capturar en el Project "${projectId}".`, 'CAPTURE_NOT_CONFIGURED')
   captureNextPrSeq += 1
   const number = 900 + captureNextPrSeq
   const sha = `cap${captureNextPrSeq}`.padEnd(7, '0')
@@ -4032,7 +4088,7 @@ export async function mockSimulateNextEligiblePullRequest(projectId: string): Pr
       repositoryId: binding.repositoryId,
       repositoryName: binding.repositoryName,
       number,
-      title: 'Capturado en vivo por "Capture next PR"',
+      title: 'Capturado en vivo por "Capturar el próximo PR"',
       baseRef: binding.integrationBranch,
       headRef: `capture/pr-${number}`,
       baseSha: 'c1c1c1c',
@@ -4128,6 +4184,7 @@ export async function mockListActionRequired(projectId?: string): Promise<Action
   if (projectId) requireProjectRole(projectId, 'READER')
   const items = Array.from(actionRequiredRuns.values())
     .filter((state) => !isProjectDeleted(state.projectId) && projects.has(state.projectId) && canSeeProject(projects.get(state.projectId)!))
+    .filter((state) => analysisRuns.get(state.analysisRunId)?.status === 'ACTION_REQUIRED')
     .filter((state) => !projectId || state.projectId === projectId)
     .map(currentActionRequiredQuestion)
     .filter((question): question is FunctionalQuestionResponse => question !== null)
@@ -4339,11 +4396,11 @@ export async function mockSubmitFunctionalAnswer(
 
 function requireProject(projectId: string): Project {
   const project = projects.get(projectId)
-  if (!project || !canSeeProject(project)) notFound(`No existe el proyecto demo "${projectId}".`, 'PROJECT_NOT_FOUND')
+  if (!project || !canSeeProject(project)) notFound(`No existe el Project demo "${projectId}".`, 'PROJECT_NOT_FOUND')
   return project
 }
 
-/** HU30: `GET /projects/{projectId}/integrations/github`. `null` cuando el proyecto nunca se vinculó (Core: 404 `REPOSITORY_BINDING_NOT_FOUND`); un binding desconectado se devuelve con status `DISABLED`. Un Project borrado responde 404 `PROJECT_NOT_FOUND` (vía `requireProject`). */
+/** HU30: `GET /projects/{projectId}/integrations/github`. `null` cuando el Project nunca se vinculó (Core: 404 `REPOSITORY_BINDING_NOT_FOUND`); un binding desconectado se devuelve con status `DISABLED`. Un Project borrado responde 404 `PROJECT_NOT_FOUND` (vía `requireProject`). */
 export async function mockGetRepositoryBinding(projectId: string): Promise<ProjectRepositoryBindingResponse | null> {
   await latency()
   requireProject(projectId)
@@ -4458,7 +4515,7 @@ export async function mockCreateRepositoryBinding(
   await latency()
   const project = requireProjectRole(projectId, 'WRITER')
   if (repositoryBindings.get(projectId))
-    throw new ApiError('Este proyecto ya tiene un repositorio vinculado.', 409, 'demo-correlation-id', 'REPOSITORY_BINDING_ALREADY_EXISTS')
+    throw new ApiError('Este Project ya tiene un repositorio vinculado.', 409, 'demo-correlation-id', 'REPOSITORY_BINDING_ALREADY_EXISTS')
   if (!isGitHubAppAuthorized(input.repositoryId))
     throw new ApiError(
       `La GitHub App no tiene acceso a "${input.repositoryName}" todavía.`,
@@ -4489,7 +4546,7 @@ export async function mockCreateRepositoryBinding(
     (other) => other && other.projectId !== projectId && other.repositoryId === input.repositoryId,
   )
   if (boundElsewhere)
-    throw new ApiError('Este repositorio ya está vinculado a otro proyecto.', 409, 'demo-correlation-id', 'REPOSITORY_ALREADY_BOUND')
+    throw new ApiError('Este repositorio ya está vinculado a otro Project.', 409, 'demo-correlation-id', 'REPOSITORY_ALREADY_BOUND')
   const branches = DEMO_BRANCHES_BY_REPOSITORY[input.repositoryId] ?? []
   if (!branches.some((branch) => branch.name === input.integrationBranch))
     notFound(`La rama "${input.integrationBranch}" no existe en "${input.repositoryName}".`, 'INTEGRATION_BRANCH_NOT_FOUND')
@@ -4513,7 +4570,7 @@ export async function mockDisconnectRepository(projectId: string): Promise<void>
   await latency()
   requireProjectRole(projectId, 'WRITER')
   const binding = repositoryBindings.get(projectId)
-  if (!binding) notFound(`El proyecto demo "${projectId}" no tiene un repositorio vinculado.`, 'REPOSITORY_BINDING_NOT_FOUND')
+  if (!binding) notFound(`El Project demo "${projectId}" no tiene un repositorio vinculado.`, 'REPOSITORY_BINDING_NOT_FOUND')
   if (binding.status === 'REVOKED') return
   repositoryBindings.set(projectId, { ...binding, status: 'DISABLED', updatedAt: nowIso() })
 }
@@ -4526,9 +4583,9 @@ export async function mockEnableRepository(projectId: string): Promise<ProjectRe
   await latency()
   const project = requireProjectRole(projectId, 'WRITER')
   const binding = repositoryBindings.get(projectId)
-  if (!binding) notFound(`El proyecto demo "${projectId}" no tiene un repositorio vinculado.`, 'REPOSITORY_BINDING_NOT_FOUND')
+  if (!binding) notFound(`El Project demo "${projectId}" no tiene un repositorio vinculado.`, 'REPOSITORY_BINDING_NOT_FOUND')
   if (binding.status === 'ENABLED') return clone(binding)
-  if (binding.status === 'REVOKED' && project.role !== 'ADMIN') notFound(`No existe el proyecto demo "${projectId}".`, 'PROJECT_NOT_FOUND')
+  if (binding.status === 'REVOKED' && project.role !== 'ADMIN') notFound(`No existe el Project demo "${projectId}".`, 'PROJECT_NOT_FOUND')
   if (!isGitHubAppAuthorized(binding.repositoryId))
     throw new ApiError(
       `La GitHub App no tiene acceso a "${binding.repositoryName}" todavía.`,
@@ -4642,7 +4699,7 @@ export async function mockGetAnalysisRun(analysisRunId: string): Promise<Analysi
   return { ...clone(run), history: deriveRunHistory(run) }
 }
 
-// INTEROP-2.7 §6.16 — trace operativo demo. Los ids `ret_demo_*`, `ctx_demo_*` y `exec_demo_*` son simulados y se rotulan como tales.
+// INTEROP-2.7 §6.16 — traza operativa demo. Los ids `ret_demo_*`, `ctx_demo_*` y `exec_demo_*` son simulados y se rotulan como tales.
 // `fk_rounding_v2` y `fk_coupon_expiry` existen (ver seeds de functionalKnowledge); `fk_demo_regla_inexistente` no existe a propósito, para probar la degradación.
 const TRACE_EXECUTION_PROFILE = 'demo-sandbox-node'
 const TRACE_SYMBOL_CALCULATE_TOTAL: AnalysisSymbolResponse = {

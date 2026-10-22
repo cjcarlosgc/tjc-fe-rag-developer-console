@@ -23,7 +23,7 @@ export function CreateProjectForm({ workspace, onCreated }: Props) {
   return (
     <form className="create-form" onSubmit={submit}>
       <div className="field">
-        <label htmlFor="project-name">Nombre del proyecto</label>
+        <label htmlFor="project-name">Nombre del Project</label>
         <div className="field-row">
           <input
             id="project-name"
@@ -36,7 +36,7 @@ export function CreateProjectForm({ workspace, onCreated }: Props) {
             required
           />
           <button className="button primary" disabled={!trimmedName || createMutation.isPending}>
-            {createMutation.isPending ? 'Creando…' : 'Crear proyecto'}
+            {createMutation.isPending ? 'Creando…' : 'Crear Project'}
           </button>
         </div>
         <span className="field-hint">Usa un nombre reconocible para tu repositorio.</span>

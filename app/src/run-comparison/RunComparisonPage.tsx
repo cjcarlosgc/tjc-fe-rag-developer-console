@@ -60,7 +60,7 @@ function TrialCard({ operation, projectId }: { operation: RunComparisonOperation
       {current.status === 'COMPLETED' && current.result && (
         <>
           <div className="flow-connector" aria-hidden="true">
-            <span>RESULT</span>
+            <span>RESULTADO</span>
             <i />
           </div>
           <ExperimentComparison result={current.result} projectId={projectId} experimentId={current.id} />

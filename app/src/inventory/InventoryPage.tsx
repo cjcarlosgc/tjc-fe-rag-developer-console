@@ -14,7 +14,7 @@ export function InventoryPage() {
   const projectVersionId = requestedVersionId ?? projectQuery.data?.currentVersionId ?? null
   const inventoryQuery = useTestInventory(projectVersionId)
 
-  if (projectQuery.isPending) return <LoadingState label="Cargando proyecto…" />
+  if (projectQuery.isPending) return <LoadingState label="Cargando Project…" />
   if (projectQuery.isError) return <ErrorState message={projectQuery.error.message} onRetry={() => void projectQuery.refetch()} />
 
   const historical = Boolean(requestedVersionId && requestedVersionId !== projectQuery.data.currentVersionId)
@@ -37,9 +37,9 @@ export function InventoryPage() {
         <div>
           <p className="eyebrow">Cobertura existente · {projectVersionId ?? 'sin versión'}</p>
           <h1>Inventario testable</h1>
-          <p>Targets detectados por RAG Core, organizados por estado de cobertura.</p>
+          <p>Objetivos detectados por RAG Core, organizados por estado de cobertura.</p>
         </div>
-        {historical && <span className="demo-stamp">SNAPSHOT HISTÓRICO</span>}
+        {historical && <span className="demo-stamp">INSTANTÁNEA HISTÓRICA</span>}
       </div>
       {historical && (
         <div className="contract-note history-readonly">
@@ -52,7 +52,7 @@ export function InventoryPage() {
       )}
       {!projectVersionId ? (
         <EmptyState
-          title="Este proyecto todavía no tiene un snapshot disponible"
+          title="Este Project todavía no tiene una instantánea disponible"
           description="El historial comienza cuando un PR vinculado produce un análisis."
         />
       ) : inventoryQuery.isPending ? (
@@ -68,15 +68,15 @@ export function InventoryPage() {
             </div>
             <dl className="metric-grid">
               <div>
-                <dt>Targets</dt>
+                <dt>Objetivos</dt>
                 <dd>{inventoryQuery.data.targetsTotal}</dd>
               </div>
               <div>
-                <dt>Con test</dt>
+                <dt>Con pruebas</dt>
                 <dd>{inventoryQuery.data.targetsWithTest}</dd>
               </div>
               <div>
-                <dt>Sin test</dt>
+                <dt>Sin pruebas</dt>
                 <dd>{inventoryQuery.data.targetsMissingTest}</dd>
               </div>
             </dl>

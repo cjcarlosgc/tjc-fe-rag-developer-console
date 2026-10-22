@@ -35,7 +35,7 @@ const FAILURE_STATUSES = new Set(['BASELINE_FAILED', 'TECHNICAL_GENERATION_FAILU
 /** HU53 (INTEROP-2.1 §6.10, definido/no implementado). */
 const RUN_TRANSITION_REASON_LABELS: Record<AnalysisRunTransitionReason, string> = {
   RUN_CREATED: 'Run creado',
-  SNAPSHOT_PROCESSING_STARTED: 'Snapshot indexado, análisis iniciado',
+  SNAPSHOT_PROCESSING_STARTED: 'Instantánea indexada, análisis iniciado',
   FUNCTIONAL_CONTEXT_REQUIRED: 'Contexto funcional requerido',
   FUNCTIONAL_ANSWER_CONTINUATION: 'Respuesta funcional recibida, continúa el análisis',
   GENERATION_COMPLETED: 'Generación completada',
@@ -104,7 +104,7 @@ function PublishSection({ analysisRunId, projectId, targetBranch }: { analysisRu
           <h2>Propuestas de prueba</h2>
           <p>
             {available.length > 0 && !publishedNow
-              ? `Freshness verificado contra el HEAD vigente (${proposalsQuery.data.headSha}). Publicar nunca hace merge ni escribe directo en la rama del PR.`
+              ? `Vigencia verificada contra el HEAD vigente (${proposalsQuery.data.headSha}). Publicar nunca hace merge ni escribe directo en la rama del PR.`
               : 'Sin propuestas disponibles para publicar en este Run.'}
           </p>
         </div>
@@ -332,8 +332,8 @@ export function AnalysisRunDetailPage() {
           <div>
             <strong>Primer análisis de este repositorio</strong>
             <p>
-              No había un ProjectVersion previo para este proyecto — se indexó el repositorio completo (bootstrap) en vez de aplicar un
-              índice incremental.
+              No había un ProjectVersion previo para este Project — se indexó el repositorio completo (indexación inicial) en vez de aplicar
+              un índice incremental.
             </p>
           </div>
         </div>
@@ -362,7 +362,7 @@ export function AnalysisRunDetailPage() {
             <h2>Símbolos cambiados</h2>
             {isLargeChangeset && (
               <p className="empty-inline-note">
-                Changeset grande: {directCount} símbolo(s) con cambio directo, {impactedCount} potencialmente impactado(s).
+                Conjunto de cambios grande: {directCount} símbolo(s) con cambio directo, {impactedCount} potencialmente impactado(s).
               </p>
             )}
             <ul className="symbol-list">

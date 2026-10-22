@@ -65,7 +65,7 @@ export function ErrorNote({ message, correlationId }: ErrorNoteProps) {
 export function ProjectNotFoundState() {
   return (
     <div className="feedback error-state" role="alert">
-      <strong>El proyecto ya no existe</strong>
+      <strong>El Project ya no existe</strong>
       <p>Fue eliminado o nunca existió para tu cuenta.</p>
       <Link className="button secondary button-link" to="/">
         Volver a Projects

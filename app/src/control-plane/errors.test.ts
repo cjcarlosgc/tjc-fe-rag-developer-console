@@ -13,12 +13,12 @@ import {
 
 it('mapea los códigos de dominio de binding y de Project a un mensaje propio', () => {
   expect(bindingErrorMessage(new ApiError('x', 409, 'c', 'REPOSITORY_ALREADY_BOUND'))).toBe(
-    'Este repositorio ya está vinculado a otro proyecto. Elige otro repositorio.',
+    'Este repositorio ya está vinculado a otro Project. Elige otro repositorio.',
   )
   expect(bindingErrorMessage(new ApiError('x', 409, 'c', 'REPOSITORY_BINDING_ALREADY_EXISTS'))).toBe(
-    'Este proyecto ya tiene un repositorio vinculado.',
+    'Este Project ya tiene un repositorio vinculado.',
   )
-  expect(bindingErrorMessage(new ApiError('x', 404, 'c', 'PROJECT_NOT_FOUND'))).toBe('El proyecto ya no existe.')
+  expect(bindingErrorMessage(new ApiError('x', 404, 'c', 'PROJECT_NOT_FOUND'))).toBe('El Project ya no existe.')
 })
 
 it('un 5xx muestra un mensaje genérico y los códigos no mapeados conservan el mensaje original', () => {
@@ -39,7 +39,7 @@ it.each([
   [
     400,
     'REPOSITORY_OUTSIDE_WORKSPACE',
-    'Este repositorio no pertenece a tu cuenta; en un proyecto personal solo puedes vincular repositorios propios.',
+    'Este repositorio no pertenece a tu cuenta; en un Project personal solo puedes vincular repositorios propios.',
   ],
   [403, 'REPOSITORY_PERMISSION_INSUFFICIENT', 'Necesitas permiso maintain, write o admin sobre este repositorio.'],
   [503, 'GITHUB_VERIFICATION_UNAVAILABLE', 'No pudimos verificar el permiso en GitHub ahora; inténtalo de nuevo.'],
@@ -74,9 +74,7 @@ it.each([
   'Reactivar: %s %s no dice «Vuelve a elegirlo de la lista» (no se puede revincular) y apunta a crear un proyecto nuevo',
   (status, code) => {
     const message = reactivateErrorMessage(new ApiError('crudo', status, 'c', code))
-    expect(message).toBe(
-      'El repositorio ya no está disponible para este proyecto; si necesitas otro, elimina el proyecto y crea uno nuevo.',
-    )
+    expect(message).toBe('El repositorio ya no está disponible para este Project; si necesitas otro, elimina el Project y crea uno nuevo.')
     expect(message).not.toMatch(/lista/)
   },
 )
@@ -144,7 +142,7 @@ it.each([
 
 it('WI-CONSOLE-021: 422 UNSUPPORTED_PROJECT, 503 LLM_PROVIDER_UNAVAILABLE indicando reintento, y los 409 de OE2 tienen mensaje propio', () => {
   expect(bindingErrorMessage(new ApiError('crudo', 422, 'c', 'UNSUPPORTED_PROJECT'))).toBe(UNSUPPORTED_PROJECT_MESSAGE)
-  expect(UNSUPPORTED_PROJECT_MESSAGE).toBe('Este proyecto no tiene framework JEST, VITEST o PHPUNIT detectado.')
+  expect(UNSUPPORTED_PROJECT_MESSAGE).toBe('Este Project no tiene framework JEST, VITEST o PHPUNIT detectado.')
   const llm = bindingErrorMessage(new ApiError('crudo', 503, 'c', 'LLM_PROVIDER_UNAVAILABLE'))
   expect(llm).toMatch(/Inténtalo de nuevo/)
   expect(llm).not.toMatch(/no pudo completar/)

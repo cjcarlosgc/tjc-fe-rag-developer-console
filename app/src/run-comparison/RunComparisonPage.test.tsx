@@ -17,7 +17,7 @@ test('HU48: arranca la comparación al montar y presenta el resultado tras vario
 
   expect(await screen.findByText('Laboratorio simulado')).toBeInTheDocument()
   expect(screen.getByText(EXPERIMENT_CONDITIONS_NOTE)).toBeInTheDocument()
-  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 5000 })).toBeInTheDocument()
+  expect(await screen.findByText('Huella de recuperación', {}, { timeout: 5000 })).toBeInTheDocument()
   expect(container.textContent).not.toMatch(/precision|recall/i)
 })
 
@@ -75,10 +75,10 @@ test('HU48 (Replay): permite elegir símbolo, iniciar y repetir la comparación 
   await user.click(screen.getByRole('button', { name: 'Iniciar comparación' }))
 
   expect(await screen.findByText('OrderService.createOrder')).toBeInTheDocument()
-  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 5000 })).toBeInTheDocument()
+  expect(await screen.findByText('Huella de recuperación', {}, { timeout: 5000 })).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'Repetir comparación (Replay)' }))
 
   await waitFor(() => expect(screen.getAllByRole('heading', { level: 3, name: 'OrderService.createOrder' })).toHaveLength(2))
-  await waitFor(() => expect(screen.getAllByText('Huella de retrieval')).toHaveLength(2), { timeout: 5000 })
+  await waitFor(() => expect(screen.getAllByText('Huella de recuperación')).toHaveLength(2), { timeout: 5000 })
 })

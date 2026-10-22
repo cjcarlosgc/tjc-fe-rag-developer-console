@@ -70,8 +70,8 @@ export function useRenameProject() {
 
 /**
  * HU56 (INTEROP-2.3, implementado en Core — CS-20260920-003): borrado lógico. Aquí solo se marcan como vencidos los agregados (lista, Runs globales,
- * Action Required), sin refetch inmediato: el detalle del proyecto sigue montado hasta que la página navega y un refetch daría 404 visible.
- * La limpieza de lo propio del proyecto va aparte (`usePurgeProjectQueries`) y se ejecuta cuando la página ya se desmontó.
+ * Action Required), sin refetch inmediato: el detalle del Project sigue montado hasta que la página navega y un refetch daría 404 visible.
+ * La limpieza de lo propio del Project va aparte (`usePurgeProjectQueries`) y se ejecuta cuando la página ya se desmontó.
  */
 export function useDeleteProject() {
   const queryClient = useQueryClient()

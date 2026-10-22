@@ -201,7 +201,7 @@ export function ExperimentComparison({
       <section className="retrieval-panel">
         <div>
           <p className="eyebrow">Solo RAG · explicación del contexto</p>
-          <h3>Huella de retrieval</h3>
+          <h3>Huella de recuperación</h3>
         </div>
         <dl>
           <div>
@@ -226,7 +226,7 @@ export function ExperimentComparison({
           </div>
           <dl>
             <div>
-              <dt>Tool calls</dt>
+              <dt>Llamadas a herramientas</dt>
               <dd>{result.baseline.toolCalls ?? '—'}</dd>
             </div>
             <div>
@@ -239,10 +239,10 @@ export function ExperimentComparison({
       <details className="repetition-detail">
         <summary>Ver detalle por target y repetición</summary>
         <div className="table-frame" role="region" aria-label="Detalle por target y repetición" tabIndex={0}>
-          <table aria-label="Tabla de repeticiones por target">
+          <table aria-label="Tabla de repeticiones por objetivo">
             <thead>
               <tr>
-                <th scope="col">Target</th>
+                <th scope="col">Objetivo</th>
                 <th scope="col">Repetición</th>
                 <th scope="col">Estrategia</th>
                 <th scope="col">Válida</th>
@@ -250,7 +250,7 @@ export function ExperimentComparison({
                 <th scope="col">Posición</th>
                 {showRunColumns && <th scope="col">Intento</th>}
                 {showRunColumns && <th scope="col">Evaluable</th>}
-                <th scope="col">Failure type</th>
+                <th scope="col">Tipo de fallo</th>
                 <th scope="col">Duración</th>
                 <th scope="col">Ejecución en Sandbox</th>
                 <th scope="col">Tokens</th>

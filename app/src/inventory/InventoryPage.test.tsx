@@ -53,12 +53,12 @@ test('carga el inventario de la ProjectVersion actual y mapea su contrato', asyn
   expect(await screen.findByText('Resumen de cobertura')).toBeInTheDocument()
   expect(screen.getByText('VITEST')).toBeInTheDocument()
   expect(screen.getByText('total')).toBeInTheDocument()
-  expect(screen.getAllByText('Sin test').length).toBeGreaterThan(0)
+  expect(screen.getAllByText('Sin pruebas').length).toBeGreaterThan(0)
   expect(screen.queryByRole('button', { name: /Usar target|Generar/ })).not.toBeInTheDocument()
   expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/project-versions/v-1/test-inventory'), expect.any(Object))
 })
 
-test('no consulta inventario cuando el proyecto no tiene versión actual', async () => {
+test('no consulta inventario cuando el Project no tiene versión actual', async () => {
   const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
     new Response(
       JSON.stringify({
@@ -76,7 +76,7 @@ test('no consulta inventario cuando el proyecto no tiene versión actual', async
 
   renderApp(<InventoryPage />, { initialEntry: '/projects/p-1/inventory', routePath: '/projects/:projectId/inventory' })
 
-  expect(await screen.findByText('Este proyecto todavía no tiene un snapshot disponible')).toBeInTheDocument()
+  expect(await screen.findByText('Este Project todavía no tiene una instantánea disponible')).toBeInTheDocument()
   expect(fetchMock).toHaveBeenCalledTimes(1)
 })
 
@@ -88,7 +88,7 @@ test('abre el inventario de una versión histórica en modo lectura', async () =
     routePath: '/projects/:projectId/versions/:projectVersionId/inventory',
   })
 
-  expect(await screen.findByText('SNAPSHOT HISTÓRICO')).toBeInTheDocument()
+  expect(await screen.findByText('INSTANTÁNEA HISTÓRICA')).toBeInTheDocument()
   expect(screen.getByText('Inventario de sólo lectura')).toBeInTheDocument()
   expect(screen.getByText('3', { selector: 'dd' })).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /Usar target/ })).not.toBeInTheDocument()

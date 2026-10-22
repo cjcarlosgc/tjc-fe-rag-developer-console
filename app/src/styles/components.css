@@ -33,6 +33,12 @@
   color: var(--muted);
   font-size: 13px;
 }
+/* WI-CONSOLE-047 (obs. 4): rótulo de ámbito del KPI (workspace seleccionado), en su propia línea. */
+.kpi-card .kpi-scope {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
 .kpi-card-alert {
   border-color: var(--warning-border);
   background: var(--warning-bg);

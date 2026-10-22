@@ -135,7 +135,7 @@ test('error: un proyecto inexistente muestra el error con role="alert" y reinten
   renderPage('prj_no_existe')
 
   const alert = await screen.findByRole('alert')
-  expect(alert).toHaveTextContent('No existe el proyecto demo "prj_no_existe".')
+  expect(alert).toHaveTextContent('No existe el Project demo "prj_no_existe".')
   expect(within(alert).getByRole('button', { name: 'Reintentar' })).toBeInTheDocument()
 })
 

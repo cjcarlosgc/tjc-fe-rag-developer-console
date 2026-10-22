@@ -51,9 +51,9 @@ export function RagGraph({ detail, candidates = detail.candidates, selectedId, o
           if (node.id === rootId) {
             return (
               <span className={`rag-node rag-node-target${state.selected ? ' is-focused' : ''}`}>
-                <strong>{detail.target.excerpt.symbolName ?? 'Target'}</strong>
+                <strong>{detail.target.excerpt.symbolName ?? 'Objetivo'}</strong>
                 <small>{detail.target.excerpt.filePath}</small>
-                <span className="node-badge">Target</span>
+                <span className="node-badge">Objetivo</span>
               </span>
             )
           }

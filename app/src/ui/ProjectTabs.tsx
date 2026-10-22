@@ -8,7 +8,7 @@ interface Tab {
 }
 
 const TABS: Tab[] = [
-  { label: 'Overview', to: (id) => `/projects/${id}`, isActive: (pathname, _search, id) => pathname === `/projects/${id}` },
+  { label: 'Resumen', to: (id) => `/projects/${id}`, isActive: (pathname, _search, id) => pathname === `/projects/${id}` },
   {
     label: 'Runs',
     to: (id) => `/analysis-runs?projectId=${id}`,
@@ -25,18 +25,18 @@ const TABS: Tab[] = [
     isActive: (pathname, _search, id) => pathname.startsWith(`/projects/${id}/functional-knowledge`),
   },
   {
-    label: 'Integrations',
+    label: 'Integraciones',
     to: (id) => `/projects/${id}/integrations/github`,
     isActive: (pathname, _search, id) => pathname === `/projects/${id}/integrations/github`,
   },
 ]
 
-/** Sub-nav del proyecto (Overview/Runs/Historial/Functional Knowledge/Integrations); el tab activo se deriva de la ruta actual. */
+/** Sub-nav del Project (Overview/Runs/Historial/Functional Knowledge/Integrations); el tab activo se deriva de la ruta actual. */
 export function ProjectTabs({ projectId }: { projectId: string }) {
   const location = useLocation()
   const projectQuery = useProject(projectId)
   return (
-    <nav className="project-tabs" aria-label="Secciones del proyecto">
+    <nav className="project-tabs" aria-label="Secciones del Project">
       {TABS.map((tab) => {
         const active = tab.isActive(location.pathname, location.search, projectId)
         const basePath = tab.to(projectId)

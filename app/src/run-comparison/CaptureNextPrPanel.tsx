@@ -8,7 +8,7 @@ const CAPTURE_NEXT_PR_QUERY_KEY = (projectId: string) => ['run-comparison', 'spe
 /**
  * Propuesta de captura del siguiente PR elegible. Vive en ExperimentPage y
  * reutiliza el modelo de AnalysisRun de comparación, no el targetId del
- * inventario del proyecto. Al capturar, navega a RunComparisonPage.
+ * inventario del Project. Al capturar, navega a RunComparisonPage.
  */
 export function CaptureNextPrPanel({ projectId }: { projectId: string }) {
   const navigate = useNavigate()
@@ -41,7 +41,7 @@ export function CaptureNextPrPanel({ projectId }: { projectId: string }) {
     <div className="panel">
       <div className="section-heading">
         <div>
-          <h2>Capture next PR</h2>
+          <h2>Capturar el próximo PR</h2>
           <p>
             Arma la captura del próximo Analysis Run elegible que dispare un PR real, para demostrar en vivo que la comparación no está
             precalculada. No es un modo permanente: se apaga solo tras capturar uno.

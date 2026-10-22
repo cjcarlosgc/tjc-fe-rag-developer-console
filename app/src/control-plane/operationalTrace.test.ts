@@ -35,7 +35,7 @@ async function expectApiError(promise: Promise<unknown>, status: number, code: s
   return error as ApiError
 }
 
-describe('trace operativo (INTEROP-2.7 §6.16)', () => {
+describe('traza operativa (INTEROP-2.7 §6.16)', () => {
   it('SUCCESS: varios targets con los nueve enlaces PRESENT y el changeset con su conteo', async () => {
     const trace = await getAnalysisRunTrace('arun_checkout_pr45')
 

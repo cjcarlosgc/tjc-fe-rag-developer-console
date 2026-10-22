@@ -34,7 +34,7 @@ test('conserva historial e inventarios internos sin requests HTTP', async () => 
   expect(fetchMock).not.toHaveBeenCalled()
 })
 
-test('mantiene la comparación experimental a partir de un snapshot disponible', async () => {
+test('mantiene la comparación experimental a partir de una instantánea disponible', async () => {
   setDataSourceForTests('mock')
   resetMockBackend()
   const fetchMock = vi.spyOn(globalThis, 'fetch')
@@ -111,7 +111,7 @@ test('WI-CONSOLE-021: escenarios DEMO de experimento cubren corrida previa, Sand
     message: UNSUPPORTED_PROJECT_MESSAGE,
   })
 
-  // WI-CONSOLE-021 C1: proyecto PHP con PHPUnit (CS-CORE-20261009-018). Sin 422 de lenguaje; perfil y runner tal cual.
+  // WI-CONSOLE-021 C1: Project PHP con PHPUnit (CS-CORE-20261009-018). Sin 422 de lenguaje; perfil y runner tal cual.
   const phpunit = await getExperiment(
     (await startExperiment('prj_checkout_demo', 'demo-scenario-phpunit', crypto.randomUUID())).experimentId,
     'DEMO',
@@ -267,4 +267,33 @@ test('WI-CONSOLE-030 (F1): historial coherente para Runs QUEUED y PROCESSING', a
   expect(processing.history?.at(-1)?.toStatus).toBe('PROCESSING')
   expect(processing.history?.some((item) => item.reason === 'GENERATION_COMPLETED')).toBe(false)
   expect(processing.history?.some((item) => item.fromStatus === 'PROCESSING' && item.toStatus === 'PROCESSING')).toBe(false)
+})
+
+// WI-CONSOLE-047 (obs. 4): fuente única de Action Required en el demo. Un Run está en ACTION_REQUIRED sii aparece en la bandeja.
+test('WI-CONSOLE-047 (obs. 4): un Run es ACTION_REQUIRED sii aparece en la bandeja Action Required, con actionRequiredCount = preguntas PENDING', async () => {
+  setDataSourceForTests('mock')
+  resetMockBackend()
+  const { listAnalysisRuns } = await import('../control-plane/api')
+  const { listActionRequired } = await import('../action-required/api')
+  const { items: runs } = await listAnalysisRuns()
+  const waiting = runs.filter((run) => run.status === 'ACTION_REQUIRED')
+  const inbox = (await listActionRequired()).items
+  expect(inbox.map((item) => item.analysisRunId).sort()).toEqual(waiting.map((run) => run.id).sort())
+  expect(waiting.map((run) => run.id).sort()).toEqual([
+    'arun_billing_pr24',
+    'arun_checkout_pr42',
+    'arun_checkout_pr52',
+    'arun_org_metrics_pr15',
+    'arun_org_writer_pr21',
+  ])
+  // Run de HEAD superado (OBSOLETE): conserva su escenario, pero no está vigente y no entra en la bandeja.
+  expect(runs.find((run) => run.id === 'arun_billing_pr17')?.status).toBe('OBSOLETE')
+  const pendingPerRun: Record<string, number> = {
+    arun_checkout_pr42: 2,
+    arun_billing_pr24: 1,
+    arun_checkout_pr52: 1,
+    arun_org_metrics_pr15: 1,
+    arun_org_writer_pr21: 1,
+  }
+  for (const run of waiting) expect(run.actionRequiredCount).toBe(pendingPerRun[run.id])
 })

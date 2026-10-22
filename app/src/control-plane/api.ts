@@ -32,7 +32,7 @@ export function getGitHubAppInfo(): Promise<GitHubAppAccessResponse['app']> {
 }
 
 /**
- * `GET /projects/{projectId}/integrations/github` responde `404 REPOSITORY_BINDING_NOT_FOUND` cuando el proyecto nunca se vinculó — se traduce a `null`, igual que el mock.
+ * `GET /projects/{projectId}/integrations/github` responde `404 REPOSITORY_BINDING_NOT_FOUND` cuando el Project nunca se vinculó — se traduce a `null`, igual que el mock.
  * Cualquier otro 404 (p. ej. `PROJECT_NOT_FOUND` de un Project borrado) se propaga: no es "sin binding". Un binding desconectado llega como `DISABLED`, no como `null`.
  */
 export async function getRepositoryBinding(projectId: string): Promise<ProjectRepositoryBindingResponse | null> {
@@ -55,7 +55,7 @@ export function listGitHubUserRepositories(
   projectId?: string,
 ): Promise<GitHubUserRepositoryPage> {
   if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockListGitHubUserRepositories(workspaceId))
-  if (!projectId) throw new ApiError('Falta el proyecto para consultar GitHub.', 400, undefined, 'INVALID_REQUEST')
+  if (!projectId) throw new ApiError('Falta el Project para consultar GitHub.', 400, undefined, 'INVALID_REQUEST')
   return listUserRepositoriesDirect(projectId, githubProviderToken)
 }
 
@@ -65,7 +65,7 @@ export function verifyGitHubAppAccess(
   githubProviderToken?: string | null,
 ): Promise<GitHubAppAccessResponse> {
   if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockVerifyGitHubAppAccess(input))
-  if (!projectId) throw new ApiError('Falta el proyecto para verificar GitHub.', 400, undefined, 'INVALID_REQUEST')
+  if (!projectId) throw new ApiError('Falta el Project para verificar GitHub.', 400, undefined, 'INVALID_REQUEST')
   return verifyGitHubAppAccessDirect(projectId, input, githubProviderToken ?? undefined)
 }
 
@@ -80,7 +80,7 @@ export function getGitHubAppAccess(input: VerifyGitHubAppAccessRequest, projectI
 
 export function listGitHubRepositoryBranches(owner: string, repo: string, projectId?: string): Promise<GitHubRepositoryBranchesResponse> {
   if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockListGitHubRepositoryBranches(owner, repo))
-  if (!projectId) throw new ApiError('Falta el proyecto para consultar ramas.', 400, undefined, 'INVALID_REQUEST')
+  if (!projectId) throw new ApiError('Falta el Project para consultar ramas.', 400, undefined, 'INVALID_REQUEST')
   return listRepositoriesBranchesDirect(projectId, owner, repo)
 }
 
@@ -167,7 +167,7 @@ export function getAnalysisRun(analysisRunId: string): Promise<AnalysisRunDetail
 }
 
 /**
- * INTEROP-2.7 §6.16 (HU15, WI-CONSOLE-016): trace operativo de nueve enlaces. Lectura Reader.
+ * INTEROP-2.7 §6.16 (HU15, WI-CONSOLE-016): traza operativa de nueve enlaces. Lectura Reader.
  * Core expone la ruta publicada; los detalles de UI siguen siendo solo lectores.
  */
 export function getAnalysisRunTrace(analysisRunId: string): Promise<AnalysisRunTraceResponse> {

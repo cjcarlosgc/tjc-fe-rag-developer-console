@@ -29,7 +29,7 @@ export function ProjectDetailPage() {
   const wasConfirmingRef = useRef(false)
   const deletedProjectIdRef = useRef<string | null>(null)
 
-  // Foco: al abrir la confirmación va a «Cancelar» (nunca al botón destructivo); al cancelar vuelve a «Eliminar proyecto».
+  // Foco: al abrir la confirmación va a «Cancelar» (nunca al botón destructivo); al cancelar vuelve a «Eliminar Project».
   useEffect(() => {
     if (confirmingDelete) {
       cancelButtonRef.current?.focus()
@@ -40,7 +40,7 @@ export function ProjectDetailPage() {
     }
   }, [confirmingDelete])
 
-  // Tras borrar, el caché propio del proyecto se limpia recién al desmontar (ya navegamos): quitarlo antes con la página montada provocaría un refetch 404 visible.
+  // Tras borrar, el caché propio del Project se limpia recién al desmontar (ya navegamos): quitarlo antes con la página montada provocaría un refetch 404 visible.
   useEffect(
     () => () => {
       if (deletedProjectIdRef.current) purgeProjectQueries(deletedProjectIdRef.current)
@@ -50,7 +50,7 @@ export function ProjectDetailPage() {
 
   if (isProjectNotFound(projectQuery.error)) return <ProjectNotFoundState />
   if (isProjectNotFound(bindingQuery.error)) return <ProjectNotFoundState />
-  if (projectQuery.isPending) return <LoadingState label="Cargando proyecto…" />
+  if (projectQuery.isPending) return <LoadingState label="Cargando Project…" />
   if (projectQuery.isError) return <ErrorState message={projectQuery.error.message} onRetry={() => void projectQuery.refetch()} />
   if (bindingQuery.isPending) return <LoadingState label="Cargando integración…" />
   if (bindingQuery.isError)
@@ -149,7 +149,7 @@ export function ProjectDetailPage() {
         <div className="section-heading">
           <div>
             <h2>Repository binding</h2>
-            <p>El control plane PR-driven es el camino principal de este proyecto.</p>
+            <p>El plano de control dirigido por PR es el camino principal de este Project.</p>
           </div>
         </div>
         {binding ? (
@@ -162,7 +162,7 @@ export function ProjectDetailPage() {
               </dd>
             </div>
             <div>
-              <dt>Integration branch</dt>
+              <dt>Rama de integración</dt>
               <dd>
                 <code>{binding.integrationBranch}</code>
               </dd>
@@ -199,14 +199,14 @@ export function ProjectDetailPage() {
           <div className="section-heading">
             <div>
               <h2>Zona de peligro</h2>
-              <p>Eliminar el proyecto lo oculta de la plataforma y libera el repositorio vinculado para otro proyecto.</p>
+              <p>Eliminar el Project lo oculta de la plataforma y libera el repositorio vinculado para otro Project.</p>
             </div>
             {mock && <span className="demo-stamp">DEMO · ELIMINAR SIMULADO</span>}
           </div>
           {confirmingDelete ? (
-            <div role="group" aria-label="Confirmar eliminación del proyecto">
+            <div role="group" aria-label="Confirmar eliminación del Project">
               <p>
-                ¿Eliminar <strong>{project.name}</strong>? El proyecto dejará de verse y se liberará el repositorio vinculado; la evidencia
+                ¿Eliminar <strong>{project.name}</strong>? El Project dejará de verse y se liberará el repositorio vinculado; la evidencia
                 no se borra físicamente.
               </p>
               <div className="run-actions">
@@ -247,7 +247,7 @@ export function ProjectDetailPage() {
           ) : (
             <div className="run-actions">
               <button ref={deleteButtonRef} type="button" className="button danger" onClick={() => setConfirmingDelete(true)}>
-                Eliminar proyecto
+                Eliminar Project
               </button>
             </div>
           )}

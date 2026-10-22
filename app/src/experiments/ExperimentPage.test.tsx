@@ -54,7 +54,7 @@ test('ejecuta y presenta una comparación simulada sin red', async () => {
   expect(screen.getByText(EXPERIMENT_CONDITIONS_NOTE)).toBeInTheDocument()
   await user.click(await screen.findByRole('button', { name: 'Ejecutar comparación' }))
 
-  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 5000 })).toBeInTheDocument()
+  expect(await screen.findByText('Huella de recuperación', {}, { timeout: 5000 })).toBeInTheDocument()
   expect(screen.getByText('Laboratorio simulado')).toBeInTheDocument()
   expect(container.textContent).not.toMatch(/precision|recall/i)
   expect(fetchMock).not.toHaveBeenCalled()
@@ -68,7 +68,7 @@ test('HU49 (propuesta): arma, simula la llegada del PR y navega a la comparació
     routePath: '/projects/:projectId/experimental',
   })
 
-  expect(await screen.findByText('Capture next PR')).toBeInTheDocument()
+  expect(await screen.findByText('Capturar el próximo PR')).toBeInTheDocument()
   await user.click(await screen.findByRole('button', { name: 'Armar captura' }))
   expect(await screen.findByText('Esperando el próximo PR elegible…')).toBeInTheDocument()
 
@@ -259,7 +259,7 @@ test('live sin analysisRunId explica cómo llegar a un Run elegible y no muestra
   renderApp(<ExperimentPage />, { initialEntry: '/projects/p-1/experimental', routePath: '/projects/:projectId/experimental' })
 
   expect(await screen.findByText(/Abre esta comparación desde un Analysis Run vigente/)).toBeInTheDocument()
-  expect(screen.queryByLabelText('Target experimental')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Objetivo experimental')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Ejecutar comparación' })).not.toBeInTheDocument()
 })
 
@@ -299,7 +299,7 @@ test('live sin símbolo elegible explica el criterio y no muestra un selector va
   })
 
   expect(await screen.findByText(/no tiene un símbolo METHOD o FUNCTION con cambio DIRECTLY_CHANGED/)).toBeInTheDocument()
-  expect(screen.queryByLabelText('Target experimental')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Objetivo experimental')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Ejecutar comparación' })).not.toBeInTheDocument()
 })
 
@@ -313,7 +313,7 @@ test('WI-CONSOLE-017: la descarga de evidencia no aparece mientras el experiment
   await user.click(await screen.findByRole('button', { name: 'Ejecutar comparación' }))
   expect(screen.queryByRole('button', { name: 'Descargar evidencia (JSON)' })).not.toBeInTheDocument()
 
-  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 5000 })).toBeInTheDocument()
+  expect(await screen.findByText('Huella de recuperación', {}, { timeout: 5000 })).toBeInTheDocument()
   expect(await screen.findByRole('button', { name: 'Descargar evidencia (JSON)' })).toBeInTheDocument()
 })
 
@@ -335,7 +335,7 @@ test('FAILED visible: role alert con el copy de EXPERIMENT_WORKER_LOST, sin «Pr
   expect(screen.queryByText('Preparando experimento')).toBeNull()
   expect(b3Note()).toHaveTextContent('ya se lanzó')
   expect(screen.queryByRole('button', { name: /reanudar/i })).toBeNull()
-  expect(screen.queryByText('Huella de retrieval')).toBeNull()
+  expect(screen.queryByText('Huella de recuperación')).toBeNull()
   expect(document.querySelector('.live-indicator')).toBeNull()
   expect(document.querySelector('.experiment-progress')).toBeNull()
 })
@@ -405,7 +405,7 @@ test('503 LLM_PROVIDER_UNAVAILABLE ofrece Reintentar, que vuelve a llamar a la c
   retry.focus()
   await user.keyboard('{Enter}')
   await waitFor(() => expect(startHarness.calls).toBe(2))
-  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 5000 })).toBeInTheDocument()
+  expect(await screen.findByText('Huella de recuperación', {}, { timeout: 5000 })).toBeInTheDocument()
 })
 
 test('B2 selector DEMO (solo mock): las opciones de escenario y error se etiquetan «DEMO · …» y el selector real ejecuta un FAILED', async () => {
@@ -416,7 +416,7 @@ test('B2 selector DEMO (solo mock): las opciones de escenario y error se etiquet
     routePath: '/projects/:projectId/experimental',
   })
 
-  const select = await screen.findByLabelText('Target experimental')
+  const select = await screen.findByLabelText('Objetivo experimental')
   expect(within(select).getByRole('option', { name: 'DEMO · FAILED EXPERIMENT_WORKER_LOST' })).toBeInTheDocument()
   expect(within(select).getByRole('option', { name: 'DEMO · error 503 LLM_PROVIDER_UNAVAILABLE (reintentable)' })).toBeInTheDocument()
   expect(
@@ -431,7 +431,7 @@ test('B2 selector DEMO (solo mock): las opciones de escenario y error se etiquet
   expect(within(alert).getByText('El experimento se interrumpió; vuelve a crearlo.')).toBeInTheDocument()
 })
 
-test('WI-CONSOLE-021 C1: proyecto PHP con PHPUnit (DEMO) no se bloquea: runnerHint y perfil se muestran tal cual', async () => {
+test('WI-CONSOLE-021 C1: Project PHP con PHPUnit (DEMO) no se bloquea: runnerHint y perfil se muestran tal cual', async () => {
   setDataSourceForTests('mock')
   const user = userEvent.setup()
   renderApp(<ExperimentPage />, {
@@ -439,7 +439,7 @@ test('WI-CONSOLE-021 C1: proyecto PHP con PHPUnit (DEMO) no se bloquea: runnerHi
     routePath: '/projects/:projectId/experimental',
   })
 
-  const select = await screen.findByLabelText('Target experimental')
+  const select = await screen.findByLabelText('Objetivo experimental')
   await user.selectOptions(select, 'demo-scenario-phpunit')
   await user.click(screen.getByRole('button', { name: 'Ejecutar comparación' }))
   expect(await screen.findByText('PHP_LARAVEL_PHPUNIT', {}, { timeout: 5000 })).toBeInTheDocument()
@@ -457,8 +457,8 @@ test('WI-CONSOLE-026: corrida legacy sin attempt ni technicallyEvaluable no mues
   })
   await user.click(await screen.findByRole('button', { name: 'Ejecutar comparación' }))
 
-  const table = await screen.findByRole('table', { name: 'Tabla de repeticiones por target' })
-  expect(within(table).getByRole('columnheader', { name: 'Failure type' })).toBeInTheDocument()
+  const table = await screen.findByRole('table', { name: 'Tabla de repeticiones por objetivo' })
+  expect(within(table).getByRole('columnheader', { name: 'Tipo de fallo' })).toBeInTheDocument()
   expect(within(table).queryByRole('columnheader', { name: 'Intento' })).toBeNull()
   expect(within(table).queryByRole('columnheader', { name: 'Evaluable' })).toBeNull()
   expect(within(table).queryByText('1.º')).toBeNull()
@@ -475,7 +475,7 @@ test('WI-CONSOLE-026: corrida con attempt 2 y técnicamente no evaluable muestra
   })
   await user.click(await screen.findByRole('button', { name: 'Ejecutar comparación' }))
 
-  const table = await screen.findByRole('table', { name: 'Tabla de repeticiones por target' })
+  const table = await screen.findByRole('table', { name: 'Tabla de repeticiones por objetivo' })
   expect(within(table).getByRole('columnheader', { name: 'Intento' })).toBeInTheDocument()
   expect(within(table).getByRole('columnheader', { name: 'Evaluable' })).toBeInTheDocument()
   expect(within(table).getByText('2.º')).toBeInTheDocument()
@@ -743,7 +743,7 @@ test('WI-CONSOLE-036 B3: un Run no elegible muestra el motivo en la única nota 
   await waitFor(() => expect(b3Note()).toHaveTextContent('no tiene un símbolo METHOD o FUNCTION con cambio DIRECTLY_CHANGED'))
   expect(document.querySelectorAll('#experiment-run-note')).toHaveLength(1)
   expect(screen.getAllByText(/no tiene un símbolo METHOD/)).toHaveLength(1)
-  expect(screen.queryByLabelText('Target experimental')).toBeNull()
+  expect(screen.queryByLabelText('Objetivo experimental')).toBeNull()
 })
 
 test('WI-CONSOLE-036 B3: con botón habilitado, la nota persistente sigue montada y vacía y el botón la referencia', async () => {

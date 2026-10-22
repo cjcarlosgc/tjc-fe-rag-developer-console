@@ -34,19 +34,19 @@ export function InventoryView({ targets }: Props) {
           <legend>Cobertura existente</legend>
           {(['ALL', 'MISSING', 'TESTED'] as const).map((value) => (
             <button type="button" aria-pressed={coverage === value} onClick={() => setCoverage(value)} key={value}>
-              {value === 'ALL' ? 'Todos' : value === 'MISSING' ? 'Sin test' : 'Con test'}
+              {value === 'ALL' ? 'Todos' : value === 'MISSING' ? 'Sin pruebas' : 'Con pruebas'}
             </button>
           ))}
         </fieldset>
       </div>
       {filtered.length === 0 ? (
-        <EmptyState title="Sin targets coincidentes" description="Ajusta el texto o el filtro de cobertura." />
+        <EmptyState title="Sin objetivos coincidentes" description="Ajusta el texto o el filtro de cobertura." />
       ) : (
         <div className="table-frame">
           <table>
             <thead>
               <tr>
-                <th scope="col">Target</th>
+                <th scope="col">Objetivo</th>
                 <th scope="col">Tipo</th>
                 <th scope="col">Archivo</th>
                 <th scope="col">Cobertura</th>
@@ -66,7 +66,7 @@ export function InventoryView({ targets }: Props) {
                   <td>
                     <span className={`coverage-mark ${target.hasExistingTest ? 'tested' : 'missing'}`}>
                       <i />
-                      {target.hasExistingTest ? 'Con test' : 'Sin test'}
+                      {target.hasExistingTest ? 'Con pruebas' : 'Sin pruebas'}
                     </span>
                   </td>
                 </tr>

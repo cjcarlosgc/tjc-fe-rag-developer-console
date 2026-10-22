@@ -13,9 +13,9 @@ afterEach(() => setDataSourceForTests(null))
 
 test('resalta el tab activo según la ruta actual', async () => {
   renderApp(<ProjectTabs projectId="prj_checkout_demo" />, { initialEntry: '/projects/prj_checkout_demo/functional-knowledge' })
-  const nav = await screen.findByRole('navigation', { name: 'Secciones del proyecto' })
+  const nav = await screen.findByRole('navigation', { name: 'Secciones del Project' })
   expect(within(nav).getByRole('link', { name: 'Functional Knowledge' })).toHaveAttribute('aria-current', 'page')
-  expect(within(nav).getByRole('link', { name: 'Overview' })).not.toHaveAttribute('aria-current')
+  expect(within(nav).getByRole('link', { name: 'Resumen' })).not.toHaveAttribute('aria-current')
   await waitFor(() =>
     expect(within(nav).getByRole('link', { name: 'Runs' })).toHaveAttribute(
       'href',
@@ -28,18 +28,18 @@ test('resalta el tab activo según la ruta actual', async () => {
   )
 })
 
-test('el tab "Runs" queda activo cuando la URL trae ?projectId= de este proyecto', async () => {
+test('el tab "Runs" queda activo cuando la URL trae ?projectId= de este Project', async () => {
   renderApp(<ProjectTabs projectId="prj_checkout_demo" />, { initialEntry: '/analysis-runs?projectId=prj_checkout_demo' })
-  const nav = await screen.findByRole('navigation', { name: 'Secciones del proyecto' })
+  const nav = await screen.findByRole('navigation', { name: 'Secciones del Project' })
   expect(within(nav).getByRole('link', { name: 'Runs' })).toHaveAttribute('aria-current', 'page')
 })
 
-test('el tab "Historial" lleva a los snapshots del proyecto y queda activo en /analyses', async () => {
+test('el tab "Historial" lleva a los snapshots del Project y queda activo en /analyses', async () => {
   renderApp(<ProjectTabs projectId="prj_checkout_demo" />, {
     initialEntry: '/projects/prj_checkout_demo/analyses',
     routePath: '/projects/:projectId/analyses',
   })
-  const nav = await screen.findByRole('navigation', { name: 'Secciones del proyecto' })
+  const nav = await screen.findByRole('navigation', { name: 'Secciones del Project' })
   await waitFor(() =>
     expect(within(nav).getByRole('link', { name: 'Historial' })).toHaveAttribute(
       'href',

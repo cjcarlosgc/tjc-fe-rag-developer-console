@@ -109,7 +109,7 @@ test('HU07: una regla sin reemplazos no muestra la sección de cadena', async ()
   expect(screen.queryByRole('list', { name: 'Cadena de reemplazo' })).not.toBeInTheDocument()
 })
 
-test('HU07: una regla inexistente en el proyecto muestra «Regla no encontrada»', async () => {
+test('HU07: una regla inexistente en el Project muestra «Regla no encontrada»', async () => {
   renderDetail('prj_checkout_demo', 'fk_no_existe')
 
   expect(await screen.findByText('Regla no encontrada')).toBeInTheDocument()
@@ -118,7 +118,7 @@ test('HU07: una regla inexistente en el proyecto muestra «Regla no encontrada»
 test('HU07: un proyecto inexistente muestra el error con role="alert"', async () => {
   renderDetail('prj_no_existe', 'fk_coupon_expiry')
 
-  expect(await screen.findByRole('alert')).toHaveTextContent('No existe el proyecto demo')
+  expect(await screen.findByRole('alert')).toHaveTextContent('No existe el Project demo')
 })
 
 test('HU52 (propuesta): lista los Analysis Runs cuyo símbolo coincide con el target de la regla', async () => {

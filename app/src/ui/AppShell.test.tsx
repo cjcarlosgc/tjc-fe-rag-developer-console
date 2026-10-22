@@ -46,7 +46,7 @@ beforeEach(() => {
 describe('AppShell', () => {
   it('muestra el nombre aprobado del producto en la marca y conserva la navegación del shell', () => {
     renderShell()
-    expect(screen.getByRole('link', { name: 'RAG Test Studio, proyectos' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'RAG Test Studio, Projects' })).toBeInTheDocument()
     expect(screen.getByRole('navigation', { name: 'Navegación principal' })).toHaveTextContent('Runs')
     expect(screen.getByRole('navigation', { name: 'Navegación principal' })).toHaveTextContent('Action Required')
   })
@@ -70,7 +70,7 @@ describe('AppShell', () => {
 
   it('el link "Action Required" muestra un badge con el conteo de Runs pendientes', async () => {
     renderShell()
-    const badge = await screen.findByText('6', { selector: '.nav-badge' })
+    const badge = await screen.findByText('5', { selector: '.nav-badge' })
     expect(badge.closest('a')).toHaveTextContent('Action Required')
   })
 

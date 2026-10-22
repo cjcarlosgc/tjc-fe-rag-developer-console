@@ -1,17 +1,17 @@
 import { ApiError } from '../api/client'
 
 /** Fuente única del texto de `422 UNSUPPORTED_PROJECT` (experimentos y OE2). El mock demo la reutiliza. */
-export const UNSUPPORTED_PROJECT_MESSAGE = 'Este proyecto no tiene framework JEST, VITEST o PHPUNIT detectado.'
+export const UNSUPPORTED_PROJECT_MESSAGE = 'Este Project no tiene framework JEST, VITEST o PHPUNIT detectado.'
 
 /** HU30/HU56/HU57/HU64: mensajes de dominio por `ApiError.code` de las rutas de binding y de Project (INTEROP-2.4 §6.1/§6.8/§6.13). */
 const codeMessages: Record<string, string> = {
-  REPOSITORY_ALREADY_BOUND: 'Este repositorio ya está vinculado a otro proyecto. Elige otro repositorio.',
-  REPOSITORY_BINDING_ALREADY_EXISTS: 'Este proyecto ya tiene un repositorio vinculado.',
-  REPOSITORY_BINDING_NOT_FOUND: 'Este proyecto no tiene un repositorio vinculado.',
+  REPOSITORY_ALREADY_BOUND: 'Este repositorio ya está vinculado a otro Project. Elige otro repositorio.',
+  REPOSITORY_BINDING_ALREADY_EXISTS: 'Este Project ya tiene un repositorio vinculado.',
+  REPOSITORY_BINDING_NOT_FOUND: 'Este Project no tiene un repositorio vinculado.',
   // Un solo caso a propósito (INTEROP-2.4 §6.8): repositorio inexistente, id falso o sin ningún permiso responden lo mismo y no se distinguen.
   GITHUB_REPOSITORY_NOT_FOUND: 'No encontramos ese repositorio o no tienes permiso sobre él. Vuelve a elegirlo de la lista.',
   REPOSITORY_OUTSIDE_WORKSPACE:
-    'Este repositorio no pertenece a tu cuenta; en un proyecto personal solo puedes vincular repositorios propios.',
+    'Este repositorio no pertenece a tu cuenta; en un Project personal solo puedes vincular repositorios propios.',
   REPOSITORY_PERMISSION_INSUFFICIENT: 'Necesitas permiso maintain, write o admin sobre este repositorio.',
   // 401 de discovery (INTEROP §6.8): habla del token OAuth de GitHub, no de la sesión de la Console; la acción es «Renovar acceso a GitHub».
   GITHUB_ACCOUNT_REQUIRED: 'Tu acceso a GitHub no está disponible o expiró. Renuévalo para descubrir tus repositorios.',
@@ -21,9 +21,9 @@ const codeMessages: Record<string, string> = {
   GITHUB_UPSTREAM_UNAVAILABLE: 'GitHub no está disponible ahora; inténtalo de nuevo en unos minutos.',
   CORE_AUTHORIZATION_UNAVAILABLE: 'No pudimos autorizar esta operación de GitHub ahora; inténtalo de nuevo en unos minutos.',
   GITHUB_APP_ACCESS_REQUIRED: 'La GitHub App no tiene acceso al repositorio. Configura el acceso en GitHub y vuelve a intentarlo.',
-  PROJECT_NOT_FOUND: 'El proyecto ya no existe.',
+  PROJECT_NOT_FOUND: 'El Project ya no existe.',
   WORKSPACE_NOT_FOUND: 'Ese workspace ya no está disponible. Actualiza la lista de workspaces y vuelve a elegirlo.',
-  WORKSPACE_ADMIN_REQUIRED: 'Solo un owner activo de la organización puede crear Projects en ese workspace.',
+  WORKSPACE_ADMIN_REQUIRED: 'Solo un propietario activo de la organización puede crear Projects en ese workspace.',
   // WI-CONSOLE-014 (INTEROP-2.7 §6.15, OE2 SE vs SEM): mensajes propios, sin semántica de ganador ni de OE5.
   // WI-CONSOLE-036 B4: el target elegido no existe en el código del Run (INTEROP-2.7 §6.5.1). No promete reanudar ni reintentar la misma opción.
   UNRESOLVABLE_TARGET: 'No pudimos localizar el target elegido en el código de este Run. Prueba con otro símbolo del Run.',
@@ -77,7 +77,7 @@ export function bindingErrorMessage(error: unknown): string {
  * (404) o propietario (400) y fallan, el binding sigue REVOKED y el único camino es un proyecto nuevo (INTEROP-2.4 §6.8).
  */
 const reactivateUnavailableMessage =
-  'El repositorio ya no está disponible para este proyecto; si necesitas otro, elimina el proyecto y crea uno nuevo.'
+  'El repositorio ya no está disponible para este Project; si necesitas otro, elimina el Project y crea uno nuevo.'
 
 export function reactivateErrorMessage(error: unknown): string {
   if (error instanceof ApiError && (error.code === 'GITHUB_REPOSITORY_NOT_FOUND' || error.code === 'REPOSITORY_OUTSIDE_WORKSPACE'))

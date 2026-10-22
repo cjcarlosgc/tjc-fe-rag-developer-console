@@ -1,4 +1,4 @@
-// INTEROP-2.7 §6.16 — trace operativo de un AnalysisRun (HU15). Distinto del ContextTrace experimental de §6.7.
+// INTEROP-2.7 §6.16 — traza operativa de un AnalysisRun (HU15). Distinto del ContextTrace experimental de §6.7.
 // Copia fiel del contrato: no añadir campos ni derivar veredictos aquí.
 
 import type { AnalysisSymbolResponse } from './types'

@@ -11,7 +11,7 @@ import { renderApp } from './render'
 
 /**
  * Stub de prueba: el seed de `prj_checkout_demo` es ADMIN con `currentVersionId` (inventario real).
- * Solo se sobreescribe el rol que devuelve `useProject`; el resto del proyecto y los mocks de datos no cambian.
+ * Solo se sobreescribe el rol que devuelve `useProject`; el resto del Project y los mocks de datos no cambian.
  * El rechazo real de rol en el backend mock sigue en `requireProjectRole`.
  */
 const roleState = vi.hoisted(() => ({ role: 'WRITER' as ProjectRole }))
@@ -48,7 +48,7 @@ test('Experiment: Writer puede ejecutar la comparación', async () => {
   renderApp(<ExperimentPage />, EXPERIMENT_ENTRY)
 
   await user.click(await screen.findByRole('button', { name: 'Ejecutar comparación' }))
-  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 5000 })).toBeInTheDocument()
+  expect(await screen.findByText('Huella de recuperación', {}, { timeout: 5000 })).toBeInTheDocument()
 })
 
 test('Experiment: Reader ve el mensaje de solo lectura y no puede ejecutar', async () => {
@@ -64,7 +64,7 @@ test('RunComparison: Writer arranca la comparación (auto-inicio con símbolo ú
   roleState.role = 'WRITER'
   renderApp(<RunComparisonPage />, COMPARISON_ENTRY)
 
-  expect(await screen.findByText('Huella de retrieval', {}, { timeout: 5000 })).toBeInTheDocument()
+  expect(await screen.findByText('Huella de recuperación', {}, { timeout: 5000 })).toBeInTheDocument()
 })
 
 test('RunComparison: Reader no arranca ni puede iniciar la comparación', async () => {
@@ -73,7 +73,7 @@ test('RunComparison: Reader no arranca ni puede iniciar la comparación', async 
 
   expect(await screen.findByText('Tu rol es de solo lectura; un Writer, Maintainer o Admin puede crear comparaciones.')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Iniciar comparación' })).not.toBeInTheDocument()
-  expect(screen.queryByText('Huella de retrieval')).not.toBeInTheDocument()
+  expect(screen.queryByText('Huella de recuperación')).not.toBeInTheDocument()
 })
 
 test('AnalysisRunDetail: Writer puede publicar las propuestas', async () => {

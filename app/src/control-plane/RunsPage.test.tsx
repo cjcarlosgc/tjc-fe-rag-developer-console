@@ -21,7 +21,7 @@ test('HU32: lista todos los Analysis Runs con su badge de estado', async () => {
   expect(screen.getByText('Obsoleto (HEAD nuevo)')).toBeInTheDocument()
   expect(screen.getByText('NO VIGENTE')).toBeInTheDocument()
   // WI-CONSOLE-030: 17 Runs previos + 2 PHP de team-sandbox + 2 en curso (QUEUED/PROCESSING, antes solo-trace) = 21.
-  expect(container.querySelectorAll('.repo-chip')).toHaveLength(21)
+  expect(container.querySelectorAll('.repo-chip')).toHaveLength(22)
 })
 
 // WI-CONSOLE-030 (C2): los Runs QUEUED/PROCESSING del mock aparecen en el listado con su estado (etiquetas de status.ts; «Procesando» es el copy existente de PROCESSING).

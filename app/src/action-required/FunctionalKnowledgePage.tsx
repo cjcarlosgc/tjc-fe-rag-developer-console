@@ -45,7 +45,7 @@ export function FunctionalKnowledgePage() {
       />
       <ProjectTabs projectId={projectId} />
       <PageHeader
-        eyebrow="Control plane / human-in-the-loop"
+        eyebrow="Plano de control / intervención humana"
         title="Functional Knowledge"
         description="Respuestas humanas convertidas en reglas persistentes y reutilizables — no es solo historial de preguntas."
         aside={mock && <span className="demo-stamp">DEMO · DATOS SIMULADOS</span>}

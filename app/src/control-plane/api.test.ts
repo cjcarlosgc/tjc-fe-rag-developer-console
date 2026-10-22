@@ -86,7 +86,7 @@ describe('control-plane api (mock) — HU30 repository binding user-centric (INT
     })
   })
 
-  it('desconectar conserva los Runs del proyecto', async () => {
+  it('desconectar conserva los Runs del Project', async () => {
     const before = await listAnalysisRuns('prj_checkout_demo')
     await disconnectRepository('prj_checkout_demo')
     expect((await listAnalysisRuns('prj_checkout_demo')).items).toHaveLength(before.items.length)
@@ -114,7 +114,7 @@ describe('control-plane api (mock) — HU30 repository binding user-centric (INT
     ).rejects.toMatchObject({ status: 409, code: 'REPOSITORY_BINDING_ALREADY_EXISTS' })
   })
 
-  it('crear binding con el proyecto ya vinculado rechaza con 409', async () => {
+  it('crear binding con el Project ya vinculado rechaza con 409', async () => {
     await verifyGitHubAppAccess({ repositoryId: 'repo_notifications', repositoryName: 'acme/notifications-service' })
     await expect(
       createRepositoryBinding('prj_checkout_demo', {
@@ -426,16 +426,16 @@ describe('control-plane api (mock) — HU30 repository binding user-centric (INT
 
 describe('control-plane api (mock) — HU32 Analysis Runs, los 16 escenarios', () => {
   // WI-CONSOLE-030: 21 Runs = 17 previos + arun_php_pr7 y arun_legacy_php_pr3 (team-sandbox) + arun_checkout_pr53 (QUEUED) y arun_billing_pr25 (PROCESSING), estos dos antes fuera de listados.
-  it('lista los 21 Analysis Runs (incluye los escenarios de organizaciones, los Runs PHP y los dos en curso)', async () => {
+  it('lista los 22 Analysis Runs (incluye los escenarios de organizaciones, los Runs PHP y los dos en curso)', async () => {
     const page = await listAnalysisRuns()
-    expect(page.items).toHaveLength(21)
+    expect(page.items).toHaveLength(22)
   })
 
   it('filtra por proyecto y por status', async () => {
     const checkoutRuns = await listAnalysisRuns('prj_checkout_demo')
     expect(checkoutRuns.items.every((run) => run.projectId === 'prj_checkout_demo')).toBe(true)
-    // WI-CONSOLE-030 (C2): + arun_checkout_pr53 (QUEUED) → 8.
-    expect(checkoutRuns.items).toHaveLength(8)
+    // WI-CONSOLE-030 (C2): + arun_checkout_pr53 (QUEUED) → 8; WI-CONSOLE-047 (obs. 4): + arun_checkout_pr52 → 9.
+    expect(checkoutRuns.items).toHaveLength(9)
     expect(checkoutRuns.items.find((run) => run.id === 'arun_checkout_pr53')?.status).toBe('QUEUED')
     // WI-CONSOLE-030 (C2): el Run PROCESSING de billing también figura en su listado de proyecto.
     const billingRuns = await listAnalysisRuns('prj_billing_demo')
