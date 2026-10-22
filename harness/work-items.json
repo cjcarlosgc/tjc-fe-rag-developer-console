@@ -4394,6 +4394,87 @@
         "note": "sdd-analyst: ninguna DEC con Blocks alcanza este WI (DEC-RT-001 APPROVED; DEC-VAL-001 PENDING no aplica); D2 de WI-CONSOLE-044 queda resuelta por la cita literal del usuario."
       },
       "closedAt": "2026-10-22T01:41:00.000Z"
+    },
+    {
+      "id": "WI-CONSOLE-047",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-IN_PROGRESS",
+      "priority": "P2",
+      "sprint": "SMART V3",
+      "title": "Mejoras de UX de Console: objetivos táctiles de 40 px, Focus Mode a 375 px, glosario es/en, conteos coherentes del demo, error de configuración visible y verificación de accesibilidad pendiente",
+      "storyIds": [
+        "HU01",
+        "HU12",
+        "HU14"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-049"
+      ],
+      "caseIds": [],
+      "dependsOn": [
+        "WI-CONSOLE-042"
+      ],
+      "contractImpact": false,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "specPaths": [
+        "spec/features/010-product-experience/tasks.md",
+        "spec/transversal/design-system/spec.md",
+        "spec/transversal/accessibility/spec.md",
+        "spec/transversal/demo-mode/spec.md",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-047-scope-approval.md",
+        "harness/reports/wi-console-047-sdd-verification.md",
+        "harness/reports/wi-console-047-contract-sync-review.md"
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-047-scope-approval.md",
+      "acceptanceCriteria": [
+        "Enlace de marca, «Saltar al contenido» y pestañas de proyecto miden al menos 40×40 px (medido en el navegador antes y después) y Focus Mode no tiene scroll horizontal a 375 px, sin romper el layout a 1280 px.",
+        "El texto visible está en español con términos de dominio en inglés solo según el glosario de spec/transversal/design-system/spec.md, y los conteos de Action Required del demo coinciden entre Projects, KPI y listas desde una sola fuente de verdad, sin cambio de contratos ni de rótulos DEMO.",
+        "Una VITE_CORE_API_URL inválida muestra una pantalla de error de configuración en español, accionable y sin secretos, y el modo mock/demo no se rompe.",
+        "Zoom 200 %, reduced motion en ejecución (≤ 120 ms), foco en diálogos (restauración y atrapado) y semántica/roles/nombres accesibles se verifican con pruebas automatizadas y evidencia manual reproducible; lo no probado se declara; WI-CONSOLE-005 y 006 siguen W-PLANNED.",
+        "Sin tiempo real nuevo, primitives UI nuevas, cambios de DTO/rutas/contratos ni ajuste de reasoningEffortMessage; lint, tsc -b --noEmit, pruebas, build, format:check, contracts:check y validadores pasan; reviewer y ux-reviewer independientes aprueban en máximo 2 ciclos."
+      ],
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true,
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-047 solo cambia presentacion, textos y verificacion de accesibilidad, sin bindings ni endpoints.",
+          "report": "harness/reports/wi-console-047-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-047 no toca autorizacion ni rutas.",
+          "report": "harness/reports/wi-console-047-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-047 no cambia login, sesion, tokens ni el cliente HTTP, salvo mostrar un error de configuracion de la URL base.",
+          "report": "harness/reports/wi-console-047-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-047 no altera visibilidad de Projects, solo la coherencia de los conteos del demo.",
+          "report": "harness/reports/wi-console-047-contract-sync-review.md"
+        }
+      ]
     }
   ]
 }

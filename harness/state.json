@@ -17275,5 +17275,217 @@
       "closedAt": "2026-10-22T01:41:00.000Z"
     }
   ],
-  "activeWorkItem": null
+  "activeWorkItem": {
+    "id": "WI-CONSOLE-047",
+    "status": "W-IN_PROGRESS",
+    "title": "Mejoras de UX de Console: objetivos táctiles de 40 px, Focus Mode a 375 px, glosario es/en, conteos coherentes del demo, error de configuración visible y verificación de accesibilidad pendiente",
+    "storyIds": [
+      "HU01",
+      "HU12",
+      "HU14"
+    ],
+    "taskIds": [
+      "ST-CONSOLE-049"
+    ],
+    "dependsOn": [
+      "WI-CONSOLE-042"
+    ],
+    "contractImpact": false,
+    "specPaths": [
+      "spec/features/010-product-experience/tasks.md",
+      "spec/transversal/design-system/spec.md",
+      "spec/transversal/accessibility/spec.md",
+      "spec/transversal/demo-mode/spec.md",
+      "CHANGELOG.md",
+      "harness/reports/wi-console-047-scope-approval.md",
+      "harness/reports/wi-console-047-sdd-verification.md",
+      "harness/reports/wi-console-047-contract-sync-review.md"
+    ],
+    "acceptanceCriteria": [
+      "Enlace de marca, «Saltar al contenido» y pestañas de proyecto miden al menos 40×40 px (medido en el navegador antes y después) y Focus Mode no tiene scroll horizontal a 375 px, sin romper el layout a 1280 px.",
+      "El texto visible está en español con términos de dominio en inglés solo según el glosario de spec/transversal/design-system/spec.md, y los conteos de Action Required del demo coinciden entre Projects, KPI y listas desde una sola fuente de verdad, sin cambio de contratos ni de rótulos DEMO.",
+      "Una VITE_CORE_API_URL inválida muestra una pantalla de error de configuración en español, accionable y sin secretos, y el modo mock/demo no se rompe.",
+      "Zoom 200 %, reduced motion en ejecución (≤ 120 ms), foco en diálogos (restauración y atrapado) y semántica/roles/nombres accesibles se verifican con pruebas automatizadas y evidencia manual reproducible; lo no probado se declara; WI-CONSOLE-005 y 006 siguen W-PLANNED.",
+      "Sin tiempo real nuevo, primitives UI nuevas, cambios de DTO/rutas/contratos ni ajuste de reasoningEffortMessage; lint, tsc -b --noEmit, pruebas, build, format:check, contracts:check y validadores pasan; reviewer y ux-reviewer independientes aprueban en máximo 2 ciclos."
+    ],
+    "scopeApprovalReport": "harness/reports/wi-console-047-scope-approval.md",
+    "component": "CONSOLE",
+    "workItemType": "PRODUCT",
+    "priority": "P2",
+    "sprint": "SMART V3",
+    "caseIds": [],
+    "publishesContract": false,
+    "syncScopePaths": [
+      "spec/contracts/interoperability-contract.md",
+      "spec/contracts/system-contract.md"
+    ],
+    "transversalPaths": [
+      "spec/backlog.md",
+      "spec/constitution/project-context.md",
+      "spec/constitution/delivery-workflow.md"
+    ],
+    "approved": true,
+    "contractSyncReview": [
+      {
+        "eventId": "CS-20260920-003",
+        "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+        "disposition": "NOT_RELEVANT",
+        "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-047 solo cambia presentacion, textos y verificacion de accesibilidad, sin bindings ni endpoints.",
+        "report": "harness/reports/wi-console-047-contract-sync-review.md"
+      },
+      {
+        "eventId": "CS-20260921-001",
+        "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+        "disposition": "NOT_RELEVANT",
+        "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-047 no toca autorizacion ni rutas.",
+        "report": "harness/reports/wi-console-047-contract-sync-review.md"
+      },
+      {
+        "eventId": "CS-20260921-002",
+        "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+        "disposition": "NOT_RELEVANT",
+        "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-047 no cambia login, sesion, tokens ni el cliente HTTP, salvo mostrar un error de configuracion de la URL base.",
+        "report": "harness/reports/wi-console-047-contract-sync-review.md"
+      },
+      {
+        "eventId": "CS-20260921-003",
+        "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+        "disposition": "NOT_RELEVANT",
+        "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-047 no altera visibilidad de Projects, solo la coherencia de los conteos del demo.",
+        "report": "harness/reports/wi-console-047-contract-sync-review.md"
+      }
+    ],
+    "decisionGate": {
+      "checked": true,
+      "blockingDecisionIds": [],
+      "nonBlockingDecisionIds": [],
+      "checkedAt": "2026-10-22T01:55:00.000Z",
+      "note": "sdd-analyst: ninguna DEC con Blocks alcanza este WI; el usuario aprobó el alcance en el chat (ver scope-approval)."
+    },
+    "execution": {
+      "leaderAgent": "leader",
+      "analysisAgent": "sdd-analyst",
+      "implementationAgent": "implementer",
+      "contractReviewAgent": null,
+      "reviewAgent": null,
+      "handoffs": [
+        {
+          "agent": "sdd-analyst",
+          "executedBy": {
+            "agent": "sdd-analyst",
+            "configuredModel": "claude-sonnet-5-5",
+            "servedModel": "unknown",
+            "effort": "low"
+          },
+          "status": "APPROVED",
+          "findings": [
+            "SUFFICIENT_WITH_NOTES: sin DEC bloqueantes; causas de las 6 observaciones localizadas; la pantalla de configuración debe ser un componente local no genérico (si el reviewer la considera primitive, DECISION_REQUIRED y se aparca); no hay diálogos modales reales, el foco atrapado no aplica."
+          ],
+          "blockers": [],
+          "filesAffected": [],
+          "evidence": [
+            "harness/reports/wi-console-047-sdd-verification.md"
+          ],
+          "recommendedNextStep": "Delegar cortes A, B, C y D al implementer."
+        }
+      ],
+      "reviewCycles": 0,
+      "maxReviewCycles": 2,
+      "uxReviewAgent": "ux-reviewer"
+    },
+    "gates": {
+      "sddVerified": "G-PASSED",
+      "implementationCompleted": "G-NOT_RUN",
+      "independentReviewPassed": "G-NOT_RUN",
+      "technicalChecksPassed": "G-NOT_RUN",
+      "interopSyncChecked": "G-NOT_RUN",
+      "noMocksPresentedAsLive": "G-NOT_RUN",
+      "noBlockingDecisions": "G-PASSED",
+      "retryLimitRespected": "G-NOT_RUN",
+      "uxReviewed": "G-NOT_RUN",
+      "contractReviewed": "G-NOT_APPLICABLE",
+      "canonicalContractSynced": "G-NOT_APPLICABLE",
+      "contractSyncPublished": "G-NOT_APPLICABLE"
+    },
+    "coordination": {
+      "contractImpact": false,
+      "publishesContract": false,
+      "uiImpact": true,
+      "pullCheckpoints": [
+        {
+          "checkpoint": "start",
+          "workItem": "WI-CONSOLE-047",
+          "relevantPendingSyncIds": [],
+          "acknowledgedSyncIds": [],
+          "resolvedSyncIds": [
+            "CS-20260920-002",
+            "CS-20260924-001",
+            "CS-CORE-20260926-001",
+            "CS-CORE-20260927-001",
+            "CS-CORE-20260927-003",
+            "CS-CORE-20260927-004",
+            "CS-CORE-20260927-005",
+            "CS-CORE-20260927-006",
+            "CS-CORE-20261008-001",
+            "CS-CORE-20261008-002",
+            "CS-CORE-20261008-003",
+            "CS-CORE-20261008-004",
+            "CS-CORE-20261008-005",
+            "CS-CORE-20261008-006",
+            "CS-CORE-20261008-007",
+            "CS-CORE-20261009-008",
+            "CS-CORE-20261009-009",
+            "CS-CORE-20261009-010",
+            "CS-CORE-20261009-011",
+            "CS-CORE-20261009-013",
+            "CS-CORE-20261009-014",
+            "CS-CORE-20261009-015",
+            "CS-CORE-20261009-016",
+            "CS-CORE-20261009-017",
+            "CS-CORE-20261009-018",
+            "CS-CORE-20261010-003",
+            "CS-CORE-20261011-001",
+            "CS-CORE-20261011-004",
+            "CS-CORE-20261011-005",
+            "CS-CORE-20261011-006",
+            "CS-CORE-20261012-001",
+            "CS-CORE-20261012-002",
+            "CS-CORE-20261012-003",
+            "CS-CORE-20261012-004",
+            "CS-CORE-20261012-005",
+            "CS-CORE-20261012-007",
+            "CS-CORE-20261012-009",
+            "CS-CORE-20261012-011",
+            "CS-CORE-20261013-001",
+            "CS-CORE-20261013-002",
+            "CS-CORE-20261013-003",
+            "CS-CORE-20261014-001",
+            "CS-CORE-20261018-002",
+            "CS-CORE-20261021-001",
+            "CS-CORE-20261021-004"
+          ],
+          "deferredSyncIds": [],
+          "notRelevantSyncIds": [],
+          "checkedAt": "2026-10-22T01:44:12.927Z"
+        }
+      ],
+      "publishedSyncIds": [],
+      "pendingRelevantSyncIds": [],
+      "knownIncompatibilities": []
+    },
+    "evidence": [
+      "harness/reports/wi-console-047-scope-approval.md",
+      "harness/reports/wi-console-047-sdd-verification.md",
+      "harness/reports/wi-console-047-contract-sync-review.md"
+    ],
+    "blockedReason": null,
+    "gateEvidence": {
+      "sddVerified": [
+        "harness/reports/wi-console-047-sdd-verification.md"
+      ],
+      "noBlockingDecisions": [
+        "harness/reports/wi-console-047-sdd-verification.md"
+      ]
+    }
+  }
 }
