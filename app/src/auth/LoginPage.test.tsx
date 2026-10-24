@@ -44,7 +44,11 @@ describe('LoginPage', () => {
   it('muestra «Conectando…» con el botón deshabilitado mientras inicia sesión', async () => {
     const user = userEvent.setup()
     let finish: (value: null) => void = () => {}
-    vi.spyOn(mockAuthAdapter, 'signInWithGitHub').mockReturnValue(new Promise((resolve) => { finish = resolve }))
+    vi.spyOn(mockAuthAdapter, 'signInWithGitHub').mockReturnValue(
+      new Promise((resolve) => {
+        finish = resolve
+      }),
+    )
     renderAuthPage(<LoginPage />, { initialEntry: '/login', routePath: '/login', extraRoutes: <Route path="/" element={<Home />} /> })
     await user.click(screen.getByRole('button', { name: 'Continuar con GitHub' }))
     expect(screen.getByRole('button', { name: 'Conectando…' })).toBeDisabled()
@@ -57,7 +61,9 @@ describe('LoginPage', () => {
 
   it('un fallo al iniciar sesión muestra el error en un alert con «Reintentar» y rehabilita el botón', async () => {
     const user = userEvent.setup()
-    const signIn = vi.spyOn(mockAuthAdapter, 'signInWithGitHub').mockRejectedValueOnce(new Error('No pudimos completar el acceso con GitHub. Inténtalo de nuevo.'))
+    const signIn = vi
+      .spyOn(mockAuthAdapter, 'signInWithGitHub')
+      .mockRejectedValueOnce(new Error('No pudimos completar el acceso con GitHub. Inténtalo de nuevo.'))
     renderAuthPage(<LoginPage />, { initialEntry: '/login', routePath: '/login', extraRoutes: <Route path="/" element={<Home />} /> })
     await user.click(screen.getByRole('button', { name: 'Continuar con GitHub' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('No pudimos completar el acceso con GitHub')
@@ -112,10 +118,14 @@ describe('LoginPage', () => {
     expect(await screen.findByRole('button', { name: 'Conectando…' })).toBeDisabled()
 
     // Un pageshow sin restaurar desde bfcache no cambia nada.
-    act(() => { window.dispatchEvent(Object.assign(new Event('pageshow'), { persisted: false })) })
+    act(() => {
+      window.dispatchEvent(Object.assign(new Event('pageshow'), { persisted: false }))
+    })
     expect(screen.getByRole('button', { name: 'Conectando…' })).toBeDisabled()
 
-    act(() => { window.dispatchEvent(Object.assign(new Event('pageshow'), { persisted: true })) })
+    act(() => {
+      window.dispatchEvent(Object.assign(new Event('pageshow'), { persisted: true }))
+    })
     expect(screen.getByRole('button', { name: 'Continuar con GitHub' })).toBeEnabled()
   })
 })

@@ -10,18 +10,18 @@ beforeEach(() => {
   resetMockBackend()
 })
 
-test('HU32: lista todos los Analysis Runs con su badge de estado', async () => {
+test('HU32: lista todos los AnalysisRuns con su badge de estado', async () => {
   const { container } = renderApp(<RunsPage />, { initialEntry: '/analysis-runs' })
 
   expect(await screen.findByText('PR #42', { selector: '.pr-ref' })).toBeInTheDocument()
   expect(screen.getAllByText('checkout-service').length).toBeGreaterThan(0)
   // WI-CONSOLE-030 (C1/C4): +2 Runs SUCCESS en team-sandbox (arun_php_pr7, arun_legacy_php_pr3) → 8.
-  expect(screen.getAllByText('Success')).toHaveLength(8)
-  expect(screen.getByText('Behavioral mismatch')).toBeInTheDocument()
-  expect(screen.getByText('Obsolete (HEAD nuevo)')).toBeInTheDocument()
+  expect(screen.getAllByText('Exitoso')).toHaveLength(8)
+  expect(screen.getByText('Discrepancia de comportamiento')).toBeInTheDocument()
+  expect(screen.getByText('Obsoleto (HEAD nuevo)')).toBeInTheDocument()
   expect(screen.getByText('NO VIGENTE')).toBeInTheDocument()
   // WI-CONSOLE-030: 17 Runs previos + 2 PHP de team-sandbox + 2 en curso (QUEUED/PROCESSING, antes solo-trace) = 21.
-  expect(container.querySelectorAll('.repo-chip')).toHaveLength(21)
+  expect(container.querySelectorAll('.repo-chip')).toHaveLength(22)
 })
 
 // WI-CONSOLE-030 (C2): los Runs QUEUED/PROCESSING del mock aparecen en el listado con su estado (etiquetas de status.ts; «Procesando» es el copy existente de PROCESSING).
@@ -56,15 +56,44 @@ test('HU32: filtra por proyecto vía ?projectId=', async () => {
 test('live: el listado por proyecto muestra solo los Runs devueltos por Core', async () => {
   setDataSourceForTests('live')
   const returnedRun = {
-    id: 'arun_visible_pr71', projectId: 'prj_checkout_demo',
-    pullRequest: { repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service', number: 71, title: 'Run visible', baseRef: 'develop', headRef: 'feature/visible', baseSha: 'base-71', headSha: 'head-71', draft: false, state: 'OPEN', actorLogin: null },
-    status: 'SUCCESS', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
-    createdAt: '2026-09-27T10:00:00.000Z', updatedAt: '2026-09-27T10:01:00.000Z', completedAt: '2026-09-27T10:01:00.000Z',
+    id: 'arun_visible_pr71',
+    projectId: 'prj_checkout_demo',
+    pullRequest: {
+      repositoryId: 'repo_checkout',
+      repositoryName: 'acme/checkout-service',
+      number: 71,
+      title: 'Run visible',
+      baseRef: 'develop',
+      headRef: 'feature/visible',
+      baseSha: 'base-71',
+      headSha: 'head-71',
+      draft: false,
+      state: 'OPEN',
+      actorLogin: null,
+    },
+    status: 'SUCCESS',
+    current: true,
+    actionRequiredCount: 0,
+    generatedTestsCount: 0,
+    createdAt: '2026-09-27T10:00:00.000Z',
+    updatedAt: '2026-09-27T10:01:00.000Z',
+    completedAt: '2026-09-27T10:01:00.000Z',
   }
   const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
     const pathname = new URL(String(input)).pathname
     if (pathname === '/projects/prj_checkout_demo') {
-      return new Response(JSON.stringify({ id: 'prj_checkout_demo', name: 'checkout', currentVersionId: null, workspace: { kind: 'PERSONAL', id: 'user-1', login: 'demo-user' }, role: 'ADMIN', createdAt: '2026-09-27T10:00:00.000Z', updatedAt: '2026-09-27T10:00:00.000Z' }), { status: 200 })
+      return new Response(
+        JSON.stringify({
+          id: 'prj_checkout_demo',
+          name: 'checkout',
+          currentVersionId: null,
+          workspace: { kind: 'PERSONAL', id: 'user-1', login: 'demo-user' },
+          role: 'ADMIN',
+          createdAt: '2026-09-27T10:00:00.000Z',
+          updatedAt: '2026-09-27T10:00:00.000Z',
+        }),
+        { status: 200 },
+      )
     }
     if (pathname.startsWith('/projects/prj_checkout_demo/analysis-runs')) {
       return new Response(JSON.stringify({ items: [returnedRun], nextCursor: null }), { status: 200 })

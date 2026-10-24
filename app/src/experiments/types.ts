@@ -1,5 +1,6 @@
 export type ExperimentStrategy = 'RAG' | 'GENERALIST_AGENT'
-export type FailureType = 'NONE' | 'COMPILATION' | 'TEST_ASSERTION' | 'TEST_RUNTIME' | 'DEPENDENCY' | 'CONFIGURATION' | 'INFRASTRUCTURE' | 'UNKNOWN'
+export type FailureType =
+  'NONE' | 'COMPILATION' | 'TEST_ASSERTION' | 'TEST_RUNTIME' | 'DEPENDENCY' | 'CONFIGURATION' | 'INFRASTRUCTURE' | 'UNKNOWN'
 /**
  * INTEROP-2.7 §6.5.1 (`DEC-EVID-001`, CS-CORE-20261009-015): tasas y duraciones son `number | null`.
  * `null` = sin datos evaluables (nunca se formatea como 0 %, 0 ms ni «null ms»). Un `0` es cero real.
@@ -68,10 +69,21 @@ export interface ExperimentConfiguration {
 }
 /** `baseline` es la clave interna del agente generalista (rol de comparación), nunca un valor de contrato: `GENERALIST_AGENT` es lo único que viaja por HTTP. */
 /** `configuration` undefined/null = «no disponible». */
-export interface ExperimentResultViewModel { baseline: StrategyMetrics; rag: StrategyMetrics; repetitions: RepetitionResult[]; configuration?: ExperimentConfiguration | null }
+export interface ExperimentResultViewModel {
+  baseline: StrategyMetrics
+  rag: StrategyMetrics
+  repetitions: RepetitionResult[]
+  configuration?: ExperimentConfiguration | null
+}
 
 export type ExperimentStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED'
-export interface ExperimentAccepted { analysisRunId: string; experimentId: string; projectVersionId: string; status: 'PENDING'; pollAfterMs: number }
+export interface ExperimentAccepted {
+  analysisRunId: string
+  experimentId: string
+  projectVersionId: string
+  status: 'PENDING'
+  pollAfterMs: number
+}
 export interface ExperimentOperation {
   id: string
   status: ExperimentStatus

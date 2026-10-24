@@ -1,3 +1,7 @@
+import type { ErrorEnvelope } from '../contracts/generated/contract-types'
+import { parseBaseUrl, resolveBaseUrl } from './baseUrl'
+import { isMockDataSource } from './dataSource'
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -5,13 +9,26 @@ export class ApiError extends Error {
     readonly correlationId?: string,
     readonly code?: string,
     readonly details?: unknown,
+    /** INTEROP-2.18 §4: GitHub Integration lo declara en todos sus errores; Core solo en los genéricos de §4.1. */
+    readonly retryable?: boolean,
   ) {
     super(message)
     this.name = 'ApiError'
   }
 }
 
-const baseUrl = (import.meta.env.VITE_CORE_API_URL ?? '').replace(/\/$/, '')
+/**
+ * En live una URL inválida lanza aquí; `main.tsx` la detecta antes de cargar este módulo y muestra la pantalla de configuración.
+ * En mock la URL no se usa: una inválida no debe impedir cargar el demo, así que cae a mismo origen (sin cambiar el valor válido).
+ */
+function coreApiBaseUrl(): string {
+  const raw = import.meta.env.VITE_CORE_API_URL
+  if (!isMockDataSource()) return resolveBaseUrl('VITE_CORE_API_URL', raw)
+  const result = parseBaseUrl(raw)
+  return result.ok ? result.value : ''
+}
+
+export const baseUrl = coreApiBaseUrl()
 
 let authTokenProvider: (() => string | null) | null = null
 let authErrorHandler: ((event: AuthErrorEvent) => void) | null = null
@@ -88,7 +105,7 @@ async function fetchChecked(serviceBaseUrl: string, path: string, init?: Request
   })
 
   if (!response.ok) {
-    const body = await response.json().catch(() => null) as { message?: string; code?: string; correlationId?: string; details?: unknown } | null
+    const body = (await response.json().catch(() => null)) as Partial<ErrorEnvelope> | null
     if (response.status === 401) notifyAuthError({ status: 401, code: body?.code })
     else if (response.status === 503 && body?.code === 'IDENTITY_UNAVAILABLE') notifyAuthError({ status: 503, code: body.code })
     throw new ApiError(
@@ -97,6 +114,7 @@ async function fetchChecked(serviceBaseUrl: string, path: string, init?: Request
       body?.correlationId ?? response.headers.get('x-correlation-id') ?? correlationId,
       body?.code,
       body?.details,
+      body?.retryable,
     )
   }
 

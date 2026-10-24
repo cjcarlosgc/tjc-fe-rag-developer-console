@@ -1,0 +1,508 @@
+/* HU27/HU28: explorador de contexto */
+.checkbox-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.target-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.target-switch button {
+  color: var(--muted);
+  background: #0d0a1c;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 8px 14px;
+  min-height: var(--target-min);
+  cursor: pointer;
+  font-size: 12px;
+}
+.target-switch button[aria-pressed='true'] {
+  color: #110825;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.context-explorer-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 20px;
+  padding: 22px;
+  align-items: start;
+}
+.context-provenance-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.context-provenance-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.context-provenance-list .target-ref {
+  flex-shrink: 0;
+}
+.rag-graph-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.graph-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 12px;
+}
+.graph-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  background: var(--muted);
+}
+/* Además del color, cada señal tiene una forma propia (círculo/cuadrado/anillo) para que no dependa solo de distinguir tonos — ver spec.md HU27. */
+.legend-swatch.legend-semantic {
+  background: var(--signal-semantic);
+}
+.legend-swatch.legend-structural {
+  background: var(--signal-structural);
+  border-radius: 2px;
+}
+.legend-swatch.legend-dual {
+  background: var(--signal-semantic);
+  box-shadow: 0 0 0 2px var(--signal-structural);
+}
+.legend-swatch.legend-decision-selected {
+  background: #8fe3a0;
+}
+.legend-swatch.legend-focus {
+  background: var(--signal-focus);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+}
+.legend-swatch.legend-discarded {
+  background: transparent;
+  border: 1px dashed var(--muted);
+}
+.graph-canvas {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-1);
+  overflow: hidden;
+}
+.graph-toolbar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  display: flex;
+  gap: 8px;
+}
+.graph-toolbar .button {
+  min-height: var(--target-min);
+  padding: 0 12px;
+  font-size: 12px;
+}
+.graph-viewport {
+  height: 480px;
+  overflow: hidden;
+}
+.graph-viewport .react-flow {
+  --xy-background-color: transparent;
+}
+.graph-viewport .react-flow__node {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  display: block;
+}
+/* Con posición/tamaño ya calculados por graphLayout.ts no hace falta esperar a que React Flow "mida" el nodo antes de mostrarlo. */
+.graph-viewport .react-flow__node-graphNode {
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+.graph-viewport .react-flow__edge-path {
+  stroke: var(--border);
+  stroke-width: 1.5;
+}
+.graph-node {
+  all: unset;
+  display: block;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: transform var(--motion-hover) var(--ease-glass);
+}
+.graph-node:hover {
+  transform: translateY(-2px);
+}
+.graph-node:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+.graph-minimap.react-flow__minimap {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.rag-node,
+.agent-node {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text);
+  text-align: left;
+  transition:
+    background var(--motion-node) var(--ease-glass),
+    border-color var(--motion-node) var(--ease-glass),
+    color var(--motion-node) var(--ease-glass);
+}
+.rag-node .is-discarded-label {
+  text-decoration: line-through;
+  text-decoration-color: var(--muted);
+}
+.node-hover-preview {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 8px);
+  z-index: 6;
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  width: 240px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: 0 16px 35px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  white-space: normal;
+}
+.node-hover-preview strong {
+  font-size: 12px;
+}
+.hover-preview-path {
+  color: var(--muted);
+  font:
+    11px ui-monospace,
+    monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hover-preview-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--muted);
+  font:
+    11px ui-monospace,
+    monospace;
+}
+.hover-preview-snippet {
+  color: #bdb8d8;
+  font:
+    11px ui-monospace,
+    monospace;
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.graph-node:hover .node-hover-preview,
+.graph-node:focus-visible .node-hover-preview {
+  display: flex;
+}
+.rag-filter-bar {
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.signal-filter-pills {
+  display: flex;
+  gap: 6px;
+}
+.signal-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: #0d0a1c;
+  color: var(--muted);
+  font-size: 11px;
+  padding: 6px 12px;
+  min-height: var(--target-min);
+  cursor: pointer;
+}
+.signal-pill::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.signal-pill-semantic::before {
+  background: var(--signal-semantic);
+}
+.signal-pill-structural::before {
+  background: var(--signal-structural);
+  border-radius: 2px;
+}
+.signal-pill-dual::before {
+  background: var(--signal-semantic);
+  box-shadow: 0 0 0 2px var(--signal-structural);
+}
+.signal-pill[aria-pressed='true'] {
+  color: var(--text);
+  border-color: var(--accent);
+  background: rgba(201, 180, 250, 0.12);
+}
+.rag-node small,
+.agent-node small {
+  color: var(--muted);
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rag-node .node-badge,
+.agent-node .node-badge {
+  font:
+    750 10px ui-monospace,
+    monospace;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+.rag-node .node-signal,
+.agent-node .node-signal {
+  font-size: 11px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rag-node.rag-node-target {
+  border-color: var(--accent);
+  background: var(--accent-dark);
+}
+.rag-node.discarded {
+  border-style: dashed;
+  background: color-mix(in srgb, var(--surface-2) 35%, var(--surface-1));
+  border-color: color-mix(in srgb, var(--border) 35%, var(--surface-1));
+  color: color-mix(in srgb, var(--text) 45%, var(--surface-1));
+}
+.rag-node.discarded small,
+.rag-node.discarded .node-badge,
+.rag-node.discarded .node-signal {
+  color: color-mix(in srgb, var(--muted) 45%, var(--surface-1));
+}
+/* El patrón de línea (sólida/doble/anillo+núcleo) distingue las 3 señales sin depender solo del color, para daltonismo. */
+.rag-node.selected-candidate.signal-semantic {
+  border-left: 4px solid var(--signal-semantic);
+}
+.rag-node.selected-candidate.signal-structural {
+  border-left: 6px double var(--signal-structural);
+}
+.rag-node.selected-candidate.signal-dual {
+  border-left: 4px solid var(--signal-structural);
+  box-shadow: inset 3px 0 0 var(--signal-semantic);
+}
+.rag-node.is-focused,
+.agent-node.is-focused {
+  outline: 3px solid var(--signal-focus);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.14);
+}
+.side-panel {
+  position: sticky;
+  top: 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  padding: 22px;
+  min-width: 0;
+}
+.side-panel-meta {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0;
+}
+.side-panel-meta > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #25203e;
+  padding-bottom: 8px;
+  font-size: 13px;
+}
+.side-panel-meta dt {
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+.side-panel-meta dd {
+  margin: 0;
+  text-align: right;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.side-panel-meta dd.decision-selected {
+  color: #8fe3a0;
+}
+.side-panel-meta dd.decision-discarded {
+  color: #ffb4b4;
+}
+.excerpt-view {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+}
+.excerpt-lines {
+  min-width: 0;
+}
+.excerpt-line {
+  display: flex;
+  gap: 10px;
+  min-width: 0;
+  font:
+    12px ui-monospace,
+    monospace;
+}
+.excerpt-line .line-number {
+  flex: 0 0 auto;
+  color: #6f6a8c;
+  min-width: 24px;
+  text-align: right;
+}
+.excerpt-line code {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.excerpt-lines.snippet pre {
+  margin: 0;
+  padding: 10px;
+  background: #0b0917;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow-x: auto;
+  font:
+    12px ui-monospace,
+    monospace;
+}
+.excerpt-truncated {
+  color: var(--warning-strong);
+  font-size: 12px;
+  margin: 4px 0;
+}
+.excerpt-hash {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 6px;
+}
+.excerpt-hash code {
+  word-break: break-all;
+}
+.structured-alternative caption {
+  text-align: left;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 12px 18px;
+}
+.structured-row-button {
+  all: unset;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+}
+.agent-node.attenuated {
+  background: color-mix(in srgb, var(--surface-2) 45%, var(--surface-1));
+  border-color: color-mix(in srgb, var(--border) 45%, var(--surface-1));
+  color: color-mix(in srgb, var(--text) 55%, var(--surface-1));
+  border-style: dashed;
+}
+.agent-node.attenuated small,
+.agent-node.attenuated .node-badge,
+.agent-node.attenuated .node-signal {
+  color: color-mix(in srgb, var(--muted) 55%, var(--surface-1));
+}
+.agent-node .is-discarded-label {
+  text-decoration: line-through;
+  text-decoration-color: var(--muted);
+}
+.legend-swatch.legend-agent {
+  background: var(--signal-agent);
+}
+.agent-observation {
+  border-top: 1px solid #25203e;
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.agent-observation:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+  margin-top: 0;
+}
+.observation-path {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 0 0 8px;
+}
+.observation-path strong {
+  color: var(--text);
+}
+.discovered-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #0d0a1c;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.discovered-summary p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.empty-inline-note {
+  color: var(--muted);
+  font-size: 13px;
+}

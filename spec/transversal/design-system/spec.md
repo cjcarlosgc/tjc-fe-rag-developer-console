@@ -40,9 +40,31 @@ Definir una identidad visual Black Glass coherente para toda la consola RAG Test
 - El análisis PR-driven puede usar una constelación discreta; la validación de propuestas, una forma orbital; la espera genérica, una nube granular. Son conceptos adaptados, no reproducción literal de los GIF de referencia.
 - Las animaciones comunican progreso/relación y no bloquean interacción. No se fuerzan las tres en una misma pantalla.
 - Con `prefers-reduced-motion: reduce` se eliminan órbita, partículas y traslaciones; solo queda crossfade de máximo 120 ms.
-- Implementación objetivo (`app/src/ui/Loaders.tsx`): constelación → `ConstellationIcon` (análisis PR-driven); forma orbital → `OrbitalIcon` (validación de propuestas del `AnalysisRun`); nube granular → `Spinner` (`LoadingState` y esperas genéricas, incluido el explorador). El código aún enlazado a pantallas manuales se retirará en WI-CONSOLE-002; ese enlace no define una ruta de producto.
+- Implementación objetivo (`app/src/ui/Loaders.tsx`): constelación → `ConstellationIcon` (`app/src/ui/ConstellationIcon.tsx`, aparte para no cargar tsParticles en el bundle general) (análisis PR-driven); forma orbital → `OrbitalIcon` (validación de propuestas del `AnalysisRun`); nube granular → `Spinner` (`LoadingState` y esperas genéricas, incluido el explorador). El código aún enlazado a pantallas manuales se retirará en WI-CONSOLE-002; ese enlace no define una ruta de producto.
 - **Excepción de color documentada:** la constelación (`ConstellationIcon`) es roja (`#ff2b2b`/`#7a1414`), fiel al GIF de referencia, aunque rojo es por lo demás reservado para error/danger. Es válida porque es decorativa (un motivo de carga puntual, no un estado) y no se reutiliza en ningún otro componente; si algún día se usa rojo fuera de `ConstellationIcon` como decoración, revisar esta excepción. Forma orbital y nube granular no tienen excepción de color: usan el acento violeta (`--accent`, `rgb(201,180,250)`).
 - Constelación se implementa con `@tsparticles/react`/`@tsparticles/slim` (motor de partículas real, cargado dinámicamente solo al montar `AnalysisProgress`); forma orbital y nube granular se implementan con `<canvas>` a mano (sin dependencia nueva). Las tres tienen un fallback estático (SVG/CSS) para `prefers-reduced-motion: reduce` y entorno de test.
+
+## Idioma y glosario de la interfaz
+
+- El texto visible de la interfaz está en **español**. Se conservan en inglés, tal cual, los **términos de dominio** del producto, porque son los nombres de las entidades y de los contratos con Core:
+  `Project` / `Projects`, `Workspace`, `Run`, `AnalysisRun`, `Action Required`, `Focus Mode`, `PR` / `Pull Request`, `HEAD`, `RAG`, `Sandbox`, `Check`, `companion PR`, `Baseline`, `Repository binding`, `target` / `targets`, `changeset` / `changesets`, `chunk` / `chunks`, `Functional Knowledge` y `Ranking`.
+- Todo lo demás (estados, acciones, mensajes de error, ayudas, encabezados) se escribe en español. No se mezclan los dos idiomas dentro de una misma etiqueta salvo por esos términos.
+- Un mismo concepto tiene una sola escritura en toda la interfaz (por ejemplo «Projects», nunca «Proyectos» en unos sitios y «Projects» en otros).
+- Convención de los términos ingleses en el texto visible (solo copy; los identificadores de código como `targetId`, `chunkId` o `changesetBaseSha` no se traducen):
+  1. Se escriben tal cual, sin cursiva ni comillas, con el género del equivalente español: el target / los targets, el changeset / los changesets, el chunk / los chunks (masculino). `Functional Knowledge` es masculino e invariable, sin plural («reglas de Functional Knowledge»). `Ranking` es masculino; en frase se usa `ranking` en minúscula.
+  2. El plural añade «-s», sin apóstrofo: targets, chunks, changesets.
+  3. Mayúscula inicial solo en posición de rótulo (encabezado, columna, `dt`, badge o label). Dentro de frase: minúscula (target, changeset, chunks, ranking), salvo `Functional Knowledge`, que siempre va capitalizado.
+  4. Adjetivos y participios concuerdan en masculino: «Changeset grande», «Targets detectados», «Target experimental», «Sin targets coincidentes».
+  5. Contadores: «N chunks», nunca «N fragmentos». «N símbolo(s)» no cambia.
+  6. Se conservan en español «recuperación» y «discrepancia de comportamiento» (no se usan «Retrieval» ni «Behavioral Mismatch»).
+  7. «objetivo» sigue en español cuando no designa un target: «objetivos táctiles» (`--target-min`), objetivos específicos (OE) de la tesis y usos generales.
+  8. Sin cambio: «Fragmento de código» (alcance `CODE_FRAGMENT`) y «Destino de la regla».
+- Los estados de `AnalysisRun` se rotulan con `ANALYSIS_RUN_STATUS_LABELS` (`control-plane/status.ts`): En cola, Procesando, Action Required, Exitoso, Discrepancia de comportamiento, Falla técnica de generación, Falla de infraestructura, Baseline fallido, Tests existentes suficientes, Sin cambios relevantes y Obsoleto (HEAD nuevo).
+- Cada ruta fija el título del documento (`ui/routeTitles.ts`) y la aplicación ofrece un enlace «Saltar al contenido», navegación con estado activo (`aria-current`), una página 404 dentro del shell y un `errorElement` en español.
+
+## Accesibilidad verificada por tokens
+
+- `--text-dim` (#8a8799) cumple 4.5:1 (AA) sobre todas las superficies; `--border-strong` (#6a6688) cumple 3:1 en bordes de controles; `--target-min` (40 px) es el tamaño mínimo de objetivos táctiles; `color-scheme: dark` hace que controles nativos y barras de desplazamiento usen el tema oscuro.
 
 ## Referencias y autoridad
 

@@ -1,0 +1,51 @@
+/* Functional Knowledge (SDD 3.0, WI-CONSOLE-015). Texto informativo sobre --surface-1 #0b0b0d con #eae7f7 (16.17:1, WCAG AA). No usa --text-dim. Estados por texto además de color. .fk-card-meta no declara color: hereda #bcbac9 (--muted) de `.action-required-item p`, 10.31:1, WCAG AA. */
+.fk-group {
+  margin-top: 28px;
+}
+.fk-group > h2 {
+  margin-bottom: 4px;
+}
+.fk-group-count {
+  color: var(--text);
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+.fk-card-meta {
+  font-size: 13px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 8px;
+}
+.fk-missing {
+  color: var(--text);
+  font-style: italic;
+}
+.fk-chain {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.fk-chain li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-size: 14px;
+  border-left: 3px solid var(--border-subtle);
+  padding: 2px 0 2px 12px;
+}
+.fk-chain li[aria-current='step'] {
+  border-left-color: var(--accent);
+}
+.fk-chain-rule {
+  flex: 1 1 280px;
+  line-height: 1.5;
+}
+.fk-chain-note {
+  font-weight: 700;
+}

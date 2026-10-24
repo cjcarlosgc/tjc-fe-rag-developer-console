@@ -4,7 +4,14 @@ import type { ConfirmingRole, FunctionalKnowledgeResponse, ScenarioKind } from '
  * INTEROP-2.7 §6.11 (DEC-FK-004): orden fijo de los grupos de escenario y etiquetas en español.
  * La spec no fija el copy; las etiquetas viven solo aquí para un ajuste único por ux-reviewer.
  */
-export const SCENARIO_KIND_ORDER: readonly ScenarioKind[] = ['EXPECTED_RESULT', 'BOUNDARY', 'EXCEPTION', 'STATE_TRANSITION', 'OBSERVABLE_SIDE_EFFECT', 'FUNCTIONAL_PRECONDITION']
+export const SCENARIO_KIND_ORDER: readonly ScenarioKind[] = [
+  'EXPECTED_RESULT',
+  'BOUNDARY',
+  'EXCEPTION',
+  'STATE_TRANSITION',
+  'OBSERVABLE_SIDE_EFFECT',
+  'FUNCTIONAL_PRECONDITION',
+]
 
 export const SCENARIO_KIND_LABELS: Record<ScenarioKind, string> = {
   EXPECTED_RESULT: 'Resultado esperado',
@@ -70,7 +77,9 @@ export function groupByScenarioKind(items: FunctionalKnowledgeResponse[]): Scena
   return order.flatMap((key) => {
     const bucket = buckets.get(key)
     if (!bucket || bucket.length === 0) return []
-    return [{ key, label: key === 'OTHER' ? UNKNOWN_SCENARIO_LABEL : SCENARIO_KIND_LABELS[key], items: [...bucket].sort(compareWithinGroup) }]
+    return [
+      { key, label: key === 'OTHER' ? UNKNOWN_SCENARIO_LABEL : SCENARIO_KIND_LABELS[key], items: [...bucket].sort(compareWithinGroup) },
+    ]
   })
 }
 

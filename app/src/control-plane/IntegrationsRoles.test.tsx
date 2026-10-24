@@ -12,7 +12,14 @@ const SESSION_KEY = 'rag-console.mock-session'
 
 beforeEach(() => {
   localStorage.clear()
-  localStorage.setItem(SESSION_KEY, JSON.stringify({ user: { id: 'user_demo_github', email: 'demo@rag-test-studio.local' }, accessToken: 'mock-github-session-token', githubProviderToken: 'mock-github-provider-token' }))
+  localStorage.setItem(
+    SESSION_KEY,
+    JSON.stringify({
+      user: { id: 'user_demo_github', email: 'demo@rag-test-studio.local' },
+      accessToken: 'mock-github-session-token',
+      githubProviderToken: 'mock-github-provider-token',
+    }),
+  )
   setAuthModeForTests('mock')
   setDataSourceForTests('mock')
   resetMockBackend()
@@ -24,7 +31,9 @@ function renderIntegrations(projectId: string) {
     <QueryClientProvider client={client}>
       <AuthProvider>
         <MemoryRouter initialEntries={[`/projects/${projectId}/integrations/github`]}>
-          <Routes><Route path="/projects/:projectId/integrations/github" element={<IntegrationsPage />} /></Routes>
+          <Routes>
+            <Route path="/projects/:projectId/integrations/github" element={<IntegrationsPage />} />
+          </Routes>
         </MemoryRouter>
       </AuthProvider>
     </QueryClientProvider>,
@@ -41,7 +50,9 @@ test('Integrations: Writer ve el vínculo activo y puede desconectarlo', async (
 test('Integrations: Reader ve el vínculo en solo lectura y no puede desconectarlo ni reactivarlo', async () => {
   renderIntegrations('prj_org_metrics_demo')
 
-  expect(await screen.findByText('Tu rol permite consultar el vínculo, pero no pausarlo. Un Writer, Maintainer o Admin puede cambiarlo.')).toBeInTheDocument()
+  expect(
+    await screen.findByText('Tu rol permite consultar el vínculo, pero no pausarlo. Un Writer, Maintainer o Admin puede cambiarlo.'),
+  ).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Desconectar' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Reactivar' })).not.toBeInTheDocument()
 })

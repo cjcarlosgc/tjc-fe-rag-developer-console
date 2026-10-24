@@ -43,12 +43,14 @@ export function CopyButton({ value, label }: CopyButtonProps) {
 
   const message = state === 'copied' ? 'Copiado' : state === 'failed' ? 'No se pudo copiar' : ''
 
-  return <span className="copy-control">
-    <button type="button" className="copy-button" aria-label={`Copiar ${label} ${value}`} onClick={() => void handleCopy()}>
-      Copiar
-    </button>
-    <span className="copy-status" role="status" aria-live="polite">
-      {message ? <span key={attempt}>{message}</span> : null}
+  return (
+    <span className="copy-control">
+      <button type="button" className="copy-button" aria-label={`Copiar ${label} ${value}`} onClick={() => void handleCopy()}>
+        Copiar
+      </button>
+      <span className="copy-status" role="status" aria-live="polite">
+        {message ? <span key={attempt}>{message}</span> : null}
+      </span>
     </span>
-  </span>
+  )
 }

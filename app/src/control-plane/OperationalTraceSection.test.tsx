@@ -36,7 +36,10 @@ function renderTrace(analysisRunId: string, projectId: string) {
 }
 
 function renderDetail(analysisRunId: string, projectId: string) {
-  return renderApp(<AnalysisRunDetailPage />, { initialEntry: `/projects/${projectId}/runs/${analysisRunId}`, routePath: '/projects/:projectId/runs/:analysisRunId' })
+  return renderApp(<AnalysisRunDetailPage />, {
+    initialEntry: `/projects/${projectId}/runs/${analysisRunId}`,
+    routePath: '/projects/:projectId/runs/:analysisRunId',
+  })
 }
 
 function setClipboard(value: unknown) {
@@ -52,23 +55,23 @@ test('orden de secciones del trace: nueve enlaces en orden para un Run con dos t
 
   await screen.findByRole('heading', { name: 'Changeset' })
   expect(headingTexts()).toEqual([
-    'Trace operativo',
+    'Traza operativa',
     'Repositorio y Pull Request',
-    'Analysis Run',
+    'AnalysisRun',
     'Changeset',
     'Target: OrderService.calculateTotal',
-    'Retrieval PRESENT',
+    'Recuperación PRESENT',
     'Contexto PRESENT',
     'Generación PRESENT',
     'Ejecuciones PRESENT',
     'Target: formatCurrency',
-    'Retrieval PRESENT',
+    'Recuperación PRESENT',
     'Contexto PRESENT',
     'Generación PRESENT',
     'Ejecuciones PRESENT',
     'Publicación NOT_APPLICABLE',
   ])
-  expect(screen.getByRole('region', { name: 'Trace operativo' })).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Traza operativa' })).toBeInTheDocument()
 })
 
 test('PRESENT y NOT_APPLICABLE: badge con texto, NOT_APPLICABLE informativo y sin error', async () => {
@@ -193,7 +196,7 @@ test('PROCESSING (409) del run solo-trace también se muestra como en proceso', 
 
 test('404: ErrorState con reintento y correlationId', async () => {
   const user = userEvent.setup()
-  traceMock.mockRejectedValueOnce(new ApiError('No existe el Analysis Run demo.', 404, 'corr-404', 'ANALYSIS_RUN_NOT_FOUND'))
+  traceMock.mockRejectedValueOnce(new ApiError('No existe el AnalysisRun demo.', 404, 'corr-404', 'ANALYSIS_RUN_NOT_FOUND'))
   renderTrace('arun_inexistente', 'prj_checkout_demo')
 
   const alert = await screen.findByRole('alert')
@@ -213,11 +216,11 @@ test('error genérico muestra ErrorState con correlationId (tras los reintentos 
 
 test('contrato pendiente (live) muestra el mensaje del adapter sin crash', async () => {
   setDataSourceForTests('live')
-  traceMock.mockRejectedValueOnce(new PendingContractError('el trace operativo de un Analysis Run'))
+  traceMock.mockRejectedValueOnce(new PendingContractError('la traza operativa de un AnalysisRun'))
   renderTrace('arun_checkout_pr45', 'prj_checkout_demo')
 
   expect(await screen.findByText('Contrato pendiente')).toBeInTheDocument()
-  expect(screen.getByText(/RAG Core todavía no publicó el contrato live para el trace operativo/)).toBeInTheDocument()
+  expect(screen.getByText(/RAG Core todavía no publicó el contrato live para la traza operativa/)).toBeInTheDocument()
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })
 
@@ -240,7 +243,14 @@ test('publicación STALE cuando el HEAD cambió después de publicar', async () 
 
 test('companionPullRequestUrl https se enlaza con rel seguro; una URL insegura no se enlaza', async () => {
   const base = await mockGetAnalysisRunTrace('arun_checkout_pr45')
-  const publication = { status: 'PRESENT' as const, checkId: null, companionBranch: 'rag-tests/pr-45', companionPullRequestUrl: 'https://github.com/acme/checkout-service/pull/99', sourceHeadSha: 'e5e5e5e', freshness: 'CURRENT' as const }
+  const publication = {
+    status: 'PRESENT' as const,
+    checkId: null,
+    companionBranch: 'rag-tests/pr-45',
+    companionPullRequestUrl: 'https://github.com/acme/checkout-service/pull/99',
+    sourceHeadSha: 'e5e5e5e',
+    freshness: 'CURRENT' as const,
+  }
   traceMock.mockResolvedValueOnce({ ...base, publication } satisfies AnalysisRunTraceResponse)
   const { unmount } = renderTrace('arun_checkout_pr45', 'prj_checkout_demo')
 
@@ -274,7 +284,7 @@ test('el detalle del run PROCESSING (mock) resuelve el Run', async () => {
 test('la sección se monta en el detalle con rótulo de datos simulados en mock', async () => {
   renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
 
-  expect(await screen.findByRole('region', { name: 'Trace operativo' })).toBeInTheDocument()
+  expect(await screen.findByRole('region', { name: 'Traza operativa' })).toBeInTheDocument()
   expect(screen.getByText(/Datos simulados: los ids de esta sección son de demo/)).toBeInTheDocument()
   expect(screen.getAllByText('DEMO · DATOS SIMULADOS').length).toBeGreaterThanOrEqual(1)
 })
@@ -293,7 +303,7 @@ test('publicación solo con Check: sin dato en checkId, rama y freshness; sin co
   await screen.findByRole('heading', { name: 'Changeset' })
   expect(screen.getByText('checkId').nextElementSibling).toHaveTextContent('sin dato')
   expect(screen.getByText('companionBranch').nextElementSibling).toHaveTextContent('sin dato')
-  expect(screen.getByText('Freshness').nextElementSibling).toHaveTextContent('sin dato')
+  expect(screen.getByText('Vigencia').nextElementSibling).toHaveTextContent('sin dato')
   expect(screen.queryByText(/omitid/i)).not.toBeInTheDocument()
   expect(screen.queryByText(/knowledgeId/)).not.toBeInTheDocument()
 })

@@ -7,11 +7,23 @@ import { Breadcrumbs } from '../ui/Breadcrumbs'
 import { ErrorState, LoadingState } from '../ui/Feedback'
 import { RepoChip } from '../ui/RepoChip'
 import { useProject } from '../projects/queries'
-import { FUNCTIONAL_QUESTION_OBSOLETE_MESSAGE, bindingErrorMessage, errorCorrelationId, isFunctionalQuestionObsolete } from '../control-plane/errors'
+import {
+  FUNCTIONAL_QUESTION_OBSOLETE_MESSAGE,
+  bindingErrorMessage,
+  errorCorrelationId,
+  isFunctionalQuestionObsolete,
+} from '../control-plane/errors'
 import { useContextQuestionSet, useSubmitFunctionalAnswer } from './queries'
 import { abstentionLabel } from './abstention'
 import { RuleRegistrationNote, RuleTargetSummary } from './RuleTargetSummary'
-import type { ConflictResolution, FunctionalAnswerChoice, FunctionalKnowledgeConflictResponse, VisualAidResponse } from './types'
+import type {
+  ConflictResolution,
+  FunctionalAnswerChoice,
+  FunctionalKnowledgeConflictResponse,
+  VisualAidKind,
+  VisualAidResponse,
+} from './types'
+import { PageHeader } from '../ui/PageHeader'
 
 /** Evita open-redirect: `returnTo` solo puede ser una ruta interna. */
 function safeReturnTo(value: string | null): string {
@@ -26,11 +38,24 @@ const CHOICE_LABELS: Record<Exclude<FunctionalAnswerChoice, 'FREE_TEXT'>, string
   UNKNOWN: 'No lo sé',
 }
 
+/** Rótulo visible del tipo de ayuda visual (el enum `kind` es literal de contrato y no se muestra tal cual). */
+const VISUAL_AID_KIND_LABELS: Record<VisualAidKind, string> = {
+  STATE_DIAGRAM: 'Diagrama de estados',
+  SYMBOL_RELATION: 'Relación de símbolos',
+  MINI_DIFF: 'Diferencia reducida',
+  CODE_FRAGMENT: 'Fragmento de código',
+}
+
 function VisualAid({ aid }: { aid: VisualAidResponse }) {
-  return <div className="visual-aid">
-    <div className="visual-aid-heading"><span className="visual-aid-kind">{aid.kind.replace(/_/g, ' ')}</span><strong>{aid.title}</strong></div>
-    <pre className="visual-aid-content">{aid.content}</pre>
-  </div>
+  return (
+    <div className="visual-aid">
+      <div className="visual-aid-heading">
+        <span className="visual-aid-kind">{VISUAL_AID_KIND_LABELS[aid.kind] ?? aid.kind.replace(/_/g, ' ')}</span>
+        <strong>{aid.title}</strong>
+      </div>
+      <pre className="visual-aid-content">{aid.content}</pre>
+    </div>
+  )
 }
 
 export function FocusModePage() {
@@ -43,7 +68,9 @@ export function FocusModePage() {
   const currentQuestionId = questionSetQuery.data?.currentQuestion?.projectId ?? ''
   const projectQuery = useProject(currentQuestionId)
   const [answerText, setAnswerText] = useState('')
-  const [pendingAnswer, setPendingAnswer] = useState<{ questionId: string; choice: FunctionalAnswerChoice; answer: string | null } | null>(null)
+  const [pendingAnswer, setPendingAnswer] = useState<{ questionId: string; choice: FunctionalAnswerChoice; answer: string | null } | null>(
+    null,
+  )
   /** Tras una abstención el botón «No lo sé» se deshabilita durante el envío y pierde el foco: se devuelve al contenedor de la pregunta. */
   const cardRef = useRef<HTMLDivElement>(null)
   /** INTEROP-2.9: la pregunta que el servidor declaró no accionable deja de ofrecerse; el aviso toma el foco. */
@@ -54,17 +81,26 @@ export function FocusModePage() {
   }, [obsoleteQuestionId])
 
   if (questionSetQuery.isPending) return <LoadingState label="Abriendo Focus Mode…" />
-  if (questionSetQuery.isError) return <ErrorState message={questionSetQuery.error.message} onRetry={() => void questionSetQuery.refetch()} />
+  if (questionSetQuery.isError)
+    return <ErrorState message={questionSetQuery.error.message} onRetry={() => void questionSetQuery.refetch()} />
   if (questionSetQuery.data.currentQuestion && projectQuery.isPending) return <LoadingState label="Comprobando tu rol en el Project…" />
-  if (questionSetQuery.data.currentQuestion && projectQuery.isError) return <ErrorState message={bindingErrorMessage(projectQuery.error)} correlationId={errorCorrelationId(projectQuery.error)} onRetry={() => void projectQuery.refetch()} />
+  if (questionSetQuery.data.currentQuestion && projectQuery.isError)
+    return (
+      <ErrorState
+        message={bindingErrorMessage(projectQuery.error)}
+        correlationId={errorCorrelationId(projectQuery.error)}
+        onRetry={() => void projectQuery.refetch()}
+      />
+    )
 
   const { functionalBehaviorValidated } = questionSetQuery.data
   const currentQuestion = questionSetQuery.data.currentQuestion?.id === obsoleteQuestionId ? null : questionSetQuery.data.currentQuestion
   const canAnswer = !currentQuestion || hasRole(projectQuery.data?.role, 'MAINTAINER')
   const obsolete = isFunctionalQuestionObsolete(submitAnswer.error)
-  const conflict = submitAnswer.error instanceof ApiError && submitAnswer.error.code === 'FUNCTIONAL_KNOWLEDGE_CONFLICT'
-    ? submitAnswer.error.details as FunctionalKnowledgeConflictResponse
-    : null
+  const conflict =
+    submitAnswer.error instanceof ApiError && submitAnswer.error.code === 'FUNCTIONAL_KNOWLEDGE_CONFLICT'
+      ? (submitAnswer.error.details as FunctionalKnowledgeConflictResponse)
+      : null
 
   /** Fallo de envío: la pregunta obsoleta sale de la vista y se limpia la respuesta pendiente; cualquier otro error devuelve el foco a la tarjeta. */
   function handleSubmitError(error: unknown, questionId: string) {
@@ -82,12 +118,14 @@ export function FocusModePage() {
     setPendingAnswer({ questionId: currentQuestion.id, choice, answer })
     submitAnswer.mutate(
       { questionId: currentQuestion.id, input: { choice, answer } },
-      { onSuccess: (result) => {
-        if (result.outcome !== 'ABSTAINED') setAnswerText('')
-        else cardRef.current?.focus()
-        setPendingAnswer(null)
+      {
+        onSuccess: (result) => {
+          if (result.outcome !== 'ABSTAINED') setAnswerText('')
+          else cardRef.current?.focus()
+          setPendingAnswer(null)
+        },
+        onError: (error) => handleSubmitError(error, currentQuestion.id),
       },
-        onError: (error) => handleSubmitError(error, currentQuestion.id) },
     )
   }
 
@@ -95,90 +133,168 @@ export function FocusModePage() {
   function resolveConflict(action: ConflictResolution['action']) {
     if (!pendingAnswer || !conflict) return
     submitAnswer.mutate(
-      { questionId: pendingAnswer.questionId, input: { choice: pendingAnswer.choice, answer: pendingAnswer.answer, conflictResolution: { conflictId: conflict.conflictId, action } } },
-      { onSuccess: (result) => {
-        if (result.outcome !== 'ABSTAINED') setAnswerText('')
-        else cardRef.current?.focus()
-        setPendingAnswer(null)
+      {
+        questionId: pendingAnswer.questionId,
+        input: {
+          choice: pendingAnswer.choice,
+          answer: pendingAnswer.answer,
+          conflictResolution: { conflictId: conflict.conflictId, action },
+        },
       },
-        onError: (error) => handleSubmitError(error, pendingAnswer.questionId) },
+      {
+        onSuccess: (result) => {
+          if (result.outcome !== 'ABSTAINED') setAnswerText('')
+          else cardRef.current?.focus()
+          setPendingAnswer(null)
+        },
+        onError: (error) => handleSubmitError(error, pendingAnswer.questionId),
+      },
     )
   }
 
-  return <section>
-    <Breadcrumbs items={[{ label: 'Proyectos', to: '/' }, { label: 'Action Required', to: '/action-required' }, { label: 'Focus Mode' }]} />
-    <div className="page-heading">
-      <div>
-        <p className="eyebrow">Focus Mode</p>
-        <h1>Contexto funcional</h1>
-        <p>Una pregunta a la vez. Tu respuesta nunca se aplica automáticamente al código.</p>
-      </div>
-      {mock && <span className="demo-stamp">DEMO · DATOS SIMULADOS</span>}
-    </div>
+  return (
+    <section>
+      <Breadcrumbs
+        items={[{ label: 'Projects', to: '/' }, { label: 'Action Required', to: '/action-required' }, { label: 'Focus Mode' }]}
+      />
+      <PageHeader
+        eyebrow="Focus Mode"
+        title="Contexto funcional"
+        description="Una pregunta a la vez. Tu respuesta nunca se aplica automáticamente al código."
+        aside={mock && <span className="demo-stamp">DEMO · DATOS SIMULADOS</span>}
+      />
 
-    {obsolete && <div className="panel focus-mode-obsolete" role="status" tabIndex={-1} ref={noticeRef}>
-      <p>{FUNCTIONAL_QUESTION_OBSOLETE_MESSAGE}</p>
-    </div>}
-
-    {!currentQuestion && (
-      <div className="panel success-note contract-note">
-        <div>
-          <strong>{functionalBehaviorValidated ? 'Contexto funcional confirmado' : 'Sin preguntas pendientes en este Run'}</strong>
-          <p>{functionalBehaviorValidated
-            ? 'Todas las preguntas de este Run fueron respondidas. No se promete publicación ni merge automático.'
-            : 'Este Run no tiene una pregunta vigente — puede que el HEAD haya cambiado y ya no se reanude.'}</p>
+      {obsolete && (
+        <div className="panel focus-mode-obsolete" role="status" tabIndex={-1} ref={noticeRef}>
+          <p>{FUNCTIONAL_QUESTION_OBSOLETE_MESSAGE}</p>
         </div>
-      </div>
-    )}
+      )}
 
-    {currentQuestion && <div className="panel focus-mode-card" ref={cardRef} tabIndex={-1}>
-      <span className="run-heading-meta"><RepoChip repositoryName={currentQuestion.repositoryName} /><span className="pr-ref">PR #{currentQuestion.pullRequestNumber} · {currentQuestion.target.qualifiedName}</span></span>
-      <h2>{currentQuestion.question}</h2>
-      <p className="focus-mode-rationale">{currentQuestion.rationale}</p>
-      {currentQuestion.visualAid && <VisualAid aid={currentQuestion.visualAid} />}
-      <div className="rule-target-block" role="group" aria-labelledby="rule-target-title">
-        <h3 id="rule-target-title" className="rule-target-title">Destino de la regla</h3>
-        <RuleTargetSummary target={currentQuestion.target} scenarioKind={currentQuestion.scenarioKind} />
-      </div>
-      <div role="status">{currentQuestion.abstention && <p className="abstention-note">{abstentionLabel(currentQuestion.abstention)}</p>}</div>
-
-      {canAnswer ? <>
-      <RuleRegistrationNote qualifiedName={currentQuestion.target.qualifiedName} />
-      <div className="answer-choices" role="group" aria-label="Respuesta">
-        {(Object.keys(CHOICE_LABELS) as Exclude<FunctionalAnswerChoice, 'FREE_TEXT'>[]).map((choice) => (
-          <button key={choice} type="button" className={`button ${choice === 'UNKNOWN' ? 'secondary' : 'primary'}`} disabled={submitAnswer.isPending} onClick={() => submit(choice)}>
-            {CHOICE_LABELS[choice]}
-          </button>
-        ))}
-      </div>
-
-      <div className="field free-text-field">
-        <label htmlFor="focus-mode-answer-text">Aclaración (opcional)</label>
-        <textarea id="focus-mode-answer-text" value={answerText} onChange={(event) => setAnswerText(event.target.value)} rows={3} />
-      </div>
-      <button type="button" className="button secondary" disabled={submitAnswer.isPending || !answerText.trim()} onClick={() => submit('FREE_TEXT')}>
-        Responder solo con este texto
-      </button>
-
-      {conflict && (
-        <div className="panel focus-mode-conflict" role="alert">
-          <strong>Esta respuesta contradice una regla vigente</strong>
-          <p>Ya existe una regla activa para <code>{conflict.conflictingKnowledge.targetRef}</code>. Decide antes de continuar — no se persiste nada todavía.</p>
-          <dl className="metadata">
-            <div><dt>Regla vigente</dt><dd>{conflict.conflictingKnowledge.normalizedRule}</dd></div>
-            <div><dt>Regla propuesta</dt><dd>{conflict.proposedNormalizedRule}</dd></div>
-          </dl>
-          <div className="answer-choices" role="group" aria-label="Resolución del conflicto">
-            <button type="button" className="button primary" disabled={submitAnswer.isPending} onClick={() => resolveConflict('SUPERSEDE')}>Reemplazar regla vigente</button>
-            <button type="button" className="button secondary" disabled={submitAnswer.isPending} onClick={() => resolveConflict('KEEP_EXISTING')}>Mantener la vigente, guardar como evidencia</button>
+      {!currentQuestion && (
+        <div className="panel success-note contract-note">
+          <div>
+            <strong>{functionalBehaviorValidated ? 'Contexto funcional confirmado' : 'Sin preguntas pendientes en este Run'}</strong>
+            <p>
+              {functionalBehaviorValidated
+                ? 'Todas las preguntas de este Run fueron respondidas. No se promete publicación ni merge automático.'
+                : 'Este Run no tiene una pregunta vigente — puede que el HEAD haya cambiado y ya no se reanude.'}
+            </p>
           </div>
         </div>
       )}
 
-      {submitAnswer.isError && !conflict && !obsolete && <p className="inline-error" role="alert">{bindingErrorMessage(submitAnswer.error)}{errorCorrelationId(submitAnswer.error) && <> · Correlation ID: <code>{errorCorrelationId(submitAnswer.error)}</code></>}</p>}
-      </> : <p className="role-note">Solo un Maintainer o Admin puede responder esta pregunta funcional</p>}
-    </div>}
+      {currentQuestion && (
+        <div className="panel focus-mode-card" ref={cardRef} tabIndex={-1}>
+          <span className="run-heading-meta">
+            <RepoChip repositoryName={currentQuestion.repositoryName} />
+            <span className="pr-ref">
+              PR #{currentQuestion.pullRequestNumber} · {currentQuestion.target.qualifiedName}
+            </span>
+          </span>
+          <h2>{currentQuestion.question}</h2>
+          <p className="focus-mode-rationale">{currentQuestion.rationale}</p>
+          {currentQuestion.visualAid && <VisualAid aid={currentQuestion.visualAid} />}
+          <div className="rule-target-block" role="group" aria-labelledby="rule-target-title">
+            <h3 id="rule-target-title" className="rule-target-title">
+              Destino de la regla
+            </h3>
+            <RuleTargetSummary target={currentQuestion.target} scenarioKind={currentQuestion.scenarioKind} />
+          </div>
+          <div role="status">
+            {currentQuestion.abstention && <p className="abstention-note">{abstentionLabel(currentQuestion.abstention)}</p>}
+          </div>
 
-    <div className="run-actions"><Link className="button secondary button-link" to={returnTo}>Volver</Link></div>
-  </section>
+          {canAnswer ? (
+            <>
+              <RuleRegistrationNote qualifiedName={currentQuestion.target.qualifiedName} />
+              <div className="answer-choices" role="group" aria-label="Respuesta">
+                {(Object.keys(CHOICE_LABELS) as Exclude<FunctionalAnswerChoice, 'FREE_TEXT'>[]).map((choice) => (
+                  <button
+                    key={choice}
+                    type="button"
+                    className={`button ${choice === 'UNKNOWN' ? 'secondary' : 'primary'}`}
+                    disabled={submitAnswer.isPending}
+                    onClick={() => submit(choice)}
+                  >
+                    {CHOICE_LABELS[choice]}
+                  </button>
+                ))}
+              </div>
+
+              <div className="field free-text-field">
+                <label htmlFor="focus-mode-answer-text">Aclaración (opcional)</label>
+                <textarea id="focus-mode-answer-text" value={answerText} onChange={(event) => setAnswerText(event.target.value)} rows={3} />
+              </div>
+              <button
+                type="button"
+                className="button secondary"
+                disabled={submitAnswer.isPending || !answerText.trim()}
+                onClick={() => submit('FREE_TEXT')}
+              >
+                Responder solo con este texto
+              </button>
+
+              {conflict && (
+                <div className="panel focus-mode-conflict" role="alert">
+                  <strong>Esta respuesta contradice una regla vigente</strong>
+                  <p>
+                    Ya existe una regla activa para <code>{conflict.conflictingKnowledge.targetRef}</code>. Decide antes de continuar — no
+                    se persiste nada todavía.
+                  </p>
+                  <dl className="metadata">
+                    <div>
+                      <dt>Regla vigente</dt>
+                      <dd>{conflict.conflictingKnowledge.normalizedRule}</dd>
+                    </div>
+                    <div>
+                      <dt>Regla propuesta</dt>
+                      <dd>{conflict.proposedNormalizedRule}</dd>
+                    </div>
+                  </dl>
+                  <div className="answer-choices" role="group" aria-label="Resolución del conflicto">
+                    <button
+                      type="button"
+                      className="button primary"
+                      disabled={submitAnswer.isPending}
+                      onClick={() => resolveConflict('SUPERSEDE')}
+                    >
+                      Reemplazar regla vigente
+                    </button>
+                    <button
+                      type="button"
+                      className="button secondary"
+                      disabled={submitAnswer.isPending}
+                      onClick={() => resolveConflict('KEEP_EXISTING')}
+                    >
+                      Mantener la vigente, guardar como evidencia
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {submitAnswer.isError && !conflict && !obsolete && (
+                <p className="inline-error" role="alert">
+                  {bindingErrorMessage(submitAnswer.error)}
+                  {errorCorrelationId(submitAnswer.error) && (
+                    <>
+                      {' '}
+                      · Correlation ID: <code>{errorCorrelationId(submitAnswer.error)}</code>
+                    </>
+                  )}
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="role-note">Solo un Maintainer o Admin puede responder esta pregunta funcional</p>
+          )}
+        </div>
+      )}
+
+      <div className="run-actions">
+        <Link className="button secondary button-link" to={returnTo}>
+          Volver
+        </Link>
+      </div>
+    </section>
+  )
 }

@@ -9,11 +9,11 @@ test('muestra los tres snapshots conservados y distingue el actual sin sugerir u
   const fetchMock = vi.spyOn(globalThis, 'fetch')
   renderApp(<AnalysisHistoryPage />, { initialEntry: '/projects/prj_checkout_demo/analyses', routePath: '/projects/:projectId/analyses' })
 
-  const projectNav = await screen.findByRole('navigation', { name: 'Secciones del proyecto' })
+  const projectNav = await screen.findByRole('navigation', { name: 'Secciones del Project' })
   const historyLink = within(projectNav).getByRole('link', { name: 'Historial' })
   expect(historyLink).toHaveAttribute('href', '/projects/prj_checkout_demo/analyses?workspaceId=1000001')
   expect(historyLink).toHaveAttribute('aria-current', 'page')
-  expect(await screen.findAllByRole('heading', { name: 'Snapshot de repositorio', level: 2 })).toHaveLength(3)
+  expect(await screen.findAllByRole('heading', { name: 'Instantánea de repositorio', level: 2 })).toHaveLength(3)
   expect(screen.queryByText(/\.zip|cargar versión|indexar nueva versión/i)).not.toBeInTheDocument()
   expect(screen.getByText('VERSIÓN ACTUAL')).toBeInTheDocument()
   expect(screen.getByText('3', { selector: '.history-heading-meta > strong' })).toBeInTheDocument()

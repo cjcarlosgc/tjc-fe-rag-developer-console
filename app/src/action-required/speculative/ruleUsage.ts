@@ -1,5 +1,5 @@
 import { getDataSource, ProposedCapabilityError } from '../../api/dataSource'
-import { mockGetRuleUsage } from '../../api/mockBackend'
+import { loadMockBackend } from '../../api/loadMockBackend'
 import type { AnalysisRunSummaryResponse } from '../../control-plane/types'
 
 /**
@@ -14,6 +14,6 @@ import type { AnalysisRunSummaryResponse } from '../../control-plane/types'
 export type RuleUsageRef = AnalysisRunSummaryResponse
 
 export function getRuleUsage(knowledgeId: string): Promise<RuleUsageRef[]> {
-  if (getDataSource() === 'mock') return mockGetRuleUsage(knowledgeId)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockGetRuleUsage(knowledgeId))
   return Promise.reject(new ProposedCapabilityError('Trazabilidad de uso — Runs que usaron esta regla (HU52)'))
 }

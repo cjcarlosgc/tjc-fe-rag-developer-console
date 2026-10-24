@@ -29,25 +29,40 @@ test('HU30: un proyecto vinculado muestra el binding', async () => {
   expect(screen.getByText('Activo')).toBeInTheDocument()
 })
 
-test('la sub-nav del proyecto (ProjectTabs) enlaza a Runs/Historial/Functional Knowledge/Integrations, con Overview activo', async () => {
+test('la sub-nav del Project (ProjectTabs) enlaza a Runs/Historial/Functional Knowledge/Integrations, con Overview activo', async () => {
   renderDetail('prj_checkout_demo')
 
-  const nav = await screen.findByRole('navigation', { name: 'Secciones del proyecto' })
-  expect(within(nav).getByRole('link', { name: 'Overview' })).toHaveAttribute('aria-current', 'page')
-  expect(within(nav).getByRole('link', { name: 'Runs' })).toHaveAttribute('href', '/analysis-runs?projectId=prj_checkout_demo&workspaceId=1000001')
-  expect(within(nav).getByRole('link', { name: 'Historial' })).toHaveAttribute('href', '/projects/prj_checkout_demo/analyses?workspaceId=1000001')
-  expect(within(nav).getByRole('link', { name: 'Functional Knowledge' })).toHaveAttribute('href', '/projects/prj_checkout_demo/functional-knowledge?workspaceId=1000001')
-  expect(within(nav).getByRole('link', { name: 'Integrations' })).toHaveAttribute('href', '/projects/prj_checkout_demo/integrations/github?workspaceId=1000001')
+  const nav = await screen.findByRole('navigation', { name: 'Secciones del Project' })
+  expect(within(nav).getByRole('link', { name: 'Resumen' })).toHaveAttribute('aria-current', 'page')
+  expect(within(nav).getByRole('link', { name: 'Runs' })).toHaveAttribute(
+    'href',
+    '/analysis-runs?projectId=prj_checkout_demo&workspaceId=1000001',
+  )
+  expect(within(nav).getByRole('link', { name: 'Historial' })).toHaveAttribute(
+    'href',
+    '/projects/prj_checkout_demo/analyses?workspaceId=1000001',
+  )
+  expect(within(nav).getByRole('link', { name: 'Functional Knowledge' })).toHaveAttribute(
+    'href',
+    '/projects/prj_checkout_demo/functional-knowledge?workspaceId=1000001',
+  )
+  expect(within(nav).getByRole('link', { name: 'Integraciones' })).toHaveAttribute(
+    'href',
+    '/projects/prj_checkout_demo/integrations/github?workspaceId=1000001',
+  )
 })
 
 test('"Modo experimental" es visible como capacidad propia, no legacy', async () => {
   renderDetail('prj_checkout_demo')
 
   await screen.findByText('checkout-service', { selector: '.repo-name' })
-  expect(screen.getByRole('link', { name: /Modo experimental/ })).toHaveAttribute('href', '/projects/prj_checkout_demo/experimental?workspaceId=1000001')
+  expect(screen.getByRole('link', { name: /Modo experimental/ })).toHaveAttribute(
+    'href',
+    '/projects/prj_checkout_demo/experimental?workspaceId=1000001',
+  )
 })
 
-test('el proyecto no ofrece flujos manuales de carga, generación ni herramientas antiguas', async () => {
+test('el Project no ofrece flujos manuales de carga, generación ni herramientas antiguas', async () => {
   renderDetail('prj_checkout_demo')
 
   await screen.findByText('checkout-service', { selector: '.repo-name' })
@@ -62,7 +77,10 @@ test('HU30: un proyecto sin binding ofrece conectar GitHub', async () => {
   renderDetail(project.id)
 
   expect(await screen.findByText('Sin repositorio vinculado')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: /Conectar GitHub/ })).toHaveAttribute('href', `/projects/${project.id}/integrations/github?workspaceId=1000001`)
+  expect(screen.getByRole('link', { name: /Conectar GitHub/ })).toHaveAttribute(
+    'href',
+    `/projects/${project.id}/integrations/github?workspaceId=1000001`,
+  )
 })
 
 test('HU57: un proyecto desconectado muestra el binding como Pausado, no como "sin repositorio"', async () => {
@@ -75,46 +93,48 @@ test('HU57: un proyecto desconectado muestra el binding como Pausado, no como "s
   expect(screen.queryByText('Sin repositorio vinculado')).not.toBeInTheDocument()
 })
 
-test('HU56: un proyecto eliminado muestra "El proyecto ya no existe" con enlace a Proyectos y sin Reintentar', async () => {
+test('HU56: un proyecto eliminado muestra "El Project ya no existe" con enlace a Proyectos y sin Reintentar', async () => {
   await deleteProject('prj_checkout_demo')
 
   renderDetail('prj_checkout_demo')
 
-  expect(await screen.findByText('El proyecto ya no existe')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Proyectos' })).toHaveAttribute('href', '/')
+  expect(await screen.findByText('El Project ya no existe')).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Volver a Projects' })).toHaveAttribute('href', '/')
   expect(screen.queryByRole('button', { name: 'Reintentar' })).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Eliminar proyecto' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Eliminar Project' })).not.toBeInTheDocument()
 })
 
-test('HU56: Eliminar proyecto pide confirmación explícita, permite cancelar y está marcado como DEMO', async () => {
+test('HU56: Eliminar Project pide confirmación explícita, permite cancelar y está marcado como DEMO', async () => {
   const user = userEvent.setup()
   renderDetail('prj_checkout_demo')
 
-  await user.click(await screen.findByRole('button', { name: 'Eliminar proyecto' }))
-  const confirmation = screen.getByRole('group', { name: 'Confirmar eliminación del proyecto' })
+  await user.click(await screen.findByRole('button', { name: 'Eliminar Project' }))
+  const confirmation = screen.getByRole('group', { name: 'Confirmar eliminación del Project' })
   expect(within(confirmation).getByText('checkout-service')).toBeInTheDocument()
-  expect(confirmation).toHaveTextContent('El proyecto dejará de verse y se liberará el repositorio vinculado; la evidencia no se borra físicamente')
+  expect(confirmation).toHaveTextContent(
+    'El Project dejará de verse y se liberará el repositorio vinculado; la evidencia no se borra físicamente',
+  )
   expect(screen.getByText('DEMO · ELIMINAR SIMULADO')).toBeInTheDocument()
 
   await user.click(within(confirmation).getByRole('button', { name: 'Cancelar' }))
-  expect(screen.queryByRole('group', { name: 'Confirmar eliminación del proyecto' })).not.toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Eliminar proyecto' })).toBeInTheDocument()
+  expect(screen.queryByRole('group', { name: 'Confirmar eliminación del Project' })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Eliminar Project' })).toBeInTheDocument()
 })
 
-test('HU56: al abrir la confirmación el foco va a «Cancelar» (no al botón destructivo) y al cancelar vuelve a «Eliminar proyecto»', async () => {
+test('HU56: al abrir la confirmación el foco va a «Cancelar» (no al botón destructivo) y al cancelar vuelve a «Eliminar Project»', async () => {
   const user = userEvent.setup()
   renderDetail('prj_checkout_demo')
 
-  await user.click(await screen.findByRole('button', { name: 'Eliminar proyecto' }))
-  const confirmation = screen.getByRole('group', { name: 'Confirmar eliminación del proyecto' })
+  await user.click(await screen.findByRole('button', { name: 'Eliminar Project' }))
+  const confirmation = screen.getByRole('group', { name: 'Confirmar eliminación del Project' })
   expect(within(confirmation).getByRole('button', { name: 'Cancelar' })).toHaveFocus()
   expect(within(confirmation).getByRole('button', { name: 'Eliminar checkout-service' })).not.toHaveFocus()
 
   await user.click(within(confirmation).getByRole('button', { name: 'Cancelar' }))
-  expect(screen.getByRole('button', { name: 'Eliminar proyecto' })).toHaveFocus()
+  expect(screen.getByRole('button', { name: 'Eliminar Project' })).toHaveFocus()
 })
 
-test('HU56: confirmar la eliminación borra el proyecto, navega a la lista con el aviso y el foco en el h1, sin parpadeo de "no encontrado"', async () => {
+test('HU56: confirmar la eliminación borra el Project, navega a la lista con el aviso y el foco en el h1, sin parpadeo de "no encontrado"', async () => {
   const user = userEvent.setup()
   renderApp(
     <Routes>
@@ -123,20 +143,25 @@ test('HU56: confirmar la eliminación borra el proyecto, navega a la lista con e
     </Routes>,
     { initialEntry: '/projects/prj_checkout_demo' },
   )
-  await user.click(await screen.findByRole('button', { name: 'Eliminar proyecto' }))
+  await user.click(await screen.findByRole('button', { name: 'Eliminar Project' }))
 
   // Se vigila todo el DOM mientras dura el borrado: ni el ErrorState ni el "no existe" deben asomar en ningún momento.
   let sawNotFound = false
   const observer = new MutationObserver(() => {
     const text = document.body.textContent ?? ''
-    if (text.includes('El proyecto ya no existe') || text.includes('No pudimos cargar esta información') || text.includes('No existe el proyecto demo')) sawNotFound = true
+    if (
+      text.includes('El Project ya no existe') ||
+      text.includes('No pudimos cargar esta información') ||
+      text.includes('No existe el Project demo')
+    )
+      sawNotFound = true
   })
   observer.observe(document.body, { childList: true, subtree: true, characterData: true })
   await user.click(screen.getByRole('button', { name: 'Eliminar checkout-service' }))
 
-  const heading = await screen.findByRole('heading', { name: 'Proyectos', level: 1 })
+  const heading = await screen.findByRole('heading', { name: 'Projects', level: 1 })
   await waitFor(() => expect(heading).toHaveFocus())
-  expect(await screen.findByText('Proyecto «checkout-service» eliminado')).toBeInTheDocument()
+  expect(await screen.findByText('Project «checkout-service» eliminado')).toBeInTheDocument()
   expect(await screen.findByRole('heading', { name: 'billing-engine' })).toBeInTheDocument()
   expect(screen.queryByRole('heading', { name: 'checkout-service' })).not.toBeInTheDocument()
   await new Promise((resolve) => setTimeout(resolve, 50))
@@ -145,13 +170,13 @@ test('HU56: confirmar la eliminación borra el proyecto, navega a la lista con e
   await expect(getProject('prj_checkout_demo')).rejects.toMatchObject({ code: 'PROJECT_NOT_FOUND' })
 })
 
-test('HU07: un Writer ve la capacidad de operar el proyecto; un Reader no', async () => {
+test('HU07: un Writer ve la capacidad de operar el Project; un Reader no', async () => {
   renderDetail('prj_org_writer_demo')
   await screen.findByText('payments-gateway', { selector: '.repo-name' })
   expect(screen.getByRole('link', { name: /Modo experimental/ })).toBeInTheDocument()
 })
 
-test('HU07: un Reader no ve la acción de operar el proyecto', async () => {
+test('HU07: un Reader no ve la acción de operar el Project', async () => {
   renderDetail('prj_org_metrics_demo')
   await screen.findByText('metrics-console', { selector: '.repo-name' })
   expect(screen.queryByRole('link', { name: /Modo experimental/ })).not.toBeInTheDocument()

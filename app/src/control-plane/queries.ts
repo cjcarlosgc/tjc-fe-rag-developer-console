@@ -30,13 +30,16 @@ import type {
   TestPublicationStatus,
   VerifyGitHubAppAccessRequest,
 } from './types'
+import { clampPollMs, pollDelayMs, TEST_POLL_MS } from '../api/polling'
 
 export const controlPlaneKeys = {
   binding: (projectId: string) => ['control-plane', 'binding', projectId] as const,
   githubRepositories: (projectId: string, userId: string | null) => ['control-plane', 'github-repositories', userId, projectId] as const,
   githubApp: ['control-plane', 'github-app'] as const,
-  githubAppAccess: (projectId: string, repositoryId: string, userId: string | null) => ['control-plane', 'github-app-access', userId, projectId, repositoryId] as const,
-  githubBranches: (projectId: string, repositoryName: string, userId: string | null) => ['control-plane', 'github-branches', userId, projectId, repositoryName] as const,
+  githubAppAccess: (projectId: string, repositoryId: string, userId: string | null) =>
+    ['control-plane', 'github-app-access', userId, projectId, repositoryId] as const,
+  githubBranches: (projectId: string, repositoryName: string, userId: string | null) =>
+    ['control-plane', 'github-branches', userId, projectId, repositoryName] as const,
   runs: (projectId?: string, status?: AnalysisRunStatus) => ['control-plane', 'runs', projectId ?? null, status ?? null] as const,
   allRuns: ['control-plane', 'runs', 'all'] as const,
   run: (analysisRunId: string) => ['control-plane', 'run', analysisRunId] as const,
@@ -125,11 +128,20 @@ export function useVerifyGitHubAppAccess(projectId: string, githubProviderToken:
 }
 
 export function useGitHubAppInfo(enabled = true) {
-  return useQuery({ queryKey: controlPlaneKeys.githubApp, queryFn: getGitHubAppInfo, enabled: enabled && !isMockDataSource(), staleTime: 60_000 })
+  return useQuery({
+    queryKey: controlPlaneKeys.githubApp,
+    queryFn: getGitHubAppInfo,
+    enabled: enabled && !isMockDataSource(),
+    staleTime: 60_000,
+  })
 }
 
 /** Estado de acceso y URL de configuración de la GitHub App para un repositorio ya vinculado (REVOKED, o Reactivar rechazado por falta de acceso). */
-export function useGitHubAppAccessInfo(projectId: string, repository: { repositoryId: string; repositoryName: string } | null, userId: string | undefined) {
+export function useGitHubAppAccessInfo(
+  projectId: string,
+  repository: { repositoryId: string; repositoryName: string } | null,
+  userId: string | undefined,
+) {
   return useQuery({
     queryKey: controlPlaneKeys.githubAppAccess(projectId, repository?.repositoryId ?? '', userId ?? null),
     queryFn: () => getGitHubAppAccess({ repositoryId: repository!.repositoryId, repositoryName: repository!.repositoryName }, projectId),
@@ -151,13 +163,14 @@ export function useGitHubRepositoryBranches(projectId: string, repositoryName: s
 
 /**
  * Códigos de error que indican que la pantalla quedó desfasada respecto del servidor: se relee el binding para mostrar lo real.
- * `PROJECT_NOT_FOUND` (Project borrado o ajeno) hace que la lectura devuelva 404 y la pantalla muestre "el proyecto ya no existe";
+ * `PROJECT_NOT_FOUND` (Project borrado o ajeno) hace que la lectura devuelva 404 y la pantalla muestre "el Project ya no existe";
  * `REPOSITORY_BINDING_ALREADY_EXISTS` muestra el binding que otro cliente creó; `REPOSITORY_BINDING_NOT_FOUND` vuelve al flujo de vincular.
  */
 const STALE_BINDING_ERROR_CODES = ['PROJECT_NOT_FOUND', 'REPOSITORY_BINDING_ALREADY_EXISTS', 'REPOSITORY_BINDING_NOT_FOUND']
 
 function refreshBindingOnStaleError(queryClient: QueryClient, projectId: string, error: unknown) {
-  if (error instanceof ApiError && error.code && STALE_BINDING_ERROR_CODES.includes(error.code)) void queryClient.invalidateQueries({ queryKey: controlPlaneKeys.binding(projectId) })
+  if (error instanceof ApiError && error.code && STALE_BINDING_ERROR_CODES.includes(error.code))
+    void queryClient.invalidateQueries({ queryKey: controlPlaneKeys.binding(projectId) })
 }
 
 export function useCreateRepositoryBinding(projectId: string, githubProviderToken: string | null) {
@@ -177,7 +190,7 @@ export function useAnalysisRuns(projectId?: string, status?: AnalysisRunStatus, 
   })
 }
 
-/** Todos los Analysis Runs globales para aplicar el workspace sobre el listado completo. */
+/** Todos los AnalysisRuns globales para aplicar el workspace sobre el listado completo. */
 export function useAllAnalysisRuns(enabled = true) {
   return useQuery({
     queryKey: controlPlaneKeys.allRuns,
@@ -186,11 +199,41 @@ export function useAllAnalysisRuns(enabled = true) {
   })
 }
 
-export function useAnalysisRun(analysisRunId: string) {
+/** Estados en curso de un `AnalysisRun` (INTEROP-2.19 §6.10 y §6.16): el Run sigue procesándose en Core. */
+export function isInProgressAnalysisRunStatus(status: AnalysisRunStatus | null | undefined): boolean {
+  return status === 'QUEUED' || status === 'PROCESSING'
+}
+
+/**
+ * Intervalo de sondeo de respaldo del detalle de un `AnalysisRun`. `false` (sin intervalo) si hay error, si aún no hay
+ * datos o si el Run no está en `QUEUED`/`PROCESSING`. En curso: en tests, `TEST_POLL_MS`; si no, `pollAfterMs` acotado
+ * con `clampPollMs` (250 ms–30 s, por defecto 900 ms).
+ */
+export function analysisRunPollIntervalMs(
+  state: { status?: AnalysisRunStatus | null; hasError: boolean; pollAfterMs?: number | null },
+  testMode = import.meta.env.MODE === 'test',
+): number | false {
+  if (state.hasError || !isInProgressAnalysisRunStatus(state.status)) return false
+  if (testMode) return TEST_POLL_MS
+  return clampPollMs(state.pollAfterMs)
+}
+
+/**
+ * Consulta `GET /analysis-runs/{id}`. Sin opciones no sondea; con `pollWhileInProgress` refresca mientras el Run está en
+ * curso y se detiene al terminal o ante error (el tiempo real sigue invalidando la misma consulta).
+ *
+ * `pollAfterMs` es opcional porque el GET del Run no lo incluye: solo lo informa el `202` de creación (INTEROP-2.19 §5).
+ * Sin él se usa `DEFAULT_POLL_MS` (900 ms), el mismo intervalo que el sondeo análogo de la traza.
+ */
+export function useAnalysisRun(analysisRunId: string, options: { pollWhileInProgress?: boolean; pollAfterMs?: number | null } = {}) {
+  const { pollWhileInProgress = false, pollAfterMs } = options
   return useQuery({
     queryKey: controlPlaneKeys.run(analysisRunId),
     queryFn: () => getAnalysisRun(analysisRunId),
     enabled: Boolean(analysisRunId),
+    refetchInterval: pollWhileInProgress
+      ? (query) => analysisRunPollIntervalMs({ status: query.state.data?.status, hasError: query.state.error !== null, pollAfterMs })
+      : false,
   })
 }
 
@@ -204,7 +247,7 @@ export function useAnalysisRunTrace(analysisRunId: string) {
     queryFn: () => getAnalysisRunTrace(analysisRunId),
     enabled: Boolean(analysisRunId),
     retry: shouldRetryOperationalTrace,
-    refetchInterval: (query) => (isTraceNotFinished(query.state.error) ? (import.meta.env.MODE === 'test' ? 10 : 900) : false),
+    refetchInterval: (query) => (isTraceNotFinished(query.state.error) ? pollDelayMs() : false),
   })
 }
 
@@ -244,7 +287,10 @@ export function usePublishTests(analysisRunId: string) {
     // El POST solo acepta la publicación (202 PENDING): propuestas y Run se invalidan al llegar a terminal (ver useRefreshOnPublicationTerminal).
     onError: (error) => {
       // 409/422 de dominio: las propuestas o el Run cambiaron; se relee para mostrar lo real.
-      if (error instanceof ApiError && (error.code === 'TEST_PUBLICATION_PROPOSAL_NOT_AVAILABLE' || error.code === 'TEST_PUBLICATION_INVALID_RUN_STATUS')) {
+      if (
+        error instanceof ApiError &&
+        (error.code === 'TEST_PUBLICATION_PROPOSAL_NOT_AVAILABLE' || error.code === 'TEST_PUBLICATION_INVALID_RUN_STATUS')
+      ) {
         void queryClient.invalidateQueries({ queryKey: controlPlaneKeys.proposals(analysisRunId) })
         void queryClient.invalidateQueries({ queryKey: controlPlaneKeys.run(analysisRunId) })
       }

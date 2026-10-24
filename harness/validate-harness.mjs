@@ -50,17 +50,9 @@ for (const directory of ['harness/contract-sync/inbox', 'harness/contract-sync/o
 const state = readJson('harness/state.json');
 const registry = readJson('harness/work-items.json');
 if (state) {
-  if (state.awayMode !== undefined) {
-    const away = state.awayMode;
-    assert(away && typeof away.enabled === 'boolean', 'awayMode.enabled must be boolean');
-    if (away?.enabled === true) {
-      assert(away.activatedBy === 'user', 'awayMode must be activated by user');
-      assert(typeof away.activatedAt === 'string' && away.activatedAt.length > 0, 'awayMode.activatedAt is required');
-      assert(typeof away.quote === 'string' && away.quote.length > 0, 'awayMode.quote is required');
-    }
-  }
+  assert(state.awayMode === undefined, 'awayMode was removed in SDD 3.1; delete it from state.json');
   assert(state.schemaVersion === 4, 'state.schemaVersion must be 4');
-  assert(state.sddVersion === '3.0', 'Core/Console state.sddVersion must be 3.0');
+  assert(state.sddVersion === '3.1', 'state.sddVersion must be 3.1');
   assert(Array.isArray(state.allowedStatuses) && [...statuses].every((status) => state.allowedStatuses.includes(status)), 'state allowedStatuses is incomplete');
   const item = state.activeWorkItem;
   if (item !== null) {

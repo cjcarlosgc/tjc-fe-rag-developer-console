@@ -10,7 +10,8 @@ export type FunctionalAnswerChoice = 'YES' | 'NO' | 'DEPENDS' | 'UNKNOWN' | 'FRE
 /** INTEROP-2.7 §6.11 (DEC-FK-002): `ABSTAINED` es una abstención auditada de UNKNOWN, no una respuesta. */
 export type FunctionalAnswerOutcome = 'ANSWERED' | 'ABSTAINED'
 /** INTEROP-2.7 (DEC-FK-001): un escenario por pregunta atómica. */
-export type ScenarioKind = 'EXPECTED_RESULT' | 'BOUNDARY' | 'EXCEPTION' | 'STATE_TRANSITION' | 'OBSERVABLE_SIDE_EFFECT' | 'FUNCTIONAL_PRECONDITION'
+export type ScenarioKind =
+  'EXPECTED_RESULT' | 'BOUNDARY' | 'EXCEPTION' | 'STATE_TRANSITION' | 'OBSERVABLE_SIDE_EFFECT' | 'FUNCTIONAL_PRECONDITION'
 /** Rol que puede registrar o responder una pregunta funcional (INTEROP-2.7: Writer no responde ni se abstiene). */
 export type ConfirmingRole = 'ADMIN' | 'MAINTAINER'
 export type VisualAidKind = 'STATE_DIAGRAM' | 'SYMBOL_RELATION' | 'MINI_DIFF' | 'CODE_FRAGMENT'

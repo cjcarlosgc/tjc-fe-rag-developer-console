@@ -1,6 +1,6 @@
 import { apiRequestText } from '../api/client'
 import { getDataSource } from '../api/dataSource'
-import { mockGetEvidence } from '../api/mockBackend'
+import { loadMockBackend } from '../api/loadMockBackend'
 import type { EvidenceBundleResponse, EvidenceKind } from './types'
 
 export interface EvidenceDownload {
@@ -15,14 +15,15 @@ export interface EvidenceDownload {
  */
 export async function getEvidence(kind: EvidenceKind, subjectId: string): Promise<EvidenceDownload> {
   if (getDataSource() === 'mock') {
-    const bundle = await mockGetEvidence(kind, subjectId)
+    const bundle = await (await loadMockBackend()).mockGetEvidence(kind, subjectId)
     return { raw: JSON.stringify(bundle, null, 2), bundle }
   }
-  const resource = kind === 'ANALYSIS_RUN'
-    ? `/analysis-runs/${encodeURIComponent(subjectId)}/evidence`
-    : kind === 'EXPERIMENT'
-      ? `/experiments/${encodeURIComponent(subjectId)}/evidence`
-      : `/retrieval-comparisons/${encodeURIComponent(subjectId)}/evidence`
+  const resource =
+    kind === 'ANALYSIS_RUN'
+      ? `/analysis-runs/${encodeURIComponent(subjectId)}/evidence`
+      : kind === 'EXPERIMENT'
+        ? `/experiments/${encodeURIComponent(subjectId)}/evidence`
+        : `/retrieval-comparisons/${encodeURIComponent(subjectId)}/evidence`
   const raw = await apiRequestText(resource)
   return { raw, bundle: JSON.parse(raw) as EvidenceBundleResponse }
 }

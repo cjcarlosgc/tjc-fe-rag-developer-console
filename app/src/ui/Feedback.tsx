@@ -12,14 +12,31 @@ export function ErrorState({ message, onRetry, correlationId }: ErrorStateProps)
   return (
     <div className="feedback error-state" role="alert">
       <strong>No pudimos cargar esta información</strong>
-      <p>{message}{correlationId && <> <span className="correlation-ref">Referencia: <code>{correlationId}</code></span></>}</p>
-      <button className="button secondary" type="button" onClick={onRetry}>Reintentar</button>
+      <p>
+        {message}
+        {correlationId && (
+          <>
+            {' '}
+            <span className="correlation-ref">
+              Referencia: <code>{correlationId}</code>
+            </span>
+          </>
+        )}
+      </p>
+      <button className="button secondary" type="button" onClick={onRetry}>
+        Reintentar
+      </button>
     </div>
   )
 }
 
 export function LoadingState({ label }: { label: string }) {
-  return <div className="feedback" role="status"><Spinner />{label}</div>
+  return (
+    <div className="feedback" role="status">
+      <Spinner />
+      {label}
+    </div>
+  )
 }
 
 interface ErrorNoteProps {
@@ -32,7 +49,14 @@ export function ErrorNote({ message, correlationId }: ErrorNoteProps) {
   return (
     <p className="inline-error" role="alert">
       {message}
-      {correlationId && <> <span className="correlation-ref">Referencia: <code>{correlationId}</code></span></>}
+      {correlationId && (
+        <>
+          {' '}
+          <span className="correlation-ref">
+            Referencia: <code>{correlationId}</code>
+          </span>
+        </>
+      )}
     </p>
   )
 }
@@ -41,9 +65,11 @@ export function ErrorNote({ message, correlationId }: ErrorNoteProps) {
 export function ProjectNotFoundState() {
   return (
     <div className="feedback error-state" role="alert">
-      <strong>El proyecto ya no existe</strong>
+      <strong>El Project ya no existe</strong>
       <p>Fue eliminado o nunca existió para tu cuenta.</p>
-      <Link className="button secondary button-link" to="/">Volver a Proyectos</Link>
+      <Link className="button secondary button-link" to="/">
+        Volver a Projects
+      </Link>
     </div>
   )
 }

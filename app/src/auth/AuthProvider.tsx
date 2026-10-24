@@ -49,7 +49,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (blocked) return
     let active = true
-    activeAdapter().getSession()
+    activeAdapter()
+      .getSession()
       .then((restored) => {
         if (active) applySession(restored)
       })
@@ -62,9 +63,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       unsubscribe = activeAdapter().onAuthStateChange(applySession)
     } catch {
-      queueMicrotask(() => { if (active) setStatus('unauthenticated') })
+      queueMicrotask(() => {
+        if (active) setStatus('unauthenticated')
+      })
     }
-    return () => { active = false; unsubscribe() }
+    return () => {
+      active = false
+      unsubscribe()
+    }
   }, [blocked, applySession])
 
   /**
@@ -93,24 +99,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return
       }
       if (!sessionRef.current) return
-      setSessionNotice(code === 'GITHUB_IDENTITY_REQUIRED'
-        ? { kind: 'identity-required', message: githubIdentityRequiredMessage }
-        : { kind: 'expired', message: sessionExpiredMessage })
+      setSessionNotice(
+        code === 'GITHUB_IDENTITY_REQUIRED'
+          ? { kind: 'identity-required', message: githubIdentityRequiredMessage }
+          : { kind: 'expired', message: sessionExpiredMessage },
+      )
       applySession(null)
       // `local`: Core rechazó esta sesión, no hay por qué revocar las demás del usuario. La UI ya quedó cerrada aunque falle.
-      void activeAdapter().signOut('local').catch(() => {})
+      void activeAdapter()
+        .signOut('local')
+        .catch(() => {})
     })
     return () => setAuthErrorHandler(null)
   }, [applySession])
 
-  const signInWithGitHub = useCallback(async (returnTo?: string) => {
-    setSessionNotice(null)
-    setOAuthError(null)
-    const next = await activeAdapter().signInWithGitHub(returnTo)
-    if (!next) return false
-    applySession(next)
-    return true
-  }, [applySession])
+  const signInWithGitHub = useCallback(
+    async (returnTo?: string) => {
+      setSessionNotice(null)
+      setOAuthError(null)
+      const next = await activeAdapter().signInWithGitHub(returnTo)
+      if (!next) return false
+      applySession(next)
+      return true
+    },
+    [applySession],
+  )
 
   // Cierre manual (global). Si el proveedor falla, la UI igualmente queda sin sesión: no se conserva un estado autenticado que el usuario ya pidió cerrar.
   const signOut = useCallback(async () => {
@@ -129,10 +142,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   if (blocked) {
-    return <div className="auth-block-screen" role="alert">
-      <h1>Combinación de entorno no permitida</h1>
-      <p>La identidad demostrativa (<code>VITE_AUTH_MODE=mock</code>) solo puede usarse junto con datos simulados (<code>VITE_DATA_SOURCE=mock</code>). Ajusta las variables de entorno para continuar; esta pantalla no tiene un formulario alcanzable a propósito.</p>
-    </div>
+    return (
+      <div className="auth-block-screen" role="alert">
+        <h1>Combinación de entorno no permitida</h1>
+        <p>
+          La identidad demostrativa (<code>VITE_AUTH_MODE=mock</code>) solo puede usarse junto con datos simulados (
+          <code>VITE_DATA_SOURCE=mock</code>). Ajusta las variables de entorno para continuar; esta pantalla no tiene un formulario
+          alcanzable a propósito.
+        </p>
+      </div>
+    )
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

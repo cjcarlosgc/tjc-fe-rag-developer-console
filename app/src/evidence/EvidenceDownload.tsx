@@ -23,7 +23,10 @@ export interface EvidenceDownloadProps {
   mockLabel?: string
 }
 
-const wait = (ms: number) => new Promise<void>((resolve) => { setTimeout(resolve, ms) })
+const wait = (ms: number) =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, ms)
+  })
 
 /**
  * INTEROP-2.7 §6.16 (WI-CONSOLE-017, Corte B). Descarga de evidencia JSON versionada para cualquier rol de Project (Reader incluido).
@@ -41,7 +44,9 @@ export function EvidenceDownload({ kind, subjectId, terminal, mockLabel = DEFAUL
 
   useEffect(() => {
     mounted.current = true
-    return () => { mounted.current = false }
+    return () => {
+      mounted.current = false
+    }
   }, [])
 
   async function load() {
@@ -88,30 +93,61 @@ export function EvidenceDownload({ kind, subjectId, terminal, mockLabel = DEFAUL
   const unavailable = !terminal
 
   // La región de estado solo existe con texto: las páginas de resultado ya tienen su propio role=status único.
-  const statusText = loading ? 'Generando evidencia…' : phase === 'notFinished' ? EVIDENCE_NOT_FINISHED_MESSAGE : phase === 'ready' ? `Descarga preparada: ${evidenceFileName(kind, subjectId)}` : null
+  const statusText = loading
+    ? 'Generando evidencia…'
+    : phase === 'notFinished'
+      ? EVIDENCE_NOT_FINISHED_MESSAGE
+      : phase === 'ready'
+        ? `Descarga preparada: ${evidenceFileName(kind, subjectId)}`
+        : null
 
-  return <div className="evidence-download">
-    <div className="evidence-download-actions">
-      <button
-        type="button"
-        className="button secondary evidence-button"
-        aria-disabled={unavailable || loading ? true : undefined}
-        aria-describedby={unavailable ? hintId : undefined}
-        onClick={() => void load()}
-      >
-        Descargar evidencia (JSON)
-      </button>
-      {retryable && (
-        <button type="button" className="button secondary evidence-button" aria-disabled={loading ? true : undefined} onClick={() => void load()}>
-          Reintentar
+  return (
+    <div className="evidence-download">
+      <div className="evidence-download-actions">
+        <button
+          type="button"
+          className="button secondary evidence-button"
+          aria-disabled={unavailable || loading ? true : undefined}
+          aria-describedby={unavailable ? hintId : undefined}
+          onClick={() => void load()}
+        >
+          Descargar evidencia (JSON)
         </button>
+        {retryable && (
+          <button
+            type="button"
+            className="button secondary evidence-button"
+            aria-disabled={loading ? true : undefined}
+            onClick={() => void load()}
+          >
+            Reintentar
+          </button>
+        )}
+        {isMock && <span className="demo-stamp">{mockLabel}</span>}
+      </div>
+      {unavailable && (
+        <p id={hintId} className="field-hint">
+          {EVIDENCE_PENDING_NOTE}
+        </p>
       )}
-      {isMock && <span className="demo-stamp">{mockLabel}</span>}
+      <p className="field-hint">{EVIDENCE_SCOPE_NOTE}</p>
+      {statusText && (
+        <div role="status" className="evidence-status">
+          {statusText}
+        </div>
+      )}
+      {phase === 'ready' && schemaVersion && <p className="field-hint">Esquema de evidencia: v{schemaVersion}</p>}
+      {phase === 'error' && (
+        <p className="inline-error" role="alert">
+          {bindingErrorMessage(failure)}
+          {errorCorrelationId(failure) && (
+            <>
+              {' '}
+              · Correlation ID: <code>{errorCorrelationId(failure)}</code>
+            </>
+          )}
+        </p>
+      )}
     </div>
-    {unavailable && <p id={hintId} className="field-hint">{EVIDENCE_PENDING_NOTE}</p>}
-    <p className="field-hint">{EVIDENCE_SCOPE_NOTE}</p>
-    {statusText && <div role="status" className="evidence-status">{statusText}</div>}
-    {phase === 'ready' && schemaVersion && <p className="field-hint">Esquema de evidencia: v{schemaVersion}</p>}
-    {phase === 'error' && <p className="inline-error" role="alert">{bindingErrorMessage(failure)}{errorCorrelationId(failure) && <> · Correlation ID: <code>{errorCorrelationId(failure)}</code></>}</p>}
-  </div>
+  )
 }

@@ -1,7 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '../api/client'
 import { setDataSourceForTests } from '../api/dataSource'
-import { mockStartExperiment, mockGetExperiment, mockGetRetrievalComparison, resetMockBackend, setMockAnalysisRunForTests, mockGetEvidence } from '../api/mockBackend'
+import {
+  mockStartExperiment,
+  mockGetExperiment,
+  mockGetRetrievalComparison,
+  resetMockBackend,
+  setMockAnalysisRunForTests,
+  mockGetEvidence,
+} from '../api/mockBackend'
 import { getEvidence } from './api'
 
 beforeEach(() => {
@@ -12,7 +19,10 @@ beforeEach(() => {
 afterEach(() => setDataSourceForTests(null))
 
 async function errorOf(promise: Promise<unknown>): Promise<unknown> {
-  return promise.then(() => null, (caught: unknown) => caught)
+  return promise.then(
+    () => null,
+    (caught: unknown) => caught,
+  )
 }
 
 describe('getEvidence (modo mock)', () => {
@@ -38,7 +48,7 @@ describe('getEvidence (modo mock)', () => {
   it('EXPERIMENT: 409 mientras está PENDING/RUNNING y bundle al COMPLETED', async () => {
     const accepted = await mockStartExperiment('prj_checkout_demo', 'ver_checkout_7-method-total')
     await expect(mockGetEvidence('EXPERIMENT', accepted.experimentId)).rejects.toMatchObject({ status: 409, code: 'EVIDENCE_NOT_FINISHED' })
-    // La evidencia no avanza el experimento: sólo el GET de estado lo hace.
+    // La evidencia no avanza el experimento: solo el GET de estado lo hace.
     await mockGetExperiment(accepted.experimentId)
     await mockGetExperiment(accepted.experimentId)
     await mockGetExperiment(accepted.experimentId)
@@ -47,19 +57,31 @@ describe('getEvidence (modo mock)', () => {
   })
 
   it('RETRIEVAL_COMPARISON: 409 en PENDING, bundle en COMPLETED y en FAILED', async () => {
-    await expect(mockGetEvidence('RETRIEVAL_COMPARISON', 'rcmp_demo_seed_pending')).rejects.toMatchObject({ status: 409, code: 'EVIDENCE_NOT_FINISHED' })
+    await expect(mockGetEvidence('RETRIEVAL_COMPARISON', 'rcmp_demo_seed_pending')).rejects.toMatchObject({
+      status: 409,
+      code: 'EVIDENCE_NOT_FINISHED',
+    })
     await mockGetRetrievalComparison('rcmp_demo_seed_pending')
     await mockGetRetrievalComparison('rcmp_demo_seed_pending')
     await mockGetRetrievalComparison('rcmp_demo_seed_pending')
-    await expect(getEvidence('RETRIEVAL_COMPARISON', 'rcmp_demo_seed_pending')).resolves.toMatchObject({ bundle: { kind: 'RETRIEVAL_COMPARISON', schemaVersion: '1' } })
-    await expect(getEvidence('RETRIEVAL_COMPARISON', 'rcmp_demo_seed_failed')).resolves.toMatchObject({ bundle: { kind: 'RETRIEVAL_COMPARISON' } })
-    await expect(getEvidence('RETRIEVAL_COMPARISON', 'rcmp_demo_seed_completed_con_metricas')).resolves.toMatchObject({ bundle: { retrieval: expect.any(Array) } })
+    await expect(getEvidence('RETRIEVAL_COMPARISON', 'rcmp_demo_seed_pending')).resolves.toMatchObject({
+      bundle: { kind: 'RETRIEVAL_COMPARISON', schemaVersion: '1' },
+    })
+    await expect(getEvidence('RETRIEVAL_COMPARISON', 'rcmp_demo_seed_failed')).resolves.toMatchObject({
+      bundle: { kind: 'RETRIEVAL_COMPARISON' },
+    })
+    await expect(getEvidence('RETRIEVAL_COMPARISON', 'rcmp_demo_seed_completed_con_metricas')).resolves.toMatchObject({
+      bundle: { retrieval: expect.any(Array) },
+    })
   })
 
   it('404 cuando el sujeto no existe o no es visible', async () => {
     expect(await errorOf(getEvidence('ANALYSIS_RUN', 'arun_inexistente'))).toMatchObject({ status: 404, code: 'ANALYSIS_RUN_NOT_FOUND' })
     expect(await errorOf(getEvidence('EXPERIMENT', 'exp_inexistente'))).toMatchObject({ status: 404 })
-    expect(await errorOf(getEvidence('RETRIEVAL_COMPARISON', 'rcmp_inexistente'))).toMatchObject({ status: 404, code: 'RETRIEVAL_COMPARISON_NOT_FOUND' })
+    expect(await errorOf(getEvidence('RETRIEVAL_COMPARISON', 'rcmp_inexistente'))).toMatchObject({
+      status: 404,
+      code: 'RETRIEVAL_COMPARISON_NOT_FOUND',
+    })
   })
 
   it('ningún bundle mock contiene identificadores EV-OE*', async () => {
@@ -73,7 +95,22 @@ describe('getEvidence (modo mock)', () => {
 describe('getEvidence · forma de §6.16 (CS-CORE-20261009-014, WI-CONSOLE-021 corte C2)', () => {
   it('los facts de Sandbox solo usan la allowlist cerrada de §6.16', async () => {
     const { bundle } = await getEvidence('ANALYSIS_RUN', 'arun_checkout_pr45')
-    const allowed = new Set(['executionProfile', 'runner', 'compiled', 'executed', 'passed', 'totalTests', 'passedTests', 'failedTests', 'skippedTests', 'testCasesTruncated', 'failureStage', 'failureCategory', 'failureCode', 'failureMessage'])
+    const allowed = new Set([
+      'executionProfile',
+      'runner',
+      'compiled',
+      'executed',
+      'passed',
+      'totalTests',
+      'passedTests',
+      'failedTests',
+      'skippedTests',
+      'testCasesTruncated',
+      'failureStage',
+      'failureCategory',
+      'failureCode',
+      'failureMessage',
+    ])
     for (const entry of bundle.sandbox) expect(Object.keys(entry.facts).every((key) => allowed.has(key))).toBe(true)
   })
 

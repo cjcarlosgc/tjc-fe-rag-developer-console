@@ -3736,6 +3736,1023 @@
         }
       ],
       "closedAt": "2026-10-14T17:16:52.768Z"
+    },
+    {
+      "id": "WI-CONSOLE-039",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "title": "Espejar INTEROP-2.17 desde Core y procesar el Contract Sync CS-CORE-20261018-002",
+      "storyIds": [
+        "HU01",
+        "HU11",
+        "HU14",
+        "HU15"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-041"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": true,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md",
+        "spec/contracts/github-integration-contract.md",
+        "spec/contracts/schemas",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-039-scope-approval.md",
+        "harness/reports/wi-console-039-sdd-verification.md",
+        "harness/reports/wi-console-039-contract-sync-review.md",
+        "harness/reports/wi-console-039-implementation.md",
+        "harness/reports/wi-console-039-contract-review.md",
+        "harness/reports/wi-console-039-review.md",
+        "harness/reports/wi-console-039-closure.md"
+      ],
+      "acceptanceCriteria": [
+        "interoperability-contract.md coincide byte a byte con Core 67519a20 (SHA-256 b9ed40dc8d15a414b7cca4ccee4f320ba9da8f7444ef426b8321d17bdc0dea05); system-contract.md (b70f9358…), github-integration-contract.md (6c553ee8…) y el árbol spec/contracts/schemas (c45e4513…) verificados.",
+        "CS-CORE-20261018-002 se acusa y resuelve solo con evidencia real; CS-CORE-20261012-008/-010/-012 y CS-CORE-20261018-001/-003 no apuntan a Console y se clasifican NOT_RELEVANT sin acusarlos.",
+        "contracts:check, lint, tsc -b --noEmit, pruebas, build y validadores SDD/Harness pasan; sin cambio de DTO, rutas ni UI.",
+        "contract-reviewer y reviewer independientes aprueban."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-039-scope-approval.md",
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true,
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-039 no toca bindings, UI ni endpoints. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-039-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-039 no toca autorizacion ni interfaz. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-039-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-039 no cambia login, sesion, tokens ni el cliente HTTP. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-039-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-039 no altera Projects ni visibilidad. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-039-contract-sync-review.md"
+        }
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-040",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P2",
+      "sprint": "SMART V3",
+      "title": "Unificar pnpm como gestor de paquetes único de app/",
+      "storyIds": [
+        "HU01"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-042"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "specPaths": [
+        "spec/transversal/testing/tasks.md",
+        "spec/constitution/tech-stack.md",
+        "harness/reports/fast-lane-wi-console-040.md",
+        "harness/reports/wi-console-040-scope-approval.md",
+        "harness/reports/wi-console-040-contract-sync-scope-review.md",
+        "harness/reports/wi-console-040-implementation.md",
+        "harness/reports/wi-console-040-review.md",
+        "harness/reports/wi-console-040-closure.md"
+      ],
+      "acceptanceCriteria": [
+        "app/package-lock.json eliminado; un solo lockfile (pnpm-lock.yaml) y packageManager declarado en app/package.json.",
+        "Sin referencias vigentes a npm en scripts, CI, README, tech-stack.md y docs de proceso (excepto contratos espejados, reportes históricos y CHANGELOG pasado).",
+        "lint, tsc -b --noEmit, pruebas, build y validadores pasan con pnpm install --frozen-lockfile; sin cambio de comportamiento ni contrato."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-040-scope-approval.md",
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true,
+      "lane": "FAST",
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-040 no toca bindings, UI ni endpoints. (limpieza de tooling)",
+          "report": "harness/reports/wi-console-040-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-040 no toca autorizacion ni interfaz. (limpieza de tooling)",
+          "report": "harness/reports/wi-console-040-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-040 no cambia login, sesion, tokens ni el cliente HTTP. (limpieza de tooling)",
+          "report": "harness/reports/wi-console-040-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-040 no altera Projects ni visibilidad. (limpieza de tooling)",
+          "report": "harness/reports/wi-console-040-contract-sync-scope-review.md"
+        }
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-041",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P2",
+      "sprint": "SMART V3",
+      "title": "Regularizar retroactivamente el trabajo de contratos y estabilización ejecutado desde cross (a464b61, 99e1ecc)",
+      "storyIds": [
+        "HU01",
+        "HU12",
+        "HU14"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-043"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "harness/reports/cross-fase2-esquemas-contratos-2026-10-18.md",
+        "harness/reports/cross-fase3-estabilidad-2026-10-18.md",
+        "harness/reports/wi-console-041-scope-approval.md",
+        "harness/reports/wi-console-041-sdd-verification.md",
+        "harness/reports/wi-console-041-retroactive-verification.md",
+        "harness/reports/wi-console-041-contract-sync-scope-review.md",
+        "harness/reports/wi-console-041-review.md",
+        "harness/reports/wi-console-041-closure.md"
+      ],
+      "acceptanceCriteria": [
+        "El reporte declara explícitamente la retroactividad e implementationAgent: cross; la verificación usa evidencia real (pruebas, tipos generados vs esquemas, contracts:check).",
+        "reviewer independiente de cross revisa a464b61 y 99e1ecc; hallazgos corregidos o registrados.",
+        "lint, tsc -b --noEmit, pruebas, build y validadores pasan; sin duplicar el espejo de WI-CONSOLE-039."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-041-scope-approval.md",
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true,
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-041 no toca bindings, UI ni endpoints. (regularizacion retroactiva)",
+          "report": "harness/reports/wi-console-041-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-041 no toca autorizacion ni interfaz. (regularizacion retroactiva)",
+          "report": "harness/reports/wi-console-041-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-041 no cambia login, sesion, tokens ni el cliente HTTP. (regularizacion retroactiva)",
+          "report": "harness/reports/wi-console-041-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-041 no altera Projects ni visibilidad. (regularizacion retroactiva)",
+          "report": "harness/reports/wi-console-041-contract-sync-scope-review.md"
+        }
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-042",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P2",
+      "sprint": "SMART V3",
+      "title": "Regularizar retroactivamente el trabajo de UI ejecutado desde cross (3f6341c)",
+      "storyIds": [
+        "HU01",
+        "HU12",
+        "HU14"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-044"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "specPaths": [
+        "spec/features/010-product-experience/tasks.md",
+        "spec/transversal/design-system/spec.md",
+        "spec/transversal/accessibility/spec.md",
+        "harness/reports/cross-fase4-ui-console-2026-10-18.md",
+        "harness/reports/wi-console-042-scope-approval.md",
+        "harness/reports/wi-console-042-sdd-verification.md",
+        "harness/reports/wi-console-042-retroactive-verification.md",
+        "harness/reports/wi-console-042-contract-sync-scope-review.md",
+        "harness/reports/wi-console-042-review.md",
+        "harness/reports/wi-console-042-ux-review.md",
+        "harness/reports/wi-console-042-closure.md"
+      ],
+      "acceptanceCriteria": [
+        "El reporte declara la retroactividad e implementationAgent: cross; verificación con evidencia real (lint, tipos, pruebas, build, format:check, contraste y comportamiento en navegador).",
+        "reviewer y ux-reviewer independientes revisan 3f6341c (máx. 2 ciclos); idioma de UI en español con términos de dominio en inglés; sin reinterpretar la autoridad MAINTAINER/ADMIN sobre Functional Knowledge.",
+        "WI-CONSOLE-005 y WI-CONSOLE-006 no se cierran; se documenta la cobertura parcial."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-042-scope-approval.md",
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true,
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-042 no toca bindings, UI ni endpoints. (regularizacion retroactiva de UI)",
+          "report": "harness/reports/wi-console-042-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-042 no toca autorizacion ni interfaz. (regularizacion retroactiva de UI)",
+          "report": "harness/reports/wi-console-042-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-042 no cambia login, sesion, tokens ni el cliente HTTP. (regularizacion retroactiva de UI)",
+          "report": "harness/reports/wi-console-042-contract-sync-scope-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-042 no altera Projects ni visibilidad. (regularizacion retroactiva de UI)",
+          "report": "harness/reports/wi-console-042-contract-sync-scope-review.md"
+        }
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-043",
+      "status": "W-DONE",
+      "title": "Espejar INTEROP-2.18 desde Core y procesar el Contract Sync CS-CORE-20261021-001",
+      "storyIds": [
+        "HU01",
+        "HU11",
+        "HU12",
+        "HU14",
+        "HU15"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-045"
+      ],
+      "dependsOn": [],
+      "contractImpact": true,
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md",
+        "spec/contracts/github-integration-contract.md",
+        "spec/contracts/schemas",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-043-scope-approval.md",
+        "harness/reports/wi-console-043-sdd-verification.md",
+        "harness/reports/wi-console-043-contract-sync-review.md",
+        "harness/reports/wi-console-043-implementation.md",
+        "harness/reports/wi-console-043-contract-review.md",
+        "harness/reports/wi-console-043-review.md",
+        "harness/reports/wi-console-043-closure.md"
+      ],
+      "acceptanceCriteria": [
+        "interoperability-contract.md (22b880d1…), github-integration-contract.md (6c553ee8…), system-contract.md (b70f9358…) y el árbol spec/contracts/schemas (a1ba9a19…, con realtime-events.schema.json y ejemplos) coinciden byte a byte con Core 5c82853c vía git show.",
+        "Los tipos generados se regeneran (contracts:generate) y contracts:check pasa; las referencias vigentes de versión (SYSTEM/INTEROP-2.18/GH) se actualizan sin tocar historia ni CHANGELOG pasado.",
+        "CS-CORE-20261021-001 se acusa y resuelve solo con evidencia real, delegando explícitamente la adopción de código a WI-CONSOLE-044; CS-CORE-20261021-002/-003 (otros destinos) no se acusan.",
+        "lint, tsc -b --noEmit, pruebas, build, format:check y validadores pasan; sin cambio de DTO, rutas ni UI; contract-reviewer y reviewer independientes aprueban."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-043-scope-approval.md",
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-043 no toca bindings, UI ni endpoints. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-043-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-043 no toca autorizacion ni interfaz. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-043-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-043 no cambia login, sesion, tokens ni el cliente HTTP. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-043-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-043 no altera Projects ni visibilidad. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-043-contract-sync-review.md"
+        }
+      ],
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true
+    },
+    {
+      "id": "WI-CONSOLE-044",
+      "status": "W-DONE",
+      "title": "Conexión de tiempo real de Console: handshake autenticado, subscribe/ack y reconciliación (INTEROP-2.18 §6.6)",
+      "storyIds": [
+        "HU12"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-046"
+      ],
+      "dependsOn": [
+        "WI-CONSOLE-043"
+      ],
+      "contractImpact": true,
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md",
+        "spec/contracts/github-integration-contract.md",
+        "spec/contracts/schemas",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-044-scope-approval.md",
+        "harness/reports/wi-console-044-sdd-verification.md",
+        "harness/reports/wi-console-044-contract-sync-review.md",
+        "harness/reports/wi-console-044-implementation.md",
+        "harness/reports/wi-console-044-contract-review.md",
+        "harness/reports/wi-console-044-review.md",
+        "harness/reports/wi-console-044-closure.md"
+      ],
+      "acceptanceCriteria": [
+        "El socket nunca se abre sin sesión y el handshake envía siempre un token no vacío en auth.token (nunca en query); connect_error con AUTH_REQUIRED, INVALID_ACCESS_TOKEN, GITHUB_IDENTITY_REQUIRED (no retryable) e IDENTITY_UNAVAILABLE (retryable) se maneja y los códigos genéricos de §4.1 se toleran (code abierto).",
+        "subscribe/unsubscribe de analysis-run y experiment con SubscribeAck; eventos analysis-run:update y experiment:update; throttle de progreso 1500 ms; sin replay: se reconcilia con GET tras reconectar; el polling HTTP sigue como base.",
+        "ExperimentStatusResponse live alineado a la forma real (targetId; analysisRunId y symbol no llegan, pendientes de HU17; history? opcional) y comentario obsoleto de socket.ts actualizado.",
+        "Pruebas vitest con socket simulado y relojes falsos: handshake sin sesión, cada código de error, subscribe/ack, reconciliación y throttle; lint, tsc, test, build, format:check y contracts:check pasan; reviewer independiente aprueba (ux-reviewer solo si hay UI visible); sin reinterpretar la autoridad MAINTAINER/ADMIN sobre Functional Knowledge."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-044-scope-approval.md",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true,
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-044 no toca bindings, UI ni endpoints. (conexion de tiempo real)",
+          "report": "harness/reports/wi-console-044-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-044 no toca autorizacion ni interfaz. (conexion de tiempo real)",
+          "report": "harness/reports/wi-console-044-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-044 no cambia login, sesion, tokens ni el cliente HTTP. (conexion de tiempo real)",
+          "report": "harness/reports/wi-console-044-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-044 no altera Projects ni visibilidad. (conexion de tiempo real)",
+          "report": "harness/reports/wi-console-044-contract-sync-review.md"
+        }
+      ]
+    },
+    {
+      "id": "WI-CONSOLE-045",
+      "status": "W-DONE",
+      "title": "Espejar SYSTEM-2.14 e INTEROP-2.19 desde Core y procesar el Contract Sync CS-CORE-20261021-004",
+      "storyIds": [
+        "HU01",
+        "HU11",
+        "HU12",
+        "HU14",
+        "HU15"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-047"
+      ],
+      "dependsOn": [],
+      "contractImpact": true,
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md",
+        "spec/contracts/github-integration-contract.md",
+        "spec/contracts/schemas",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-045-scope-approval.md",
+        "harness/reports/wi-console-045-sdd-verification.md",
+        "harness/reports/wi-console-045-contract-sync-review.md",
+        "harness/reports/wi-console-045-implementation.md",
+        "harness/reports/wi-console-045-contract-review.md",
+        "harness/reports/wi-console-045-review.md",
+        "harness/reports/wi-console-045-closure.md"
+      ],
+      "acceptanceCriteria": [
+        "system-contract.md (f60d6c4b…) e interoperability-contract.md (f9866d16…) coinciden byte a byte con Core 3d2383e4 vía git show; github-integration-contract.md (6c553ee8…) y el árbol spec/contracts/schemas (a1ba9a19…) no cambian y son idénticos a los de 3d2383e4.",
+        "Las referencias vigentes de versión (SYSTEM-2.13→2.14, INTEROP-2.18→2.19) se actualizan en spec/ sin tocar historia, CHANGELOG pasado ni código de producto.",
+        "CS-CORE-20261021-004 (informativo, breaking=false) se acusa y resuelve solo con evidencia real; sin cambio de código, DTO, rutas ni UI.",
+        "lint, tsc -b --noEmit, pruebas, build, format:check, contracts:check y validadores pasan; contract-reviewer y reviewer independientes aprueban."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-045-scope-approval.md",
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-045 no toca bindings, UI ni endpoints. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-045-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-045 no toca autorizacion ni interfaz. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-045-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-045 no cambia login, sesion, tokens ni el cliente HTTP. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-045-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-045 no altera Projects ni visibilidad. (espejo documental de contratos)",
+          "report": "harness/reports/wi-console-045-contract-sync-review.md"
+        }
+      ],
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true
+    },
+    {
+      "id": "WI-CONSOLE-046",
+      "status": "W-DONE",
+      "title": "Conectar AnalysisRunDetailPage al tiempo real (analysis-run:update, INTEROP-2.19 §6.6) invalidando el GET del Run (sin polling del Run que preservar ni añadir)",
+      "storyIds": [
+        "HU12"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-048"
+      ],
+      "dependsOn": [
+        "WI-CONSOLE-044"
+      ],
+      "contractImpact": false,
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/schemas",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-046-scope-approval.md",
+        "harness/reports/wi-console-046-sdd-verification.md",
+        "harness/reports/wi-console-046-contract-sync-review.md",
+        "harness/reports/wi-console-046-implementation.md",
+        "harness/reports/wi-console-046-review.md",
+        "harness/reports/wi-console-046-closure.md"
+      ],
+      "acceptanceCriteria": [
+        "AnalysisRunDetailPage se suscribe a analysis-run:update del Run abierto mediante un hook que solo invalida/reconcilia el GET /analysis-runs/{id} (controlPlaneKeys.run) ante cada aviso y cada reconexión; sin escribir el DTO en la caché, sin cambio de DTO ni de rutas, y sin eliminar ni relajar el polling HTTP.",
+        "Sin sesión o con fuente mock no se abre el socket; al desmontar, cambiar de Run o cerrar sesión la suscripción se libera sin fugas (listeners y timers), verificado con prueba; se evalúa y documenta si el WI crea un segundo consumidor del mismo analysis-run y, solo si lo crea, se resuelve el conteo de referencias de unsubscribe con prueba.",
+        "Pruebas vitest con fake timers y socket simulado; ux-reviewer solo si cambia lo visible (si no, se justifica y se omite); lint, tsc -b --noEmit, pruebas, build, format:check, contracts:check y validadores pasan; reviewer independiente aprueba; sin reinterpretar la autoridad MAINTAINER/ADMIN sobre Functional Knowledge."
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-046-scope-approval.md",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true,
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-046 no toca bindings ni endpoints. (tiempo real del detalle de Run)",
+          "report": "harness/reports/wi-console-046-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-046 no toca autorizacion. (tiempo real del detalle de Run)",
+          "report": "harness/reports/wi-console-046-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-046 no cambia login, sesion, tokens ni el cliente HTTP. (tiempo real del detalle de Run)",
+          "report": "harness/reports/wi-console-046-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-046 no altera Projects ni visibilidad. (tiempo real del detalle de Run)",
+          "report": "harness/reports/wi-console-046-contract-sync-review.md"
+        }
+      ],
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-10-22T01:35:00.000Z",
+        "note": "sdd-analyst: ninguna DEC con Blocks alcanza este WI (DEC-RT-001 APPROVED; DEC-VAL-001 PENDING no aplica); D2 de WI-CONSOLE-044 queda resuelta por la cita literal del usuario."
+      },
+      "closedAt": "2026-10-22T01:41:00.000Z"
+    },
+    {
+      "id": "WI-CONSOLE-047",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P2",
+      "sprint": "SMART V3",
+      "title": "Mejoras de UX de Console: objetivos táctiles de 40 px, Focus Mode a 375 px, glosario es/en, conteos coherentes del demo, error de configuración visible y verificación de accesibilidad pendiente",
+      "storyIds": [
+        "HU01",
+        "HU12",
+        "HU14"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-049"
+      ],
+      "caseIds": [],
+      "dependsOn": [
+        "WI-CONSOLE-042"
+      ],
+      "contractImpact": false,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "specPaths": [
+        "spec/features/010-product-experience/tasks.md",
+        "spec/transversal/design-system/spec.md",
+        "spec/transversal/accessibility/spec.md",
+        "spec/transversal/demo-mode/spec.md",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-047-scope-approval.md",
+        "harness/reports/wi-console-047-sdd-verification.md",
+        "harness/reports/wi-console-047-contract-sync-review.md",
+        "harness/reports/wi-console-047-implementation.md",
+        "harness/reports/wi-console-047-a11y-verification.md",
+        "harness/reports/wi-console-047-review.md",
+        "harness/reports/wi-console-047-ux-review.md",
+        "harness/reports/wi-console-047-closure.md"
+      ],
+      "scopeApprovalReport": "harness/reports/wi-console-047-scope-approval.md",
+      "acceptanceCriteria": [
+        "Enlace de marca, «Saltar al contenido» y pestañas de proyecto miden al menos 40×40 px (medido en el navegador antes y después) y Focus Mode no tiene scroll horizontal a 375 px, sin romper el layout a 1280 px.",
+        "El texto visible está en español con términos de dominio en inglés solo según el glosario de spec/transversal/design-system/spec.md, y los conteos de Action Required del demo coinciden entre Projects, KPI y listas desde una sola fuente de verdad, sin cambio de contratos ni de rótulos DEMO.",
+        "Una VITE_CORE_API_URL inválida muestra una pantalla de error de configuración en español, accionable y sin secretos, y el modo mock/demo no se rompe.",
+        "Zoom 200 %, reduced motion en ejecución (≤ 120 ms), foco en diálogos (restauración y atrapado) y semántica/roles/nombres accesibles se verifican con pruebas automatizadas y evidencia manual reproducible; lo no probado se declara; WI-CONSOLE-005 y 006 siguen W-PLANNED.",
+        "Sin tiempo real nuevo, primitives UI nuevas, cambios de DTO/rutas/contratos ni ajuste de reasoningEffortMessage; lint, tsc -b --noEmit, pruebas, build, format:check, contracts:check y validadores pasan; reviewer y ux-reviewer independientes aprueban en máximo 2 ciclos."
+      ],
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "approved": true,
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-047 solo cambia presentacion, textos y verificacion de accesibilidad, sin bindings ni endpoints.",
+          "report": "harness/reports/wi-console-047-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-047 no toca autorizacion ni rutas.",
+          "report": "harness/reports/wi-console-047-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-047 no cambia login, sesion, tokens ni el cliente HTTP, salvo mostrar un error de configuracion de la URL base.",
+          "report": "harness/reports/wi-console-047-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-047 no altera visibilidad de Projects, solo la coherencia de los conteos del demo.",
+          "report": "harness/reports/wi-console-047-contract-sync-review.md"
+        }
+      ]
+    },
+    {
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "priority": "P2",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "id": "WI-CONSOLE-048",
+      "status": "W-DONE",
+      "title": "Polling de respaldo del detalle de AnalysisRun: refetch periódico del GET solo mientras el Run está en curso (QUEUED/PROCESSING), con pollAfterMs si existe y convivencia con el tiempo real",
+      "storyIds": [
+        "HU12"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-050"
+      ],
+      "dependsOn": [
+        "WI-CONSOLE-046"
+      ],
+      "specPaths": [
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "spec/contracts/interoperability-contract.md",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-048-scope-approval.md",
+        "harness/reports/wi-console-048-sdd-verification.md",
+        "harness/reports/wi-console-048-contract-sync-review.md",
+        "harness/reports/wi-console-048-implementation.md",
+        "harness/reports/wi-console-048-review.md",
+        "harness/reports/wi-console-048-closure.md"
+      ],
+      "acceptanceCriteria": [
+        "useAnalysisRun (o el punto equivalente) refetchea el GET /analysis-runs/{id} periódicamente solo mientras el Run está en QUEUED o PROCESSING (definición existente de estados en curso) y se detiene al llegar a un estado terminal o ante un error, sin inventar estados.",
+        "El intervalo respeta pollAfterMs si existe (acotado a 250 ms–30 s, INTEROP-2.19 §5) y, sin él, usa el intervalo por defecto del polling análogo del repositorio; la elección se documenta; en pruebas el intervalo es el modo acelerado ya centralizado.",
+        "Convive con useAnalysisRunRealtime sin peticiones duplicadas innecesarias ni fugas: el aviso en tiempo real sigue solo invalidando el GET, y al desmontar, cambiar de Run o cerrar sesión no quedan timers ni suscripciones; sin cambio de DTO, rutas, markup, copy ni socket.",
+        "Pruebas vitest con fake timers o reloj inyectado (nunca reloj real): polling activo en estado en curso, parada en terminal, pollAfterMs y su tope, default sin pollAfterMs, limpieza al desmontar y convivencia con la invalidación del realtime; alguna prueba falla (ROJA) al mutar la lógica clave.",
+        "lint, tsc -b --noEmit, pruebas, build, format:check, contracts:check y validadores pasan; reviewer independiente aprueba en máximo 2 ciclos; ux-reviewer se omite con justificación si no cambia lo visible."
+      ],
+      "approved": true,
+      "scopeApprovalReport": "harness/reports/wi-console-048-scope-approval.md",
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-048 solo agrega un refetch periodico del GET del Run, sin bindings ni endpoints.",
+          "report": "harness/reports/wi-console-048-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-048 no toca autorizacion ni rutas.",
+          "report": "harness/reports/wi-console-048-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-048 no cambia login, sesion, tokens ni el cliente HTTP.",
+          "report": "harness/reports/wi-console-048-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-048 no altera visibilidad de Projects ni Runs.",
+          "report": "harness/reports/wi-console-048-contract-sync-review.md"
+        }
+      ],
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-10-22T03:08:00.000Z",
+        "note": "sdd-analyst: ninguna DEC con Blocks alcanza este WI; el usuario aprobó el alcance en el chat (ver scope-approval)."
+      }
+    },
+    {
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "priority": "P2",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "id": "WI-CONSOLE-049",
+      "status": "W-DONE",
+      "title": "Glosario es/en de la UI: target, changeset, chunk(s), Functional Knowledge y Ranking pasan a inglés; se mantienen «recuperación» y «discrepancia de comportamiento»; spec del glosario y guarda actualizadas",
+      "storyIds": [
+        "HU03",
+        "HU05",
+        "HU06",
+        "HU07",
+        "HU12",
+        "HU15",
+        "HU17"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-051"
+      ],
+      "dependsOn": [
+        "WI-CONSOLE-047"
+      ],
+      "specPaths": [
+        "spec/features/010-product-experience/tasks.md",
+        "spec/transversal/design-system/spec.md",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-049-scope-approval.md",
+        "harness/reports/wi-console-049-sdd-verification.md",
+        "harness/reports/wi-console-049-contract-sync-review.md",
+        "harness/reports/wi-console-049-implementation.md",
+        "harness/reports/wi-console-049-review.md",
+        "harness/reports/wi-console-049-ux-review.md",
+        "harness/reports/wi-console-049-closure.md"
+      ],
+      "acceptanceCriteria": [
+        "La UI visible muestra target, changeset, chunk(s), Functional Knowledge y Ranking en inglés (en lugar de «objetivo», «Conjunto de cambios», «fragmento(s)» y variantes en español) según una tabla de decisiones por uso que conserva «objetivo» donde significa objetivo específico (OE) o no es target; «recuperación» y «discrepancia de comportamiento» no cambian.",
+        "Solo cambian textos visibles (copy, aria-labels, title, placeholders, rótulos) y los literales de test que los afirman; sin cambio de identificadores de código, DTOs, rutas, claves de contrato ni enums crudos, y sin tocar rótulos DEMO ni la autoridad MAINTAINER/ADMIN sobre Functional Knowledge.",
+        "spec/transversal/design-system/spec.md documenta los términos y la convención de concordancia y plural; ui/glossary.test.ts deja de prohibir Target/Changeset/Chunks, verifica que los términos permitidos aparecen donde corresponde y mantiene las prohibiciones restantes (Retrieval, Behavioral Mismatch, etc.).",
+        "lint, tsc -b --noEmit, pruebas (con fake timers, nunca reloj real), build, format:check, contracts:check y validadores pasan; sin cambios de DTO/rutas/contratos/realtime/primitives nuevas.",
+        "reviewer y ux-reviewer independientes aprueban en máximo 2 ciclos; el ux-reviewer valida legibilidad y coherencia en las pantallas afectadas (modo demo, 1280 y 375 px) sin desbordes nuevos."
+      ],
+      "approved": true,
+      "scopeApprovalReport": "harness/reports/wi-console-049-scope-approval.md",
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-049 solo cambia textos visibles del glosario, sin bindings ni endpoints.",
+          "report": "harness/reports/wi-console-049-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-049 no toca autorizacion ni rutas.",
+          "report": "harness/reports/wi-console-049-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-049 no cambia login, sesion, tokens ni el cliente HTTP.",
+          "report": "harness/reports/wi-console-049-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-049 no altera visibilidad de Projects ni Runs.",
+          "report": "harness/reports/wi-console-049-contract-sync-review.md"
+        }
+      ],
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-10-22T03:40:00.000Z",
+        "note": "Ninguna DEC con Blocks alcanza este WI (por verificar en sdd-verification); el usuario aprobó el alcance en el chat (ver scope-approval)."
+      },
+      "uiImpact": true,
+      "lane": "STANDARD"
+    },
+    {
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "priority": "P2",
+      "sprint": "SMART V3",
+      "caseIds": [],
+      "contractImpact": false,
+      "publishesContract": false,
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "id": "WI-CONSOLE-050",
+      "status": "W-DONE",
+      "title": "Desborde horizontal del documento en Experimento con resultado: el visually-hidden de la ultima columna escapa de .table-frame; causa raiz corregida, auditoria de tablas y guarda CSS",
+      "storyIds": [
+        "HU17",
+        "HU18"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-052"
+      ],
+      "dependsOn": [
+        "WI-CONSOLE-047"
+      ],
+      "specPaths": [
+        "spec/features/014-analysisrun-experiments/tasks.md",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-050-scope-approval.md",
+        "harness/reports/wi-console-050-sdd-verification.md",
+        "harness/reports/wi-console-050-contract-sync-review.md",
+        "harness/reports/wi-console-050-implementation.md",
+        "harness/reports/wi-console-050-review.md",
+        "harness/reports/wi-console-050-ux-review.md",
+        "harness/reports/wi-console-050-closure.md"
+      ],
+      "acceptanceCriteria": [
+        "En la pagina de Experimento con resultado el documento no desborda: scrollWidth == clientWidth a 1280 y 375 px (y 320 px si es viable) en modo demo; el .table-frame conserva su scroll horizontal interno. Antes/despues medidos en navegador real.",
+        "La causa raiz se corrige con el cambio minimo (ancestro posicionado del visually-hidden en el contenedor de la tabla o equivalente) sin alterar el diseno; sin cambios de copy, DTO, rutas, contratos, realtime ni primitives nuevas.",
+        "Auditoria del patron (visually-hidden dentro de th/td en contenedor con overflow) en las demas tablas y paginas (Historial, Inventario, Runs, comparaciones, Functional Knowledge) con mediciones antes/despues; solo se corrigen las que tengan desborde real medido.",
+        "Guarda estatica vitest del CSS (en jsdom no se mide layout) que falla (ROJA) al revertir el arreglo; lint, tsc -b --noEmit, pruebas sin reloj real, build, format:check, contracts:check y validadores pasan.",
+        "reviewer y ux-reviewer independientes aprueban en maximo 2 ciclos; el ux-reviewer mide por su cuenta."
+      ],
+      "approved": true,
+      "scopeApprovalReport": "harness/reports/wi-console-050-scope-approval.md",
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-050 solo cambia una regla CSS de layout, sin bindings ni endpoints.",
+          "report": "harness/reports/wi-console-050-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-050 no toca autorizacion ni rutas.",
+          "report": "harness/reports/wi-console-050-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-050 no cambia login, sesion, tokens ni el cliente HTTP.",
+          "report": "harness/reports/wi-console-050-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-050 no altera visibilidad de Projects ni Runs.",
+          "report": "harness/reports/wi-console-050-contract-sync-review.md"
+        }
+      ],
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-10-22T04:30:00.000Z",
+        "note": "sdd-analyst: ninguna DEC con Blocks alcanza este WI (sin DEC aplicable, verificado); el usuario aprobo el alcance en el chat (ver scope-approval)."
+      },
+      "uiImpact": true,
+      "lane": "STANDARD"
     }
   ]
 }

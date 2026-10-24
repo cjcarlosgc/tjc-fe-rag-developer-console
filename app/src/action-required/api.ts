@@ -1,14 +1,21 @@
 import { apiRequest } from '../api/client'
 import { getDataSource } from '../api/dataSource'
 import { createIdempotencyKey } from '../api/idempotency'
-import { mockGetContextQuestionSet, mockListActionRequired, mockListFunctionalKnowledge, mockSubmitFunctionalAnswer } from '../api/mockBackend'
-import type { ActionRequiredListPage, FunctionalAnswerAcceptedResponse, FunctionalKnowledgeListPage, FunctionalKnowledgeStatus, FunctionalQuestionSetResponse, SubmitFunctionalAnswerRequest } from './types'
+import { loadMockBackend } from '../api/loadMockBackend'
+import type {
+  ActionRequiredListPage,
+  FunctionalAnswerAcceptedResponse,
+  FunctionalKnowledgeListPage,
+  FunctionalKnowledgeStatus,
+  FunctionalQuestionSetResponse,
+  SubmitFunctionalAnswerRequest,
+} from './types'
 
 const AGGREGATE_PAGE_SIZE = 100
 
 /** HU38 (INTEROP-2.2 §6.11, implementado y desplegado en Core): `GET /action-required?projectId&cursor&limit` — inbox cross-project, `projectId` opcional. */
 export function listActionRequired(projectId?: string, cursor?: string | null, limit?: number): Promise<ActionRequiredListPage> {
-  if (getDataSource() === 'mock') return mockListActionRequired(projectId)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockListActionRequired(projectId))
   const params = new URLSearchParams()
   if (projectId) params.set('projectId', projectId)
   if (cursor) params.set('cursor', cursor)
@@ -34,7 +41,7 @@ export async function listAllActionRequired(): Promise<ActionRequiredListPage['i
 
 /** HU37: `GET /analysis-runs/{analysisRunId}/context-questions` — una pregunta a la vez, sin total fijo. */
 export function getContextQuestionSet(analysisRunId: string): Promise<FunctionalQuestionSetResponse> {
-  if (getDataSource() === 'mock') return mockGetContextQuestionSet(analysisRunId)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockGetContextQuestionSet(analysisRunId))
   return apiRequest<FunctionalQuestionSetResponse>(`/analysis-runs/${encodeURIComponent(analysisRunId)}/context-questions`)
 }
 
@@ -44,16 +51,26 @@ export function getContextQuestionSet(analysisRunId: string): Promise<Functional
  * Un `409 FUNCTIONAL_KNOWLEDGE_CONFLICT` llega como `ApiError` con `details: FunctionalKnowledgeConflictResponse`
  * (`FocusModePage` ya lo consume así).
  */
-export function submitFunctionalAnswer(analysisRunId: string, questionId: string, input: SubmitFunctionalAnswerRequest, idempotencyKey?: string): Promise<FunctionalAnswerAcceptedResponse> {
-  if (getDataSource() === 'mock') return mockSubmitFunctionalAnswer(analysisRunId, questionId, input)
-  const body: { choice: typeof input.choice; answer?: string; conflictResolution?: typeof input.conflictResolution } = { choice: input.choice }
+export function submitFunctionalAnswer(
+  analysisRunId: string,
+  questionId: string,
+  input: SubmitFunctionalAnswerRequest,
+  idempotencyKey?: string,
+): Promise<FunctionalAnswerAcceptedResponse> {
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockSubmitFunctionalAnswer(analysisRunId, questionId, input))
+  const body: { choice: typeof input.choice; answer?: string; conflictResolution?: typeof input.conflictResolution } = {
+    choice: input.choice,
+  }
   if (input.answer) body.answer = input.answer
   if (input.conflictResolution) body.conflictResolution = input.conflictResolution
-  return apiRequest<FunctionalAnswerAcceptedResponse>(`/analysis-runs/${encodeURIComponent(analysisRunId)}/context-questions/${encodeURIComponent(questionId)}/answers`, {
-    method: 'POST',
-    headers: { 'Idempotency-Key': idempotencyKey ?? createIdempotencyKey() },
-    body: JSON.stringify(body),
-  })
+  return apiRequest<FunctionalAnswerAcceptedResponse>(
+    `/analysis-runs/${encodeURIComponent(analysisRunId)}/context-questions/${encodeURIComponent(questionId)}/answers`,
+    {
+      method: 'POST',
+      headers: { 'Idempotency-Key': idempotencyKey ?? createIdempotencyKey() },
+      body: JSON.stringify(body),
+    },
+  )
 }
 
 /**
@@ -62,9 +79,11 @@ export function submitFunctionalAnswer(analysisRunId: string, questionId: string
  * Console la muestra tal como llega, sin calcular `scenarioKey` ni autoridad.
  */
 export function listFunctionalKnowledge(projectId: string, status?: FunctionalKnowledgeStatus): Promise<FunctionalKnowledgeListPage> {
-  if (getDataSource() === 'mock') return mockListFunctionalKnowledge(projectId, status)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockListFunctionalKnowledge(projectId, status))
   const params = new URLSearchParams()
   if (status) params.set('status', status)
   const query = params.toString()
-  return apiRequest<FunctionalKnowledgeListPage>(`/projects/${encodeURIComponent(projectId)}/functional-knowledge${query ? `?${query}` : ''}`)
+  return apiRequest<FunctionalKnowledgeListPage>(
+    `/projects/${encodeURIComponent(projectId)}/functional-knowledge${query ? `?${query}` : ''}`,
+  )
 }

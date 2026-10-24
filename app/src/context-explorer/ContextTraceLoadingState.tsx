@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Spinner } from '../ui/Loaders'
 
-interface Props { label: string }
+interface Props {
+  label: string
+}
 
 /** spec.md "Estados y movimiento" (Stitch): loaders con fase textual y tiempo transcurrido, nunca un spinner ciego. */
 export function ContextTraceLoadingState({ label }: Props) {
@@ -13,11 +15,16 @@ export function ContextTraceLoadingState({ label }: Props) {
     return () => clearInterval(interval)
   }, [])
 
-  return <div className="analysis-progress" role="status" aria-live="polite">
-    <div className="progress-header">
-      <Spinner />
-      <div><span className="live-indicator" /><strong>{label}</strong></div>
-      <span className="progress-value">T+{(elapsedMs / 1000).toFixed(1)}s</span>
+  return (
+    <div className="analysis-progress" role="status" aria-live="polite">
+      <div className="progress-header">
+        <Spinner />
+        <div>
+          <span className="live-indicator" />
+          <strong>{label}</strong>
+        </div>
+        <span className="progress-value">T+{(elapsedMs / 1000).toFixed(1)}s</span>
+      </div>
     </div>
-  </div>
+  )
 }

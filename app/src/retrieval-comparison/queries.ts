@@ -3,6 +3,7 @@ import { ApiError } from '../api/client'
 import type { AnalysisSymbolResponse } from '../control-plane/types'
 import { getRetrievalComparison, getRetrievalComparisonResults, listRetrievalComparisons, startRetrievalComparison } from './api'
 import { isTerminalRetrievalStatus, type RetrievalComparisonStatusResponse } from './types'
+import { pollDelayMs } from '../api/polling'
 
 /**
  * Intervalo de polling cuando la respuesta 202 no trae `pollAfterMs` utilizable (ausente, 0 o negativo). Es un fallback
@@ -42,7 +43,7 @@ export function useRetrievalComparison(retrievalComparisonId: string | null, pol
       if (query.state.error) return false
       const status = query.state.data?.status
       if (status && isTerminalRetrievalStatus(status)) return false
-      return import.meta.env.MODE === 'test' ? 10 : interval
+      return pollDelayMs(interval)
     },
   })
 }
@@ -69,7 +70,11 @@ export function retrievalResultsRefetchInterval(error: unknown, pollAfterMs?: nu
 }
 
 /** Resultados: solo se habilita cuando el estado ya es `COMPLETED` (en `FAILED` no hay resultados que pedir). */
-export function useRetrievalComparisonResults(retrievalComparisonId: string | null, status: RetrievalComparisonStatusResponse['status'] | undefined, pollAfterMs?: number) {
+export function useRetrievalComparisonResults(
+  retrievalComparisonId: string | null,
+  status: RetrievalComparisonStatusResponse['status'] | undefined,
+  pollAfterMs?: number,
+) {
   return useQuery({
     queryKey: retrievalComparisonKeys.results(retrievalComparisonId ?? ''),
     queryFn: () => getRetrievalComparisonResults(retrievalComparisonId!),
@@ -88,7 +93,8 @@ export interface StartRetrievalComparisonInput {
 export function useStartRetrievalComparison(analysisRunId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ symbol, idempotencyKey }: StartRetrievalComparisonInput) => startRetrievalComparison(analysisRunId, symbol, idempotencyKey),
+    mutationFn: ({ symbol, idempotencyKey }: StartRetrievalComparisonInput) =>
+      startRetrievalComparison(analysisRunId, symbol, idempotencyKey),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: retrievalComparisonKeys.list(analysisRunId) }),
   })
 }

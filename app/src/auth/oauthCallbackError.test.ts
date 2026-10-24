@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { clearOAuthCallbackError, readOAuthCallbackError } from './oauthCallbackError'
 
-const callbackUrl = '/?error=access_denied&error_code=oauth_denied&error_description=The+user+denied+access#error=access_denied&error_code=oauth_denied&error_description=The+user+denied+access&sb='
+const callbackUrl =
+  '/?error=access_denied&error_code=oauth_denied&error_description=The+user+denied+access#error=access_denied&error_code=oauth_denied&error_description=The+user+denied+access&sb='
 
 afterEach(() => window.history.replaceState(null, '', '/'))
 

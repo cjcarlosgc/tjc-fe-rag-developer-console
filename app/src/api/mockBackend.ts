@@ -1,12 +1,55 @@
-import type { ActionRequiredListPage, FunctionalAnswerAcceptedResponse, FunctionalKnowledgeConflictResponse, FunctionalKnowledgeListPage, FunctionalKnowledgeResponse, FunctionalKnowledgeStatus, FunctionalQuestionResponse, FunctionalQuestionSetResponse, SubmitFunctionalAnswerRequest } from '../action-required/types'
-import type { AgentTrajectoryStep, ContextTraceDetail, ContextTracePage, ContextTraceSummary, DiscoveredFilePage, ExperimentContextTraceFilters, RagCandidateNode, RagContextTraceDetail, SourceExcerpt } from '../context-explorer/types'
-import type { ExperimentAccepted, ExperimentConfiguration, ExperimentOperation, ExperimentResultViewModel, RepetitionResult, StrategyMetrics } from '../experiments/types'
+import type {
+  ActionRequiredListPage,
+  FunctionalAnswerAcceptedResponse,
+  FunctionalKnowledgeConflictResponse,
+  FunctionalKnowledgeListPage,
+  FunctionalKnowledgeResponse,
+  FunctionalKnowledgeStatus,
+  FunctionalQuestionResponse,
+  FunctionalQuestionSetResponse,
+  SubmitFunctionalAnswerRequest,
+} from '../action-required/types'
+import type {
+  AgentTrajectoryStep,
+  ContextTraceDetail,
+  ContextTracePage,
+  ContextTraceSummary,
+  DiscoveredFilePage,
+  ExperimentContextTraceFilters,
+  RagCandidateNode,
+  RagContextTraceDetail,
+  SourceExcerpt,
+} from '../context-explorer/types'
+import type {
+  ExperimentAccepted,
+  ExperimentConfiguration,
+  ExperimentOperation,
+  ExperimentResultViewModel,
+  RepetitionResult,
+  StrategyMetrics,
+} from '../experiments/types'
 import type { RunComparisonAccepted, RunComparisonListPage, RunComparisonOperation } from '../run-comparison/types'
-import type { RetrievalCandidateResponse, RetrievalComparisonAcceptedResponse, RetrievalComparisonListPage, RetrievalComparisonResultsResponse, RetrievalComparisonStatusResponse, RetrievalMetricsResponse, RetrievalModeResultResponse } from '../retrieval-comparison/types'
+import type {
+  RetrievalCandidateResponse,
+  RetrievalComparisonAcceptedResponse,
+  RetrievalComparisonListPage,
+  RetrievalComparisonResultsResponse,
+  RetrievalComparisonStatusResponse,
+  RetrievalMetricsResponse,
+  RetrievalModeResultResponse,
+} from '../retrieval-comparison/types'
 import type { CaptureNextPrState } from '../run-comparison/speculative/captureNextPr'
 import type { PriorCoverageLevel } from '../control-plane/speculative/priorCoverage'
 import type { TestInventoryResponse } from '../inventory/types'
-import type { AnalysisHistoryItem, CreateProjectInput, Project, ProjectRole, UpdateProjectInput, Workspace, WorkspaceListResponse } from '../projects/types'
+import type {
+  AnalysisHistoryItem,
+  CreateProjectInput,
+  Project,
+  ProjectRole,
+  UpdateProjectInput,
+  Workspace,
+  WorkspaceListResponse,
+} from '../projects/types'
 import { DEMO_FOREIGN_OWNER_LOGINS, DEMO_GITHUB_REPOSITORIES } from '../control-plane/demoRepositories'
 import { canBindRepository } from '../control-plane/repositoryPermissions'
 import { UNSUPPORTED_PROJECT_MESSAGE } from '../control-plane/errors'
@@ -108,26 +151,138 @@ type DemoRetrievalCandidate = Omit<RetrievalCandidateResponse, 'rank' | 'selecte
 
 /** Candidatos demo TypeScript. `symbolQualifiedName: null` y `semanticScore` distinto por modo son intencionales. */
 const DEMO_RETRIEVAL_CANDIDATES: DemoRetrievalCandidate[] = [
-  { chunkId: 'chk_demo_calc', filePath: 'src/domain/OrderService.ts', symbolQualifiedName: 'OrderService.calculateTotal', semanticScore: 0.912, structuralRelation: 'DECLARING_CLASS', combinedScore: 0.861 },
-  { chunkId: 'chk_demo_create', filePath: 'src/domain/OrderService.ts', symbolQualifiedName: 'OrderService.createOrder', semanticScore: 0.874, structuralRelation: null, combinedScore: 0.812 },
-  { chunkId: 'chk_demo_tax', filePath: 'src/domain/TaxCalculator.ts', symbolQualifiedName: 'TaxCalculator.compute', semanticScore: 0.851, structuralRelation: 'IMPORTS', combinedScore: 0.836 },
-  { chunkId: 'chk_demo_coupon', filePath: 'src/domain/CouponPolicy.ts', symbolQualifiedName: 'CouponPolicy.apply', semanticScore: 0.806, structuralRelation: 'IMPORTED_BY', combinedScore: 0.809 },
-  { chunkId: 'chk_demo_money', filePath: 'src/shared/money.ts', symbolQualifiedName: 'formatCurrency', semanticScore: 0.788, structuralRelation: 'IMPORTS', combinedScore: 0.7 },
-  { chunkId: 'chk_demo_refund', filePath: 'src/domain/RefundPolicy.ts', symbolQualifiedName: null, semanticScore: 0.742, structuralRelation: null, combinedScore: 0.519 },
-  { chunkId: 'chk_demo_invoice', filePath: 'src/domain/InvoiceService.ts', symbolQualifiedName: 'InvoiceService.applyLateFee', semanticScore: 0.731, structuralRelation: null, combinedScore: 0.512 },
-  { chunkId: 'chk_demo_shipping', filePath: 'src/domain/ShippingAddressValidator.ts', symbolQualifiedName: 'ShippingAddressValidator.validate', semanticScore: 0.702, structuralRelation: 'IMPORTED_BY', combinedScore: 0.671 },
-  { chunkId: 'chk_demo_discount', filePath: 'src/domain/DiscountEngine.ts', symbolQualifiedName: 'DiscountEngine.applyDiscount', semanticScore: 0.688, structuralRelation: 'DECLARING_CLASS', combinedScore: 0.78 },
-  { chunkId: 'chk_demo_payment', filePath: 'src/domain/PaymentGateway.ts', symbolQualifiedName: 'PaymentGateway.charge', semanticScore: 0.641, structuralRelation: null, combinedScore: 0.449 },
-  { chunkId: 'chk_demo_logger', filePath: 'src/shared/logger.ts', symbolQualifiedName: 'logger.info', semanticScore: 0.612, structuralRelation: null, combinedScore: 0.428 },
-  { chunkId: 'chk_demo_readme', filePath: 'src/shared/readme-snippet.ts', symbolQualifiedName: null, semanticScore: 0.587, structuralRelation: null, combinedScore: 0.411 },
+  {
+    chunkId: 'chk_demo_calc',
+    filePath: 'src/domain/OrderService.ts',
+    symbolQualifiedName: 'OrderService.calculateTotal',
+    semanticScore: 0.912,
+    structuralRelation: 'DECLARING_CLASS',
+    combinedScore: 0.861,
+  },
+  {
+    chunkId: 'chk_demo_create',
+    filePath: 'src/domain/OrderService.ts',
+    symbolQualifiedName: 'OrderService.createOrder',
+    semanticScore: 0.874,
+    structuralRelation: null,
+    combinedScore: 0.812,
+  },
+  {
+    chunkId: 'chk_demo_tax',
+    filePath: 'src/domain/TaxCalculator.ts',
+    symbolQualifiedName: 'TaxCalculator.compute',
+    semanticScore: 0.851,
+    structuralRelation: 'IMPORTS',
+    combinedScore: 0.836,
+  },
+  {
+    chunkId: 'chk_demo_coupon',
+    filePath: 'src/domain/CouponPolicy.ts',
+    symbolQualifiedName: 'CouponPolicy.apply',
+    semanticScore: 0.806,
+    structuralRelation: 'IMPORTED_BY',
+    combinedScore: 0.809,
+  },
+  {
+    chunkId: 'chk_demo_money',
+    filePath: 'src/shared/money.ts',
+    symbolQualifiedName: 'formatCurrency',
+    semanticScore: 0.788,
+    structuralRelation: 'IMPORTS',
+    combinedScore: 0.7,
+  },
+  {
+    chunkId: 'chk_demo_refund',
+    filePath: 'src/domain/RefundPolicy.ts',
+    symbolQualifiedName: null,
+    semanticScore: 0.742,
+    structuralRelation: null,
+    combinedScore: 0.519,
+  },
+  {
+    chunkId: 'chk_demo_invoice',
+    filePath: 'src/domain/InvoiceService.ts',
+    symbolQualifiedName: 'InvoiceService.applyLateFee',
+    semanticScore: 0.731,
+    structuralRelation: null,
+    combinedScore: 0.512,
+  },
+  {
+    chunkId: 'chk_demo_shipping',
+    filePath: 'src/domain/ShippingAddressValidator.ts',
+    symbolQualifiedName: 'ShippingAddressValidator.validate',
+    semanticScore: 0.702,
+    structuralRelation: 'IMPORTED_BY',
+    combinedScore: 0.671,
+  },
+  {
+    chunkId: 'chk_demo_discount',
+    filePath: 'src/domain/DiscountEngine.ts',
+    symbolQualifiedName: 'DiscountEngine.applyDiscount',
+    semanticScore: 0.688,
+    structuralRelation: 'DECLARING_CLASS',
+    combinedScore: 0.78,
+  },
+  {
+    chunkId: 'chk_demo_payment',
+    filePath: 'src/domain/PaymentGateway.ts',
+    symbolQualifiedName: 'PaymentGateway.charge',
+    semanticScore: 0.641,
+    structuralRelation: null,
+    combinedScore: 0.449,
+  },
+  {
+    chunkId: 'chk_demo_logger',
+    filePath: 'src/shared/logger.ts',
+    symbolQualifiedName: 'logger.info',
+    semanticScore: 0.612,
+    structuralRelation: null,
+    combinedScore: 0.428,
+  },
+  {
+    chunkId: 'chk_demo_readme',
+    filePath: 'src/shared/readme-snippet.ts',
+    symbolQualifiedName: null,
+    semanticScore: 0.587,
+    structuralRelation: null,
+    combinedScore: 0.411,
+  },
 ]
 
 /** DEMO · candidatos de un símbolo PHP (DEC-PHP-RET-001, CS-CORE-20261009-017): las tres relaciones nuevas, solo y junto a semántica. */
 const DEMO_RETRIEVAL_PHP_CANDIDATES: DemoRetrievalCandidate[] = [
-  { chunkId: 'chk_demo_php_apply', filePath: 'app/Services/CouponService.php', symbolQualifiedName: 'CouponService::apply', semanticScore: 0.903, structuralRelation: 'DECLARING_CLASS', combinedScore: 0.872 },
-  { chunkId: 'chk_demo_php_ns', filePath: 'app/Services/CouponRepository.php', symbolQualifiedName: 'CouponRepository::findActive', semanticScore: 0.842, structuralRelation: 'SAME_NAMESPACE', combinedScore: 0.829 },
-  { chunkId: 'chk_demo_php_fqn', filePath: 'app/Http/Controllers/CheckoutController.php', symbolQualifiedName: 'CheckoutController::store', semanticScore: 0.781, structuralRelation: 'FULLY_QUALIFIED_REFERENCE', combinedScore: 0.764 },
-  { chunkId: 'chk_demo_php_semantic', filePath: 'app/Support/Money.php', symbolQualifiedName: 'Money::format', semanticScore: 0.713, structuralRelation: null, combinedScore: 0.498 },
+  {
+    chunkId: 'chk_demo_php_apply',
+    filePath: 'app/Services/CouponService.php',
+    symbolQualifiedName: 'CouponService::apply',
+    semanticScore: 0.903,
+    structuralRelation: 'DECLARING_CLASS',
+    combinedScore: 0.872,
+  },
+  {
+    chunkId: 'chk_demo_php_ns',
+    filePath: 'app/Services/CouponRepository.php',
+    symbolQualifiedName: 'CouponRepository::findActive',
+    semanticScore: 0.842,
+    structuralRelation: 'SAME_NAMESPACE',
+    combinedScore: 0.829,
+  },
+  {
+    chunkId: 'chk_demo_php_fqn',
+    filePath: 'app/Http/Controllers/CheckoutController.php',
+    symbolQualifiedName: 'CheckoutController::store',
+    semanticScore: 0.781,
+    structuralRelation: 'FULLY_QUALIFIED_REFERENCE',
+    combinedScore: 0.764,
+  },
+  {
+    chunkId: 'chk_demo_php_semantic',
+    filePath: 'app/Support/Money.php',
+    symbolQualifiedName: 'Money::format',
+    semanticScore: 0.713,
+    structuralRelation: null,
+    combinedScore: 0.498,
+  },
 ]
 
 /** DEMO · id de la semilla PHP de OE2 (`rcmp_demo_seed_php`): COMPLETED con relaciones SAME_NAMESPACE, FULLY_QUALIFIED_REFERENCE y DECLARING_CLASS.
@@ -184,7 +339,7 @@ function findVisibleRun(analysisRunId: string): AnalysisRunDetailResponse | unde
 /** Un Run existente de un Project borrado se comporta como inexistente; un id desconocido conserva el comportamiento propio de cada lectura. */
 function hideRunOfDeletedProject(analysisRunId: string): void {
   const run = analysisRuns.get(analysisRunId)
-  if (run && isProjectDeleted(run.projectId)) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (run && isProjectDeleted(run.projectId)) notFound(`No existe el AnalysisRun demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
 }
 
 function findVisibleActionRequiredRun(analysisRunId: string): MockActionRequiredRunState | undefined {
@@ -198,30 +353,118 @@ function notFound(message: string, code: string): never {
 
 function buildInventory(projectVersionId: string, revision = 7): TestInventoryResponse {
   const allTargets: TestInventoryResponse['targets'] = [
-    { id: `${projectVersionId}-class-order`, filePath: 'src/domain/OrderService.ts', symbolName: 'OrderService', methodName: null, targetType: 'CLASS', hasTest: true, testFilePaths: ['src/domain/OrderService.spec.ts'] },
-    { id: `${projectVersionId}-method-create`, filePath: 'src/domain/OrderService.ts', symbolName: 'OrderService', methodName: 'createOrder', targetType: 'METHOD', hasTest: true, testFilePaths: ['src/domain/OrderService.spec.ts'] },
-    { id: `${projectVersionId}-method-total`, filePath: 'src/domain/OrderService.ts', symbolName: 'OrderService', methodName: 'calculateTotal', targetType: 'METHOD', hasTest: false, testFilePaths: [] },
-    { id: `${projectVersionId}-class-coupon`, filePath: 'src/domain/CouponPolicy.ts', symbolName: 'CouponPolicy', methodName: null, targetType: 'CLASS', hasTest: false, testFilePaths: [] },
-    { id: `${projectVersionId}-function-money`, filePath: 'src/shared/money.ts', symbolName: 'formatCurrency', methodName: null, targetType: 'FUNCTION', hasTest: false, testFilePaths: [] },
+    {
+      id: `${projectVersionId}-class-order`,
+      filePath: 'src/domain/OrderService.ts',
+      symbolName: 'OrderService',
+      methodName: null,
+      targetType: 'CLASS',
+      hasTest: true,
+      testFilePaths: ['src/domain/OrderService.spec.ts'],
+    },
+    {
+      id: `${projectVersionId}-method-create`,
+      filePath: 'src/domain/OrderService.ts',
+      symbolName: 'OrderService',
+      methodName: 'createOrder',
+      targetType: 'METHOD',
+      hasTest: true,
+      testFilePaths: ['src/domain/OrderService.spec.ts'],
+    },
+    {
+      id: `${projectVersionId}-method-total`,
+      filePath: 'src/domain/OrderService.ts',
+      symbolName: 'OrderService',
+      methodName: 'calculateTotal',
+      targetType: 'METHOD',
+      hasTest: false,
+      testFilePaths: [],
+    },
+    {
+      id: `${projectVersionId}-class-coupon`,
+      filePath: 'src/domain/CouponPolicy.ts',
+      symbolName: 'CouponPolicy',
+      methodName: null,
+      targetType: 'CLASS',
+      hasTest: false,
+      testFilePaths: [],
+    },
+    {
+      id: `${projectVersionId}-function-money`,
+      filePath: 'src/shared/money.ts',
+      symbolName: 'formatCurrency',
+      methodName: null,
+      targetType: 'FUNCTION',
+      hasTest: false,
+      testFilePaths: [],
+    },
   ]
   const targets = revision === 5 ? [allTargets[0], allTargets[2], allTargets[3]] : revision === 6 ? allTargets.slice(0, 4) : allTargets
   const targetsWithTest = targets.filter((target) => target.hasTest).length
-  return { projectVersionId, language: 'TYPESCRIPT', detectedFramework: 'VITEST', targetsTotal: targets.length, targetsWithTest, targetsMissingTest: targets.length - targetsWithTest, targets }
+  return {
+    projectVersionId,
+    language: 'TYPESCRIPT',
+    detectedFramework: 'VITEST',
+    targetsTotal: targets.length,
+    targetsWithTest,
+    targetsMissingTest: targets.length - targetsWithTest,
+    targets,
+  }
 }
 
-/** DEMO · WI-CONSOLE-030 (C1): inventario de un Project PHP con PHPUnit. `framework: null` modela un proyecto PHP sin framework de pruebas incluido (C4, `UNSUPPORTED_PROJECT`). */
+/** DEMO · WI-CONSOLE-030 (C1): inventario de un Project PHP con PHPUnit. `framework: null` modela un Project PHP sin framework de pruebas incluido (C4, `UNSUPPORTED_PROJECT`). */
 function buildPhpInventory(projectVersionId: string, framework: 'PHPUNIT' | null = 'PHPUNIT'): TestInventoryResponse {
   // WI-CONSOLE-030 (F4): sin framework de pruebas detectado ningún target puede tener test (hasTest false, testFilePaths vacío).
   const withTests = framework !== null
   const coupon = withTests ? ['tests/Unit/CouponServiceTest.php'] : []
   const targets: TestInventoryResponse['targets'] = [
-    { id: `${projectVersionId}-class-coupon`, filePath: 'app/Services/CouponService.php', symbolName: 'CouponService', methodName: null, targetType: 'CLASS', hasTest: withTests, testFilePaths: coupon },
-    { id: `${projectVersionId}-method-apply`, filePath: 'app/Services/CouponService.php', symbolName: 'CouponService', methodName: 'apply', targetType: 'METHOD', hasTest: withTests, testFilePaths: coupon },
-    { id: `${projectVersionId}-method-store`, filePath: 'app/Http/Controllers/CheckoutController.php', symbolName: 'CheckoutController', methodName: 'store', targetType: 'METHOD', hasTest: false, testFilePaths: [] },
-    { id: `${projectVersionId}-function-format`, filePath: 'app/Support/Money.php', symbolName: 'Money', methodName: 'format', targetType: 'METHOD', hasTest: false, testFilePaths: [] },
+    {
+      id: `${projectVersionId}-class-coupon`,
+      filePath: 'app/Services/CouponService.php',
+      symbolName: 'CouponService',
+      methodName: null,
+      targetType: 'CLASS',
+      hasTest: withTests,
+      testFilePaths: coupon,
+    },
+    {
+      id: `${projectVersionId}-method-apply`,
+      filePath: 'app/Services/CouponService.php',
+      symbolName: 'CouponService',
+      methodName: 'apply',
+      targetType: 'METHOD',
+      hasTest: withTests,
+      testFilePaths: coupon,
+    },
+    {
+      id: `${projectVersionId}-method-store`,
+      filePath: 'app/Http/Controllers/CheckoutController.php',
+      symbolName: 'CheckoutController',
+      methodName: 'store',
+      targetType: 'METHOD',
+      hasTest: false,
+      testFilePaths: [],
+    },
+    {
+      id: `${projectVersionId}-function-format`,
+      filePath: 'app/Support/Money.php',
+      symbolName: 'Money',
+      methodName: 'format',
+      targetType: 'METHOD',
+      hasTest: false,
+      testFilePaths: [],
+    },
   ]
   const targetsWithTest = targets.filter((target) => target.hasTest).length
-  return { projectVersionId, language: 'PHP', detectedFramework: framework, targetsTotal: targets.length, targetsWithTest, targetsMissingTest: targets.length - targetsWithTest, targets }
+  return {
+    projectVersionId,
+    language: 'PHP',
+    detectedFramework: framework,
+    targetsTotal: targets.length,
+    targetsWithTest,
+    targetsMissingTest: targets.length - targetsWithTest,
+    targets,
+  }
 }
 
 /** No es un hash real; solo produce un string con forma hexadecimal estable para la demo. */
@@ -259,25 +502,236 @@ function buildExcerpt(seed: ExcerptSeed): SourceExcerpt {
 }
 
 function toContextTraceSummary(detail: ContextTraceDetail): ContextTraceSummary {
-  const { id, kind, projectVersionId, targetId, testRunId, experimentId, strategy, repetition, attempt, current, artifactIds, createdAt } = detail
+  const { id, kind, projectVersionId, targetId, testRunId, experimentId, strategy, repetition, attempt, current, artifactIds, createdAt } =
+    detail
   return { id, kind, projectVersionId, targetId, testRunId, experimentId, strategy, repetition, attempt, current, artifactIds, createdAt }
 }
 
 /** HU27: ~12 candidatos para `trace_rag_order_total` cubriendo SELECTED solo-semántico, SELECTED dual y las 3 razones de descarte. */
 function buildOrderTotalCandidates(): RagCandidateNode[] {
   return [
-    { chunkId: 'chunk-001', rank: 1, tokenCount: 120, semanticScore: .91, structuralMatch: null, combinedScore: .91, matchedVia: ['SEMANTIC'], decision: 'SELECTED', discardReason: null, excerpt: buildExcerpt({ filePath: 'src/domain/OrderService.ts', symbolName: 'OrderService', startLine: 1, endLine: 18, snippet: 'export class OrderService {\n  constructor(private readonly coupons: CouponPolicy) {}\n}', before: [], after: [] }) },
-    { chunkId: 'chunk-002', rank: 2, tokenCount: 48, semanticScore: .77, structuralMatch: 'IMPORTS', combinedScore: .85, matchedVia: ['SEMANTIC', 'IMPORTS'], decision: 'SELECTED', discardReason: null, excerpt: buildExcerpt({ filePath: 'src/shared/money.ts', symbolName: 'formatCurrency', startLine: 1, endLine: 9, snippet: "export function formatCurrency(amount: number): string {\n  return `$${amount.toFixed(2)}`\n}", before: [{ lineNumber: 1, content: "import { CURRENCY_SYMBOL } from './constants'" }] }) },
-    { chunkId: 'chunk-003', rank: 3, tokenCount: 96, semanticScore: null, structuralMatch: 'IMPORTED_BY', combinedScore: .58, matchedVia: ['IMPORTED_BY'], decision: 'SELECTED', discardReason: null, excerpt: buildExcerpt({ filePath: 'src/domain/CouponPolicy.ts', symbolName: 'CouponPolicy', startLine: 1, endLine: 14, snippet: 'export class CouponPolicy {\n  apply(order: Order, code: string): number { /* ... */ }\n}' }) },
-    { chunkId: 'chunk-004', rank: 4, tokenCount: 40, semanticScore: .68, structuralMatch: null, combinedScore: .68, matchedVia: ['SEMANTIC'], decision: 'SELECTED', discardReason: null, excerpt: buildExcerpt({ filePath: 'src/domain/OrderItem.ts', symbolName: 'OrderItem', startLine: 1, endLine: 10, snippet: 'export interface OrderItem {\n  price: number\n  quantity: number\n}' }) },
-    { chunkId: 'chunk-005', rank: 5, tokenCount: 84, semanticScore: .81, structuralMatch: 'IMPORTS', combinedScore: .9, matchedVia: ['SEMANTIC', 'IMPORTS'], decision: 'SELECTED', discardReason: null, excerpt: buildExcerpt({ filePath: 'src/domain/DiscountEngine.ts', symbolName: 'applyDiscount', parentSymbolName: 'DiscountEngine', startLine: 12, endLine: 20, snippet: 'applyDiscount(total: number, coupon: Coupon): number {\n  return total - coupon.amount\n}' }) },
-    { chunkId: 'chunk-006', rank: 6, tokenCount: 70, semanticScore: .55, structuralMatch: null, combinedScore: .55, matchedVia: ['SEMANTIC'], decision: 'DISCARDED', discardReason: 'BELOW_MINIMUM_SCORE', excerpt: buildExcerpt({ filePath: 'src/domain/Inventory.ts', symbolName: 'reserveStock', startLine: 5, endLine: 15, snippet: 'reserveStock(sku: string, quantity: number): void { /* ... */ }' }) },
-    { chunkId: 'chunk-007', rank: 7, tokenCount: 60, semanticScore: .49, structuralMatch: null, combinedScore: .49, matchedVia: ['SEMANTIC'], decision: 'DISCARDED', discardReason: 'BELOW_MINIMUM_SCORE', excerpt: buildExcerpt({ filePath: 'src/domain/TaxCalculator.ts', symbolName: 'computeTax', startLine: 3, endLine: 9, snippet: 'computeTax(amount: number): number { /* ... */ }' }) },
-    { chunkId: 'chunk-008', rank: 8, tokenCount: 30, semanticScore: .62, structuralMatch: null, combinedScore: .62, matchedVia: ['SEMANTIC'], decision: 'DISCARDED', discardReason: 'TOP_K_LIMIT', excerpt: buildExcerpt({ filePath: 'src/shared/logger.ts', symbolName: 'createLogger', startLine: 1, endLine: 6, snippet: 'export function createLogger(scope: string) { /* ... */ }' }) },
-    { chunkId: 'chunk-009', rank: 9, tokenCount: 66, semanticScore: .6, structuralMatch: null, combinedScore: .6, matchedVia: ['SEMANTIC'], decision: 'DISCARDED', discardReason: 'TOP_K_LIMIT', excerpt: buildExcerpt({ filePath: 'src/domain/ShippingPolicy.ts', symbolName: 'estimateShipping', startLine: 8, endLine: 16, snippet: 'estimateShipping(order: Order): number { /* ... */ }' }) },
-    { chunkId: 'chunk-010', rank: 10, tokenCount: 210, semanticScore: .58, structuralMatch: null, combinedScore: .58, matchedVia: ['SEMANTIC'], decision: 'DISCARDED', discardReason: 'TOKEN_BUDGET', excerpt: buildExcerpt({ filePath: 'src/domain/RefundPolicy.ts', symbolName: 'RefundPolicy', startLine: 1, endLine: 22, snippet: 'export class RefundPolicy {\n  // contenido extenso truncado para la demo\n}', truncated: true, after: [{ lineNumber: 23, content: '}' }] }) },
-    { chunkId: 'chunk-011', rank: 11, tokenCount: 190, semanticScore: .52, structuralMatch: null, combinedScore: .52, matchedVia: ['SEMANTIC'], decision: 'DISCARDED', discardReason: 'TOKEN_BUDGET', excerpt: buildExcerpt({ filePath: 'src/domain/AuditTrail.ts', symbolName: 'record', startLine: 4, endLine: 9, snippet: 'record(event: AuditEvent): void { /* ... */ }' }) },
-    { chunkId: 'chunk-012', rank: 12, tokenCount: 44, semanticScore: .41, structuralMatch: null, combinedScore: .41, matchedVia: ['SEMANTIC'], decision: 'DISCARDED', discardReason: 'BELOW_MINIMUM_SCORE', excerpt: buildExcerpt({ filePath: 'src/domain/CurrencyConverter.ts', symbolName: 'convert', startLine: 2, endLine: 8, snippet: 'convert(amount: number, currency: Currency): number { /* ... */ }' }) },
+    {
+      chunkId: 'chunk-001',
+      rank: 1,
+      tokenCount: 120,
+      semanticScore: 0.91,
+      structuralMatch: null,
+      combinedScore: 0.91,
+      matchedVia: ['SEMANTIC'],
+      decision: 'SELECTED',
+      discardReason: null,
+      excerpt: buildExcerpt({
+        filePath: 'src/domain/OrderService.ts',
+        symbolName: 'OrderService',
+        startLine: 1,
+        endLine: 18,
+        snippet: 'export class OrderService {\n  constructor(private readonly coupons: CouponPolicy) {}\n}',
+        before: [],
+        after: [],
+      }),
+    },
+    {
+      chunkId: 'chunk-002',
+      rank: 2,
+      tokenCount: 48,
+      semanticScore: 0.77,
+      structuralMatch: 'IMPORTS',
+      combinedScore: 0.85,
+      matchedVia: ['SEMANTIC', 'IMPORTS'],
+      decision: 'SELECTED',
+      discardReason: null,
+      excerpt: buildExcerpt({
+        filePath: 'src/shared/money.ts',
+        symbolName: 'formatCurrency',
+        startLine: 1,
+        endLine: 9,
+        snippet: 'export function formatCurrency(amount: number): string {\n  return `$${amount.toFixed(2)}`\n}',
+        before: [{ lineNumber: 1, content: "import { CURRENCY_SYMBOL } from './constants'" }],
+      }),
+    },
+    {
+      chunkId: 'chunk-003',
+      rank: 3,
+      tokenCount: 96,
+      semanticScore: null,
+      structuralMatch: 'IMPORTED_BY',
+      combinedScore: 0.58,
+      matchedVia: ['IMPORTED_BY'],
+      decision: 'SELECTED',
+      discardReason: null,
+      excerpt: buildExcerpt({
+        filePath: 'src/domain/CouponPolicy.ts',
+        symbolName: 'CouponPolicy',
+        startLine: 1,
+        endLine: 14,
+        snippet: 'export class CouponPolicy {\n  apply(order: Order, code: string): number { /* ... */ }\n}',
+      }),
+    },
+    {
+      chunkId: 'chunk-004',
+      rank: 4,
+      tokenCount: 40,
+      semanticScore: 0.68,
+      structuralMatch: null,
+      combinedScore: 0.68,
+      matchedVia: ['SEMANTIC'],
+      decision: 'SELECTED',
+      discardReason: null,
+      excerpt: buildExcerpt({
+        filePath: 'src/domain/OrderItem.ts',
+        symbolName: 'OrderItem',
+        startLine: 1,
+        endLine: 10,
+        snippet: 'export interface OrderItem {\n  price: number\n  quantity: number\n}',
+      }),
+    },
+    {
+      chunkId: 'chunk-005',
+      rank: 5,
+      tokenCount: 84,
+      semanticScore: 0.81,
+      structuralMatch: 'IMPORTS',
+      combinedScore: 0.9,
+      matchedVia: ['SEMANTIC', 'IMPORTS'],
+      decision: 'SELECTED',
+      discardReason: null,
+      excerpt: buildExcerpt({
+        filePath: 'src/domain/DiscountEngine.ts',
+        symbolName: 'applyDiscount',
+        parentSymbolName: 'DiscountEngine',
+        startLine: 12,
+        endLine: 20,
+        snippet: 'applyDiscount(total: number, coupon: Coupon): number {\n  return total - coupon.amount\n}',
+      }),
+    },
+    {
+      chunkId: 'chunk-006',
+      rank: 6,
+      tokenCount: 70,
+      semanticScore: 0.55,
+      structuralMatch: null,
+      combinedScore: 0.55,
+      matchedVia: ['SEMANTIC'],
+      decision: 'DISCARDED',
+      discardReason: 'BELOW_MINIMUM_SCORE',
+      excerpt: buildExcerpt({
+        filePath: 'src/domain/Inventory.ts',
+        symbolName: 'reserveStock',
+        startLine: 5,
+        endLine: 15,
+        snippet: 'reserveStock(sku: string, quantity: number): void { /* ... */ }',
+      }),
+    },
+    {
+      chunkId: 'chunk-007',
+      rank: 7,
+      tokenCount: 60,
+      semanticScore: 0.49,
+      structuralMatch: null,
+      combinedScore: 0.49,
+      matchedVia: ['SEMANTIC'],
+      decision: 'DISCARDED',
+      discardReason: 'BELOW_MINIMUM_SCORE',
+      excerpt: buildExcerpt({
+        filePath: 'src/domain/TaxCalculator.ts',
+        symbolName: 'computeTax',
+        startLine: 3,
+        endLine: 9,
+        snippet: 'computeTax(amount: number): number { /* ... */ }',
+      }),
+    },
+    {
+      chunkId: 'chunk-008',
+      rank: 8,
+      tokenCount: 30,
+      semanticScore: 0.62,
+      structuralMatch: null,
+      combinedScore: 0.62,
+      matchedVia: ['SEMANTIC'],
+      decision: 'DISCARDED',
+      discardReason: 'TOP_K_LIMIT',
+      excerpt: buildExcerpt({
+        filePath: 'src/shared/logger.ts',
+        symbolName: 'createLogger',
+        startLine: 1,
+        endLine: 6,
+        snippet: 'export function createLogger(scope: string) { /* ... */ }',
+      }),
+    },
+    {
+      chunkId: 'chunk-009',
+      rank: 9,
+      tokenCount: 66,
+      semanticScore: 0.6,
+      structuralMatch: null,
+      combinedScore: 0.6,
+      matchedVia: ['SEMANTIC'],
+      decision: 'DISCARDED',
+      discardReason: 'TOP_K_LIMIT',
+      excerpt: buildExcerpt({
+        filePath: 'src/domain/ShippingPolicy.ts',
+        symbolName: 'estimateShipping',
+        startLine: 8,
+        endLine: 16,
+        snippet: 'estimateShipping(order: Order): number { /* ... */ }',
+      }),
+    },
+    {
+      chunkId: 'chunk-010',
+      rank: 10,
+      tokenCount: 210,
+      semanticScore: 0.58,
+      structuralMatch: null,
+      combinedScore: 0.58,
+      matchedVia: ['SEMANTIC'],
+      decision: 'DISCARDED',
+      discardReason: 'TOKEN_BUDGET',
+      excerpt: buildExcerpt({
+        filePath: 'src/domain/RefundPolicy.ts',
+        symbolName: 'RefundPolicy',
+        startLine: 1,
+        endLine: 22,
+        snippet: 'export class RefundPolicy {\n  // contenido extenso truncado para la demo\n}',
+        truncated: true,
+        after: [{ lineNumber: 23, content: '}' }],
+      }),
+    },
+    {
+      chunkId: 'chunk-011',
+      rank: 11,
+      tokenCount: 190,
+      semanticScore: 0.52,
+      structuralMatch: null,
+      combinedScore: 0.52,
+      matchedVia: ['SEMANTIC'],
+      decision: 'DISCARDED',
+      discardReason: 'TOKEN_BUDGET',
+      excerpt: buildExcerpt({
+        filePath: 'src/domain/AuditTrail.ts',
+        symbolName: 'record',
+        startLine: 4,
+        endLine: 9,
+        snippet: 'record(event: AuditEvent): void { /* ... */ }',
+      }),
+    },
+    {
+      chunkId: 'chunk-012',
+      rank: 12,
+      tokenCount: 44,
+      semanticScore: 0.41,
+      structuralMatch: null,
+      combinedScore: 0.41,
+      matchedVia: ['SEMANTIC'],
+      decision: 'DISCARDED',
+      discardReason: 'BELOW_MINIMUM_SCORE',
+      excerpt: buildExcerpt({
+        filePath: 'src/domain/CurrencyConverter.ts',
+        symbolName: 'convert',
+        startLine: 2,
+        endLine: 8,
+        snippet: 'convert(amount: number, currency: Currency): number { /* ... */ }',
+      }),
+    },
   ]
 }
 
@@ -288,34 +742,92 @@ function seedContextTraces(): void {
     parentSymbolName: 'OrderService',
     startLine: 24,
     endLine: 26,
-    snippet: '  calculateTotal(items: OrderItem[]): number {\n    return items.reduce((total, item) => total + item.price * item.quantity, 0)\n  }',
-    before: [{ lineNumber: 21, content: 'class OrderService {' }, { lineNumber: 22, content: '  constructor(private readonly coupons: CouponPolicy) {}' }, { lineNumber: 23, content: '' }],
-    after: [{ lineNumber: 27, content: '' }, { lineNumber: 28, content: '  createOrder(items: OrderItem[]): Order {' }, { lineNumber: 29, content: '    const total = this.calculateTotal(items)' }],
+    snippet:
+      '  calculateTotal(items: OrderItem[]): number {\n    return items.reduce((total, item) => total + item.price * item.quantity, 0)\n  }',
+    before: [
+      { lineNumber: 21, content: 'class OrderService {' },
+      { lineNumber: 22, content: '  constructor(private readonly coupons: CouponPolicy) {}' },
+      { lineNumber: 23, content: '' },
+    ],
+    after: [
+      { lineNumber: 27, content: '' },
+      { lineNumber: 28, content: '  createOrder(items: OrderItem[]): Order {' },
+      { lineNumber: 29, content: '    const total = this.calculateTotal(items)' },
+    ],
   })
   const orderTotalCandidates = buildOrderTotalCandidates()
   const selected = orderTotalCandidates.filter((candidate) => candidate.decision === 'SELECTED')
 
   const currentTrace: ContextTraceDetail = {
-    id: 'trace_rag_order_total', kind: 'RAG', projectVersionId: 'ver_checkout_7', targetId: 'ver_checkout_7-method-total', testRunId: null, experimentId: null,
-    strategy: 'RAG', repetition: null, attempt: 1, current: true, artifactIds: [], createdAt: '2026-08-31T15:01:10.000Z',
+    id: 'trace_rag_order_total',
+    kind: 'RAG',
+    projectVersionId: 'ver_checkout_7',
+    targetId: 'ver_checkout_7-method-total',
+    testRunId: null,
+    experimentId: null,
+    strategy: 'RAG',
+    repetition: null,
+    attempt: 1,
+    current: true,
+    artifactIds: [],
+    createdAt: '2026-08-31T15:01:10.000Z',
     target: { chunkIds: ['chunk-target-order-total'], excerpt: orderTotalTarget, tokenCount: 38 },
     candidates: orderTotalCandidates,
     retrievedChunks: orderTotalCandidates.length,
     selectedChunks: selected.length,
     contextTokens: selected.reduce((total, candidate) => total + candidate.tokenCount, 0),
-    configuration: { minimumScore: .5, topK: 5, maxContextTokens: 4_000, semanticWeight: .7, structuralWeight: .3 },
+    configuration: { minimumScore: 0.5, topK: 5, maxContextTokens: 4_000, semanticWeight: 0.7, structuralWeight: 0.3 },
   }
   contextTraces.set(currentTrace.id, { detail: currentTrace, notFinishedUntilPolls: 0, polls: 0 })
-
 }
 
 function seed(): void {
   const completedAt = '2026-08-31T14:18:00.000Z'
-  const project: Project = { id: 'prj_checkout_demo', name: 'checkout-service', currentVersionId: 'ver_checkout_7', workspace: DEMO_WORKSPACES[0], role: 'ADMIN', createdAt: '2026-08-24T09:30:00.000Z', updatedAt: completedAt }
-  const emptyProject: Project = { id: 'prj_billing_demo', name: 'billing-engine', currentVersionId: null, workspace: DEMO_WORKSPACES[0], role: 'ADMIN', createdAt: '2026-08-30T16:45:00.000Z', updatedAt: '2026-08-30T16:45:00.000Z' }
-  const maintainerProject: Project = { id: 'prj_org_orders_demo', name: 'orders-api', currentVersionId: null, workspace: DEMO_WORKSPACES[2], role: 'MAINTAINER', createdAt: '2026-09-12T08:30:00.000Z', updatedAt: '2026-09-13T12:00:00.000Z' }
-  const readerProject: Project = { id: 'prj_org_metrics_demo', name: 'metrics-console', currentVersionId: null, workspace: DEMO_WORKSPACES[1], role: 'READER', createdAt: '2026-09-13T10:15:00.000Z', updatedAt: '2026-09-13T10:15:00.000Z' }
-  const writerProject: Project = { id: 'prj_org_writer_demo', name: 'payments-gateway', currentVersionId: null, workspace: DEMO_WORKSPACES[2], role: 'WRITER', createdAt: '2026-09-16T08:00:00.000Z', updatedAt: '2026-09-16T08:00:00.000Z' }
+  const project: Project = {
+    id: 'prj_checkout_demo',
+    name: 'checkout-service',
+    currentVersionId: 'ver_checkout_7',
+    workspace: DEMO_WORKSPACES[0],
+    role: 'ADMIN',
+    createdAt: '2026-08-24T09:30:00.000Z',
+    updatedAt: completedAt,
+  }
+  const emptyProject: Project = {
+    id: 'prj_billing_demo',
+    name: 'billing-engine',
+    currentVersionId: null,
+    workspace: DEMO_WORKSPACES[0],
+    role: 'ADMIN',
+    createdAt: '2026-08-30T16:45:00.000Z',
+    updatedAt: '2026-08-30T16:45:00.000Z',
+  }
+  const maintainerProject: Project = {
+    id: 'prj_org_orders_demo',
+    name: 'orders-api',
+    currentVersionId: null,
+    workspace: DEMO_WORKSPACES[2],
+    role: 'MAINTAINER',
+    createdAt: '2026-09-12T08:30:00.000Z',
+    updatedAt: '2026-09-13T12:00:00.000Z',
+  }
+  const readerProject: Project = {
+    id: 'prj_org_metrics_demo',
+    name: 'metrics-console',
+    currentVersionId: null,
+    workspace: DEMO_WORKSPACES[1],
+    role: 'READER',
+    createdAt: '2026-09-13T10:15:00.000Z',
+    updatedAt: '2026-09-13T10:15:00.000Z',
+  }
+  const writerProject: Project = {
+    id: 'prj_org_writer_demo',
+    name: 'payments-gateway',
+    currentVersionId: null,
+    workspace: DEMO_WORKSPACES[2],
+    role: 'WRITER',
+    createdAt: '2026-09-16T08:00:00.000Z',
+    updatedAt: '2026-09-16T08:00:00.000Z',
+  }
   projects.set(project.id, project)
   projects.set(emptyProject.id, emptyProject)
   projects.set(maintainerProject.id, maintainerProject)
@@ -324,28 +836,119 @@ function seed(): void {
   // WI-CONSOLE-030 (C1/C4): dos Projects PHP en `team-sandbox` (ADMIN). Rotulados por los sellos DEMO globales, no por el nombre.
   // `shop-php-demo`: PHP con PHPUnit y un Run con símbolos PHP (semilla OE2 `rcmp_demo_seed_php`).
   // `legacy-php-admin`: PHP sin framework de pruebas detectado: OE2 responde 422 UNSUPPORTED_PROJECT (§6.5.1).
-  const shopPhpProject: Project = { id: 'prj_shop_php_demo', name: 'shop-php-demo', currentVersionId: 'ver_shop_php_1', workspace: DEMO_WORKSPACES[3], role: 'ADMIN', createdAt: '2026-09-05T09:00:00.000Z', updatedAt: '2026-09-08T10:05:00.000Z' }
-  const legacyPhpProject: Project = { id: 'prj_legacy_php_demo', name: 'legacy-php-admin', currentVersionId: 'ver_legacy_php_1', workspace: DEMO_WORKSPACES[3], role: 'ADMIN', createdAt: '2026-09-04T09:00:00.000Z', updatedAt: '2026-09-07T10:05:00.000Z' }
+  const shopPhpProject: Project = {
+    id: 'prj_shop_php_demo',
+    name: 'shop-php-demo',
+    currentVersionId: 'ver_shop_php_1',
+    workspace: DEMO_WORKSPACES[3],
+    role: 'ADMIN',
+    createdAt: '2026-09-05T09:00:00.000Z',
+    updatedAt: '2026-09-08T10:05:00.000Z',
+  }
+  const legacyPhpProject: Project = {
+    id: 'prj_legacy_php_demo',
+    name: 'legacy-php-admin',
+    currentVersionId: 'ver_legacy_php_1',
+    workspace: DEMO_WORKSPACES[3],
+    role: 'ADMIN',
+    createdAt: '2026-09-04T09:00:00.000Z',
+    updatedAt: '2026-09-07T10:05:00.000Z',
+  }
   projects.set(shopPhpProject.id, shopPhpProject)
   projects.set(legacyPhpProject.id, legacyPhpProject)
   versions.set('ver_shop_php_1', {
-    history: { id: 'ver_shop_php_1', projectId: shopPhpProject.id, status: 'COMPLETED', language: 'PHP', originalFileName: null, filesProcessed: 31, chunksCount: 122, detectedFramework: 'PHPUNIT', targetsTotal: 4, targetsWithTest: 2, targetsMissingTest: 2, createdAt: '2026-09-05T09:02:00.000Z', completedAt: '2026-09-05T09:03:40.000Z', current: true },
+    history: {
+      id: 'ver_shop_php_1',
+      projectId: shopPhpProject.id,
+      status: 'COMPLETED',
+      language: 'PHP',
+      originalFileName: null,
+      filesProcessed: 31,
+      chunksCount: 122,
+      detectedFramework: 'PHPUNIT',
+      targetsTotal: 4,
+      targetsWithTest: 2,
+      targetsMissingTest: 2,
+      createdAt: '2026-09-05T09:02:00.000Z',
+      completedAt: '2026-09-05T09:03:40.000Z',
+      current: true,
+    },
     inventory: buildPhpInventory('ver_shop_php_1'),
   })
   versions.set('ver_legacy_php_1', {
-    history: { id: 'ver_legacy_php_1', projectId: legacyPhpProject.id, status: 'COMPLETED', language: 'PHP', originalFileName: null, filesProcessed: 19, chunksCount: 77, detectedFramework: null, targetsTotal: 4, targetsWithTest: 0, targetsMissingTest: 4, createdAt: '2026-09-04T09:02:00.000Z', completedAt: '2026-09-04T09:03:10.000Z', current: true },
+    history: {
+      id: 'ver_legacy_php_1',
+      projectId: legacyPhpProject.id,
+      status: 'COMPLETED',
+      language: 'PHP',
+      originalFileName: null,
+      filesProcessed: 19,
+      chunksCount: 77,
+      detectedFramework: null,
+      targetsTotal: 4,
+      targetsWithTest: 0,
+      targetsMissingTest: 4,
+      createdAt: '2026-09-04T09:02:00.000Z',
+      completedAt: '2026-09-04T09:03:10.000Z',
+      current: true,
+    },
     inventory: buildPhpInventory('ver_legacy_php_1', null),
   })
   versions.set('ver_checkout_7', {
-    history: { id: 'ver_checkout_7', projectId: project.id, status: 'COMPLETED', language: 'TYPESCRIPT', originalFileName: null, filesProcessed: 47, chunksCount: 186, detectedFramework: 'VITEST', targetsTotal: 5, targetsWithTest: 2, targetsMissingTest: 3, createdAt: '2026-08-31T14:17:10.000Z', completedAt, current: true },
+    history: {
+      id: 'ver_checkout_7',
+      projectId: project.id,
+      status: 'COMPLETED',
+      language: 'TYPESCRIPT',
+      originalFileName: null,
+      filesProcessed: 47,
+      chunksCount: 186,
+      detectedFramework: 'VITEST',
+      targetsTotal: 5,
+      targetsWithTest: 2,
+      targetsMissingTest: 3,
+      createdAt: '2026-08-31T14:17:10.000Z',
+      completedAt,
+      current: true,
+    },
     inventory: buildInventory('ver_checkout_7'),
   })
   versions.set('ver_checkout_6', {
-    history: { id: 'ver_checkout_6', projectId: project.id, status: 'COMPLETED', language: 'TYPESCRIPT', originalFileName: null, filesProcessed: 43, chunksCount: 164, detectedFramework: 'VITEST', targetsTotal: 4, targetsWithTest: 2, targetsMissingTest: 2, createdAt: '2026-08-28T10:05:00.000Z', completedAt: '2026-08-28T10:06:21.000Z', current: false },
+    history: {
+      id: 'ver_checkout_6',
+      projectId: project.id,
+      status: 'COMPLETED',
+      language: 'TYPESCRIPT',
+      originalFileName: null,
+      filesProcessed: 43,
+      chunksCount: 164,
+      detectedFramework: 'VITEST',
+      targetsTotal: 4,
+      targetsWithTest: 2,
+      targetsMissingTest: 2,
+      createdAt: '2026-08-28T10:05:00.000Z',
+      completedAt: '2026-08-28T10:06:21.000Z',
+      current: false,
+    },
     inventory: buildInventory('ver_checkout_6', 6),
   })
   versions.set('ver_checkout_5', {
-    history: { id: 'ver_checkout_5', projectId: project.id, status: 'COMPLETED', language: 'TYPESCRIPT', originalFileName: null, filesProcessed: 38, chunksCount: 141, detectedFramework: 'VITEST', targetsTotal: 3, targetsWithTest: 1, targetsMissingTest: 2, createdAt: '2026-08-24T09:34:00.000Z', completedAt: '2026-08-24T09:35:30.000Z', current: false },
+    history: {
+      id: 'ver_checkout_5',
+      projectId: project.id,
+      status: 'COMPLETED',
+      language: 'TYPESCRIPT',
+      originalFileName: null,
+      filesProcessed: 38,
+      chunksCount: 141,
+      detectedFramework: 'VITEST',
+      targetsTotal: 3,
+      targetsWithTest: 1,
+      targetsMissingTest: 2,
+      createdAt: '2026-08-24T09:34:00.000Z',
+      completedAt: '2026-08-24T09:35:30.000Z',
+      current: false,
+    },
     inventory: buildInventory('ver_checkout_5', 5),
   })
   seedContextTraces()
@@ -363,31 +966,63 @@ function seedActionRequired(): void {
     headChanged: false,
     questions: [
       {
-        id: 'fq_checkout_pr42_1', scenarioKind: 'EXCEPTION', scenarioKey: 'coupon.apply.expired-paid-order', abstention: null,
+        id: 'fq_checkout_pr42_1',
+        scenarioKind: 'EXCEPTION',
+        scenarioKey: 'coupon.apply.expired-paid-order',
+        abstention: null,
         analysisRunId: 'arun_checkout_pr42',
         projectId: 'prj_checkout_demo',
         repositoryName: 'acme/checkout-service',
         pullRequestNumber: 42,
         headSha: 'a1b2c3d',
-        target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'CouponPolicy.apply', filePath: 'src/domain/CouponPolicy.ts', changeKind: 'DIRECTLY_CHANGED' },
+        target: {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'CouponPolicy.apply',
+          filePath: 'src/domain/CouponPolicy.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
         question: '¿"apply" debe rechazar un cupón vencido aunque el pedido ya esté marcado como pagado?',
-        rationale: 'El PR modifica la validación de vigencia de "apply" pero no hay una prueba existente que fije el comportamiento cuando el pedido ya está pagado.',
+        rationale:
+          'El PR modifica la validación de vigencia de "apply" pero no hay una prueba existente que fije el comportamiento cuando el pedido ya está pagado.',
         status: 'PENDING',
-        visualAid: { kind: 'MINI_DIFF', title: 'CouponPolicy.ts — cambio en apply', language: 'typescript', content: '- apply(order: Order, code: string): number {\n-   return this.discountFor(code)\n+ apply(order: Order, code: string): number {\n+   if (this.isExpired(code)) throw new ExpiredCouponError(code)\n+   return this.discountFor(code)' },
+        visualAid: {
+          kind: 'MINI_DIFF',
+          title: 'CouponPolicy.ts — cambio en apply',
+          language: 'typescript',
+          content:
+            '- apply(order: Order, code: string): number {\n-   return this.discountFor(code)\n+ apply(order: Order, code: string): number {\n+   if (this.isExpired(code)) throw new ExpiredCouponError(code)\n+   return this.discountFor(code)',
+        },
         createdAt: '2026-09-12T18:20:00.000Z',
       },
       {
-        id: 'fq_checkout_pr42_2', scenarioKind: 'BOUNDARY', scenarioKey: 'order.calculateTotal.rounding', abstention: null,
+        id: 'fq_checkout_pr42_2',
+        scenarioKind: 'BOUNDARY',
+        scenarioKey: 'order.calculateTotal.rounding',
+        abstention: null,
         analysisRunId: 'arun_checkout_pr42',
         projectId: 'prj_checkout_demo',
         repositoryName: 'acme/checkout-service',
         pullRequestNumber: 42,
         headSha: 'a1b2c3d',
-        target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'POTENTIALLY_IMPACTED' },
+        target: {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'OrderService.calculateTotal',
+          filePath: 'src/domain/OrderService.ts',
+          changeKind: 'POTENTIALLY_IMPACTED',
+        },
         question: '¿El redondeo de "calculateTotal" debe truncar o redondear al centavo más cercano?',
-        rationale: '"calculateTotal" invoca a "CouponPolicy.apply" y el PR introduce un nuevo cálculo de descuento; el redondeo no está documentado en el código ni en pruebas previas.',
+        rationale:
+          '"calculateTotal" invoca a "CouponPolicy.apply" y el PR introduce un nuevo cálculo de descuento; el redondeo no está documentado en el código ni en pruebas previas.',
         status: 'PENDING',
-        visualAid: { kind: 'CODE_FRAGMENT', title: 'OrderService.ts:42', language: 'typescript', content: 'calculateTotal(order: Order): number {\n  const discount = this.coupons.apply(order, order.couponCode)\n  return order.subtotal - discount // redondeo pendiente de definir\n}' },
+        visualAid: {
+          kind: 'CODE_FRAGMENT',
+          title: 'OrderService.ts:42',
+          language: 'typescript',
+          content:
+            'calculateTotal(order: Order): number {\n  const discount = this.coupons.apply(order, order.couponCode)\n  return order.subtotal - discount // redondeo pendiente de definir\n}',
+        },
         createdAt: '2026-09-12T18:20:00.000Z',
       },
     ],
@@ -398,17 +1033,32 @@ function seedActionRequired(): void {
     headChanged: true,
     questions: [
       {
-        id: 'fq_billing_pr17_1', scenarioKind: 'BOUNDARY', scenarioKey: 'discount.applyDiscount.negative-total', abstention: null,
+        id: 'fq_billing_pr17_1',
+        scenarioKind: 'BOUNDARY',
+        scenarioKey: 'discount.applyDiscount.negative-total',
+        abstention: null,
         analysisRunId: 'arun_billing_pr17',
         projectId: 'prj_billing_demo',
         repositoryName: 'acme/billing-engine',
         pullRequestNumber: 17,
         headSha: 'f9e8d7c',
-        target: { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'DiscountEngine', filePath: 'src/domain/DiscountEngine.ts', changeKind: 'DIRECTLY_CHANGED' },
+        target: {
+          language: 'TYPESCRIPT',
+          kind: 'CLASS',
+          qualifiedName: 'DiscountEngine',
+          filePath: 'src/domain/DiscountEngine.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
         question: '¿"DiscountEngine.applyDiscount" puede dejar el total en negativo si el cupón excede el subtotal?',
         rationale: '"applyDiscount" cambia su firma en este PR y "OrderService" depende de su resultado para el total final.',
         status: 'PENDING',
-        visualAid: { kind: 'SYMBOL_RELATION', title: 'DiscountEngine ↔ OrderService', language: null, content: 'OrderService.calculateTotal() --usa--> DiscountEngine.applyDiscount()\nDiscountEngine.applyDiscount() --modificado en PR#17-->' },
+        visualAid: {
+          kind: 'SYMBOL_RELATION',
+          title: 'DiscountEngine ↔ OrderService',
+          language: null,
+          content:
+            'OrderService.calculateTotal() --usa--> DiscountEngine.applyDiscount()\nDiscountEngine.applyDiscount() --modificado en PR#17-->',
+        },
         createdAt: '2026-09-11T09:05:00.000Z',
       },
     ],
@@ -420,22 +1070,38 @@ function seedActionRequired(): void {
     headChanged: false,
     questions: [
       {
-        id: 'fq_billing_pr24_1', scenarioKind: 'STATE_TRANSITION', scenarioKey: 'invoice.applyLateFee.partial-payment', abstention: { count: 2, lastAt: '2026-09-20T10:15:00.000Z', lastByUserId: 'usr_demo_admin', lastByRole: 'ADMIN' },
+        id: 'fq_billing_pr24_1',
+        scenarioKind: 'STATE_TRANSITION',
+        scenarioKey: 'invoice.applyLateFee.partial-payment',
+        abstention: { count: 2, lastAt: '2026-09-20T10:15:00.000Z', lastByUserId: 'usr_demo_admin', lastByRole: 'ADMIN' },
         analysisRunId: 'arun_billing_pr24',
         projectId: 'prj_billing_demo',
         repositoryName: 'acme/billing-engine',
         pullRequestNumber: 24,
         headSha: 'e4e4e4e',
-        target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'InvoiceService.applyLateFee', filePath: 'src/domain/InvoiceService.ts', changeKind: 'DIRECTLY_CHANGED' },
+        target: {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'InvoiceService.applyLateFee',
+          filePath: 'src/domain/InvoiceService.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
         question: '¿"applyLateFee" debe aplicarse si la factura ya fue marcada como pagada parcialmente?',
-        rationale: '"applyLateFee" no tiene pruebas existentes que fijen su comportamiento cuando ya hubo un pago parcial antes de la fecha de mora.',
+        rationale:
+          '"applyLateFee" no tiene pruebas existentes que fijen su comportamiento cuando ya hubo un pago parcial antes de la fecha de mora.',
         status: 'PENDING',
-        visualAid: { kind: 'CODE_FRAGMENT', title: 'InvoiceService.ts:88', language: 'typescript', content: 'applyLateFee(invoice: Invoice): Invoice {\n  // ¿debe saltarse si invoice.paidAmount > 0?\n  return { ...invoice, total: invoice.total + this.feeFor(invoice) }\n}' },
+        visualAid: {
+          kind: 'CODE_FRAGMENT',
+          title: 'InvoiceService.ts:88',
+          language: 'typescript',
+          content:
+            'applyLateFee(invoice: Invoice): Invoice {\n  // ¿debe saltarse si invoice.paidAmount > 0?\n  return { ...invoice, total: invoice.total + this.feeFor(invoice) }\n}',
+        },
         createdAt: '2026-09-13T21:05:00.000Z',
       },
     ],
   })
-  /** Caso HU51 (INTEROP-2.7 §6.11, DEC-FK-001): responder esta pregunta choca con `fk_shipping_zone` (ACTIVE, mismo scope/targetRef/scenarioKey) — ver mockSubmitFunctionalAnswer. Solo demo en Focus Mode: sin `AnalysisRun` propio en control-plane. */
+  /** Caso HU51 (INTEROP-2.7 §6.11, DEC-FK-001): responder esta pregunta choca con `fk_shipping_zone` (ACTIVE, mismo scope/targetRef/scenarioKey) — ver mockSubmitFunctionalAnswer. Solo demo en Focus Mode. Desde WI-CONSOLE-047 (ciclo 2) el Run también existe como `AnalysisRun` propio en control-plane (seed `arun_checkout_pr52` en `analysisRuns`), para su detalle y su trazabilidad. */
   actionRequiredRuns.set('arun_checkout_pr52', {
     analysisRunId: 'arun_checkout_pr52',
     projectId: 'prj_checkout_demo',
@@ -445,15 +1111,25 @@ function seedActionRequired(): void {
       {
         // WI-CONSOLE-030 (C3): clave alineada con `fk_shipping_zone` (EXPECTED_RESULT / shipping.validate.zones) para que el conflicto
         // exista por scope + targetRef + scenarioKey exactos (DEC-FK-001). Antes era `corporate-exception`, que no coincidía y rompía HU51.
-        id: 'fq_checkout_pr52_1', scenarioKind: 'EXPECTED_RESULT', scenarioKey: 'shipping.validate.zones', abstention: null,
+        id: 'fq_checkout_pr52_1',
+        scenarioKind: 'EXPECTED_RESULT',
+        scenarioKey: 'shipping.validate.zones',
+        abstention: null,
         analysisRunId: 'arun_checkout_pr52',
         projectId: 'prj_checkout_demo',
         repositoryName: 'acme/checkout-service',
         pullRequestNumber: 52,
         headSha: 'b2c3d4e',
-        target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'ShippingAddressValidator.validate', filePath: 'src/domain/ShippingAddressValidator.ts', changeKind: 'DIRECTLY_CHANGED' },
+        target: {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'ShippingAddressValidator.validate',
+          filePath: 'src/domain/ShippingAddressValidator.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
         question: '¿"validate" debe aceptar direcciones con código postal fuera de las zonas habilitadas si el cliente es corporativo?',
-        rationale: 'El PR agrega una excepción para clientes corporativos, pero ya existe una regla vigente sobre zonas de envío habilitadas para este símbolo.',
+        rationale:
+          'El PR agrega una excepción para clientes corporativos, pero ya existe una regla vigente sobre zonas de envío habilitadas para este símbolo.',
         status: 'PENDING',
         visualAid: null,
         createdAt: '2026-09-15T10:00:00.000Z',
@@ -464,27 +1140,61 @@ function seedActionRequired(): void {
     analysisRunId: 'arun_org_writer_pr21',
     projectId: 'prj_org_writer_demo',
     headChanged: false,
-    questions: [{
-      id: 'fq_org_writer_pr21_1', scenarioKind: 'BOUNDARY', scenarioKey: 'payments.retry.annual-plan-limit', abstention: null, analysisRunId: 'arun_org_writer_pr21', projectId: 'prj_org_writer_demo',
-      repositoryName: 'rag-tesis-org/payments-gateway', pullRequestNumber: 21, headSha: '21w21a1',
-      target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'PaymentRetry.schedule', filePath: 'src/payments/PaymentRetry.ts', changeKind: 'DIRECTLY_CHANGED' },
-      question: '¿El reintento de cobro debe respetar el límite diario aunque el cliente tenga un plan anual?',
-      rationale: 'El PR cambia la programación de reintentos sin aclarar si el límite diario aplica a planes anuales.',
-      status: 'PENDING', visualAid: null, createdAt: '2026-09-16T09:00:00.000Z',
-    }],
+    questions: [
+      {
+        id: 'fq_org_writer_pr21_1',
+        scenarioKind: 'BOUNDARY',
+        scenarioKey: 'payments.retry.annual-plan-limit',
+        abstention: null,
+        analysisRunId: 'arun_org_writer_pr21',
+        projectId: 'prj_org_writer_demo',
+        repositoryName: 'rag-tesis-org/payments-gateway',
+        pullRequestNumber: 21,
+        headSha: '21w21a1',
+        target: {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'PaymentRetry.schedule',
+          filePath: 'src/payments/PaymentRetry.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+        question: '¿El reintento de cobro debe respetar el límite diario aunque el cliente tenga un plan anual?',
+        rationale: 'El PR cambia la programación de reintentos sin aclarar si el límite diario aplica a planes anuales.',
+        status: 'PENDING',
+        visualAid: null,
+        createdAt: '2026-09-16T09:00:00.000Z',
+      },
+    ],
   })
   actionRequiredRuns.set('arun_org_metrics_pr15', {
     analysisRunId: 'arun_org_metrics_pr15',
     projectId: 'prj_org_metrics_demo',
     headChanged: false,
-    questions: [{
-      id: 'fq_org_metrics_pr15_1', scenarioKind: 'FUNCTIONAL_PRECONDITION', scenarioKey: 'metrics.range.timezone', abstention: null, analysisRunId: 'arun_org_metrics_pr15', projectId: 'prj_org_metrics_demo',
-      repositoryName: 'observability-lab/metrics-console', pullRequestNumber: 15, headSha: '15f15f1',
-      target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'MetricsQuery.range', filePath: 'src/metrics/MetricsQuery.ts', changeKind: 'DIRECTLY_CHANGED' },
-      question: '¿Los límites de fecha se interpretan en UTC o en la zona horaria del usuario?',
-      rationale: 'El PR agrega filtros temporales sin definir la zona horaria que debe usar la consulta.',
-      status: 'PENDING', visualAid: null, createdAt: '2026-09-14T09:05:00.000Z',
-    }],
+    questions: [
+      {
+        id: 'fq_org_metrics_pr15_1',
+        scenarioKind: 'FUNCTIONAL_PRECONDITION',
+        scenarioKey: 'metrics.range.timezone',
+        abstention: null,
+        analysisRunId: 'arun_org_metrics_pr15',
+        projectId: 'prj_org_metrics_demo',
+        repositoryName: 'observability-lab/metrics-console',
+        pullRequestNumber: 15,
+        headSha: '15f15f1',
+        target: {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'MetricsQuery.range',
+          filePath: 'src/metrics/MetricsQuery.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+        question: '¿Los límites de fecha se interpretan en UTC o en la zona horaria del usuario?',
+        rationale: 'El PR agrega filtros temporales sin definir la zona horaria que debe usar la consulta.',
+        status: 'PENDING',
+        visualAid: null,
+        createdAt: '2026-09-14T09:05:00.000Z',
+      },
+    ],
   })
 }
 
@@ -492,271 +1202,1256 @@ interface AnalysisRunSeed extends AnalysisRunDetailResponse {
   __proposals?: GeneratedTestProposalResponse[]
 }
 
+/**
+ * WI-CONSOLE-047 (obs. 4): fuente única de Action Required del demo. Las preguntas `PENDING` de `actionRequiredRuns` mandan:
+ * un Run vigente con pregunta pendiente queda `ACTION_REQUIRED` y su `actionRequiredCount` cuenta esas preguntas.
+ * Un Run `ACTION_REQUIRED` sin pregunta pendiente vigente es un seed incoherente y falla al cargar. Un Run no vigente
+ * (HEAD superado) no entra en la bandeja aunque conserve una pregunta de su escenario.
+ */
+function deriveActionRequiredRunStatus(seeds: AnalysisRunSeed[]): void {
+  for (const seed of seeds) {
+    const pending = actionRequiredRuns.get(seed.id)?.questions.filter((question) => question.status === 'PENDING').length ?? 0
+    if (pending > 0 && seed.current) {
+      seed.status = 'ACTION_REQUIRED'
+      seed.actionRequiredCount = pending
+    } else if (seed.status === 'ACTION_REQUIRED') {
+      throw new Error(`Seed incoherente: ${seed.id} figura ACTION_REQUIRED sin pregunta pendiente vigente`)
+    }
+  }
+}
+
 /** HU30/HU32/HU39/HU40: repository bindings de los dos proyectos demo y los 9 escenarios mock-first de `spec.md` de la feature 013 (un `AnalysisRun` por escenario, más el par pr17/pr17-2 para "corrección/HEAD nuevo"). */
 function seedControlPlane(): void {
-  repositoryBindings.set('prj_checkout_demo', { projectId: 'prj_checkout_demo', installationId: 'inst_checkout_1', repositoryId: 'repo_checkout', repositoryName: 'acme/checkout-service', integrationBranch: 'develop', status: 'ENABLED', createdAt: '2026-08-20T10:00:00.000Z', updatedAt: '2026-08-20T10:00:00.000Z' })
-  repositoryBindings.set('prj_billing_demo', { projectId: 'prj_billing_demo', installationId: 'inst_billing_1', repositoryId: 'repo_billing', repositoryName: 'acme/billing-engine', integrationBranch: 'develop', status: 'ENABLED', createdAt: '2026-08-22T10:00:00.000Z', updatedAt: '2026-08-22T10:00:00.000Z' })
-  repositoryBindings.set('prj_org_orders_demo', { projectId: 'prj_org_orders_demo', installationId: 'inst_rag_orders', repositoryId: 'repo_rag_orders', repositoryName: 'rag-tesis-org/orders-api', integrationBranch: 'main', status: 'ENABLED', createdAt: '2026-09-12T08:30:00.000Z', updatedAt: '2026-09-12T08:30:00.000Z' })
-  repositoryBindings.set('prj_org_writer_demo', { projectId: 'prj_org_writer_demo', installationId: 'inst_rag_payments', repositoryId: 'repo_rag_payments', repositoryName: 'rag-tesis-org/payments-gateway', integrationBranch: 'main', status: 'ENABLED', createdAt: '2026-09-16T08:10:00.000Z', updatedAt: '2026-09-16T08:10:00.000Z' })
-  repositoryBindings.set('prj_org_metrics_demo', { projectId: 'prj_org_metrics_demo', installationId: 'inst_observability_metrics', repositoryId: 'repo_observability_metrics', repositoryName: 'observability-lab/metrics-console', integrationBranch: 'main', status: 'ENABLED', createdAt: '2026-09-13T10:15:00.000Z', updatedAt: '2026-09-13T10:15:00.000Z' })
+  repositoryBindings.set('prj_checkout_demo', {
+    projectId: 'prj_checkout_demo',
+    installationId: 'inst_checkout_1',
+    repositoryId: 'repo_checkout',
+    repositoryName: 'acme/checkout-service',
+    integrationBranch: 'develop',
+    status: 'ENABLED',
+    createdAt: '2026-08-20T10:00:00.000Z',
+    updatedAt: '2026-08-20T10:00:00.000Z',
+  })
+  repositoryBindings.set('prj_billing_demo', {
+    projectId: 'prj_billing_demo',
+    installationId: 'inst_billing_1',
+    repositoryId: 'repo_billing',
+    repositoryName: 'acme/billing-engine',
+    integrationBranch: 'develop',
+    status: 'ENABLED',
+    createdAt: '2026-08-22T10:00:00.000Z',
+    updatedAt: '2026-08-22T10:00:00.000Z',
+  })
+  repositoryBindings.set('prj_org_orders_demo', {
+    projectId: 'prj_org_orders_demo',
+    installationId: 'inst_rag_orders',
+    repositoryId: 'repo_rag_orders',
+    repositoryName: 'rag-tesis-org/orders-api',
+    integrationBranch: 'main',
+    status: 'ENABLED',
+    createdAt: '2026-09-12T08:30:00.000Z',
+    updatedAt: '2026-09-12T08:30:00.000Z',
+  })
+  repositoryBindings.set('prj_org_writer_demo', {
+    projectId: 'prj_org_writer_demo',
+    installationId: 'inst_rag_payments',
+    repositoryId: 'repo_rag_payments',
+    repositoryName: 'rag-tesis-org/payments-gateway',
+    integrationBranch: 'main',
+    status: 'ENABLED',
+    createdAt: '2026-09-16T08:10:00.000Z',
+    updatedAt: '2026-09-16T08:10:00.000Z',
+  })
+  repositoryBindings.set('prj_org_metrics_demo', {
+    projectId: 'prj_org_metrics_demo',
+    installationId: 'inst_observability_metrics',
+    repositoryId: 'repo_observability_metrics',
+    repositoryName: 'observability-lab/metrics-console',
+    integrationBranch: 'main',
+    status: 'ENABLED',
+    createdAt: '2026-09-13T10:15:00.000Z',
+    updatedAt: '2026-09-13T10:15:00.000Z',
+  })
   // WI-CONSOLE-030 (F3): shop-php-demo se vincula al único repo de team-sandbox (demo-api), donde están sus PRs. legacy-php-admin queda sin binding: ver informe (no hay repo libre sin colisionar).
-  repositoryBindings.set('prj_shop_php_demo', { projectId: 'prj_shop_php_demo', installationId: 'inst_demo_repo_team_sandbox', repositoryId: 'repo_team_sandbox', repositoryName: 'team-sandbox/demo-api', integrationBranch: 'develop', status: 'ENABLED', createdAt: '2026-09-05T09:10:00.000Z', updatedAt: '2026-09-05T09:10:00.000Z' })
+  repositoryBindings.set('prj_shop_php_demo', {
+    projectId: 'prj_shop_php_demo',
+    installationId: 'inst_demo_repo_team_sandbox',
+    repositoryId: 'repo_team_sandbox',
+    repositoryName: 'team-sandbox/demo-api',
+    integrationBranch: 'develop',
+    status: 'ENABLED',
+    createdAt: '2026-09-05T09:10:00.000Z',
+    updatedAt: '2026-09-05T09:10:00.000Z',
+  })
 
-  function pr(repositoryId: string, repositoryName: string, number: number, title: string, headRef: string, headSha: string, actorLogin: string) {
-    return { repositoryId, repositoryName, number, title, baseRef: 'develop', headRef, baseSha: 'c1c1c1c', headSha, draft: false, state: 'OPEN' as const, actorLogin }
+  function pr(
+    repositoryId: string,
+    repositoryName: string,
+    number: number,
+    title: string,
+    headRef: string,
+    headSha: string,
+    actorLogin: string,
+  ) {
+    return {
+      repositoryId,
+      repositoryName,
+      number,
+      title,
+      baseRef: 'develop',
+      headRef,
+      baseSha: 'c1c1c1c',
+      headSha,
+      draft: false,
+      state: 'OPEN' as const,
+      actorLogin,
+    }
   }
 
   const seeds: AnalysisRunSeed[] = [
     {
-      id: 'arun_checkout_pr42', projectId: 'prj_checkout_demo',
-      pullRequest: pr('repo_checkout', 'acme/checkout-service', 42, 'Rechazar cupones vencidos en checkout', 'feature/coupon-expiry', 'a1b2c3d', 'devA'),
-      status: 'ACTION_REQUIRED', current: true, actionRequiredCount: 2, generatedTestsCount: 0,
-      createdAt: '2026-09-12T18:15:00.000Z', updatedAt: '2026-09-12T18:20:00.000Z', completedAt: null,
-      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: 'a1b2c3d', indexDeltaBaseSha: 'c1c1c1c',
+      id: 'arun_checkout_pr42',
+      projectId: 'prj_checkout_demo',
+      pullRequest: pr(
+        'repo_checkout',
+        'acme/checkout-service',
+        42,
+        'Rechazar cupones vencidos en checkout',
+        'feature/coupon-expiry',
+        'a1b2c3d',
+        'devA',
+      ),
+      status: 'ACTION_REQUIRED',
+      current: true,
+      actionRequiredCount: 2,
+      generatedTestsCount: 0,
+      createdAt: '2026-09-12T18:15:00.000Z',
+      updatedAt: '2026-09-12T18:20:00.000Z',
+      completedAt: null,
+      attemptCount: 1,
+      indexMode: 'INCREMENTAL',
+      changesetBaseSha: 'c1c1c1c',
+      changesetHeadSha: 'a1b2c3d',
+      indexDeltaBaseSha: 'c1c1c1c',
       symbols: [
-        { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'CouponPolicy.apply', filePath: 'src/domain/CouponPolicy.ts', changeKind: 'DIRECTLY_CHANGED' },
-        { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'POTENTIALLY_IMPACTED' },
+        {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'CouponPolicy.apply',
+          filePath: 'src/domain/CouponPolicy.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+        {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'OrderService.calculateTotal',
+          filePath: 'src/domain/OrderService.ts',
+          changeKind: 'POTENTIALLY_IMPACTED',
+        },
       ],
-      functionalBehaviorValidated: false, resultSummary: null, detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr42',
+      functionalBehaviorValidated: false,
+      resultSummary: null,
+      detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr42',
     },
     {
-      id: 'arun_checkout_pr45', projectId: 'prj_checkout_demo',
-      pullRequest: pr('repo_checkout', 'acme/checkout-service', 45, 'Modo de redondeo configurable en OrderService', 'feature/rounding-mode', 'e5e5e5e', 'devB'),
-      status: 'SUCCESS', current: true, actionRequiredCount: 0, generatedTestsCount: 3,
-      createdAt: '2026-09-12T09:00:00.000Z', updatedAt: '2026-09-12T09:12:00.000Z', completedAt: '2026-09-12T09:12:00.000Z',
-      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: 'e5e5e5e', indexDeltaBaseSha: 'c1c1c1c',
-      symbols: [{ language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' }],
-      functionalBehaviorValidated: true, resultSummary: '3 pruebas generadas y validadas contra el HEAD vigente.', detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr45',
-      __proposals: [
-        { id: 'prop_pr45_1', relativePath: 'src/domain/OrderService.rounding.spec.ts', target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr45_1'), status: 'AVAILABLE' },
-        { id: 'prop_pr45_2', relativePath: 'src/domain/OrderService.rounding.edgecases.spec.ts', target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr45_2'), status: 'AVAILABLE' },
-        { id: 'prop_pr45_3', relativePath: 'src/shared/money.spec.ts', target: { language: 'TYPESCRIPT', kind: 'FUNCTION', qualifiedName: 'formatCurrency', filePath: 'src/shared/money.ts', changeKind: 'POTENTIALLY_IMPACTED' }, contentSha256: fakeSha256('prop_pr45_3'), status: 'AVAILABLE' },
-      ],
-    },
-    {
-      id: 'arun_checkout_pr46', projectId: 'prj_checkout_demo',
-      pullRequest: pr('repo_checkout', 'acme/checkout-service', 46, 'Tope máximo de descuento acumulado', 'feature/discount-cap', 'f6f6f6f', 'devA'),
-      status: 'BEHAVIORAL_MISMATCH', current: true, actionRequiredCount: 0, generatedTestsCount: 1,
-      createdAt: '2026-09-11T15:00:00.000Z', updatedAt: '2026-09-11T15:20:00.000Z', completedAt: '2026-09-11T15:20:00.000Z',
-      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: 'f6f6f6f', indexDeltaBaseSha: 'c1c1c1c',
-      symbols: [{ language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'CouponPolicy.apply', filePath: 'src/domain/CouponPolicy.ts', changeKind: 'DIRECTLY_CHANGED' }],
-      functionalBehaviorValidated: true, resultSummary: 'La prueba generada contradice el comportamiento observado: "apply" permite un descuento mayor al tope declarado.', detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr46',
-      __proposals: [
-        { id: 'prop_pr46_1', relativePath: 'src/domain/CouponPolicy.cap.spec.ts', target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'CouponPolicy.apply', filePath: 'src/domain/CouponPolicy.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr46_1'), status: 'HELD' },
-      ],
-    },
-    {
-      id: 'arun_checkout_pr47', projectId: 'prj_checkout_demo',
-      pullRequest: pr('repo_checkout', 'acme/checkout-service', 47, 'Limpieza de lint en utilidades de formato', 'chore/lint-fixes', '777aaa7', 'devC'),
-      status: 'NO_ADDITIONAL_TESTS_REQUIRED', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
-      createdAt: '2026-09-10T11:00:00.000Z', updatedAt: '2026-09-10T11:05:00.000Z', completedAt: '2026-09-10T11:05:00.000Z',
-      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: '777aaa7', indexDeltaBaseSha: 'c1c1c1c',
-      symbols: [{ language: 'TYPESCRIPT', kind: 'FUNCTION', qualifiedName: 'formatCurrency', filePath: 'src/shared/money.ts', changeKind: 'DIRECTLY_CHANGED' }],
-      functionalBehaviorValidated: true, resultSummary: 'La cobertura existente ya ejercita el comportamiento observable de "formatCurrency"; el cambio es solo de estilo.', detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr47',
-    },
-    {
-      id: 'arun_billing_pr17', projectId: 'prj_billing_demo',
-      pullRequest: pr('repo_billing', 'acme/billing-engine', 17, 'Firma nueva de DiscountEngine.applyDiscount', 'feature/discount-engine-v2', 'f9e8d7c', 'devD'),
-      status: 'OBSOLETE', current: false, actionRequiredCount: 0, generatedTestsCount: 0,
-      createdAt: '2026-09-11T09:00:00.000Z', updatedAt: '2026-09-11T09:40:00.000Z', completedAt: null,
-      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: 'f9e8d7c', indexDeltaBaseSha: 'c1c1c1c',
+      id: 'arun_checkout_pr52',
+      projectId: 'prj_checkout_demo',
+      pullRequest: pr(
+        'repo_checkout',
+        'acme/checkout-service',
+        52,
+        'Agrega excepción corporativa a zonas de envío',
+        'feature/corporate-shipping',
+        'b2c3d4e',
+        'devA',
+      ),
+      status: 'ACTION_REQUIRED',
+      current: true,
+      actionRequiredCount: 1,
+      generatedTestsCount: 0,
+      createdAt: '2026-09-15T10:00:00.000Z',
+      updatedAt: '2026-09-15T10:05:00.000Z',
+      completedAt: null,
+      attemptCount: 1,
+      indexMode: 'INCREMENTAL',
+      changesetBaseSha: 'c1c1c1c',
+      changesetHeadSha: 'b2c3d4e',
+      indexDeltaBaseSha: 'c1c1c1c',
       symbols: [
-        { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'DiscountEngine', filePath: 'src/domain/DiscountEngine.ts', changeKind: 'DIRECTLY_CHANGED' },
+        {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'ShippingAddressValidator.validate',
+          filePath: 'src/domain/ShippingAddressValidator.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+      ],
+      functionalBehaviorValidated: false,
+      resultSummary: null,
+      detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr52',
+    },
+    {
+      id: 'arun_checkout_pr45',
+      projectId: 'prj_checkout_demo',
+      pullRequest: pr(
+        'repo_checkout',
+        'acme/checkout-service',
+        45,
+        'Modo de redondeo configurable en OrderService',
+        'feature/rounding-mode',
+        'e5e5e5e',
+        'devB',
+      ),
+      status: 'SUCCESS',
+      current: true,
+      actionRequiredCount: 0,
+      generatedTestsCount: 3,
+      createdAt: '2026-09-12T09:00:00.000Z',
+      updatedAt: '2026-09-12T09:12:00.000Z',
+      completedAt: '2026-09-12T09:12:00.000Z',
+      attemptCount: 1,
+      indexMode: 'INCREMENTAL',
+      changesetBaseSha: 'c1c1c1c',
+      changesetHeadSha: 'e5e5e5e',
+      indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [
+        {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'OrderService.calculateTotal',
+          filePath: 'src/domain/OrderService.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+      ],
+      functionalBehaviorValidated: true,
+      resultSummary: '3 pruebas generadas y validadas contra el HEAD vigente.',
+      detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr45',
+      __proposals: [
+        {
+          id: 'prop_pr45_1',
+          relativePath: 'src/domain/OrderService.rounding.spec.ts',
+          target: {
+            language: 'TYPESCRIPT',
+            kind: 'METHOD',
+            qualifiedName: 'OrderService.calculateTotal',
+            filePath: 'src/domain/OrderService.ts',
+            changeKind: 'DIRECTLY_CHANGED',
+          },
+          contentSha256: fakeSha256('prop_pr45_1'),
+          status: 'AVAILABLE',
+        },
+        {
+          id: 'prop_pr45_2',
+          relativePath: 'src/domain/OrderService.rounding.edgecases.spec.ts',
+          target: {
+            language: 'TYPESCRIPT',
+            kind: 'METHOD',
+            qualifiedName: 'OrderService.calculateTotal',
+            filePath: 'src/domain/OrderService.ts',
+            changeKind: 'DIRECTLY_CHANGED',
+          },
+          contentSha256: fakeSha256('prop_pr45_2'),
+          status: 'AVAILABLE',
+        },
+        {
+          id: 'prop_pr45_3',
+          relativePath: 'src/shared/money.spec.ts',
+          target: {
+            language: 'TYPESCRIPT',
+            kind: 'FUNCTION',
+            qualifiedName: 'formatCurrency',
+            filePath: 'src/shared/money.ts',
+            changeKind: 'POTENTIALLY_IMPACTED',
+          },
+          contentSha256: fakeSha256('prop_pr45_3'),
+          status: 'AVAILABLE',
+        },
+      ],
+    },
+    {
+      id: 'arun_checkout_pr46',
+      projectId: 'prj_checkout_demo',
+      pullRequest: pr(
+        'repo_checkout',
+        'acme/checkout-service',
+        46,
+        'Tope máximo de descuento acumulado',
+        'feature/discount-cap',
+        'f6f6f6f',
+        'devA',
+      ),
+      status: 'BEHAVIORAL_MISMATCH',
+      current: true,
+      actionRequiredCount: 0,
+      generatedTestsCount: 1,
+      createdAt: '2026-09-11T15:00:00.000Z',
+      updatedAt: '2026-09-11T15:20:00.000Z',
+      completedAt: '2026-09-11T15:20:00.000Z',
+      attemptCount: 1,
+      indexMode: 'INCREMENTAL',
+      changesetBaseSha: 'c1c1c1c',
+      changesetHeadSha: 'f6f6f6f',
+      indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [
+        {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'CouponPolicy.apply',
+          filePath: 'src/domain/CouponPolicy.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+      ],
+      functionalBehaviorValidated: true,
+      resultSummary: 'La prueba generada contradice el comportamiento observado: "apply" permite un descuento mayor al tope declarado.',
+      detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr46',
+      __proposals: [
+        {
+          id: 'prop_pr46_1',
+          relativePath: 'src/domain/CouponPolicy.cap.spec.ts',
+          target: {
+            language: 'TYPESCRIPT',
+            kind: 'METHOD',
+            qualifiedName: 'CouponPolicy.apply',
+            filePath: 'src/domain/CouponPolicy.ts',
+            changeKind: 'DIRECTLY_CHANGED',
+          },
+          contentSha256: fakeSha256('prop_pr46_1'),
+          status: 'HELD',
+        },
+      ],
+    },
+    {
+      id: 'arun_checkout_pr47',
+      projectId: 'prj_checkout_demo',
+      pullRequest: pr(
+        'repo_checkout',
+        'acme/checkout-service',
+        47,
+        'Limpieza de lint en utilidades de formato',
+        'chore/lint-fixes',
+        '777aaa7',
+        'devC',
+      ),
+      status: 'NO_ADDITIONAL_TESTS_REQUIRED',
+      current: true,
+      actionRequiredCount: 0,
+      generatedTestsCount: 0,
+      createdAt: '2026-09-10T11:00:00.000Z',
+      updatedAt: '2026-09-10T11:05:00.000Z',
+      completedAt: '2026-09-10T11:05:00.000Z',
+      attemptCount: 1,
+      indexMode: 'INCREMENTAL',
+      changesetBaseSha: 'c1c1c1c',
+      changesetHeadSha: '777aaa7',
+      indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [
+        {
+          language: 'TYPESCRIPT',
+          kind: 'FUNCTION',
+          qualifiedName: 'formatCurrency',
+          filePath: 'src/shared/money.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+      ],
+      functionalBehaviorValidated: true,
+      resultSummary: 'La cobertura existente ya ejercita el comportamiento observable de "formatCurrency"; el cambio es solo de estilo.',
+      detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr47',
+    },
+    {
+      id: 'arun_billing_pr17',
+      projectId: 'prj_billing_demo',
+      pullRequest: pr(
+        'repo_billing',
+        'acme/billing-engine',
+        17,
+        'Firma nueva de DiscountEngine.applyDiscount',
+        'feature/discount-engine-v2',
+        'f9e8d7c',
+        'devD',
+      ),
+      status: 'OBSOLETE',
+      current: false,
+      actionRequiredCount: 0,
+      generatedTestsCount: 0,
+      createdAt: '2026-09-11T09:00:00.000Z',
+      updatedAt: '2026-09-11T09:40:00.000Z',
+      completedAt: null,
+      attemptCount: 1,
+      indexMode: 'INCREMENTAL',
+      changesetBaseSha: 'c1c1c1c',
+      changesetHeadSha: 'f9e8d7c',
+      indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [
+        {
+          language: 'TYPESCRIPT',
+          kind: 'CLASS',
+          qualifiedName: 'DiscountEngine',
+          filePath: 'src/domain/DiscountEngine.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
         // OE2 (WI-CONSOLE-014): un Run OBSOLETE con símbolo METHOD elegible en archivo propio (no altera la trazabilidad de DiscountEngine ni los conteos de Runs).
-        { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'LateFeePolicy.evaluate', filePath: 'src/domain/LateFeePolicy.ts', changeKind: 'DIRECTLY_CHANGED' },
+        {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'LateFeePolicy.evaluate',
+          filePath: 'src/domain/LateFeePolicy.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
       ],
-      functionalBehaviorValidated: false, resultSummary: 'Un HEAD nuevo llegó a PR#17 mientras se resolvía el contexto funcional — este Run quedó obsoleto y no se reanuda.', detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr17',
+      functionalBehaviorValidated: false,
+      resultSummary: 'Un HEAD nuevo llegó a PR#17 mientras se resolvía el contexto funcional — este Run quedó obsoleto y no se reanuda.',
+      detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr17',
     },
     {
-      id: 'arun_billing_pr17_2', projectId: 'prj_billing_demo',
-      pullRequest: pr('repo_billing', 'acme/billing-engine', 17, 'Firma nueva de DiscountEngine.applyDiscount', 'feature/discount-engine-v2', '17b17b1', 'devD'),
-      status: 'SUCCESS', current: true, actionRequiredCount: 0, generatedTestsCount: 2,
-      createdAt: '2026-09-11T09:45:00.000Z', updatedAt: '2026-09-11T10:00:00.000Z', completedAt: '2026-09-11T10:00:00.000Z',
-      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: '17b17b1', indexDeltaBaseSha: 'c1c1c1c',
-      symbols: [{ language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'DiscountEngine', filePath: 'src/domain/DiscountEngine.ts', changeKind: 'DIRECTLY_CHANGED' }],
-      functionalBehaviorValidated: true, resultSummary: 'El HEAD nuevo de PR#17 ya no deja el total en negativo; 2 pruebas generadas y validadas.', detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr17_2',
+      id: 'arun_billing_pr17_2',
+      projectId: 'prj_billing_demo',
+      pullRequest: pr(
+        'repo_billing',
+        'acme/billing-engine',
+        17,
+        'Firma nueva de DiscountEngine.applyDiscount',
+        'feature/discount-engine-v2',
+        '17b17b1',
+        'devD',
+      ),
+      status: 'SUCCESS',
+      current: true,
+      actionRequiredCount: 0,
+      generatedTestsCount: 2,
+      createdAt: '2026-09-11T09:45:00.000Z',
+      updatedAt: '2026-09-11T10:00:00.000Z',
+      completedAt: '2026-09-11T10:00:00.000Z',
+      attemptCount: 1,
+      indexMode: 'INCREMENTAL',
+      changesetBaseSha: 'c1c1c1c',
+      changesetHeadSha: '17b17b1',
+      indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [
+        {
+          language: 'TYPESCRIPT',
+          kind: 'CLASS',
+          qualifiedName: 'DiscountEngine',
+          filePath: 'src/domain/DiscountEngine.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+      ],
+      functionalBehaviorValidated: true,
+      resultSummary: 'El HEAD nuevo de PR#17 ya no deja el total en negativo; 2 pruebas generadas y validadas.',
+      detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr17_2',
       __proposals: [
-        { id: 'prop_pr17_2_1', relativePath: 'src/domain/DiscountEngine.applyDiscount.spec.ts', target: { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'DiscountEngine', filePath: 'src/domain/DiscountEngine.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr17_2_1'), status: 'AVAILABLE' },
-        { id: 'prop_pr17_2_2', relativePath: 'src/domain/DiscountEngine.negative.spec.ts', target: { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'DiscountEngine', filePath: 'src/domain/DiscountEngine.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr17_2_2'), status: 'AVAILABLE' },
+        {
+          id: 'prop_pr17_2_1',
+          relativePath: 'src/domain/DiscountEngine.applyDiscount.spec.ts',
+          target: {
+            language: 'TYPESCRIPT',
+            kind: 'CLASS',
+            qualifiedName: 'DiscountEngine',
+            filePath: 'src/domain/DiscountEngine.ts',
+            changeKind: 'DIRECTLY_CHANGED',
+          },
+          contentSha256: fakeSha256('prop_pr17_2_1'),
+          status: 'AVAILABLE',
+        },
+        {
+          id: 'prop_pr17_2_2',
+          relativePath: 'src/domain/DiscountEngine.negative.spec.ts',
+          target: {
+            language: 'TYPESCRIPT',
+            kind: 'CLASS',
+            qualifiedName: 'DiscountEngine',
+            filePath: 'src/domain/DiscountEngine.ts',
+            changeKind: 'DIRECTLY_CHANGED',
+          },
+          contentSha256: fakeSha256('prop_pr17_2_2'),
+          status: 'AVAILABLE',
+        },
       ],
     },
     {
-      id: 'arun_billing_pr20', projectId: 'prj_billing_demo',
-      pullRequest: pr('repo_billing', 'acme/billing-engine', 20, 'Ajuste de moneda base en InvoiceService', 'feature/invoice-currency', '202020a', 'devE'),
-      status: 'BASELINE_FAILED', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
-      createdAt: '2026-09-10T08:00:00.000Z', updatedAt: '2026-09-10T08:10:00.000Z', completedAt: '2026-09-10T08:10:00.000Z',
-      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: '202020a', indexDeltaBaseSha: 'c1c1c1c',
-      symbols: [{ language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'InvoiceService', filePath: 'src/domain/InvoiceService.ts', changeKind: 'DIRECTLY_CHANGED' }],
-      functionalBehaviorValidated: false, resultSummary: 'La suite existente ya falla contra el HEAD del PR antes de generar pruebas nuevas — revisar el baseline.', detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr20',
+      id: 'arun_billing_pr20',
+      projectId: 'prj_billing_demo',
+      pullRequest: pr(
+        'repo_billing',
+        'acme/billing-engine',
+        20,
+        'Ajuste de moneda base en InvoiceService',
+        'feature/invoice-currency',
+        '202020a',
+        'devE',
+      ),
+      status: 'BASELINE_FAILED',
+      current: true,
+      actionRequiredCount: 0,
+      generatedTestsCount: 0,
+      createdAt: '2026-09-10T08:00:00.000Z',
+      updatedAt: '2026-09-10T08:10:00.000Z',
+      completedAt: '2026-09-10T08:10:00.000Z',
+      attemptCount: 1,
+      indexMode: 'INCREMENTAL',
+      changesetBaseSha: 'c1c1c1c',
+      changesetHeadSha: '202020a',
+      indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [
+        {
+          language: 'TYPESCRIPT',
+          kind: 'CLASS',
+          qualifiedName: 'InvoiceService',
+          filePath: 'src/domain/InvoiceService.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+      ],
+      functionalBehaviorValidated: false,
+      resultSummary: 'La suite existente ya falla contra el HEAD del PR antes de generar pruebas nuevas — revisar el baseline.',
+      detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr20',
     },
     {
-      id: 'arun_billing_pr21', projectId: 'prj_billing_demo',
-      pullRequest: pr('repo_billing', 'acme/billing-engine', 21, 'Política de reembolsos parciales', 'feature/partial-refunds', '212121b', 'devE'),
-      status: 'TECHNICAL_GENERATION_FAILURE', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
-      createdAt: '2026-09-09T13:00:00.000Z', updatedAt: '2026-09-09T13:08:00.000Z', completedAt: '2026-09-09T13:08:00.000Z',
-      attemptCount: 2, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: '212121b', indexDeltaBaseSha: 'c1c1c1c',
-      symbols: [{ language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'RefundPolicy', filePath: 'src/domain/RefundPolicy.ts', changeKind: 'DIRECTLY_CHANGED' }],
-      functionalBehaviorValidated: false, resultSummary: 'El generador no produjo una prueba compilable para "RefundPolicy" tras 2 intentos — falla técnica, no de comportamiento.', detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr21',
+      id: 'arun_billing_pr21',
+      projectId: 'prj_billing_demo',
+      pullRequest: pr(
+        'repo_billing',
+        'acme/billing-engine',
+        21,
+        'Política de reembolsos parciales',
+        'feature/partial-refunds',
+        '212121b',
+        'devE',
+      ),
+      status: 'TECHNICAL_GENERATION_FAILURE',
+      current: true,
+      actionRequiredCount: 0,
+      generatedTestsCount: 0,
+      createdAt: '2026-09-09T13:00:00.000Z',
+      updatedAt: '2026-09-09T13:08:00.000Z',
+      completedAt: '2026-09-09T13:08:00.000Z',
+      attemptCount: 2,
+      indexMode: 'INCREMENTAL',
+      changesetBaseSha: 'c1c1c1c',
+      changesetHeadSha: '212121b',
+      indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [
+        {
+          language: 'TYPESCRIPT',
+          kind: 'CLASS',
+          qualifiedName: 'RefundPolicy',
+          filePath: 'src/domain/RefundPolicy.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+      ],
+      functionalBehaviorValidated: false,
+      resultSummary:
+        'El generador no produjo una prueba compilable para "RefundPolicy" tras 2 intentos — falla técnica, no de comportamiento.',
+      detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr21',
     },
     {
-      id: 'arun_billing_pr22', projectId: 'prj_billing_demo',
-      pullRequest: pr('repo_billing', 'acme/billing-engine', 22, 'Actualiza README y comentarios de PaymentGateway', 'docs/payment-gateway-notes', '222222c', 'devF'),
-      status: 'NO_TEST_RELEVANT_CHANGES', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
-      createdAt: '2026-09-08T16:00:00.000Z', updatedAt: '2026-09-08T16:02:00.000Z', completedAt: '2026-09-08T16:02:00.000Z',
-      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: '222222c', indexDeltaBaseSha: null,
+      id: 'arun_billing_pr22',
+      projectId: 'prj_billing_demo',
+      pullRequest: pr(
+        'repo_billing',
+        'acme/billing-engine',
+        22,
+        'Actualiza README y comentarios de PaymentGateway',
+        'docs/payment-gateway-notes',
+        '222222c',
+        'devF',
+      ),
+      status: 'NO_TEST_RELEVANT_CHANGES',
+      current: true,
+      actionRequiredCount: 0,
+      generatedTestsCount: 0,
+      createdAt: '2026-09-08T16:00:00.000Z',
+      updatedAt: '2026-09-08T16:02:00.000Z',
+      completedAt: '2026-09-08T16:02:00.000Z',
+      attemptCount: 1,
+      indexMode: 'INCREMENTAL',
+      changesetBaseSha: 'c1c1c1c',
+      changesetHeadSha: '222222c',
+      indexDeltaBaseSha: null,
       symbols: [],
-      functionalBehaviorValidated: true, resultSummary: 'El PR solo cambia documentación; no hay símbolos testables afectados.', detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr22',
+      functionalBehaviorValidated: true,
+      resultSummary: 'El PR solo cambia documentación; no hay símbolos testables afectados.',
+      detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr22',
     },
     {
-      id: 'arun_checkout_pr48', projectId: 'prj_checkout_demo',
-      pullRequest: pr('repo_checkout', 'acme/checkout-service', 48, 'Normaliza validación de direcciones de envío', 'feature/shipping-address-validation', '888bbb8', 'devB'),
-      status: 'INFRASTRUCTURE_FAILURE', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
-      createdAt: '2026-09-13T10:00:00.000Z', updatedAt: '2026-09-13T10:04:00.000Z', completedAt: '2026-09-13T10:04:00.000Z',
-      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: '888bbb8', indexDeltaBaseSha: 'c1c1c1c',
-      symbols: [{ language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'ShippingAddressValidator', filePath: 'src/domain/ShippingAddressValidator.ts', changeKind: 'DIRECTLY_CHANGED' }],
-      functionalBehaviorValidated: false, resultSummary: 'La GitHub Compare API no respondió al materializar el snapshot del HEAD — falla de infraestructura, no del código. El Run puede reintentarse.', detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr48',
+      id: 'arun_checkout_pr48',
+      projectId: 'prj_checkout_demo',
+      pullRequest: pr(
+        'repo_checkout',
+        'acme/checkout-service',
+        48,
+        'Normaliza validación de direcciones de envío',
+        'feature/shipping-address-validation',
+        '888bbb8',
+        'devB',
+      ),
+      status: 'INFRASTRUCTURE_FAILURE',
+      current: true,
+      actionRequiredCount: 0,
+      generatedTestsCount: 0,
+      createdAt: '2026-09-13T10:00:00.000Z',
+      updatedAt: '2026-09-13T10:04:00.000Z',
+      completedAt: '2026-09-13T10:04:00.000Z',
+      attemptCount: 1,
+      indexMode: 'INCREMENTAL',
+      changesetBaseSha: 'c1c1c1c',
+      changesetHeadSha: '888bbb8',
+      indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [
+        {
+          language: 'TYPESCRIPT',
+          kind: 'CLASS',
+          qualifiedName: 'ShippingAddressValidator',
+          filePath: 'src/domain/ShippingAddressValidator.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+      ],
+      functionalBehaviorValidated: false,
+      resultSummary:
+        'La GitHub Compare API no respondió al materializar la instantánea del HEAD — falla de infraestructura, no del código. El Run puede reintentarse.',
+      detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr48',
       // Datos simulados: propuestas conservadas en AVAILABLE aunque el Run es INFRASTRUCTURE_FAILURE (no publicable).
       __proposals: [
-        { id: 'prop_pr48_1', relativePath: 'src/domain/ShippingAddressValidator.spec.ts', target: { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'ShippingAddressValidator', filePath: 'src/domain/ShippingAddressValidator.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr48_1'), status: 'AVAILABLE' },
-        { id: 'prop_pr48_2', relativePath: 'src/domain/ShippingAddressValidator.postal.spec.ts', target: { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'ShippingAddressValidator', filePath: 'src/domain/ShippingAddressValidator.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr48_2'), status: 'AVAILABLE' },
+        {
+          id: 'prop_pr48_1',
+          relativePath: 'src/domain/ShippingAddressValidator.spec.ts',
+          target: {
+            language: 'TYPESCRIPT',
+            kind: 'CLASS',
+            qualifiedName: 'ShippingAddressValidator',
+            filePath: 'src/domain/ShippingAddressValidator.ts',
+            changeKind: 'DIRECTLY_CHANGED',
+          },
+          contentSha256: fakeSha256('prop_pr48_1'),
+          status: 'AVAILABLE',
+        },
+        {
+          id: 'prop_pr48_2',
+          relativePath: 'src/domain/ShippingAddressValidator.postal.spec.ts',
+          target: {
+            language: 'TYPESCRIPT',
+            kind: 'CLASS',
+            qualifiedName: 'ShippingAddressValidator',
+            filePath: 'src/domain/ShippingAddressValidator.ts',
+            changeKind: 'DIRECTLY_CHANGED',
+          },
+          contentSha256: fakeSha256('prop_pr48_2'),
+          status: 'AVAILABLE',
+        },
       ],
     },
     {
-      id: 'arun_billing_pr23', projectId: 'prj_billing_demo',
-      pullRequest: pr('repo_billing', 'acme/billing-engine', 23, 'Agrega cálculo de impuestos regionales', 'feature/regional-tax', 'b0b0b0b', 'devA'),
-      status: 'SUCCESS', current: true, actionRequiredCount: 0, generatedTestsCount: 2,
-      createdAt: '2026-09-05T08:00:00.000Z', updatedAt: '2026-09-05T08:22:00.000Z', completedAt: '2026-09-05T08:22:00.000Z',
-      attemptCount: 1, indexMode: 'BOOTSTRAP', changesetBaseSha: '000c1c1', changesetHeadSha: 'b0b0b0b', indexDeltaBaseSha: null,
-      symbols: [{ language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'TaxCalculator', filePath: 'src/domain/TaxCalculator.ts', changeKind: 'DIRECTLY_CHANGED' }],
-      functionalBehaviorValidated: true, resultSummary: 'Primer AnalysisRun de este proyecto tras conectar el repositorio — bootstrap completo. 2 pruebas generadas y validadas.', detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr23',
-      __proposals: [
-        { id: 'prop_pr23_1', relativePath: 'src/domain/TaxCalculator.spec.ts', target: { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'TaxCalculator', filePath: 'src/domain/TaxCalculator.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr23_1'), status: 'AVAILABLE' },
-        { id: 'prop_pr23_2', relativePath: 'src/domain/TaxCalculator.regional.spec.ts', target: { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'TaxCalculator', filePath: 'src/domain/TaxCalculator.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr23_2'), status: 'AVAILABLE' },
-      ],
-    },
-    {
-      id: 'arun_checkout_pr49', projectId: 'prj_checkout_demo',
-      pullRequest: pr('repo_checkout', 'acme/checkout-service', 49, 'Refactor grande del pipeline de checkout', 'feature/checkout-pipeline-refactor', 'c9c9c9c', 'devC'),
-      status: 'SUCCESS', current: true, actionRequiredCount: 0, generatedTestsCount: 4,
-      createdAt: '2026-09-13T16:00:00.000Z', updatedAt: '2026-09-13T16:40:00.000Z', completedAt: '2026-09-13T16:40:00.000Z',
-      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: 'c9c9c9c', indexDeltaBaseSha: 'c1c1c1c',
+      id: 'arun_billing_pr23',
+      projectId: 'prj_billing_demo',
+      pullRequest: pr(
+        'repo_billing',
+        'acme/billing-engine',
+        23,
+        'Agrega cálculo de impuestos regionales',
+        'feature/regional-tax',
+        'b0b0b0b',
+        'devA',
+      ),
+      status: 'SUCCESS',
+      current: true,
+      actionRequiredCount: 0,
+      generatedTestsCount: 2,
+      createdAt: '2026-09-05T08:00:00.000Z',
+      updatedAt: '2026-09-05T08:22:00.000Z',
+      completedAt: '2026-09-05T08:22:00.000Z',
+      attemptCount: 1,
+      indexMode: 'BOOTSTRAP',
+      changesetBaseSha: '000c1c1',
+      changesetHeadSha: 'b0b0b0b',
+      indexDeltaBaseSha: null,
       symbols: [
-        { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' },
-        { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.createOrder', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' },
-        { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'CouponPolicy', filePath: 'src/domain/CouponPolicy.ts', changeKind: 'DIRECTLY_CHANGED' },
-        { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'DiscountEngine', filePath: 'src/domain/DiscountEngine.ts', changeKind: 'DIRECTLY_CHANGED' },
-        { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'ShippingAddressValidator', filePath: 'src/domain/ShippingAddressValidator.ts', changeKind: 'DIRECTLY_CHANGED' },
-        { language: 'TYPESCRIPT', kind: 'FUNCTION', qualifiedName: 'formatCurrency', filePath: 'src/shared/money.ts', changeKind: 'DIRECTLY_CHANGED' },
-        { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'InvoiceService', filePath: 'src/domain/InvoiceService.ts', changeKind: 'POTENTIALLY_IMPACTED' },
-        { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'RefundPolicy', filePath: 'src/domain/RefundPolicy.ts', changeKind: 'POTENTIALLY_IMPACTED' },
-        { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'TaxCalculator', filePath: 'src/domain/TaxCalculator.ts', changeKind: 'POTENTIALLY_IMPACTED' },
-        { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'PaymentGateway.charge', filePath: 'src/domain/PaymentGateway.ts', changeKind: 'POTENTIALLY_IMPACTED' },
-        { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'PaymentGateway.refund', filePath: 'src/domain/PaymentGateway.ts', changeKind: 'POTENTIALLY_IMPACTED' },
-        { language: 'TYPESCRIPT', kind: 'INTERFACE', qualifiedName: 'OrderItem', filePath: 'src/domain/OrderItem.ts', changeKind: 'POTENTIALLY_IMPACTED' },
-        { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'Inventory', filePath: 'src/domain/Inventory.ts', changeKind: 'POTENTIALLY_IMPACTED' },
-        { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'AuditTrail', filePath: 'src/domain/AuditTrail.ts', changeKind: 'POTENTIALLY_IMPACTED' },
+        {
+          language: 'TYPESCRIPT',
+          kind: 'CLASS',
+          qualifiedName: 'TaxCalculator',
+          filePath: 'src/domain/TaxCalculator.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
       ],
-      functionalBehaviorValidated: true, resultSummary: 'Changeset grande: 6 símbolos con cambio directo y 8 potencialmente impactados. 4 pruebas generadas y validadas contra el HEAD vigente.', detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr49',
+      functionalBehaviorValidated: true,
+      resultSummary:
+        'Primer AnalysisRun de este Project tras conectar el repositorio — indexación inicial completa. 2 pruebas generadas y validadas.',
+      detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr23',
       __proposals: [
-        { id: 'prop_pr49_1', relativePath: 'src/domain/OrderService.pipeline.spec.ts', target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr49_1'), status: 'AVAILABLE' },
-        { id: 'prop_pr49_2', relativePath: 'src/domain/CouponPolicy.pipeline.spec.ts', target: { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'CouponPolicy', filePath: 'src/domain/CouponPolicy.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr49_2'), status: 'AVAILABLE' },
-        { id: 'prop_pr49_3', relativePath: 'src/domain/DiscountEngine.pipeline.spec.ts', target: { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'DiscountEngine', filePath: 'src/domain/DiscountEngine.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr49_3'), status: 'AVAILABLE' },
-        { id: 'prop_pr49_4', relativePath: 'src/domain/ShippingAddressValidator.pipeline.spec.ts', target: { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'ShippingAddressValidator', filePath: 'src/domain/ShippingAddressValidator.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr49_4'), status: 'AVAILABLE' },
+        {
+          id: 'prop_pr23_1',
+          relativePath: 'src/domain/TaxCalculator.spec.ts',
+          target: {
+            language: 'TYPESCRIPT',
+            kind: 'CLASS',
+            qualifiedName: 'TaxCalculator',
+            filePath: 'src/domain/TaxCalculator.ts',
+            changeKind: 'DIRECTLY_CHANGED',
+          },
+          contentSha256: fakeSha256('prop_pr23_1'),
+          status: 'AVAILABLE',
+        },
+        {
+          id: 'prop_pr23_2',
+          relativePath: 'src/domain/TaxCalculator.regional.spec.ts',
+          target: {
+            language: 'TYPESCRIPT',
+            kind: 'CLASS',
+            qualifiedName: 'TaxCalculator',
+            filePath: 'src/domain/TaxCalculator.ts',
+            changeKind: 'DIRECTLY_CHANGED',
+          },
+          contentSha256: fakeSha256('prop_pr23_2'),
+          status: 'AVAILABLE',
+        },
       ],
     },
     {
-      id: 'arun_checkout_pr50', projectId: 'prj_checkout_demo',
-      pullRequest: pr('repo_checkout', 'acme/checkout-service', 50, 'Ajusta política de reintentos de pago', 'feature/payment-retry-policy', 'd0d0d0d', 'devA'),
-      status: 'SUCCESS', current: true, actionRequiredCount: 0, generatedTestsCount: 3,
-      createdAt: '2026-09-13T20:00:00.000Z', updatedAt: '2026-09-13T20:35:00.000Z', completedAt: '2026-09-13T20:35:00.000Z',
-      attemptCount: 2, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: 'd0d0d0d', indexDeltaBaseSha: 'c1c1c1c',
-      symbols: [{ language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'PaymentGateway.charge', filePath: 'src/domain/PaymentGateway.ts', changeKind: 'DIRECTLY_CHANGED' }],
-      functionalBehaviorValidated: true, resultSummary: 'El primer intento generó una prueba contra un HEAD que luego recibió un push adicional; el segundo intento la regeneró junto con dos más, ya frescas.', detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr50',
+      id: 'arun_checkout_pr49',
+      projectId: 'prj_checkout_demo',
+      pullRequest: pr(
+        'repo_checkout',
+        'acme/checkout-service',
+        49,
+        'Refactor grande del pipeline de checkout',
+        'feature/checkout-pipeline-refactor',
+        'c9c9c9c',
+        'devC',
+      ),
+      status: 'SUCCESS',
+      current: true,
+      actionRequiredCount: 0,
+      generatedTestsCount: 4,
+      createdAt: '2026-09-13T16:00:00.000Z',
+      updatedAt: '2026-09-13T16:40:00.000Z',
+      completedAt: '2026-09-13T16:40:00.000Z',
+      attemptCount: 1,
+      indexMode: 'INCREMENTAL',
+      changesetBaseSha: 'c1c1c1c',
+      changesetHeadSha: 'c9c9c9c',
+      indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [
+        {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'OrderService.calculateTotal',
+          filePath: 'src/domain/OrderService.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+        {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'OrderService.createOrder',
+          filePath: 'src/domain/OrderService.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+        {
+          language: 'TYPESCRIPT',
+          kind: 'CLASS',
+          qualifiedName: 'CouponPolicy',
+          filePath: 'src/domain/CouponPolicy.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+        {
+          language: 'TYPESCRIPT',
+          kind: 'CLASS',
+          qualifiedName: 'DiscountEngine',
+          filePath: 'src/domain/DiscountEngine.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+        {
+          language: 'TYPESCRIPT',
+          kind: 'CLASS',
+          qualifiedName: 'ShippingAddressValidator',
+          filePath: 'src/domain/ShippingAddressValidator.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+        {
+          language: 'TYPESCRIPT',
+          kind: 'FUNCTION',
+          qualifiedName: 'formatCurrency',
+          filePath: 'src/shared/money.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+        {
+          language: 'TYPESCRIPT',
+          kind: 'CLASS',
+          qualifiedName: 'InvoiceService',
+          filePath: 'src/domain/InvoiceService.ts',
+          changeKind: 'POTENTIALLY_IMPACTED',
+        },
+        {
+          language: 'TYPESCRIPT',
+          kind: 'CLASS',
+          qualifiedName: 'RefundPolicy',
+          filePath: 'src/domain/RefundPolicy.ts',
+          changeKind: 'POTENTIALLY_IMPACTED',
+        },
+        {
+          language: 'TYPESCRIPT',
+          kind: 'CLASS',
+          qualifiedName: 'TaxCalculator',
+          filePath: 'src/domain/TaxCalculator.ts',
+          changeKind: 'POTENTIALLY_IMPACTED',
+        },
+        {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'PaymentGateway.charge',
+          filePath: 'src/domain/PaymentGateway.ts',
+          changeKind: 'POTENTIALLY_IMPACTED',
+        },
+        {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'PaymentGateway.refund',
+          filePath: 'src/domain/PaymentGateway.ts',
+          changeKind: 'POTENTIALLY_IMPACTED',
+        },
+        {
+          language: 'TYPESCRIPT',
+          kind: 'INTERFACE',
+          qualifiedName: 'OrderItem',
+          filePath: 'src/domain/OrderItem.ts',
+          changeKind: 'POTENTIALLY_IMPACTED',
+        },
+        {
+          language: 'TYPESCRIPT',
+          kind: 'CLASS',
+          qualifiedName: 'Inventory',
+          filePath: 'src/domain/Inventory.ts',
+          changeKind: 'POTENTIALLY_IMPACTED',
+        },
+        {
+          language: 'TYPESCRIPT',
+          kind: 'CLASS',
+          qualifiedName: 'AuditTrail',
+          filePath: 'src/domain/AuditTrail.ts',
+          changeKind: 'POTENTIALLY_IMPACTED',
+        },
+      ],
+      functionalBehaviorValidated: true,
+      resultSummary:
+        'Changeset grande: 6 símbolos con cambio directo y 8 potencialmente impactados. 4 pruebas generadas y validadas contra el HEAD vigente.',
+      detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr49',
       __proposals: [
-        { id: 'prop_pr50_1_stale', relativePath: 'src/domain/PaymentGateway.retry.spec.ts', target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'PaymentGateway.charge', filePath: 'src/domain/PaymentGateway.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr50_1_stale'), status: 'STALE' },
-        { id: 'prop_pr50_2', relativePath: 'src/domain/PaymentGateway.retry.spec.ts', target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'PaymentGateway.charge', filePath: 'src/domain/PaymentGateway.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr50_2'), status: 'AVAILABLE' },
-        { id: 'prop_pr50_3', relativePath: 'src/domain/PaymentGateway.retry.edgecases.spec.ts', target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'PaymentGateway.charge', filePath: 'src/domain/PaymentGateway.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr50_3'), status: 'AVAILABLE' },
+        {
+          id: 'prop_pr49_1',
+          relativePath: 'src/domain/OrderService.pipeline.spec.ts',
+          target: {
+            language: 'TYPESCRIPT',
+            kind: 'METHOD',
+            qualifiedName: 'OrderService.calculateTotal',
+            filePath: 'src/domain/OrderService.ts',
+            changeKind: 'DIRECTLY_CHANGED',
+          },
+          contentSha256: fakeSha256('prop_pr49_1'),
+          status: 'AVAILABLE',
+        },
+        {
+          id: 'prop_pr49_2',
+          relativePath: 'src/domain/CouponPolicy.pipeline.spec.ts',
+          target: {
+            language: 'TYPESCRIPT',
+            kind: 'CLASS',
+            qualifiedName: 'CouponPolicy',
+            filePath: 'src/domain/CouponPolicy.ts',
+            changeKind: 'DIRECTLY_CHANGED',
+          },
+          contentSha256: fakeSha256('prop_pr49_2'),
+          status: 'AVAILABLE',
+        },
+        {
+          id: 'prop_pr49_3',
+          relativePath: 'src/domain/DiscountEngine.pipeline.spec.ts',
+          target: {
+            language: 'TYPESCRIPT',
+            kind: 'CLASS',
+            qualifiedName: 'DiscountEngine',
+            filePath: 'src/domain/DiscountEngine.ts',
+            changeKind: 'DIRECTLY_CHANGED',
+          },
+          contentSha256: fakeSha256('prop_pr49_3'),
+          status: 'AVAILABLE',
+        },
+        {
+          id: 'prop_pr49_4',
+          relativePath: 'src/domain/ShippingAddressValidator.pipeline.spec.ts',
+          target: {
+            language: 'TYPESCRIPT',
+            kind: 'CLASS',
+            qualifiedName: 'ShippingAddressValidator',
+            filePath: 'src/domain/ShippingAddressValidator.ts',
+            changeKind: 'DIRECTLY_CHANGED',
+          },
+          contentSha256: fakeSha256('prop_pr49_4'),
+          status: 'AVAILABLE',
+        },
       ],
     },
     {
-      id: 'arun_billing_pr24', projectId: 'prj_billing_demo',
+      id: 'arun_checkout_pr50',
+      projectId: 'prj_checkout_demo',
+      pullRequest: pr(
+        'repo_checkout',
+        'acme/checkout-service',
+        50,
+        'Ajusta política de reintentos de pago',
+        'feature/payment-retry-policy',
+        'd0d0d0d',
+        'devA',
+      ),
+      status: 'SUCCESS',
+      current: true,
+      actionRequiredCount: 0,
+      generatedTestsCount: 3,
+      createdAt: '2026-09-13T20:00:00.000Z',
+      updatedAt: '2026-09-13T20:35:00.000Z',
+      completedAt: '2026-09-13T20:35:00.000Z',
+      attemptCount: 2,
+      indexMode: 'INCREMENTAL',
+      changesetBaseSha: 'c1c1c1c',
+      changesetHeadSha: 'd0d0d0d',
+      indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [
+        {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'PaymentGateway.charge',
+          filePath: 'src/domain/PaymentGateway.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+      ],
+      functionalBehaviorValidated: true,
+      resultSummary:
+        'El primer intento generó una prueba contra un HEAD que luego recibió un push adicional; el segundo intento la regeneró junto con dos más, ya frescas.',
+      detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr50',
+      __proposals: [
+        {
+          id: 'prop_pr50_1_stale',
+          relativePath: 'src/domain/PaymentGateway.retry.spec.ts',
+          target: {
+            language: 'TYPESCRIPT',
+            kind: 'METHOD',
+            qualifiedName: 'PaymentGateway.charge',
+            filePath: 'src/domain/PaymentGateway.ts',
+            changeKind: 'DIRECTLY_CHANGED',
+          },
+          contentSha256: fakeSha256('prop_pr50_1_stale'),
+          status: 'STALE',
+        },
+        {
+          id: 'prop_pr50_2',
+          relativePath: 'src/domain/PaymentGateway.retry.spec.ts',
+          target: {
+            language: 'TYPESCRIPT',
+            kind: 'METHOD',
+            qualifiedName: 'PaymentGateway.charge',
+            filePath: 'src/domain/PaymentGateway.ts',
+            changeKind: 'DIRECTLY_CHANGED',
+          },
+          contentSha256: fakeSha256('prop_pr50_2'),
+          status: 'AVAILABLE',
+        },
+        {
+          id: 'prop_pr50_3',
+          relativePath: 'src/domain/PaymentGateway.retry.edgecases.spec.ts',
+          target: {
+            language: 'TYPESCRIPT',
+            kind: 'METHOD',
+            qualifiedName: 'PaymentGateway.charge',
+            filePath: 'src/domain/PaymentGateway.ts',
+            changeKind: 'DIRECTLY_CHANGED',
+          },
+          contentSha256: fakeSha256('prop_pr50_3'),
+          status: 'AVAILABLE',
+        },
+      ],
+    },
+    {
+      id: 'arun_billing_pr24',
+      projectId: 'prj_billing_demo',
       pullRequest: pr('repo_billing', 'acme/billing-engine', 24, 'Recargo por mora en facturas', 'feature/late-fee', 'e4e4e4e', 'devE'),
-      status: 'ACTION_REQUIRED', current: true, actionRequiredCount: 1, generatedTestsCount: 0,
-      createdAt: '2026-09-13T21:00:00.000Z', updatedAt: '2026-09-13T21:05:00.000Z', completedAt: null,
-      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: 'e4e4e4e', indexDeltaBaseSha: 'c1c1c1c',
-      symbols: [{ language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'InvoiceService.applyLateFee', filePath: 'src/domain/InvoiceService.ts', changeKind: 'DIRECTLY_CHANGED' }],
-      functionalBehaviorValidated: false, resultSummary: null, detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr24',
+      status: 'ACTION_REQUIRED',
+      current: true,
+      actionRequiredCount: 1,
+      generatedTestsCount: 0,
+      createdAt: '2026-09-13T21:00:00.000Z',
+      updatedAt: '2026-09-13T21:05:00.000Z',
+      completedAt: null,
+      attemptCount: 1,
+      indexMode: 'INCREMENTAL',
+      changesetBaseSha: 'c1c1c1c',
+      changesetHeadSha: 'e4e4e4e',
+      indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [
+        {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'InvoiceService.applyLateFee',
+          filePath: 'src/domain/InvoiceService.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+      ],
+      functionalBehaviorValidated: false,
+      resultSummary: null,
+      detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr24',
     },
     {
-      id: 'arun_org_orders_pr8', projectId: 'prj_org_orders_demo',
-      pullRequest: pr('repo_rag_orders', 'rag-tesis-org/orders-api', 8, 'Valida reintentos idempotentes de pedidos', 'feature/idempotent-orders', '8a8a8a8', 'demo-maintainer'),
-      status: 'SUCCESS', current: true, actionRequiredCount: 0, generatedTestsCount: 2,
-      createdAt: '2026-09-13T12:00:00.000Z', updatedAt: '2026-09-13T12:18:00.000Z', completedAt: '2026-09-13T12:18:00.000Z',
-      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: '6a6a6a6', changesetHeadSha: '8a8a8a8', indexDeltaBaseSha: '6a6a6a6',
-      symbols: [{ language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.submit', filePath: 'src/orders/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' }],
-      functionalBehaviorValidated: true, resultSummary: '2 pruebas generadas y validadas contra el HEAD vigente.', detailsUrl: '/projects/prj_org_orders_demo/runs/arun_org_orders_pr8',
+      id: 'arun_org_orders_pr8',
+      projectId: 'prj_org_orders_demo',
+      pullRequest: pr(
+        'repo_rag_orders',
+        'rag-tesis-org/orders-api',
+        8,
+        'Valida reintentos idempotentes de pedidos',
+        'feature/idempotent-orders',
+        '8a8a8a8',
+        'demo-maintainer',
+      ),
+      status: 'SUCCESS',
+      current: true,
+      actionRequiredCount: 0,
+      generatedTestsCount: 2,
+      createdAt: '2026-09-13T12:00:00.000Z',
+      updatedAt: '2026-09-13T12:18:00.000Z',
+      completedAt: '2026-09-13T12:18:00.000Z',
+      attemptCount: 1,
+      indexMode: 'INCREMENTAL',
+      changesetBaseSha: '6a6a6a6',
+      changesetHeadSha: '8a8a8a8',
+      indexDeltaBaseSha: '6a6a6a6',
+      symbols: [
+        {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'OrderService.submit',
+          filePath: 'src/orders/OrderService.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+      ],
+      functionalBehaviorValidated: true,
+      resultSummary: '2 pruebas generadas y validadas contra el HEAD vigente.',
+      detailsUrl: '/projects/prj_org_orders_demo/runs/arun_org_orders_pr8',
     },
     {
-      id: 'arun_org_metrics_pr15', projectId: 'prj_org_metrics_demo',
-      pullRequest: pr('repo_observability_metrics', 'observability-lab/metrics-console', 15, 'Agrega filtros de rango temporal', 'feature/time-range-filter', '15f15f1', 'demo-reader'),
-      status: 'ACTION_REQUIRED', current: true, actionRequiredCount: 1, generatedTestsCount: 0,
-      createdAt: '2026-09-14T09:00:00.000Z', updatedAt: '2026-09-14T09:05:00.000Z', completedAt: null,
-      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: '5a5a5a5', changesetHeadSha: '15f15f1', indexDeltaBaseSha: '5a5a5a5',
-      symbols: [{ language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'MetricsQuery.range', filePath: 'src/metrics/MetricsQuery.ts', changeKind: 'DIRECTLY_CHANGED' }],
-      functionalBehaviorValidated: false, resultSummary: null, detailsUrl: '/projects/prj_org_metrics_demo/runs/arun_org_metrics_pr15',
+      id: 'arun_org_metrics_pr15',
+      projectId: 'prj_org_metrics_demo',
+      pullRequest: pr(
+        'repo_observability_metrics',
+        'observability-lab/metrics-console',
+        15,
+        'Agrega filtros de rango temporal',
+        'feature/time-range-filter',
+        '15f15f1',
+        'demo-reader',
+      ),
+      status: 'ACTION_REQUIRED',
+      current: true,
+      actionRequiredCount: 1,
+      generatedTestsCount: 0,
+      createdAt: '2026-09-14T09:00:00.000Z',
+      updatedAt: '2026-09-14T09:05:00.000Z',
+      completedAt: null,
+      attemptCount: 1,
+      indexMode: 'INCREMENTAL',
+      changesetBaseSha: '5a5a5a5',
+      changesetHeadSha: '15f15f1',
+      indexDeltaBaseSha: '5a5a5a5',
+      symbols: [
+        {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'MetricsQuery.range',
+          filePath: 'src/metrics/MetricsQuery.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+      ],
+      functionalBehaviorValidated: false,
+      resultSummary: null,
+      detailsUrl: '/projects/prj_org_metrics_demo/runs/arun_org_metrics_pr15',
     },
     {
-      id: 'arun_org_writer_pr21', projectId: 'prj_org_writer_demo',
-      pullRequest: pr('repo_rag_payments', 'rag-tesis-org/payments-gateway', 21, 'Ajusta la programación de reintentos de cobro', 'feature/payment-retry', '21w21a1', 'demo-writer'),
-      status: 'ACTION_REQUIRED', current: true, actionRequiredCount: 1, generatedTestsCount: 0,
-      createdAt: '2026-09-16T09:00:00.000Z', updatedAt: '2026-09-16T09:05:00.000Z', completedAt: null,
-      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: '29b29b2', changesetHeadSha: '21w21a1', indexDeltaBaseSha: '29b29b2',
-      symbols: [{ language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'PaymentRetry.schedule', filePath: 'src/payments/PaymentRetry.ts', changeKind: 'DIRECTLY_CHANGED' }],
-      functionalBehaviorValidated: false, resultSummary: null, detailsUrl: '/projects/prj_org_writer_demo/runs/arun_org_writer_pr21',
+      id: 'arun_org_writer_pr21',
+      projectId: 'prj_org_writer_demo',
+      pullRequest: pr(
+        'repo_rag_payments',
+        'rag-tesis-org/payments-gateway',
+        21,
+        'Ajusta la programación de reintentos de cobro',
+        'feature/payment-retry',
+        '21w21a1',
+        'demo-writer',
+      ),
+      status: 'ACTION_REQUIRED',
+      current: true,
+      actionRequiredCount: 1,
+      generatedTestsCount: 0,
+      createdAt: '2026-09-16T09:00:00.000Z',
+      updatedAt: '2026-09-16T09:05:00.000Z',
+      completedAt: null,
+      attemptCount: 1,
+      indexMode: 'INCREMENTAL',
+      changesetBaseSha: '29b29b2',
+      changesetHeadSha: '21w21a1',
+      indexDeltaBaseSha: '29b29b2',
+      symbols: [
+        {
+          language: 'TYPESCRIPT',
+          kind: 'METHOD',
+          qualifiedName: 'PaymentRetry.schedule',
+          filePath: 'src/payments/PaymentRetry.ts',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+      ],
+      functionalBehaviorValidated: false,
+      resultSummary: null,
+      detailsUrl: '/projects/prj_org_writer_demo/runs/arun_org_writer_pr21',
     },
     {
       // WI-CONSOLE-030 (C1): Run PHP con símbolos PHP. Fechado antes de 2026-09-13 para no alterar «Runs esta semana» de los escenarios existentes.
-      id: 'arun_php_pr7', projectId: 'prj_shop_php_demo',
-      pullRequest: pr('repo_team_sandbox', 'team-sandbox/demo-api', 7, 'Aplica cupones en CouponService', 'feature/php-coupon-apply', 'p7p7p7p', 'demo-admin'),
-      status: 'SUCCESS', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
-      createdAt: '2026-09-08T10:00:00.000Z', updatedAt: '2026-09-08T10:05:00.000Z', completedAt: '2026-09-08T10:05:00.000Z',
-      attemptCount: 1, indexMode: 'BOOTSTRAP', changesetBaseSha: '000p7p0', changesetHeadSha: 'p7p7p7p', indexDeltaBaseSha: null,
+      id: 'arun_php_pr7',
+      projectId: 'prj_shop_php_demo',
+      pullRequest: pr(
+        'repo_team_sandbox',
+        'team-sandbox/demo-api',
+        7,
+        'Aplica cupones en CouponService',
+        'feature/php-coupon-apply',
+        'p7p7p7p',
+        'demo-admin',
+      ),
+      status: 'SUCCESS',
+      current: true,
+      actionRequiredCount: 0,
+      generatedTestsCount: 0,
+      createdAt: '2026-09-08T10:00:00.000Z',
+      updatedAt: '2026-09-08T10:05:00.000Z',
+      completedAt: '2026-09-08T10:05:00.000Z',
+      attemptCount: 1,
+      indexMode: 'BOOTSTRAP',
+      changesetBaseSha: '000p7p0',
+      changesetHeadSha: 'p7p7p7p',
+      indexDeltaBaseSha: null,
       symbols: [
-        { language: 'PHP', kind: 'METHOD', qualifiedName: 'CouponService::apply', filePath: 'app/Services/CouponService.php', changeKind: 'DIRECTLY_CHANGED' },
-        { language: 'PHP', kind: 'METHOD', qualifiedName: 'CheckoutController::store', filePath: 'app/Http/Controllers/CheckoutController.php', changeKind: 'POTENTIALLY_IMPACTED' },
+        {
+          language: 'PHP',
+          kind: 'METHOD',
+          qualifiedName: 'CouponService::apply',
+          filePath: 'app/Services/CouponService.php',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+        {
+          language: 'PHP',
+          kind: 'METHOD',
+          qualifiedName: 'CheckoutController::store',
+          filePath: 'app/Http/Controllers/CheckoutController.php',
+          changeKind: 'POTENTIALLY_IMPACTED',
+        },
       ],
-      functionalBehaviorValidated: true, resultSummary: 'La cobertura PHPUnit existente ya ejercita CouponService::apply; no hacen falta pruebas nuevas.', detailsUrl: '/projects/prj_shop_php_demo/runs/arun_php_pr7',
+      functionalBehaviorValidated: true,
+      resultSummary: 'La cobertura PHPUnit existente ya ejercita CouponService::apply; no hacen falta pruebas nuevas.',
+      detailsUrl: '/projects/prj_shop_php_demo/runs/arun_php_pr7',
     },
     {
       // WI-CONSOLE-030 (C4): Run de un Project PHP sin framework de pruebas; OE2 debe responder 422 UNSUPPORTED_PROJECT.
-      id: 'arun_legacy_php_pr3', projectId: 'prj_legacy_php_demo',
-      pullRequest: pr('repo_team_sandbox', 'team-sandbox/demo-api', 3, 'Ajuste de descuento en CouponService legado', 'feature/legacy-coupon', 'l3l3l3l', 'demo-admin'),
-      status: 'SUCCESS', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
-      createdAt: '2026-09-07T10:00:00.000Z', updatedAt: '2026-09-07T10:05:00.000Z', completedAt: '2026-09-07T10:05:00.000Z',
-      attemptCount: 1, indexMode: 'BOOTSTRAP', changesetBaseSha: '000l3l0', changesetHeadSha: 'l3l3l3l', indexDeltaBaseSha: null,
-      symbols: [{ language: 'PHP', kind: 'METHOD', qualifiedName: 'CouponService::apply', filePath: 'app/Services/CouponService.php', changeKind: 'DIRECTLY_CHANGED' }],
-      functionalBehaviorValidated: false, resultSummary: 'Proyecto PHP sin PHPUnit detectado: no hay framework de pruebas para generar comparaciones de retrieval.', detailsUrl: '/projects/prj_legacy_php_demo/runs/arun_legacy_php_pr3',
+      id: 'arun_legacy_php_pr3',
+      projectId: 'prj_legacy_php_demo',
+      pullRequest: pr(
+        'repo_team_sandbox',
+        'team-sandbox/demo-api',
+        3,
+        'Ajuste de descuento en CouponService legado',
+        'feature/legacy-coupon',
+        'l3l3l3l',
+        'demo-admin',
+      ),
+      status: 'SUCCESS',
+      current: true,
+      actionRequiredCount: 0,
+      generatedTestsCount: 0,
+      createdAt: '2026-09-07T10:00:00.000Z',
+      updatedAt: '2026-09-07T10:05:00.000Z',
+      completedAt: '2026-09-07T10:05:00.000Z',
+      attemptCount: 1,
+      indexMode: 'BOOTSTRAP',
+      changesetBaseSha: '000l3l0',
+      changesetHeadSha: 'l3l3l3l',
+      indexDeltaBaseSha: null,
+      symbols: [
+        {
+          language: 'PHP',
+          kind: 'METHOD',
+          qualifiedName: 'CouponService::apply',
+          filePath: 'app/Services/CouponService.php',
+          changeKind: 'DIRECTLY_CHANGED',
+        },
+      ],
+      functionalBehaviorValidated: false,
+      resultSummary: 'Project PHP sin PHPUnit detectado: no hay framework de pruebas para generar comparaciones de recuperación.',
+      detailsUrl: '/projects/prj_legacy_php_demo/runs/arun_legacy_php_pr3',
     },
     {
       // WI-CONSOLE-030 (C2): Run en cola. Antes vivía en `traceOnlyRuns` (fuera de listados); ahora aparece en listados y contadores.
-      id: 'arun_checkout_pr53', projectId: 'prj_checkout_demo',
-      pullRequest: pr('repo_checkout', 'acme/checkout-service', 53, 'Ajuste de redondeo en CouponPolicy', 'feature/coupon-rounding', 'b7b7b7b', 'devA'),
-      status: 'QUEUED', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
-      createdAt: '2026-10-07T10:00:00.000Z', updatedAt: '2026-10-07T10:00:00.000Z', completedAt: null,
-      attemptCount: 0, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: 'b7b7b7b', indexDeltaBaseSha: 'c1c1c1c',
-      symbols: [], functionalBehaviorValidated: false, resultSummary: null, detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr53',
+      id: 'arun_checkout_pr53',
+      projectId: 'prj_checkout_demo',
+      pullRequest: pr(
+        'repo_checkout',
+        'acme/checkout-service',
+        53,
+        'Ajuste de redondeo en CouponPolicy',
+        'feature/coupon-rounding',
+        'b7b7b7b',
+        'devA',
+      ),
+      status: 'QUEUED',
+      current: true,
+      actionRequiredCount: 0,
+      generatedTestsCount: 0,
+      createdAt: '2026-10-07T10:00:00.000Z',
+      updatedAt: '2026-10-07T10:00:00.000Z',
+      completedAt: null,
+      attemptCount: 0,
+      indexMode: 'INCREMENTAL',
+      changesetBaseSha: 'c1c1c1c',
+      changesetHeadSha: 'b7b7b7b',
+      indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [],
+      functionalBehaviorValidated: false,
+      resultSummary: null,
+      detailsUrl: '/projects/prj_checkout_demo/runs/arun_checkout_pr53',
     },
     {
       // WI-CONSOLE-030 (C2): Run en proceso. Antes vivía en `traceOnlyRuns` (fuera de listados); ahora aparece en listados y contadores.
-      id: 'arun_billing_pr25', projectId: 'prj_billing_demo',
-      pullRequest: pr('repo_billing', 'acme/billing-engine', 25, 'Refactor de DiscountEngine para tasas escalonadas', 'feature/tiered-discount', '3c3c3c3', 'devD'),
-      status: 'PROCESSING', current: true, actionRequiredCount: 0, generatedTestsCount: 0,
-      createdAt: '2026-10-07T11:00:00.000Z', updatedAt: '2026-10-07T11:02:00.000Z', completedAt: null,
-      attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: '3c3c3c3', indexDeltaBaseSha: 'c1c1c1c',
-      symbols: [], functionalBehaviorValidated: false, resultSummary: null, detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr25',
+      id: 'arun_billing_pr25',
+      projectId: 'prj_billing_demo',
+      pullRequest: pr(
+        'repo_billing',
+        'acme/billing-engine',
+        25,
+        'Refactor de DiscountEngine para tasas escalonadas',
+        'feature/tiered-discount',
+        '3c3c3c3',
+        'devD',
+      ),
+      status: 'PROCESSING',
+      current: true,
+      actionRequiredCount: 0,
+      generatedTestsCount: 0,
+      createdAt: '2026-10-07T11:00:00.000Z',
+      updatedAt: '2026-10-07T11:02:00.000Z',
+      completedAt: null,
+      attemptCount: 1,
+      indexMode: 'INCREMENTAL',
+      changesetBaseSha: 'c1c1c1c',
+      changesetHeadSha: '3c3c3c3',
+      indexDeltaBaseSha: 'c1c1c1c',
+      symbols: [],
+      functionalBehaviorValidated: false,
+      resultSummary: null,
+      detailsUrl: '/projects/prj_billing_demo/runs/arun_billing_pr25',
     },
   ]
 
+  deriveActionRequiredRunStatus(seeds)
   for (const { __proposals, ...run } of seeds) {
     analysisRuns.set(run.id, run)
     if (__proposals) testProposals.set(run.id, __proposals)
@@ -780,103 +2475,214 @@ const MOCK_MAINTAINER_USER_ID = 'usr_demo_maintainer'
 function seedFunctionalKnowledge(): void {
   const items: FunctionalKnowledgeResponse[] = [
     {
-      id: 'fk_coupon_expiry', projectId: 'prj_checkout_demo', scope: 'METHOD', targetRef: 'CouponPolicy.apply',
+      id: 'fk_coupon_expiry',
+      projectId: 'prj_checkout_demo',
+      scope: 'METHOD',
+      targetRef: 'CouponPolicy.apply',
       originalQuestion: '¿"apply" debe rechazar un cupón vencido aunque el pedido ya esté marcado como pagado?',
       originalAnswer: 'Sí',
       normalizedRule: 'Un cupón vencido nunca debe aplicarse, incluso si el pedido ya está marcado como pagado.',
-      source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-12T18:22:00.000Z',
-      scenarioKind: 'EXCEPTION', scenarioKey: 'coupon.apply.expired-paid-order',
-      confirmedByUserId: MOCK_ACTOR_USER_ID, confirmedRole: 'ADMIN', originHeadSha: MOCK_SHA_A, sourceRef: null,
+      source: 'HUMAN_ANSWER',
+      status: 'ACTIVE',
+      supersedesId: null,
+      createdAt: '2026-09-12T18:22:00.000Z',
+      scenarioKind: 'EXCEPTION',
+      scenarioKey: 'coupon.apply.expired-paid-order',
+      confirmedByUserId: MOCK_ACTOR_USER_ID,
+      confirmedRole: 'ADMIN',
+      originHeadSha: MOCK_SHA_A,
+      sourceRef: null,
     },
     {
-      id: 'fk_shipping_zone', projectId: 'prj_checkout_demo', scope: 'METHOD', targetRef: 'ShippingAddressValidator.validate',
+      id: 'fk_shipping_zone',
+      projectId: 'prj_checkout_demo',
+      scope: 'METHOD',
+      targetRef: 'ShippingAddressValidator.validate',
       originalQuestion: '¿"validate" debe rechazar direcciones fuera de las zonas de envío habilitadas?',
       originalAnswer: 'Sí',
-      normalizedRule: 'Ninguna dirección fuera de las zonas de envío habilitadas debe pasar "validate", sin excepciones por tipo de cliente.',
-      source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-10T14:00:00.000Z',
-      scenarioKind: 'EXPECTED_RESULT', scenarioKey: 'shipping.validate.zones',
-      confirmedByUserId: MOCK_MAINTAINER_USER_ID, confirmedRole: 'MAINTAINER', originHeadSha: MOCK_SHA_C, sourceRef: null,
+      normalizedRule:
+        'Ninguna dirección fuera de las zonas de envío habilitadas debe pasar "validate", sin excepciones por tipo de cliente.',
+      source: 'HUMAN_ANSWER',
+      status: 'ACTIVE',
+      supersedesId: null,
+      createdAt: '2026-09-10T14:00:00.000Z',
+      scenarioKind: 'EXPECTED_RESULT',
+      scenarioKey: 'shipping.validate.zones',
+      confirmedByUserId: MOCK_MAINTAINER_USER_ID,
+      confirmedRole: 'MAINTAINER',
+      originHeadSha: MOCK_SHA_C,
+      sourceRef: null,
     },
     {
-      id: 'fk_discount_engine', projectId: 'prj_billing_demo', scope: 'METHOD', targetRef: 'DiscountEngine.applyDiscount',
+      id: 'fk_discount_engine',
+      projectId: 'prj_billing_demo',
+      scope: 'METHOD',
+      targetRef: 'DiscountEngine.applyDiscount',
       originalQuestion: '¿"DiscountEngine.applyDiscount" puede dejar el total en negativo si el cupón excede el subtotal?',
       originalAnswer: 'No',
       normalizedRule: 'El descuento aplicado nunca debe dejar el total del pedido en negativo.',
-      source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-11T09:50:00.000Z',
-      scenarioKind: 'BOUNDARY', scenarioKey: 'discount.applyDiscount.negative-total',
-      confirmedByUserId: MOCK_ACTOR_USER_ID, confirmedRole: 'ADMIN', originHeadSha: MOCK_SHA_B, sourceRef: null,
+      source: 'HUMAN_ANSWER',
+      status: 'ACTIVE',
+      supersedesId: null,
+      createdAt: '2026-09-11T09:50:00.000Z',
+      scenarioKind: 'BOUNDARY',
+      scenarioKey: 'discount.applyDiscount.negative-total',
+      confirmedByUserId: MOCK_ACTOR_USER_ID,
+      confirmedRole: 'ADMIN',
+      originHeadSha: MOCK_SHA_B,
+      sourceRef: null,
     },
     {
-      id: 'fk_rounding_v0', projectId: 'prj_checkout_demo', scope: 'METHOD', targetRef: 'OrderService.calculateTotal',
+      id: 'fk_rounding_v0',
+      projectId: 'prj_checkout_demo',
+      scope: 'METHOD',
+      targetRef: 'OrderService.calculateTotal',
       originalQuestion: '¿Cómo se redondea el total de "calculateTotal"?',
       originalAnswer: 'Sin redondeo explícito',
       normalizedRule: 'El total calculado conserva los decimales sin redondeo explícito.',
-      source: 'HUMAN_ANSWER', status: 'SUPERSEDED', supersedesId: null, createdAt: '2026-07-15T10:00:00.000Z',
-      scenarioKind: 'BOUNDARY', scenarioKey: 'order.calculateTotal.rounding',
-      confirmedByUserId: null, confirmedRole: null, originHeadSha: null, sourceRef: null,
+      source: 'HUMAN_ANSWER',
+      status: 'SUPERSEDED',
+      supersedesId: null,
+      createdAt: '2026-07-15T10:00:00.000Z',
+      scenarioKind: 'BOUNDARY',
+      scenarioKey: 'order.calculateTotal.rounding',
+      confirmedByUserId: null,
+      confirmedRole: null,
+      originHeadSha: null,
+      sourceRef: null,
     },
     {
-      id: 'fk_rounding_v1', projectId: 'prj_checkout_demo', scope: 'METHOD', targetRef: 'OrderService.calculateTotal',
+      id: 'fk_rounding_v1',
+      projectId: 'prj_checkout_demo',
+      scope: 'METHOD',
+      targetRef: 'OrderService.calculateTotal',
       originalQuestion: '¿El redondeo de "calculateTotal" debe truncar o redondear al centavo más cercano?',
       originalAnswer: 'Trunca al centavo inferior',
       normalizedRule: 'El total calculado trunca al centavo inferior; no redondea.',
-      source: 'HUMAN_ANSWER', status: 'SUPERSEDED', supersedesId: 'fk_rounding_v0', createdAt: '2026-08-20T10:00:00.000Z',
-      scenarioKind: 'BOUNDARY', scenarioKey: 'order.calculateTotal.rounding',
-      confirmedByUserId: null, confirmedRole: null, originHeadSha: null, sourceRef: null,
+      source: 'HUMAN_ANSWER',
+      status: 'SUPERSEDED',
+      supersedesId: 'fk_rounding_v0',
+      createdAt: '2026-08-20T10:00:00.000Z',
+      scenarioKind: 'BOUNDARY',
+      scenarioKey: 'order.calculateTotal.rounding',
+      confirmedByUserId: null,
+      confirmedRole: null,
+      originHeadSha: null,
+      sourceRef: null,
     },
     {
-      id: 'fk_rounding_v2', projectId: 'prj_checkout_demo', scope: 'METHOD', targetRef: 'OrderService.calculateTotal',
+      id: 'fk_rounding_v2',
+      projectId: 'prj_checkout_demo',
+      scope: 'METHOD',
+      targetRef: 'OrderService.calculateTotal',
       originalQuestion: '¿El redondeo de "calculateTotal" debe truncar o redondear al centavo más cercano?',
       originalAnswer: 'Redondea al centavo más cercano',
       normalizedRule: 'El total calculado redondea al centavo más cercano (no trunca).',
-      source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: 'fk_rounding_v1', createdAt: '2026-09-12T09:05:00.000Z',
-      scenarioKind: 'BOUNDARY', scenarioKey: 'order.calculateTotal.rounding',
-      confirmedByUserId: MOCK_ACTOR_USER_ID, confirmedRole: 'ADMIN', originHeadSha: MOCK_SHA_B, sourceRef: null,
+      source: 'HUMAN_ANSWER',
+      status: 'ACTIVE',
+      supersedesId: 'fk_rounding_v1',
+      createdAt: '2026-09-12T09:05:00.000Z',
+      scenarioKind: 'BOUNDARY',
+      scenarioKey: 'order.calculateTotal.rounding',
+      confirmedByUserId: MOCK_ACTOR_USER_ID,
+      confirmedRole: 'ADMIN',
+      originHeadSha: MOCK_SHA_B,
+      sourceRef: null,
     },
     {
-      id: 'fk_total_empty_cart', projectId: 'prj_checkout_demo', scope: 'METHOD', targetRef: 'OrderService.calculateTotal',
+      id: 'fk_total_empty_cart',
+      projectId: 'prj_checkout_demo',
+      scope: 'METHOD',
+      targetRef: 'OrderService.calculateTotal',
       originalQuestion: '¿Cuál es el total de un carrito sin líneas en "calculateTotal"?',
       originalAnswer: 'Cero, sin error',
       normalizedRule: 'Un carrito sin líneas produce un total de 0,00 sin lanzar error.',
-      source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-13T08:00:00.000Z',
-      scenarioKind: 'EXPECTED_RESULT', scenarioKey: 'order.calculateTotal.empty-cart',
-      confirmedByUserId: MOCK_MAINTAINER_USER_ID, confirmedRole: 'MAINTAINER', originHeadSha: MOCK_SHA_C, sourceRef: null,
+      source: 'HUMAN_ANSWER',
+      status: 'ACTIVE',
+      supersedesId: null,
+      createdAt: '2026-09-13T08:00:00.000Z',
+      scenarioKind: 'EXPECTED_RESULT',
+      scenarioKey: 'order.calculateTotal.empty-cart',
+      confirmedByUserId: MOCK_MAINTAINER_USER_ID,
+      confirmedRole: 'MAINTAINER',
+      originHeadSha: MOCK_SHA_C,
+      sourceRef: null,
     },
     {
-      id: 'fk_import_tax', projectId: 'prj_checkout_demo', scope: 'METHOD', targetRef: 'TaxCalculator.rate',
+      id: 'fk_import_tax',
+      projectId: 'prj_checkout_demo',
+      scope: 'METHOD',
+      targetRef: 'TaxCalculator.rate',
       originalQuestion: 'Regla importada desde un documento de negocio aprobado.',
       originalAnswer: 'Importada (sin respuesta humana original)',
       normalizedRule: 'La tasa de impuesto se calcula solo con la zona fiscal confirmada del pedido.',
-      source: 'APPROVED_IMPORT', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-01T12:00:00.000Z',
-      scenarioKind: 'FUNCTIONAL_PRECONDITION', scenarioKey: 'tax.rate.fiscal-zone',
-      confirmedByUserId: MOCK_ACTOR_USER_ID, confirmedRole: 'ADMIN', originHeadSha: null, sourceRef: 'docs/reglas-negocio.md#L12',
+      source: 'APPROVED_IMPORT',
+      status: 'ACTIVE',
+      supersedesId: null,
+      createdAt: '2026-09-01T12:00:00.000Z',
+      scenarioKind: 'FUNCTIONAL_PRECONDITION',
+      scenarioKey: 'tax.rate.fiscal-zone',
+      confirmedByUserId: MOCK_ACTOR_USER_ID,
+      confirmedRole: 'ADMIN',
+      originHeadSha: null,
+      sourceRef: 'docs/reglas-negocio.md#L12',
     },
     {
-      id: 'fk_org_orders_rule', projectId: 'prj_org_orders_demo', scope: 'METHOD', targetRef: 'OrderFulfillment.dispatch',
+      id: 'fk_org_orders_rule',
+      projectId: 'prj_org_orders_demo',
+      scope: 'METHOD',
+      targetRef: 'OrderFulfillment.dispatch',
       originalQuestion: '¿"dispatch" debe despachar pedidos con pago pendiente?',
       originalAnswer: 'No',
       normalizedRule: 'Ningún pedido con pago pendiente pasa a "dispatch".',
-      source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-14T10:00:00.000Z',
-      scenarioKind: 'EXPECTED_RESULT', scenarioKey: 'fulfillment.dispatch.unpaid',
-      confirmedByUserId: MOCK_MAINTAINER_USER_ID, confirmedRole: 'MAINTAINER', originHeadSha: MOCK_SHA_A, sourceRef: null,
+      source: 'HUMAN_ANSWER',
+      status: 'ACTIVE',
+      supersedesId: null,
+      createdAt: '2026-09-14T10:00:00.000Z',
+      scenarioKind: 'EXPECTED_RESULT',
+      scenarioKey: 'fulfillment.dispatch.unpaid',
+      confirmedByUserId: MOCK_MAINTAINER_USER_ID,
+      confirmedRole: 'MAINTAINER',
+      originHeadSha: MOCK_SHA_A,
+      sourceRef: null,
     },
     {
-      id: 'fk_org_writer_rule', projectId: 'prj_org_writer_demo', scope: 'METHOD', targetRef: 'PaymentRetryPolicy.schedule',
+      id: 'fk_org_writer_rule',
+      projectId: 'prj_org_writer_demo',
+      scope: 'METHOD',
+      targetRef: 'PaymentRetryPolicy.schedule',
       originalQuestion: '¿"schedule" debe limitar los reintentos de un plan anual?',
       originalAnswer: 'Sí, a tres intentos',
       normalizedRule: 'Un plan anual admite como máximo tres reintentos de cobro.',
-      source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-16T11:00:00.000Z',
-      scenarioKind: 'BOUNDARY', scenarioKey: 'payments.retry.annual-plan-limit',
-      confirmedByUserId: MOCK_ACTOR_USER_ID, confirmedRole: 'ADMIN', originHeadSha: MOCK_SHA_B, sourceRef: null,
+      source: 'HUMAN_ANSWER',
+      status: 'ACTIVE',
+      supersedesId: null,
+      createdAt: '2026-09-16T11:00:00.000Z',
+      scenarioKind: 'BOUNDARY',
+      scenarioKey: 'payments.retry.annual-plan-limit',
+      confirmedByUserId: MOCK_ACTOR_USER_ID,
+      confirmedRole: 'ADMIN',
+      originHeadSha: MOCK_SHA_B,
+      sourceRef: null,
     },
     {
-      id: 'fk_org_metrics_rule', projectId: 'prj_org_metrics_demo', scope: 'METHOD', targetRef: 'MetricsRange.toUtc',
-      originalQuestion: '¿"toUtc" debe interpretar el rango en la zona horaria del proyecto?',
+      id: 'fk_org_metrics_rule',
+      projectId: 'prj_org_metrics_demo',
+      scope: 'METHOD',
+      targetRef: 'MetricsRange.toUtc',
+      originalQuestion: '¿"toUtc" debe interpretar el rango en la zona horaria del Project?',
       originalAnswer: 'Sí',
-      normalizedRule: 'El rango de métricas se interpreta en la zona horaria del proyecto antes de convertir a UTC.',
-      source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: null, createdAt: '2026-09-13T10:30:00.000Z',
-      scenarioKind: 'FUNCTIONAL_PRECONDITION', scenarioKey: 'metrics.range.timezone',
-      confirmedByUserId: MOCK_MAINTAINER_USER_ID, confirmedRole: 'MAINTAINER', originHeadSha: MOCK_SHA_C, sourceRef: null,
+      normalizedRule: 'El rango de métricas se interpreta en la zona horaria del Project antes de convertir a UTC.',
+      source: 'HUMAN_ANSWER',
+      status: 'ACTIVE',
+      supersedesId: null,
+      createdAt: '2026-09-13T10:30:00.000Z',
+      scenarioKind: 'FUNCTIONAL_PRECONDITION',
+      scenarioKey: 'metrics.range.timezone',
+      confirmedByUserId: MOCK_MAINTAINER_USER_ID,
+      confirmedRole: 'MAINTAINER',
+      originHeadSha: MOCK_SHA_C,
+      sourceRef: null,
     },
   ]
   for (const item of items) functionalKnowledge.set(item.id, item)
@@ -924,7 +2730,13 @@ function requireProjectRole(projectId: string, requiredRole: ProjectRole): Proje
   const project = requireProject(projectId)
   const rank: Record<ProjectRole, number> = { READER: 0, WRITER: 1, MAINTAINER: 2, ADMIN: 3 }
   if (rank[project.role] < rank[requiredRole]) {
-    throw new ApiError(`Tu rol ${project.role} no permite esta acción; se requiere ${requiredRole}.`, 403, 'demo-correlation-id', 'PROJECT_ROLE_INSUFFICIENT', { requiredRole, currentRole: project.role })
+    throw new ApiError(
+      `Tu rol ${project.role} no permite esta acción; se requiere ${requiredRole}.`,
+      403,
+      'demo-correlation-id',
+      'PROJECT_ROLE_INSUFFICIENT',
+      { requiredRole, currentRole: project.role },
+    )
   }
   return project
 }
@@ -937,20 +2749,22 @@ export async function mockListWorkspaces(): Promise<WorkspaceListResponse> {
 export async function mockListProjects(workspaceId: string): Promise<Project[]> {
   await latency()
   findDemoWorkspace(workspaceId)
-  return Array.from(projects.values()).filter((project) => project.workspace.id === workspaceId && canSeeProject(project)).map(clone)
+  return Array.from(projects.values())
+    .filter((project) => project.workspace.id === workspaceId && canSeeProject(project))
+    .map(clone)
 }
 
 export async function mockGetProject(projectId: string): Promise<Project> {
   await latency()
   const project = projects.get(projectId)
-  if (!project || !canSeeProject(project)) notFound(`No existe el proyecto demo "${projectId}".`, 'PROJECT_NOT_FOUND')
+  if (!project || !canSeeProject(project)) notFound(`No existe el Project demo "${projectId}".`, 'PROJECT_NOT_FOUND')
   return clone(project)
 }
 
 export async function mockListAnalysisHistory(projectId: string): Promise<AnalysisHistoryItem[]> {
   await latency()
   const project = projects.get(projectId)
-  if (!project) notFound(`No existe el proyecto demo "${projectId}".`, 'PROJECT_NOT_FOUND')
+  if (!project) notFound(`No existe el Project demo "${projectId}".`, 'PROJECT_NOT_FOUND')
   return Array.from(versions.values())
     .filter((state) => state.history.projectId === projectId)
     .map((state) => ({ ...state.history, current: project.currentVersionId === state.history.id }))
@@ -962,11 +2776,24 @@ export async function mockCreateProject(input: CreateProjectInput): Promise<Proj
   await latency()
   const workspace = findDemoWorkspace(input.workspaceId ?? DEMO_WORKSPACES[0].id)
   if (workspace.kind === 'ORGANIZATION' && workspace.role !== 'ADMIN') {
-    throw new ApiError('Solo un owner activo de la organización puede crear Projects en ese workspace.', 403, 'demo-correlation-id', 'WORKSPACE_ADMIN_REQUIRED')
+    throw new ApiError(
+      'Solo un propietario activo de la organización puede crear Projects en ese workspace.',
+      403,
+      'demo-correlation-id',
+      'WORKSPACE_ADMIN_REQUIRED',
+    )
   }
   sequence += 1
   const createdAt = nowIso()
-  const project: Project = { id: `prj_demo_${sequence}`, name: input.name.trim(), currentVersionId: null, workspace, role: 'ADMIN', createdAt, updatedAt: createdAt }
+  const project: Project = {
+    id: `prj_demo_${sequence}`,
+    name: input.name.trim(),
+    currentVersionId: null,
+    workspace,
+    role: 'ADMIN',
+    createdAt,
+    updatedAt: createdAt,
+  }
   projects.set(project.id, project)
   return clone(project)
 }
@@ -989,11 +2816,51 @@ export async function mockGetTestInventory(projectVersionId: string): Promise<Te
 function experimentResult(target: string): ExperimentResultViewModel {
   return {
     // Agregados derivados de las 6 repeticiones (denominador 3 por brazo): válida = passed; compila = failureType distinto de COMPILATION/INFRASTRUCTURE; ejecuta = NONE o TEST_ASSERTION.
-    baseline: { strategy: 'GENERALIST_AGENT', validRate: 1 / 3, compilationRate: 1 / 3, executionRate: 1 / 3, passedRate: 1 / 3, generationDurationMs: 3_900, executionDurationMs: 920, totalDurationMs: 4_820, totalTokens: 2_940, estimatedCost: .018, failures: { COMPILATION: 1, INFRASTRUCTURE: 1 }, toolCalls: 6, filesInspected: 4, evaluableRepetitions: 3, nonEvaluableRepetitions: 0 },
-    rag: { strategy: 'RAG', validRate: 2 / 3, compilationRate: 1, executionRate: 1, passedRate: 2 / 3, generationDurationMs: 4_610, executionDurationMs: 850, totalDurationMs: 5_460, totalTokens: 4_180, estimatedCost: .027, failures: { TEST_ASSERTION: 1 }, retrievedChunks: 24, selectedChunks: 7, contextTokens: 2_180, evaluableRepetitions: 3, nonEvaluableRepetitions: 0 },
+    baseline: {
+      strategy: 'GENERALIST_AGENT',
+      validRate: 1 / 3,
+      compilationRate: 1 / 3,
+      executionRate: 1 / 3,
+      passedRate: 1 / 3,
+      generationDurationMs: 3_900,
+      executionDurationMs: 920,
+      totalDurationMs: 4_820,
+      totalTokens: 2_940,
+      estimatedCost: 0.018,
+      failures: { COMPILATION: 1, INFRASTRUCTURE: 1 },
+      toolCalls: 6,
+      filesInspected: 4,
+      evaluableRepetitions: 3,
+      nonEvaluableRepetitions: 0,
+    },
+    rag: {
+      strategy: 'RAG',
+      validRate: 2 / 3,
+      compilationRate: 1,
+      executionRate: 1,
+      passedRate: 2 / 3,
+      generationDurationMs: 4_610,
+      executionDurationMs: 850,
+      totalDurationMs: 5_460,
+      totalTokens: 4_180,
+      estimatedCost: 0.027,
+      failures: { TEST_ASSERTION: 1 },
+      retrievedChunks: 24,
+      selectedChunks: 7,
+      contextTokens: 2_180,
+      evaluableRepetitions: 3,
+      nonEvaluableRepetitions: 0,
+    },
     // DEMO · DATOS SIMULADOS: configuración ilustrativa, no es un valor medido.
     configuration: {
-      model: { provider: 'OpenAI', model: 'gpt-6-luna', modelVersion: null, reasoningEffort: 'high', temperature: null, maxOutputTokens: null },
+      model: {
+        provider: 'OpenAI',
+        model: 'gpt-6-luna',
+        modelVersion: null,
+        reasoningEffort: 'high',
+        temperature: null,
+        maxOutputTokens: null,
+      },
       budget: { toolCallCap: 8, contextTokenBudget: 12_000, maxDurationMs: 60_000 },
       executionProfile: 'sandbox-demo-standard',
       runnerHint: 'demo-runner',
@@ -1001,19 +2868,99 @@ function experimentResult(target: string): ExperimentResultViewModel {
     },
     // Tres pares (RAG + GA por repetición). Dentro de cada par, la posición 1 y 2 ocupan brazos distintos.
     repetitions: [
-      { target, repetition: 1, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'COMPILATION', ...timedRepetition(810), totalTokens: 480, errorSummary: 'jest.config.js: Cannot find module ts-jest', pairId: 'pair-1', pairPosition: 2, attempt: 1, technicallyEvaluable: true },
-      { target, repetition: 2, strategy: 'GENERALIST_AGENT', valid: true, failureType: 'NONE', ...timedRepetition(760), totalTokens: 470, errorSummary: null, pairId: 'pair-2', pairPosition: 1, attempt: 1, technicallyEvaluable: true },
-      { target, repetition: 3, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'INFRASTRUCTURE', ...timedRepetition(840), totalTokens: 520, errorSummary: 'DEMO: fallo de infraestructura en el segundo intento', pairId: 'pair-3', pairPosition: 2, attempt: 2, technicallyEvaluable: false },
-      { target, repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', ...timedRepetition(910), totalTokens: 680, errorSummary: null, pairId: 'pair-1', pairPosition: 1, attempt: 1, technicallyEvaluable: true },
-      { target, repetition: 2, strategy: 'RAG', valid: true, failureType: 'NONE', ...timedRepetition(890), totalTokens: 700, errorSummary: null, pairId: 'pair-2', pairPosition: 2, attempt: 2, technicallyEvaluable: true },
-      { target, repetition: 3, strategy: 'RAG', valid: false, failureType: 'TEST_ASSERTION', ...timedRepetition(930), totalTokens: 710, errorSummary: 'Expected discount to be 20, received 15.', pairId: 'pair-3', pairPosition: 1, attempt: 1, technicallyEvaluable: true },
+      {
+        target,
+        repetition: 1,
+        strategy: 'GENERALIST_AGENT',
+        valid: false,
+        failureType: 'COMPILATION',
+        ...timedRepetition(810),
+        totalTokens: 480,
+        errorSummary: 'jest.config.js: Cannot find module ts-jest',
+        pairId: 'pair-1',
+        pairPosition: 2,
+        attempt: 1,
+        technicallyEvaluable: true,
+      },
+      {
+        target,
+        repetition: 2,
+        strategy: 'GENERALIST_AGENT',
+        valid: true,
+        failureType: 'NONE',
+        ...timedRepetition(760),
+        totalTokens: 470,
+        errorSummary: null,
+        pairId: 'pair-2',
+        pairPosition: 1,
+        attempt: 1,
+        technicallyEvaluable: true,
+      },
+      {
+        target,
+        repetition: 3,
+        strategy: 'GENERALIST_AGENT',
+        valid: false,
+        failureType: 'INFRASTRUCTURE',
+        ...timedRepetition(840),
+        totalTokens: 520,
+        errorSummary: 'DEMO: fallo de infraestructura en el segundo intento',
+        pairId: 'pair-3',
+        pairPosition: 2,
+        attempt: 2,
+        technicallyEvaluable: false,
+      },
+      {
+        target,
+        repetition: 1,
+        strategy: 'RAG',
+        valid: true,
+        failureType: 'NONE',
+        ...timedRepetition(910),
+        totalTokens: 680,
+        errorSummary: null,
+        pairId: 'pair-1',
+        pairPosition: 1,
+        attempt: 1,
+        technicallyEvaluable: true,
+      },
+      {
+        target,
+        repetition: 2,
+        strategy: 'RAG',
+        valid: true,
+        failureType: 'NONE',
+        ...timedRepetition(890),
+        totalTokens: 700,
+        errorSummary: null,
+        pairId: 'pair-2',
+        pairPosition: 2,
+        attempt: 2,
+        technicallyEvaluable: true,
+      },
+      {
+        target,
+        repetition: 3,
+        strategy: 'RAG',
+        valid: false,
+        failureType: 'TEST_ASSERTION',
+        ...timedRepetition(930),
+        totalTokens: 710,
+        errorSummary: 'Expected discount to be 20, received 15.',
+        pairId: 'pair-3',
+        pairPosition: 1,
+        attempt: 1,
+        technicallyEvaluable: true,
+      },
     ],
   }
 }
 
 /** DEMO · DATOS SIMULADOS: duración de una repetición ejecutada (la llamada al Sandbox es ~30 % del total). */
-function timedRepetition(totalDurationMs: number): Pick<RepetitionResult, 'generationDurationMs' | 'executionDurationMs' | 'totalDurationMs'> {
-  const executionDurationMs = Math.round(totalDurationMs * .3)
+function timedRepetition(
+  totalDurationMs: number,
+): Pick<RepetitionResult, 'generationDurationMs' | 'executionDurationMs' | 'totalDurationMs'> {
+  const executionDurationMs = Math.round(totalDurationMs * 0.3)
   return { generationDurationMs: totalDurationMs - executionDurationMs, executionDurationMs, totalDurationMs }
 }
 
@@ -1022,49 +2969,108 @@ function timedRepetition(totalDurationMs: number): Pick<RepetitionResult, 'gener
  * Se activan con `startExperiment(projectId, 'demo-scenario-<nombre>')` o con `mockGetExperiment('exp_demo_scenario_<nombre>')`.
  * El selector de la página solo lista targets reales del inventario; estos escenarios se alcanzan desde tests o desde la consola.
  */
-export const DEMO_EXPERIMENT_SCENARIOS = ['legacy', 'mixed-sandbox', 'no-evaluable', 'phpunit', 'failed-experiment-failed', 'failed-worker-lost', 'failed-unknown'] as const
-export type DemoExperimentScenario = typeof DEMO_EXPERIMENT_SCENARIOS[number]
+export const DEMO_EXPERIMENT_SCENARIOS = [
+  'legacy',
+  'mixed-sandbox',
+  'no-evaluable',
+  'phpunit',
+  'failed-experiment-failed',
+  'failed-worker-lost',
+  'failed-unknown',
+] as const
+export type DemoExperimentScenario = (typeof DEMO_EXPERIMENT_SCENARIOS)[number]
 
-/** DEMO · opciones del selector de experimentos (solo con mock): escenarios de B1 y errores de creación. Ids que `startExperiment` reconoce. */
-export const DEMO_EXPERIMENT_SELECTOR_OPTIONS: ReadonlyArray<{ id: string; label: string }> = [
-  { id: 'demo-scenario-legacy', label: 'DEMO · corrida previa sin datos OE5' },
-  { id: 'demo-scenario-mixed-sandbox', label: 'DEMO · Sandbox mixto y configuración parcial' },
-  { id: 'demo-scenario-no-evaluable', label: 'DEMO · sin datos evaluables' },
-  { id: 'demo-scenario-phpunit', label: 'DEMO · proyecto PHP con PHPUnit' },
-  { id: 'demo-scenario-failed-experiment-failed', label: 'DEMO · FAILED EXPERIMENT_FAILED' },
-  { id: 'demo-scenario-failed-worker-lost', label: 'DEMO · FAILED EXPERIMENT_WORKER_LOST' },
-  { id: 'demo-scenario-failed-unknown', label: 'DEMO · FAILED código desconocido' },
-  { id: 'demo-error-reasoning-effort', label: 'DEMO · error 422 REASONING_EFFORT_UNSUPPORTED' },
-  { id: 'demo-error-unsupported-project', label: 'DEMO · error 422 UNSUPPORTED_PROJECT' },
-  { id: 'demo-error-llm-unavailable', label: 'DEMO · error 503 LLM_PROVIDER_UNAVAILABLE (reintentable)' },
-  // WI-CONSOLE-036 B4: símbolo constructor DEMO; al elegirlo, el mock responde 404 UNRESOLVABLE_TARGET. No se preselecciona.
-  { id: 'demo-error-unresolvable-target', label: 'DEMO · DATOS SIMULADOS · Demo::__construct' },
-]
+export { DEMO_EXPERIMENT_SELECTOR_OPTIONS } from './demoExperimentOptions'
 
 const DEMO_SCENARIO_TARGET = 'DEMO · escenario'
 
 function demoScenarioOperation(scenario: DemoExperimentScenario, experimentId: string): ExperimentOperation {
   const base = { id: experimentId, failureCode: null, failureMessage: null }
   const repetition = (partial: Partial<RepetitionResult> & Pick<RepetitionResult, 'repetition' | 'strategy'>): RepetitionResult => ({
-    target: DEMO_SCENARIO_TARGET, valid: false, failureType: 'NONE', generationDurationMs: null, executionDurationMs: null, totalDurationMs: null, totalTokens: null,
-    errorSummary: null, pairId: null, pairPosition: null, attempt: null, technicallyEvaluable: null, ...partial,
+    target: DEMO_SCENARIO_TARGET,
+    valid: false,
+    failureType: 'NONE',
+    generationDurationMs: null,
+    executionDurationMs: null,
+    totalDurationMs: null,
+    totalTokens: null,
+    errorSummary: null,
+    pairId: null,
+    pairPosition: null,
+    attempt: null,
+    technicallyEvaluable: null,
+    ...partial,
   })
   const metrics = (partial: Partial<StrategyMetrics> & Pick<StrategyMetrics, 'strategy'>): StrategyMetrics => ({
-    validRate: null, compilationRate: null, executionRate: null, passedRate: null, generationDurationMs: null, executionDurationMs: null, totalDurationMs: null,
-    totalTokens: null, estimatedCost: null, failures: {}, evaluableRepetitions: 3, nonEvaluableRepetitions: 0, ...partial,
+    validRate: null,
+    compilationRate: null,
+    executionRate: null,
+    passedRate: null,
+    generationDurationMs: null,
+    executionDurationMs: null,
+    totalDurationMs: null,
+    totalTokens: null,
+    estimatedCost: null,
+    failures: {},
+    evaluableRepetitions: 3,
+    nonEvaluableRepetitions: 0,
+    ...partial,
   })
   switch (scenario) {
     case 'legacy': {
       // (a) Corrida previa a OE5: configuración, pareado y executionDurationMs en null.
-      const configuration: ExperimentConfiguration = { model: null, budget: null, executionProfile: null, runnerHint: null, randomizationSeed: null }
+      const configuration: ExperimentConfiguration = {
+        model: null,
+        budget: null,
+        executionProfile: null,
+        runnerHint: null,
+        randomizationSeed: null,
+      }
       return {
-        ...base, status: 'COMPLETED', progress: 100, configuration,
+        ...base,
+        status: 'COMPLETED',
+        progress: 100,
+        configuration,
         result: {
-          baseline: metrics({ strategy: 'GENERALIST_AGENT', validRate: 1 / 3, passedRate: 1 / 3, compilationRate: 2 / 3, executionRate: 1 / 3, generationDurationMs: 3_100, totalDurationMs: 3_100, failures: { TEST_ASSERTION: 2 } }),
-          rag: metrics({ strategy: 'RAG', validRate: 2 / 3, passedRate: 2 / 3, compilationRate: 1, executionRate: 2 / 3, generationDurationMs: 3_600, totalDurationMs: 3_600, failures: { TEST_ASSERTION: 1 } }),
+          baseline: metrics({
+            strategy: 'GENERALIST_AGENT',
+            validRate: 1 / 3,
+            passedRate: 1 / 3,
+            compilationRate: 2 / 3,
+            executionRate: 1 / 3,
+            generationDurationMs: 3_100,
+            totalDurationMs: 3_100,
+            failures: { TEST_ASSERTION: 2 },
+          }),
+          rag: metrics({
+            strategy: 'RAG',
+            validRate: 2 / 3,
+            passedRate: 2 / 3,
+            compilationRate: 1,
+            executionRate: 2 / 3,
+            generationDurationMs: 3_600,
+            totalDurationMs: 3_600,
+            failures: { TEST_ASSERTION: 1 },
+          }),
           repetitions: [
-            repetition({ repetition: 1, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'TEST_ASSERTION', generationDurationMs: 3_100, totalDurationMs: 3_100, totalTokens: null }),
-            repetition({ repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', generationDurationMs: 3_600, totalDurationMs: 3_600, totalTokens: null }),
+            repetition({
+              repetition: 1,
+              strategy: 'GENERALIST_AGENT',
+              valid: false,
+              failureType: 'TEST_ASSERTION',
+              generationDurationMs: 3_100,
+              totalDurationMs: 3_100,
+              totalTokens: null,
+            }),
+            repetition({
+              repetition: 1,
+              strategy: 'RAG',
+              valid: true,
+              failureType: 'NONE',
+              generationDurationMs: 3_600,
+              totalDurationMs: 3_600,
+              totalTokens: null,
+            }),
           ],
           configuration,
         },
@@ -1073,18 +3079,100 @@ function demoScenarioOperation(scenario: DemoExperimentScenario, experimentId: s
     case 'mixed-sandbox': {
       // (b) Configuración parcial (budget y runnerHint ausentes) y una llamada fallida al Sandbox (7 ms medidos) junto a otra sin invocar (null).
       const configuration: ExperimentConfiguration = {
-        model: { provider: 'OpenAI', model: 'gpt-6-luna', modelVersion: null, reasoningEffort: 'high', temperature: null, maxOutputTokens: null },
-        budget: null, executionProfile: 'sandbox-demo-standard', runnerHint: null, randomizationSeed: 'demo-seed-partial',
+        model: {
+          provider: 'OpenAI',
+          model: 'gpt-6-luna',
+          modelVersion: null,
+          reasoningEffort: 'high',
+          temperature: null,
+          maxOutputTokens: null,
+        },
+        budget: null,
+        executionProfile: 'sandbox-demo-standard',
+        runnerHint: null,
+        randomizationSeed: 'demo-seed-partial',
       }
       return {
-        ...base, status: 'COMPLETED', progress: 100, configuration,
+        ...base,
+        status: 'COMPLETED',
+        progress: 100,
+        configuration,
         result: {
-          baseline: metrics({ strategy: 'GENERALIST_AGENT', validRate: 1 / 2, passedRate: 1 / 2, compilationRate: 1, executionRate: 1 / 2, generationDurationMs: 2_400, executionDurationMs: 412, totalDurationMs: 2_812, totalTokens: 1_020, estimatedCost: .011, failures: { TEST_ASSERTION: 1 }, evaluableRepetitions: 2, nonEvaluableRepetitions: 0 }),
-          rag: metrics({ strategy: 'RAG', validRate: 1 / 2, passedRate: 1 / 2, compilationRate: 1 / 2, executionRate: 1 / 2, generationDurationMs: 1_900, executionDurationMs: 7, totalDurationMs: 1_907, totalTokens: 850, estimatedCost: .009, failures: { INFRASTRUCTURE: 1 }, evaluableRepetitions: 1, nonEvaluableRepetitions: 1 }),
+          baseline: metrics({
+            strategy: 'GENERALIST_AGENT',
+            validRate: 1 / 2,
+            passedRate: 1 / 2,
+            compilationRate: 1,
+            executionRate: 1 / 2,
+            generationDurationMs: 2_400,
+            executionDurationMs: 412,
+            totalDurationMs: 2_812,
+            totalTokens: 1_020,
+            estimatedCost: 0.011,
+            failures: { TEST_ASSERTION: 1 },
+            evaluableRepetitions: 2,
+            nonEvaluableRepetitions: 0,
+          }),
+          rag: metrics({
+            strategy: 'RAG',
+            validRate: 1 / 2,
+            passedRate: 1 / 2,
+            compilationRate: 1 / 2,
+            executionRate: 1 / 2,
+            generationDurationMs: 1_900,
+            executionDurationMs: 7,
+            totalDurationMs: 1_907,
+            totalTokens: 850,
+            estimatedCost: 0.009,
+            failures: { INFRASTRUCTURE: 1 },
+            evaluableRepetitions: 1,
+            nonEvaluableRepetitions: 1,
+          }),
           repetitions: [
-            repetition({ repetition: 1, strategy: 'RAG', valid: false, failureType: 'INFRASTRUCTURE', generationDurationMs: 1_900, executionDurationMs: 7, totalDurationMs: 1_907, totalTokens: 430, errorSummary: 'DEMO: la llamada al Sandbox falló tras 7 ms.', pairId: 'pair-mixed-1', pairPosition: 1, attempt: 2, technicallyEvaluable: false }),
-            repetition({ repetition: 2, strategy: 'RAG', valid: false, failureType: 'COMPILATION', generationDurationMs: 1_400, executionDurationMs: null, totalDurationMs: 1_400, totalTokens: 420, errorSummary: 'DEMO: no compiló; el Sandbox no se invocó.', pairId: 'pair-mixed-2', pairPosition: 2, attempt: 1, technicallyEvaluable: true }),
-            repetition({ repetition: 1, strategy: 'GENERALIST_AGENT', valid: true, failureType: 'NONE', generationDurationMs: 2_400, executionDurationMs: 412, totalDurationMs: 2_812, totalTokens: 1_020, pairId: 'pair-mixed-1', pairPosition: 2, attempt: 1, technicallyEvaluable: true }),
+            repetition({
+              repetition: 1,
+              strategy: 'RAG',
+              valid: false,
+              failureType: 'INFRASTRUCTURE',
+              generationDurationMs: 1_900,
+              executionDurationMs: 7,
+              totalDurationMs: 1_907,
+              totalTokens: 430,
+              errorSummary: 'DEMO: la llamada al Sandbox falló tras 7 ms.',
+              pairId: 'pair-mixed-1',
+              pairPosition: 1,
+              attempt: 2,
+              technicallyEvaluable: false,
+            }),
+            repetition({
+              repetition: 2,
+              strategy: 'RAG',
+              valid: false,
+              failureType: 'COMPILATION',
+              generationDurationMs: 1_400,
+              executionDurationMs: null,
+              totalDurationMs: 1_400,
+              totalTokens: 420,
+              errorSummary: 'DEMO: no compiló; el Sandbox no se invocó.',
+              pairId: 'pair-mixed-2',
+              pairPosition: 2,
+              attempt: 1,
+              technicallyEvaluable: true,
+            }),
+            repetition({
+              repetition: 1,
+              strategy: 'GENERALIST_AGENT',
+              valid: true,
+              failureType: 'NONE',
+              generationDurationMs: 2_400,
+              executionDurationMs: 412,
+              totalDurationMs: 2_812,
+              totalTokens: 1_020,
+              pairId: 'pair-mixed-1',
+              pairPosition: 2,
+              attempt: 1,
+              technicallyEvaluable: true,
+            }),
           ],
           configuration,
         },
@@ -1093,51 +3181,229 @@ function demoScenarioOperation(scenario: DemoExperimentScenario, experimentId: s
     case 'no-evaluable': {
       // (c) El agente generalista no tiene repeticiones evaluables: tasas y medias en null, contadores 0 / 3.
       const configuration: ExperimentConfiguration = {
-        model: { provider: 'OpenAI', model: 'gpt-6-luna', modelVersion: null, reasoningEffort: 'high', temperature: null, maxOutputTokens: null },
-        budget: { toolCallCap: 8, contextTokenBudget: 12_000, maxDurationMs: 60_000 }, executionProfile: 'sandbox-demo-standard', runnerHint: 'demo-runner', randomizationSeed: 'demo-seed-no-evaluable',
+        model: {
+          provider: 'OpenAI',
+          model: 'gpt-6-luna',
+          modelVersion: null,
+          reasoningEffort: 'high',
+          temperature: null,
+          maxOutputTokens: null,
+        },
+        budget: { toolCallCap: 8, contextTokenBudget: 12_000, maxDurationMs: 60_000 },
+        executionProfile: 'sandbox-demo-standard',
+        runnerHint: 'demo-runner',
+        randomizationSeed: 'demo-seed-no-evaluable',
       }
       return {
-        ...base, status: 'COMPLETED', progress: 100, configuration,
+        ...base,
+        status: 'COMPLETED',
+        progress: 100,
+        configuration,
         result: {
           baseline: metrics({ strategy: 'GENERALIST_AGENT', evaluableRepetitions: 0, nonEvaluableRepetitions: 3, failures: {} }),
-          rag: metrics({ strategy: 'RAG', validRate: 1, compilationRate: 1, executionRate: 1, passedRate: 2 / 3, generationDurationMs: 1_800, executionDurationMs: 640, totalDurationMs: 2_440, totalTokens: 1_500, estimatedCost: .014, failures: { TEST_ASSERTION: 1 }, evaluableRepetitions: 3, nonEvaluableRepetitions: 0 }),
+          rag: metrics({
+            strategy: 'RAG',
+            validRate: 1,
+            compilationRate: 1,
+            executionRate: 1,
+            passedRate: 2 / 3,
+            generationDurationMs: 1_800,
+            executionDurationMs: 640,
+            totalDurationMs: 2_440,
+            totalTokens: 1_500,
+            estimatedCost: 0.014,
+            failures: { TEST_ASSERTION: 1 },
+            evaluableRepetitions: 3,
+            nonEvaluableRepetitions: 0,
+          }),
           repetitions: [
-            repetition({ repetition: 1, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'INFRASTRUCTURE', generationDurationMs: 800, executionDurationMs: 9, totalDurationMs: 809, errorSummary: 'DEMO: fallo externo en el segundo intento.', pairId: 'pair-ne-1', pairPosition: 2, attempt: 2, technicallyEvaluable: false }),
-            repetition({ repetition: 2, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'INFRASTRUCTURE', generationDurationMs: 900, executionDurationMs: 11, totalDurationMs: 911, pairId: 'pair-ne-2', pairPosition: 1, attempt: 2, technicallyEvaluable: false }),
-            repetition({ repetition: 3, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'INFRASTRUCTURE', generationDurationMs: 700, totalDurationMs: 700, pairId: 'pair-ne-3', pairPosition: 2, attempt: 2, technicallyEvaluable: false }),
-            repetition({ repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', ...timedRepetition(2_300), totalTokens: 500, pairId: 'pair-ne-1', pairPosition: 1, attempt: 1, technicallyEvaluable: true }),
+            repetition({
+              repetition: 1,
+              strategy: 'GENERALIST_AGENT',
+              valid: false,
+              failureType: 'INFRASTRUCTURE',
+              generationDurationMs: 800,
+              executionDurationMs: 9,
+              totalDurationMs: 809,
+              errorSummary: 'DEMO: fallo externo en el segundo intento.',
+              pairId: 'pair-ne-1',
+              pairPosition: 2,
+              attempt: 2,
+              technicallyEvaluable: false,
+            }),
+            repetition({
+              repetition: 2,
+              strategy: 'GENERALIST_AGENT',
+              valid: false,
+              failureType: 'INFRASTRUCTURE',
+              generationDurationMs: 900,
+              executionDurationMs: 11,
+              totalDurationMs: 911,
+              pairId: 'pair-ne-2',
+              pairPosition: 1,
+              attempt: 2,
+              technicallyEvaluable: false,
+            }),
+            repetition({
+              repetition: 3,
+              strategy: 'GENERALIST_AGENT',
+              valid: false,
+              failureType: 'INFRASTRUCTURE',
+              generationDurationMs: 700,
+              totalDurationMs: 700,
+              pairId: 'pair-ne-3',
+              pairPosition: 2,
+              attempt: 2,
+              technicallyEvaluable: false,
+            }),
+            repetition({
+              repetition: 1,
+              strategy: 'RAG',
+              valid: true,
+              failureType: 'NONE',
+              ...timedRepetition(2_300),
+              totalTokens: 500,
+              pairId: 'pair-ne-1',
+              pairPosition: 1,
+              attempt: 1,
+              technicallyEvaluable: true,
+            }),
           ],
           configuration,
         },
       }
     }
     case 'phpunit': {
-      // (f) Proyecto PHP con PHPUnit (CS-CORE-20261009-018): runnerHint y perfil se muestran tal cual; una respuesta sin <?php es INVALID/COMPILATION sin reintento.
+      // (f) Project PHP con PHPUnit (CS-CORE-20261009-018): runnerHint y perfil se muestran tal cual; una respuesta sin <?php es INVALID/COMPILATION sin reintento.
       const configuration: ExperimentConfiguration = {
-        model: { provider: 'OpenAI', model: 'gpt-6-luna', modelVersion: null, reasoningEffort: 'medium', temperature: null, maxOutputTokens: null },
-        budget: { toolCallCap: 8, contextTokenBudget: 12_000, maxDurationMs: 60_000 }, executionProfile: 'PHP_LARAVEL_PHPUNIT', runnerHint: 'PHPUNIT', randomizationSeed: 'demo-seed-phpunit',
+        model: {
+          provider: 'OpenAI',
+          model: 'gpt-6-luna',
+          modelVersion: null,
+          reasoningEffort: 'medium',
+          temperature: null,
+          maxOutputTokens: null,
+        },
+        budget: { toolCallCap: 8, contextTokenBudget: 12_000, maxDurationMs: 60_000 },
+        executionProfile: 'PHP_LARAVEL_PHPUNIT',
+        runnerHint: 'PHPUNIT',
+        randomizationSeed: 'demo-seed-phpunit',
       }
       return {
-        ...base, status: 'COMPLETED', progress: 100, configuration,
+        ...base,
+        status: 'COMPLETED',
+        progress: 100,
+        configuration,
         result: {
-          baseline: metrics({ strategy: 'GENERALIST_AGENT', validRate: .5, compilationRate: .5, executionRate: .5, passedRate: .5, generationDurationMs: 2_000, executionDurationMs: 380, totalDurationMs: 2_380, totalTokens: 1_300, failures: { COMPILATION: 1 }, evaluableRepetitions: 2, nonEvaluableRepetitions: 0 }),
-          rag: metrics({ strategy: 'RAG', validRate: 1, compilationRate: 1, executionRate: 1, passedRate: 1, generationDurationMs: 1_700, executionDurationMs: 520, totalDurationMs: 2_220, totalTokens: 1_100, failures: {}, evaluableRepetitions: 2, nonEvaluableRepetitions: 0 }),
+          baseline: metrics({
+            strategy: 'GENERALIST_AGENT',
+            validRate: 0.5,
+            compilationRate: 0.5,
+            executionRate: 0.5,
+            passedRate: 0.5,
+            generationDurationMs: 2_000,
+            executionDurationMs: 380,
+            totalDurationMs: 2_380,
+            totalTokens: 1_300,
+            failures: { COMPILATION: 1 },
+            evaluableRepetitions: 2,
+            nonEvaluableRepetitions: 0,
+          }),
+          rag: metrics({
+            strategy: 'RAG',
+            validRate: 1,
+            compilationRate: 1,
+            executionRate: 1,
+            passedRate: 1,
+            generationDurationMs: 1_700,
+            executionDurationMs: 520,
+            totalDurationMs: 2_220,
+            totalTokens: 1_100,
+            failures: {},
+            evaluableRepetitions: 2,
+            nonEvaluableRepetitions: 0,
+          }),
           repetitions: [
-            repetition({ repetition: 1, strategy: 'GENERALIST_AGENT', valid: false, failureType: 'COMPILATION', ...timedRepetition(2_000), errorSummary: 'DEMO: respuesta sin marca <?php; registrada como INVALID/COMPILATION sin reintento.', pairId: 'pair-php-1', pairPosition: 2, attempt: 1, technicallyEvaluable: false }),
-            repetition({ repetition: 2, strategy: 'GENERALIST_AGENT', valid: true, failureType: 'NONE', ...timedRepetition(2_760), totalTokens: 1_300, pairId: 'pair-php-2', pairPosition: 1, attempt: 1, technicallyEvaluable: true }),
-            repetition({ repetition: 1, strategy: 'RAG', valid: true, failureType: 'NONE', ...timedRepetition(2_220), totalTokens: 1_100, pairId: 'pair-php-1', pairPosition: 1, attempt: 1, technicallyEvaluable: true }),
-            repetition({ repetition: 2, strategy: 'RAG', valid: true, failureType: 'NONE', ...timedRepetition(2_180), totalTokens: 1_100, pairId: 'pair-php-2', pairPosition: 2, attempt: 1, technicallyEvaluable: true }),
+            repetition({
+              repetition: 1,
+              strategy: 'GENERALIST_AGENT',
+              valid: false,
+              failureType: 'COMPILATION',
+              ...timedRepetition(2_000),
+              errorSummary: 'DEMO: respuesta sin marca <?php; registrada como INVALID/COMPILATION sin reintento.',
+              pairId: 'pair-php-1',
+              pairPosition: 2,
+              attempt: 1,
+              technicallyEvaluable: false,
+            }),
+            repetition({
+              repetition: 2,
+              strategy: 'GENERALIST_AGENT',
+              valid: true,
+              failureType: 'NONE',
+              ...timedRepetition(2_760),
+              totalTokens: 1_300,
+              pairId: 'pair-php-2',
+              pairPosition: 1,
+              attempt: 1,
+              technicallyEvaluable: true,
+            }),
+            repetition({
+              repetition: 1,
+              strategy: 'RAG',
+              valid: true,
+              failureType: 'NONE',
+              ...timedRepetition(2_220),
+              totalTokens: 1_100,
+              pairId: 'pair-php-1',
+              pairPosition: 1,
+              attempt: 1,
+              technicallyEvaluable: true,
+            }),
+            repetition({
+              repetition: 2,
+              strategy: 'RAG',
+              valid: true,
+              failureType: 'NONE',
+              ...timedRepetition(2_180),
+              totalTokens: 1_100,
+              pairId: 'pair-php-2',
+              pairPosition: 2,
+              attempt: 1,
+              technicallyEvaluable: true,
+            }),
           ],
           configuration,
         },
       }
     }
     case 'failed-experiment-failed':
-      return { ...base, status: 'FAILED', progress: 34, configuration: null, failureCode: 'EXPERIMENT_FAILED', failureMessage: 'DEMO: excepción capturada durante la repetición 2.' }
+      return {
+        ...base,
+        status: 'FAILED',
+        progress: 34,
+        configuration: null,
+        failureCode: 'EXPERIMENT_FAILED',
+        failureMessage: 'DEMO: excepción capturada durante la repetición 2.',
+      }
     case 'failed-worker-lost':
-      return { ...base, status: 'FAILED', progress: 50, configuration: null, failureCode: 'EXPERIMENT_WORKER_LOST', failureMessage: 'DEMO: el worker dejó de responder y la cola agotó los intentos.' }
+      return {
+        ...base,
+        status: 'FAILED',
+        progress: 50,
+        configuration: null,
+        failureCode: 'EXPERIMENT_WORKER_LOST',
+        failureMessage: 'DEMO: el worker dejó de responder y la cola agotó los intentos.',
+      }
     case 'failed-unknown':
-      return { ...base, status: 'FAILED', progress: 17, configuration: null, failureCode: 'DEMO_UNKNOWN_FAILURE', failureMessage: 'DEMO: código que la Console no conoce; se muestra genérico.' }
+      return {
+        ...base,
+        status: 'FAILED',
+        progress: 17,
+        configuration: null,
+        failureCode: 'DEMO_UNKNOWN_FAILURE',
+        failureMessage: 'DEMO: código que la Console no conoce; se muestra genérico.',
+      }
   }
 }
 
@@ -1149,45 +3415,162 @@ const DISCOVERED_FILES_TOTAL = 146
 
 /** HU28: el agente generalista explora con las 4 herramientas del contrato; incluye un paso `EMPTY` y uno `FAILED` (spec.md). */
 function buildAgentTrajectory(targetFilePath: string): AgentTrajectoryStep[] {
-  const symbolExcerpt = buildExcerpt({ filePath: targetFilePath, symbolName: 'OrderService', startLine: 1, endLine: 18, snippet: 'export class OrderService {\n  constructor(private readonly coupons: CouponPolicy) {}\n}' })
-  const matchExcerpt = buildExcerpt({ filePath: targetFilePath, symbolName: null, startLine: 24, endLine: 26, snippet: '  calculateTotal(items: OrderItem[]): number {' })
-  const fileExcerpt = buildExcerpt({ filePath: targetFilePath, symbolName: null, startLine: 1, endLine: 34, snippet: '/* contenido completo entregado al agente */', truncated: true })
+  const symbolExcerpt = buildExcerpt({
+    filePath: targetFilePath,
+    symbolName: 'OrderService',
+    startLine: 1,
+    endLine: 18,
+    snippet: 'export class OrderService {\n  constructor(private readonly coupons: CouponPolicy) {}\n}',
+  })
+  const matchExcerpt = buildExcerpt({
+    filePath: targetFilePath,
+    symbolName: null,
+    startLine: 24,
+    endLine: 26,
+    snippet: '  calculateTotal(items: OrderItem[]): number {',
+  })
+  const fileExcerpt = buildExcerpt({
+    filePath: targetFilePath,
+    symbolName: null,
+    startLine: 1,
+    endLine: 34,
+    snippet: '/* contenido completo entregado al agente */',
+    truncated: true,
+  })
   return [
-    { step: 1, toolName: 'list_files', arguments: { path: 'src/domain' }, status: 'SUCCEEDED', resultSummary: `${DISCOVERED_FILES_TOTAL} archivos disponibles en src/domain`, resultSha256: fakeSha256('list_files:src/domain'), truncated: false, observations: [{ kind: 'FILE_LIST_SUMMARY', filePath: null, symbolName: null, excerpt: null, discoveredFilesCount: DISCOVERED_FILES_TOTAL }] },
-    { step: 2, toolName: 'search_text', arguments: { query: 'calculateTotal' }, status: 'SUCCEEDED', resultSummary: '1 coincidencia encontrada', resultSha256: fakeSha256('search_text:calculateTotal'), truncated: false, observations: [{ kind: 'TEXT_MATCH', filePath: targetFilePath, symbolName: null, excerpt: matchExcerpt, discoveredFilesCount: null }] },
-    { step: 3, toolName: 'inspect_symbol', arguments: { symbolName: 'OrderService' }, status: 'SUCCEEDED', resultSummary: 'Declaración localizada con 1 referencia', resultSha256: fakeSha256('inspect_symbol:OrderService'), truncated: false, observations: [{ kind: 'SYMBOL', filePath: targetFilePath, symbolName: 'OrderService', excerpt: symbolExcerpt, discoveredFilesCount: null }] },
-    { step: 4, toolName: 'inspect_symbol', arguments: { symbolName: 'PricingStrategy' }, status: 'FAILED', resultSummary: 'El símbolo no se pudo resolver en esta versión', resultSha256: fakeSha256('inspect_symbol:PricingStrategy'), truncated: false, observations: [] },
-    { step: 5, toolName: 'search_text', arguments: { query: 'applyCoupon' }, status: 'EMPTY', resultSummary: 'Sin coincidencias en el proyecto', resultSha256: fakeSha256('search_text:applyCoupon'), truncated: false, observations: [] },
-    { step: 6, toolName: 'read_file', arguments: { filePath: targetFilePath }, status: 'SUCCEEDED', resultSummary: 'Contenido entregado al agente', resultSha256: fakeSha256(`read_file:${targetFilePath}`), truncated: true, observations: [{ kind: 'FILE_CONTENT', filePath: targetFilePath, symbolName: null, excerpt: fileExcerpt, discoveredFilesCount: null }] },
+    {
+      step: 1,
+      toolName: 'list_files',
+      arguments: { path: 'src/domain' },
+      status: 'SUCCEEDED',
+      resultSummary: `${DISCOVERED_FILES_TOTAL} archivos disponibles en src/domain`,
+      resultSha256: fakeSha256('list_files:src/domain'),
+      truncated: false,
+      observations: [
+        { kind: 'FILE_LIST_SUMMARY', filePath: null, symbolName: null, excerpt: null, discoveredFilesCount: DISCOVERED_FILES_TOTAL },
+      ],
+    },
+    {
+      step: 2,
+      toolName: 'search_text',
+      arguments: { query: 'calculateTotal' },
+      status: 'SUCCEEDED',
+      resultSummary: '1 coincidencia encontrada',
+      resultSha256: fakeSha256('search_text:calculateTotal'),
+      truncated: false,
+      observations: [{ kind: 'TEXT_MATCH', filePath: targetFilePath, symbolName: null, excerpt: matchExcerpt, discoveredFilesCount: null }],
+    },
+    {
+      step: 3,
+      toolName: 'inspect_symbol',
+      arguments: { symbolName: 'OrderService' },
+      status: 'SUCCEEDED',
+      resultSummary: 'Declaración localizada con 1 referencia',
+      resultSha256: fakeSha256('inspect_symbol:OrderService'),
+      truncated: false,
+      observations: [
+        { kind: 'SYMBOL', filePath: targetFilePath, symbolName: 'OrderService', excerpt: symbolExcerpt, discoveredFilesCount: null },
+      ],
+    },
+    {
+      step: 4,
+      toolName: 'inspect_symbol',
+      arguments: { symbolName: 'PricingStrategy' },
+      status: 'FAILED',
+      resultSummary: 'El símbolo no se pudo resolver en esta versión',
+      resultSha256: fakeSha256('inspect_symbol:PricingStrategy'),
+      truncated: false,
+      observations: [],
+    },
+    {
+      step: 5,
+      toolName: 'search_text',
+      arguments: { query: 'applyCoupon' },
+      status: 'EMPTY',
+      resultSummary: 'Sin coincidencias en el Project',
+      resultSha256: fakeSha256('search_text:applyCoupon'),
+      truncated: false,
+      observations: [],
+    },
+    {
+      step: 6,
+      toolName: 'read_file',
+      arguments: { filePath: targetFilePath },
+      status: 'SUCCEEDED',
+      resultSummary: 'Contenido entregado al agente',
+      resultSha256: fakeSha256(`read_file:${targetFilePath}`),
+      truncated: true,
+      observations: [
+        { kind: 'FILE_CONTENT', filePath: targetFilePath, symbolName: null, excerpt: fileExcerpt, discoveredFilesCount: null },
+      ],
+    },
   ]
 }
 
 /** HU27/HU28: las 6 repeticiones de un experimento (3 RAG + 3 agente) también tienen traza de contexto propia. */
-function seedExperimentContextTraces(experimentId: string, projectVersionId: string, targetId: string, targetFilePath: string, targetSymbol: string | null): void {
-  const targetExcerpt = buildExcerpt({ filePath: targetFilePath, symbolName: targetSymbol, startLine: 1, endLine: 3, snippet: '/* target del experimento */' })
+function seedExperimentContextTraces(
+  experimentId: string,
+  projectVersionId: string,
+  targetId: string,
+  targetFilePath: string,
+  targetSymbol: string | null,
+): void {
+  const targetExcerpt = buildExcerpt({
+    filePath: targetFilePath,
+    symbolName: targetSymbol,
+    startLine: 1,
+    endLine: 3,
+    snippet: '/* target del experimento */',
+  })
   const ragCandidates = buildOrderTotalCandidates().slice(0, 4)
   const ragSelected = ragCandidates.filter((candidate) => candidate.decision === 'SELECTED')
   for (const repetition of [1, 2, 3] as const) {
     const ragId = `${experimentId}-rag-r${repetition}`
     const ragDetail: ContextTraceDetail = {
-      id: ragId, kind: 'RAG', projectVersionId, targetId, testRunId: null, experimentId,
-      strategy: 'RAG', repetition, attempt: 1, current: true, artifactIds: [], createdAt: nowIso(),
+      id: ragId,
+      kind: 'RAG',
+      projectVersionId,
+      targetId,
+      testRunId: null,
+      experimentId,
+      strategy: 'RAG',
+      repetition,
+      attempt: 1,
+      current: true,
+      artifactIds: [],
+      createdAt: nowIso(),
       target: { chunkIds: ['chunk-target-exp'], excerpt: targetExcerpt, tokenCount: 30 },
       candidates: ragCandidates,
       retrievedChunks: ragCandidates.length,
       selectedChunks: ragSelected.length,
       contextTokens: ragSelected.reduce((total, candidate) => total + candidate.tokenCount, 0),
-      configuration: { minimumScore: .5, topK: 5, maxContextTokens: 4_000, semanticWeight: .7, structuralWeight: .3 },
+      configuration: { minimumScore: 0.5, topK: 5, maxContextTokens: 4_000, semanticWeight: 0.7, structuralWeight: 0.3 },
     }
     contextTraces.set(ragId, { detail: ragDetail, notFinishedUntilPolls: 0, polls: 0 })
 
     const agentId = `${experimentId}-agent-r${repetition}`
     const trajectory = buildAgentTrajectory(targetFilePath)
-    const filesInspected = new Set(trajectory.flatMap((step) => step.observations.map((observation) => observation.filePath).filter((path): path is string => path !== null))).size
+    const filesInspected = new Set(
+      trajectory.flatMap((step) =>
+        step.observations.map((observation) => observation.filePath).filter((path): path is string => path !== null),
+      ),
+    ).size
     const agentDetail: ContextTraceDetail = {
-      id: agentId, kind: 'AGENT', projectVersionId, targetId, testRunId: null, experimentId,
-      strategy: 'GENERALIST_AGENT', repetition, attempt: 1, current: true, artifactIds: [], createdAt: nowIso(),
-      trajectory, toolCalls: trajectory.length, filesInspected,
+      id: agentId,
+      kind: 'AGENT',
+      projectVersionId,
+      targetId,
+      testRunId: null,
+      experimentId,
+      strategy: 'GENERALIST_AGENT',
+      repetition,
+      attempt: 1,
+      current: true,
+      artifactIds: [],
+      createdAt: nowIso(),
+      trajectory,
+      toolCalls: trajectory.length,
+      filesInspected,
     }
     contextTraces.set(agentId, { detail: agentDetail, notFinishedUntilPolls: 0, polls: 0 })
   }
@@ -1197,15 +3580,31 @@ export async function mockStartExperiment(projectId: string, targetId: string): 
   await latency()
   const project = requireProjectRole(projectId, 'WRITER')
   // DEMO · errores de creación (WI-CONSOLE-021, INTEROP-2.7 §6.5.1). Ninguno crea el experimento.
-  if (targetId === 'demo-error-reasoning-effort') throw new ApiError('El modelo no admite el esfuerzo de razonamiento pedido (DEMO).', 422, 'demo-correlation-id', 'REASONING_EFFORT_UNSUPPORTED', { supportedEfforts: ['low', 'medium'] })
-  if (targetId === 'demo-error-unsupported-project') throw new ApiError(UNSUPPORTED_PROJECT_MESSAGE, 422, 'demo-correlation-id', 'UNSUPPORTED_PROJECT')
-  if (targetId === 'demo-error-unresolvable-target') throw new ApiError('El TestTarget no existe o no pertenece a este Project (DEMO).', 404, 'demo-correlation-id', 'UNRESOLVABLE_TARGET')
-  if (targetId === 'demo-error-llm-unavailable') throw new ApiError('El modelo de experimentos no está disponible (DEMO).', 503, 'demo-correlation-id', 'LLM_PROVIDER_UNAVAILABLE')
+  if (targetId === 'demo-error-reasoning-effort')
+    throw new ApiError(
+      'El modelo no admite el esfuerzo de razonamiento pedido (DEMO).',
+      422,
+      'demo-correlation-id',
+      'REASONING_EFFORT_UNSUPPORTED',
+      { supportedEfforts: ['low', 'medium'] },
+    )
+  if (targetId === 'demo-error-unsupported-project')
+    throw new ApiError(UNSUPPORTED_PROJECT_MESSAGE, 422, 'demo-correlation-id', 'UNSUPPORTED_PROJECT')
+  if (targetId === 'demo-error-unresolvable-target')
+    throw new ApiError('El TestTarget no existe o no pertenece a este Project (DEMO).', 404, 'demo-correlation-id', 'UNRESOLVABLE_TARGET')
+  if (targetId === 'demo-error-llm-unavailable')
+    throw new ApiError('El modelo de experimentos no está disponible (DEMO).', 503, 'demo-correlation-id', 'LLM_PROVIDER_UNAVAILABLE')
   const scenario = DEMO_EXPERIMENT_SCENARIOS.find((name) => targetId === `demo-scenario-${name}`)
   if (scenario) {
     const scenarioId = demoScenarioExperimentId(scenario)
     experiments.set(scenarioId, { projectId, polls: 0, fixed: true, operation: demoScenarioOperation(scenario, scenarioId) })
-    return { analysisRunId: projectId, experimentId: scenarioId, projectVersionId: project.currentVersionId ?? 'demo-project-version', status: 'PENDING', pollAfterMs: 460 }
+    return {
+      analysisRunId: projectId,
+      experimentId: scenarioId,
+      projectVersionId: project.currentVersionId ?? 'demo-project-version',
+      status: 'PENDING',
+      pollAfterMs: 460,
+    }
   }
   const inventory = project.currentVersionId ? versions.get(project.currentVersionId)?.inventory : undefined
   const target = inventory?.targets.find((item) => item.id === targetId)
@@ -1213,9 +3612,33 @@ export async function mockStartExperiment(projectId: string, targetId: string): 
   const label = target?.methodName ?? target?.symbolName ?? targetId
   sequence += 1
   const experimentId = `exp_demo_${sequence}`
-  experiments.set(experimentId, { projectId, polls: 0, operation: { id: experimentId, status: 'PENDING', progress: 0, failureCode: null, failureMessage: null, result: experimentResult(label) } })
-  if (project.currentVersionId) seedExperimentContextTraces(experimentId, project.currentVersionId, targetId, target?.filePath ?? 'src/domain/OrderService.ts', target?.methodName ?? target?.symbolName ?? null)
-  return { analysisRunId: projectId, experimentId, projectVersionId: project.currentVersionId ?? 'demo-project-version', status: 'PENDING', pollAfterMs: 460 }
+  experiments.set(experimentId, {
+    projectId,
+    polls: 0,
+    operation: {
+      id: experimentId,
+      status: 'PENDING',
+      progress: 0,
+      failureCode: null,
+      failureMessage: null,
+      result: experimentResult(label),
+    },
+  })
+  if (project.currentVersionId)
+    seedExperimentContextTraces(
+      experimentId,
+      project.currentVersionId,
+      targetId,
+      target?.filePath ?? 'src/domain/OrderService.ts',
+      target?.methodName ?? target?.symbolName ?? null,
+    )
+  return {
+    analysisRunId: projectId,
+    experimentId,
+    projectVersionId: project.currentVersionId ?? 'demo-project-version',
+    status: 'PENDING',
+    pollAfterMs: 460,
+  }
 }
 
 export async function mockGetExperiment(experimentId: string): Promise<ExperimentOperation> {
@@ -1234,13 +3657,37 @@ export async function mockGetExperiment(experimentId: string): Promise<Experimen
 export async function mockStartRunComparison(analysisRunId: string, symbol: AnalysisSymbolResponse): Promise<RunComparisonAccepted> {
   await latency()
   const run = findVisibleRun(analysisRunId)
-  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (!run) notFound(`No existe el AnalysisRun demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   requireProjectRole(run.projectId, 'WRITER')
-  if (run.status === 'ACTION_REQUIRED') throw new ApiError('Este Run todavía necesita contexto funcional antes de compararse — resuelve las preguntas pendientes primero.', 409, 'demo-correlation-id', 'RUN_NOT_ELIGIBLE')
-  if (symbol.changeKind !== 'DIRECTLY_CHANGED' || (symbol.kind !== 'METHOD' && symbol.kind !== 'FUNCTION')) throw new ApiError(`"${symbol.qualifiedName}" no es un símbolo METHOD/FUNCTION con cambio directo — no es una unidad experimental válida.`, 422, 'demo-correlation-id', 'UNSUPPORTED_SYMBOL_KIND')
+  if (run.status === 'ACTION_REQUIRED')
+    throw new ApiError(
+      'Este Run todavía necesita contexto funcional antes de compararse — resuelve las preguntas pendientes primero.',
+      409,
+      'demo-correlation-id',
+      'RUN_NOT_ELIGIBLE',
+    )
+  if (symbol.changeKind !== 'DIRECTLY_CHANGED' || (symbol.kind !== 'METHOD' && symbol.kind !== 'FUNCTION'))
+    throw new ApiError(
+      `"${symbol.qualifiedName}" no es un símbolo METHOD/FUNCTION con cambio directo — no es una unidad experimental válida.`,
+      422,
+      'demo-correlation-id',
+      'UNSUPPORTED_SYMBOL_KIND',
+    )
   sequence += 1
   const comparisonId = `runcmp_demo_${sequence}`
-  runComparisons.set(comparisonId, { polls: 0, operation: { id: comparisonId, analysisRunId, projectId: run.projectId, projectVersionId: `ver_${run.projectId}`, symbol, status: 'PENDING', progress: 0, result: experimentResult(symbol.qualifiedName) } })
+  runComparisons.set(comparisonId, {
+    polls: 0,
+    operation: {
+      id: comparisonId,
+      analysisRunId,
+      projectId: run.projectId,
+      projectVersionId: `ver_${run.projectId}`,
+      symbol,
+      status: 'PENDING',
+      progress: 0,
+      result: experimentResult(symbol.qualifiedName),
+    },
+  })
   return { analysisRunId, comparisonId, projectVersionId: `ver_${run.projectId}`, status: 'PENDING', pollAfterMs: 460 }
 }
 
@@ -1263,15 +3710,22 @@ export async function mockListRunComparisons(analysisRunId: string): Promise<Run
   hideRunOfDeletedProject(analysisRunId)
   const items = Array.from(runComparisons.values())
     .filter((state) => state.operation.analysisRunId === analysisRunId)
-    .map((state) => state.operation.status === 'COMPLETED' ? state.operation : { ...state.operation, result: undefined })
+    .map((state) => (state.operation.status === 'COMPLETED' ? state.operation : { ...state.operation, result: undefined }))
   return { items: clone(items), nextCursor: null }
 }
 
 /* ---- INTEROP-2.7 §6.15 (WI-CONSOLE-014, OE2 SE vs SEM). DEMO · DATOS SIMULADOS: no son evidencia de tesis ni de producción. ---- */
 
-function buildRetrievalMode(comparisonId: string, mode: 'SE' | 'SEM', metrics: RetrievalMetricsResponse | null, pool: DemoRetrievalCandidate[] = DEMO_RETRIEVAL_CANDIDATES): RetrievalModeResultResponse {
+function buildRetrievalMode(
+  comparisonId: string,
+  mode: 'SE' | 'SEM',
+  metrics: RetrievalMetricsResponse | null,
+  pool: DemoRetrievalCandidate[] = DEMO_RETRIEVAL_CANDIDATES,
+): RetrievalModeResultResponse {
   const isSE = mode === 'SE'
-  const ordered = [...pool].sort((left, right) => (isSE ? (right.combinedScore ?? 0) - (left.combinedScore ?? 0) : (right.semanticScore ?? 0) - (left.semanticScore ?? 0)))
+  const ordered = [...pool].sort((left, right) =>
+    isSE ? (right.combinedScore ?? 0) - (left.combinedScore ?? 0) : (right.semanticScore ?? 0) - (left.semanticScore ?? 0),
+  )
   const candidates: RetrievalCandidateResponse[] = ordered.map((candidate, index) => ({
     rank: index + 1,
     chunkId: candidate.chunkId,
@@ -1285,7 +3739,13 @@ function buildRetrievalMode(comparisonId: string, mode: 'SE' | 'SEM', metrics: R
   return {
     mode,
     retrievalId: `ret_${comparisonId}_${mode.toLowerCase()}`,
-    config: { semanticTopK: 20, finalTopK: 10, semanticWeight: isSE ? 0.7 : null, structuralWeight: isSE ? 0.3 : null, embeddingModel: 'demo-embedding-v1' },
+    config: {
+      semanticTopK: 20,
+      finalTopK: 10,
+      semanticWeight: isSE ? 0.7 : null,
+      structuralWeight: isSE ? 0.3 : null,
+      embeddingModel: 'demo-embedding-v1',
+    },
     candidates,
     metrics: metrics ? clone(metrics) : null,
   }
@@ -1312,7 +3772,8 @@ function retrievalFingerprint(analysisRunId: string, filePath: string, qualified
 
 function requireRetrievalComparison(retrievalComparisonId: string): MockRetrievalComparisonState {
   const state = retrievalComparisons.get(retrievalComparisonId)
-  if (!state || isProjectDeleted(state.projectId)) notFound(`No existe la comparación de retrieval demo "${retrievalComparisonId}".`, 'RETRIEVAL_COMPARISON_NOT_FOUND')
+  if (!state || isProjectDeleted(state.projectId))
+    notFound(`No existe la comparación de recuperación demo "${retrievalComparisonId}".`, 'RETRIEVAL_COMPARISON_NOT_FOUND')
   return state
 }
 
@@ -1327,7 +3788,13 @@ function advanceRetrievalComparison(state: MockRetrievalComparisonState): void {
   }
   const completedAt = nowIso()
   if (state.finalStatus === 'FAILED') {
-    state.operation = { ...state.operation, status: 'FAILED', failureCode: 'RETRIEVAL_COMPARISON_FAILED', failureMessage: 'DEMO · la comparación terminó sin resultados.', completedAt }
+    state.operation = {
+      ...state.operation,
+      status: 'FAILED',
+      failureCode: 'RETRIEVAL_COMPARISON_FAILED',
+      failureMessage: 'DEMO · la comparación terminó sin resultados.',
+      completedAt,
+    }
     return
   }
   state.results = buildRetrievalResults(state, completedAt)
@@ -1335,28 +3802,46 @@ function advanceRetrievalComparison(state: MockRetrievalComparisonState): void {
 }
 
 /** `POST /retrieval-comparisons`. Sin ganador, sin estadística y sin `RUN_NOT_ELIGIBLE`: OE2 no usa los gates de OE5. */
-export async function mockStartRetrievalComparison(analysisRunId: string, symbol: AnalysisSymbolResponse, idempotencyKey: string): Promise<RetrievalComparisonAcceptedResponse> {
+export async function mockStartRetrievalComparison(
+  analysisRunId: string,
+  symbol: AnalysisSymbolResponse,
+  idempotencyKey: string,
+): Promise<RetrievalComparisonAcceptedResponse> {
   await latency()
   if (!idempotencyKey) throw new ApiError('Falta el encabezado Idempotency-Key.', 400, 'demo-correlation-id', 'IDEMPOTENCY_KEY_REQUIRED')
-  if (!RETRIEVAL_IDEMPOTENCY_KEY_PATTERN.test(idempotencyKey)) throw new ApiError('El encabezado Idempotency-Key debe ser un UUID.', 400, 'demo-correlation-id', 'INVALID_IDEMPOTENCY_KEY')
+  if (!RETRIEVAL_IDEMPOTENCY_KEY_PATTERN.test(idempotencyKey))
+    throw new ApiError('El encabezado Idempotency-Key debe ser un UUID.', 400, 'demo-correlation-id', 'INVALID_IDEMPOTENCY_KEY')
   // DEMO · errores de creación (§6.15): ninguno crea la comparación.
-  if (analysisRunId === DEMO_RETRIEVAL_NOT_FINISHED_RUN_ID) throw new ApiError('DEMO · el Run todavía no terminó de analizarse.', 409, 'demo-correlation-id', 'ANALYSIS_NOT_FINISHED')
+  if (analysisRunId === DEMO_RETRIEVAL_NOT_FINISHED_RUN_ID)
+    throw new ApiError('DEMO · el Run todavía no terminó de analizarse.', 409, 'demo-correlation-id', 'ANALYSIS_NOT_FINISHED')
   const run = findVisibleRun(analysisRunId)
-  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (!run) notFound(`No existe el AnalysisRun demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   requireProjectRole(run.projectId, 'WRITER')
   const fingerprint = retrievalFingerprint(analysisRunId, symbol.filePath, symbol.qualifiedName)
   const replayedId = retrievalComparisonByIdempotencyKey.get(idempotencyKey)
   if (replayedId) {
     const original = retrievalComparisons.get(replayedId)!
-    if (original.fingerprint !== fingerprint) throw new ApiError('Esa Idempotency-Key ya se usó para otra comparación.', 409, 'demo-correlation-id', 'IDEMPOTENCY_CONFLICT')
-    return { status: 'PENDING', pollAfterMs: 460, analysisRunId, retrievalComparisonId: replayedId, projectVersionId: original.operation.projectVersionId }
+    if (original.fingerprint !== fingerprint)
+      throw new ApiError('Esa Idempotency-Key ya se usó para otra comparación.', 409, 'demo-correlation-id', 'IDEMPOTENCY_CONFLICT')
+    return {
+      status: 'PENDING',
+      pollAfterMs: 460,
+      analysisRunId,
+      retrievalComparisonId: replayedId,
+      projectVersionId: original.operation.projectVersionId,
+    }
   }
   const inRun = run.symbols.find((item) => item.filePath === symbol.filePath && item.qualifiedName === symbol.qualifiedName)
   if (!inRun) notFound(`El símbolo "${symbol.qualifiedName}" no pertenece a este Run.`, 'ANALYSIS_SYMBOL_NOT_FOUND')
   if (inRun.changeKind !== 'DIRECTLY_CHANGED' || (inRun.kind !== 'METHOD' && inRun.kind !== 'FUNCTION')) {
-    throw new ApiError(`"${inRun.qualifiedName}" no es un METHOD/FUNCTION con cambio directo; no se puede comparar retrieval.`, 422, 'demo-correlation-id', 'UNSUPPORTED_SYMBOL_KIND')
+    throw new ApiError(
+      `"${inRun.qualifiedName}" no es un METHOD/FUNCTION con cambio directo; no se puede comparar recuperación.`,
+      422,
+      'demo-correlation-id',
+      'UNSUPPORTED_SYMBOL_KIND',
+    )
   }
-  // WI-CONSOLE-030 (C4, INTEROP-2.7 §6.5.1): un proyecto PHP sin PHPUnit detectado no tiene framework de pruebas → 422 UNSUPPORTED_PROJECT.
+  // WI-CONSOLE-030 (C4, INTEROP-2.7 §6.5.1): un Project PHP sin PHPUnit detectado no tiene framework de pruebas → 422 UNSUPPORTED_PROJECT.
   // Solo aplica con versión actual existente y sin framework; un Project sin versión (currentVersionId null) conserva su comportamiento.
   const runProject = projects.get(run.projectId)
   const currentVersion = runProject?.currentVersionId ? versions.get(runProject.currentVersionId) : undefined
@@ -1374,7 +3859,18 @@ export async function mockStartRetrievalComparison(analysisRunId: string, symbol
     polls: 0,
     fingerprint,
     results: null,
-    operation: { id: retrievalComparisonId, analysisRunId, projectId: run.projectId, projectVersionId, symbol: clone(inRun), status: 'PENDING', failureCode: null, failureMessage: null, startedAt: null, completedAt: null },
+    operation: {
+      id: retrievalComparisonId,
+      analysisRunId,
+      projectId: run.projectId,
+      projectVersionId,
+      symbol: clone(inRun),
+      status: 'PENDING',
+      failureCode: null,
+      failureMessage: null,
+      startedAt: null,
+      completedAt: null,
+    },
   }
   retrievalComparisons.set(retrievalComparisonId, state)
   retrievalComparisonByIdempotencyKey.set(idempotencyKey, retrievalComparisonId)
@@ -1397,8 +3893,15 @@ export async function mockGetRetrievalComparisonResults(retrievalComparisonId: s
   await latency()
   const state = requireRetrievalComparison(retrievalComparisonId)
   const status = state.operation.status
-  if (status === 'FAILED') throw new ApiError('DEMO · la comparación falló; consulta failureCode y failureMessage del estado.', 409, 'demo-correlation-id', 'RETRIEVAL_COMPARISON_FAILED')
-  if (status !== 'COMPLETED' || !state.results) throw new ApiError('La comparación todavía no terminó con resultados.', 409, 'demo-correlation-id', 'RETRIEVAL_COMPARISON_NOT_FINISHED')
+  if (status === 'FAILED')
+    throw new ApiError(
+      'DEMO · la comparación falló; consulta failureCode y failureMessage del estado.',
+      409,
+      'demo-correlation-id',
+      'RETRIEVAL_COMPARISON_FAILED',
+    )
+  if (status !== 'COMPLETED' || !state.results)
+    throw new ApiError('La comparación todavía no terminó con resultados.', 409, 'demo-correlation-id', 'RETRIEVAL_COMPARISON_NOT_FINISHED')
   return clone(state.results)
 }
 
@@ -1409,7 +3912,7 @@ export const DEMO_RETRIEVAL_NOT_FINISHED_RUN_ID = 'arun_demo_retrieval_not_finis
 export async function mockListRetrievalComparisons(analysisRunId: string, cursor: string | null): Promise<RetrievalComparisonListPage> {
   await latency()
   const run = analysisRuns.get(analysisRunId)
-  if (!run || isProjectDeleted(run.projectId)) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (!run || isProjectDeleted(run.projectId)) notFound(`No existe el AnalysisRun demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   const all = Array.from(retrievalComparisons.values())
     .filter((state) => state.operation.analysisRunId === analysisRunId)
     .reverse()
@@ -1431,7 +3934,16 @@ function seedRetrievalComparisons(): void {
   const seed = (
     id: string,
     symbol: AnalysisSymbolResponse,
-    options: { status: RetrievalComparisonStatusResponse['status']; advances: boolean; finalStatus: 'COMPLETED' | 'FAILED'; withMetrics: boolean; failureCode?: string; failureMessage?: string; candidates?: DemoRetrievalCandidate[]; run?: AnalysisRunDetailResponse },
+    options: {
+      status: RetrievalComparisonStatusResponse['status']
+      advances: boolean
+      finalStatus: 'COMPLETED' | 'FAILED'
+      withMetrics: boolean
+      failureCode?: string
+      failureMessage?: string
+      candidates?: DemoRetrievalCandidate[]
+      run?: AnalysisRunDetailResponse
+    },
   ) => {
     // WI-CONSOLE-030 (C1): la semilla PHP cuelga de su propio Run (`options.run`); el resto sigue en `arun_checkout_pr49`.
     const owner = options.run ?? run
@@ -1465,18 +3977,38 @@ function seedRetrievalComparisons(): void {
   seed('rcmp_demo_seed_pending', calculateTotal, { status: 'PENDING', advances: true, finalStatus: 'COMPLETED', withMetrics: false })
   seed('rcmp_demo_seed_running', createOrder, { status: 'RUNNING', advances: true, finalStatus: 'COMPLETED', withMetrics: false })
   // COMPLETED sin verdad de terreno: el único camino que la Console produce en este corte; métricas «no disponible».
-  seed('rcmp_demo_seed_completed_sin_metricas', calculateTotal, { status: 'COMPLETED', advances: false, finalStatus: 'COMPLETED', withMetrics: false })
+  seed('rcmp_demo_seed_completed_sin_metricas', calculateTotal, {
+    status: 'COMPLETED',
+    advances: false,
+    finalStatus: 'COMPLETED',
+    withMetrics: false,
+  })
   // COMPLETED con métricas: demo de una comparación creada con verdad de terreno externa; la UI no permite cargarla en este corte.
-  seed('rcmp_demo_seed_completed_con_metricas', createOrder, { status: 'COMPLETED', advances: false, finalStatus: 'COMPLETED', withMetrics: true })
-  // DEMO · proyecto PHP (CS-CORE-20261009-017): la comparación ya no devuelve 422 por lenguaje; semilla con símbolo PHP
+  seed('rcmp_demo_seed_completed_con_metricas', createOrder, {
+    status: 'COMPLETED',
+    advances: false,
+    finalStatus: 'COMPLETED',
+    withMetrics: true,
+  })
+  // DEMO · Project PHP (CS-CORE-20261009-017): la comparación ya no devuelve 422 por lenguaje; semilla con símbolo PHP
   // del Run `arun_php_pr7` (WI-CONSOLE-030, C1). Antes vivía en `arun_checkout_pr49` porque no había Project PHP.
   const phpRun = analysisRuns.get(DEMO_RETRIEVAL_PHP_RUN_ID)
   const phpSymbol = phpRun?.symbols.find((item) => item.qualifiedName === 'CouponService::apply')
   if (phpRun && phpSymbol) {
-    seed(DEMO_RETRIEVAL_PHP_COMPARISON_ID, phpSymbol, { status: 'COMPLETED', advances: false, finalStatus: 'COMPLETED', withMetrics: false, candidates: DEMO_RETRIEVAL_PHP_CANDIDATES, run: phpRun })
+    seed(DEMO_RETRIEVAL_PHP_COMPARISON_ID, phpSymbol, {
+      status: 'COMPLETED',
+      advances: false,
+      finalStatus: 'COMPLETED',
+      withMetrics: false,
+      candidates: DEMO_RETRIEVAL_PHP_CANDIDATES,
+      run: phpRun,
+    })
   }
   seed('rcmp_demo_seed_failed', formatCurrencySymbol, {
-    status: 'FAILED', advances: false, finalStatus: 'FAILED', withMetrics: false,
+    status: 'FAILED',
+    advances: false,
+    finalStatus: 'FAILED',
+    withMetrics: false,
     failureCode: 'RETRIEVAL_COMPARISON_FAILED',
     failureMessage: 'DEMO · el índice de embeddings no respondió; la comparación no produjo resultados.',
   })
@@ -1518,46 +4050,86 @@ export async function mockDisarmCaptureNextPr(projectId: string): Promise<Captur
  * motor experimental paralelo.
  */
 const CAPTURE_SYMBOL_BY_PROJECT: Record<string, AnalysisSymbolResponse> = {
-  prj_checkout_demo: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' },
-  prj_billing_demo: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'InvoiceService.applyLateFee', filePath: 'src/domain/InvoiceService.ts', changeKind: 'DIRECTLY_CHANGED' },
+  prj_checkout_demo: {
+    language: 'TYPESCRIPT',
+    kind: 'METHOD',
+    qualifiedName: 'OrderService.calculateTotal',
+    filePath: 'src/domain/OrderService.ts',
+    changeKind: 'DIRECTLY_CHANGED',
+  },
+  prj_billing_demo: {
+    language: 'TYPESCRIPT',
+    kind: 'METHOD',
+    qualifiedName: 'InvoiceService.applyLateFee',
+    filePath: 'src/domain/InvoiceService.ts',
+    changeKind: 'DIRECTLY_CHANGED',
+  },
 }
 
 export async function mockSimulateNextEligiblePullRequest(projectId: string): Promise<AnalysisRunSummaryResponse> {
   await latency()
   requireProject(projectId)
   const state = captureNextPrStates.get(projectId)
-  if (!state || state.status !== 'ARMED') throw new ApiError('"Capture next PR" no está armado para este proyecto.', 409, 'demo-correlation-id', 'CAPTURE_NOT_ARMED')
+  if (!state || state.status !== 'ARMED')
+    throw new ApiError('"Capturar el próximo PR" no está armado para este Project.', 409, 'demo-correlation-id', 'CAPTURE_NOT_ARMED')
   const binding = repositoryBindings.get(projectId)
-  if (!binding) notFound(`El proyecto demo "${projectId}" no tiene un repositorio vinculado.`, 'REPOSITORY_BINDING_NOT_FOUND')
+  if (!binding) notFound(`El Project demo "${projectId}" no tiene un repositorio vinculado.`, 'REPOSITORY_BINDING_NOT_FOUND')
   const symbol = CAPTURE_SYMBOL_BY_PROJECT[projectId]
-  if (!symbol) notFound(`No hay un símbolo demo configurado para capturar en el proyecto "${projectId}".`, 'CAPTURE_NOT_CONFIGURED')
+  if (!symbol) notFound(`No hay un símbolo demo configurado para capturar en el Project "${projectId}".`, 'CAPTURE_NOT_CONFIGURED')
   captureNextPrSeq += 1
   const number = 900 + captureNextPrSeq
   const sha = `cap${captureNextPrSeq}`.padEnd(7, '0')
   const runId = `arun_captured_${captureNextPrSeq}`
   const now = new Date().toISOString()
   const run: AnalysisRunDetailResponse = {
-    id: runId, projectId,
-    pullRequest: { repositoryId: binding.repositoryId, repositoryName: binding.repositoryName, number, title: 'Capturado en vivo por "Capture next PR"', baseRef: binding.integrationBranch, headRef: `capture/pr-${number}`, baseSha: 'c1c1c1c', headSha: sha, draft: false, state: 'OPEN', actorLogin: 'demo-presenter' },
-    status: 'SUCCESS', current: true, actionRequiredCount: 0, generatedTestsCount: 1,
-    createdAt: now, updatedAt: now, completedAt: now,
-    attemptCount: 1, indexMode: 'INCREMENTAL', changesetBaseSha: 'c1c1c1c', changesetHeadSha: sha, indexDeltaBaseSha: 'c1c1c1c',
+    id: runId,
+    projectId,
+    pullRequest: {
+      repositoryId: binding.repositoryId,
+      repositoryName: binding.repositoryName,
+      number,
+      title: 'Capturado en vivo por "Capturar el próximo PR"',
+      baseRef: binding.integrationBranch,
+      headRef: `capture/pr-${number}`,
+      baseSha: 'c1c1c1c',
+      headSha: sha,
+      draft: false,
+      state: 'OPEN',
+      actorLogin: 'demo-presenter',
+    },
+    status: 'SUCCESS',
+    current: true,
+    actionRequiredCount: 0,
+    generatedTestsCount: 1,
+    createdAt: now,
+    updatedAt: now,
+    completedAt: now,
+    attemptCount: 1,
+    indexMode: 'INCREMENTAL',
+    changesetBaseSha: 'c1c1c1c',
+    changesetHeadSha: sha,
+    indexDeltaBaseSha: 'c1c1c1c',
     symbols: [symbol],
-    functionalBehaviorValidated: true, resultSummary: 'Run capturado en vivo para demostrar HU49 — generó 1 prueba nueva sobre el símbolo elegible.', detailsUrl: `/projects/${projectId}/runs/${runId}`,
+    functionalBehaviorValidated: true,
+    resultSummary: 'Run capturado en vivo para demostrar HU49 — generó 1 prueba nueva sobre el símbolo elegible.',
+    detailsUrl: `/projects/${projectId}/runs/${runId}`,
   }
   analysisRuns.set(runId, run)
   captureNextPrStates.set(projectId, defaultCaptureNextPrState(projectId))
   return clone(toAnalysisRunSummary(run))
 }
 
-export async function mockListExperimentContextTraces(experimentId: string, filters: ExperimentContextTraceFilters): Promise<ContextTracePage> {
+export async function mockListExperimentContextTraces(
+  experimentId: string,
+  filters: ExperimentContextTraceFilters,
+): Promise<ContextTracePage> {
   await latency()
   const items = Array.from(contextTraces.values())
     .map((state) => state.detail)
     .filter((detail) => detail.experimentId === experimentId)
-    .filter((detail) => filters.strategy ? detail.strategy === filters.strategy : true)
-    .filter((detail) => filters.repetition ? detail.repetition === filters.repetition : true)
-    .filter((detail) => filters.includeSuperseded ? true : detail.current)
+    .filter((detail) => (filters.strategy ? detail.strategy === filters.strategy : true))
+    .filter((detail) => (filters.repetition ? detail.repetition === filters.repetition : true))
+    .filter((detail) => (filters.includeSuperseded ? true : detail.current))
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
     .map(toContextTraceSummary)
   void filters.cursor
@@ -1590,12 +4162,15 @@ const DISCOVERED_FILES_PAGE_SIZE = 50
 export async function mockListDiscoveredFiles(traceId: string, step: number, cursor: string | null): Promise<DiscoveredFilePage> {
   await latency()
   const state = contextTraces.get(traceId)
-  if (!state || state.detail.kind !== 'AGENT') notFound(`No existen archivos descubiertos para la traza demo "${traceId}".`, 'CONTEXT_TRACE_NOT_FOUND')
+  if (!state || state.detail.kind !== 'AGENT')
+    notFound(`No existen archivos descubiertos para la traza demo "${traceId}".`, 'CONTEXT_TRACE_NOT_FOUND')
   const targetStep = state.detail.trajectory.find((item) => item.step === step && item.toolName === 'list_files')
   if (!targetStep) notFound(`El paso ${step} no corresponde a "list_files" en la traza demo "${traceId}".`, 'CONTEXT_TRACE_NOT_FOUND')
   const start = cursor ? Number(cursor) : 0
   const end = Math.min(start + DISCOVERED_FILES_PAGE_SIZE, DISCOVERED_FILES_TOTAL)
-  const items = Array.from({ length: Math.max(0, end - start) }, (_, index) => ({ filePath: `src/domain/discovered/file-${start + index + 1}.ts` }))
+  const items = Array.from({ length: Math.max(0, end - start) }, (_, index) => ({
+    filePath: `src/domain/discovered/file-${start + index + 1}.ts`,
+  }))
   return { items, nextCursor: end < DISCOVERED_FILES_TOTAL ? String(end) : null }
 }
 
@@ -1609,6 +4184,7 @@ export async function mockListActionRequired(projectId?: string): Promise<Action
   if (projectId) requireProjectRole(projectId, 'READER')
   const items = Array.from(actionRequiredRuns.values())
     .filter((state) => !isProjectDeleted(state.projectId) && projects.has(state.projectId) && canSeeProject(projects.get(state.projectId)!))
+    .filter((state) => analysisRuns.get(state.analysisRunId)?.status === 'ACTION_REQUIRED')
     .filter((state) => !projectId || state.projectId === projectId)
     .map(currentActionRequiredQuestion)
     .filter((question): question is FunctionalQuestionResponse => question !== null)
@@ -1645,20 +4221,31 @@ function targetScopeOf(target: AnalysisSymbolResponse): FunctionalKnowledgeRespo
  * La compuerta `conflictQuestionId` de `mockSubmitFunctionalAnswer` se conserva: otras preguntas demo comparten target y
  * `scenarioKey` con reglas semilla y romperían su propio flujo si el conflicto se evaluara siempre.
  */
-function findConflictingKnowledge(projectId: string, target: AnalysisSymbolResponse, scenarioKey: string | null | undefined): FunctionalKnowledgeResponse | null {
+function findConflictingKnowledge(
+  projectId: string,
+  target: AnalysisSymbolResponse,
+  scenarioKey: string | null | undefined,
+): FunctionalKnowledgeResponse | null {
   if (scenarioKey === null || scenarioKey === undefined) return null
   const scope = targetScopeOf(target)
-  return Array.from(functionalKnowledge.values()).find((item) =>
-    item.projectId === projectId
-    && item.status === 'ACTIVE'
-    && (scope === null || item.scope === scope)
-    && item.targetRef === target.qualifiedName
-    && item.scenarioKey === scenarioKey,
-  ) ?? null
+  return (
+    Array.from(functionalKnowledge.values()).find(
+      (item) =>
+        item.projectId === projectId &&
+        item.status === 'ACTIVE' &&
+        (scope === null || item.scope === scope) &&
+        item.targetRef === target.qualifiedName &&
+        item.scenarioKey === scenarioKey,
+    ) ?? null
+  )
 }
 
 /** HU37: `POST /analysis-runs/{analysisRunId}/context-questions/{questionId}/answers`. `headChanged` simula que un HEAD nuevo llegó mientras se respondía: la pregunta queda `OBSOLETE`, no `ANSWERED`, y el Run no se reanuda (`continuationAttemptId: null`). */
-export async function mockSubmitFunctionalAnswer(analysisRunId: string, questionId: string, input: SubmitFunctionalAnswerRequest): Promise<FunctionalAnswerAcceptedResponse> {
+export async function mockSubmitFunctionalAnswer(
+  analysisRunId: string,
+  questionId: string,
+  input: SubmitFunctionalAnswerRequest,
+): Promise<FunctionalAnswerAcceptedResponse> {
   await latency()
   const state = findVisibleActionRequiredRun(analysisRunId)
   if (!state) notFound(`No existe el Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
@@ -1672,7 +4259,15 @@ export async function mockSubmitFunctionalAnswer(analysisRunId: string, question
     // Comportamiento PROVISIONAL del mock: INTEROP-2.7 §6.11 solo fija que la pregunta queda OBSOLETE; no define el outcome ni registra abstención.
     // No definido por §6.11; diferido a WI-CORE-018. No es contrato: no reinterpretar como abstención registrada.
     question.status = 'OBSOLETE'
-    return { status: 'PENDING', pollAfterMs: 400, analysisRunId, questionId, outcome: input.choice === 'UNKNOWN' ? 'ABSTAINED' : 'ANSWERED', continuationAttemptId: null, knowledgeId: null }
+    return {
+      status: 'PENDING',
+      pollAfterMs: 400,
+      analysisRunId,
+      questionId,
+      outcome: input.choice === 'UNKNOWN' ? 'ABSTAINED' : 'ANSWERED',
+      continuationAttemptId: null,
+      knowledgeId: null,
+    }
   }
 
   /** INTEROP-2.7 (DEC-FK-002): UNKNOWN es una abstención auditada. La pregunta sigue PENDING, no avanza `sequence`, no crea conocimiento ni continuación. */
@@ -1684,10 +4279,19 @@ export async function mockSubmitFunctionalAnswer(analysisRunId: string, question
       lastByUserId: MOCK_ACTOR_USER_ID,
       lastByRole: project.role === 'ADMIN' ? 'ADMIN' : 'MAINTAINER',
     }
-    return { status: 'PENDING', pollAfterMs: 300, analysisRunId, questionId, outcome: 'ABSTAINED', continuationAttemptId: null, knowledgeId: null }
+    return {
+      status: 'PENDING',
+      pollAfterMs: 300,
+      analysisRunId,
+      questionId,
+      outcome: 'ABSTAINED',
+      continuationAttemptId: null,
+      knowledgeId: null,
+    }
   }
 
-  const conflicting = questionId === state.conflictQuestionId ? findConflictingKnowledge(state.projectId, question.target, question.scenarioKey) : null
+  const conflicting =
+    questionId === state.conflictQuestionId ? findConflictingKnowledge(state.projectId, question.target, question.scenarioKey) : null
   if (conflicting && !input.conflictResolution) {
     sequence += 1
     const details: FunctionalKnowledgeConflictResponse = {
@@ -1697,32 +4301,57 @@ export async function mockSubmitFunctionalAnswer(analysisRunId: string, question
       conflictingKnowledge: clone(conflicting),
       proposedNormalizedRule: `Regla propuesta a partir de la respuesta: "${input.answer?.trim() || question.question}".`,
     }
-    throw new ApiError('La respuesta propuesta contradice una regla de conocimiento funcional vigente — resuelve el conflicto antes de continuar.', 409, 'demo-correlation-id', 'FUNCTIONAL_KNOWLEDGE_CONFLICT', details)
+    throw new ApiError(
+      'La respuesta propuesta contradice una regla de Functional Knowledge vigente — resuelve el conflicto antes de continuar.',
+      409,
+      'demo-correlation-id',
+      'FUNCTIONAL_KNOWLEDGE_CONFLICT',
+      details,
+    )
   }
 
   question.status = 'ANSWERED'
   sequence += 1
 
   if (conflicting && input.conflictResolution?.action === 'KEEP_EXISTING') {
-    return { status: 'PENDING', pollAfterMs: 300, analysisRunId, questionId, outcome: 'ANSWERED', continuationAttemptId: `attempt_demo_${sequence}`, knowledgeId: null }
+    return {
+      status: 'PENDING',
+      pollAfterMs: 300,
+      analysisRunId,
+      questionId,
+      outcome: 'ANSWERED',
+      continuationAttemptId: `attempt_demo_${sequence}`,
+      knowledgeId: null,
+    }
   }
 
   const knowledgeId = `fk_demo_${sequence}`
-  const persistsRule = (conflicting && input.conflictResolution?.action === 'SUPERSEDE') || (!conflicting && questionId === state.conflictQuestionId)
+  const persistsRule =
+    (conflicting && input.conflictResolution?.action === 'SUPERSEDE') || (!conflicting && questionId === state.conflictQuestionId)
   if (conflicting && input.conflictResolution?.action === 'SUPERSEDE') conflicting.status = 'SUPERSEDED'
   if (persistsRule) {
     // WI-CONSOLE-030 (C3): la regla nueva hereda kind/key de la pregunta. Con conflicto (SUPERSEDE) enlaza la vigente;
     // sin conflicto (rama de coexistencia de la pregunta demo) queda ACTIVE sin supersedesId. Solo esa pregunta persiste,
     // para no cambiar los conteos de `prj_checkout_demo` del resto de escenarios.
     functionalKnowledge.set(knowledgeId, {
-      id: knowledgeId, projectId: state.projectId, scope: conflicting?.scope ?? targetScopeOf(question.target) ?? 'SYMBOL', targetRef: question.target.qualifiedName,
-      originalQuestion: question.question, originalAnswer: input.answer?.trim() || input.choice,
+      id: knowledgeId,
+      projectId: state.projectId,
+      scope: conflicting?.scope ?? targetScopeOf(question.target) ?? 'SYMBOL',
+      targetRef: question.target.qualifiedName,
+      originalQuestion: question.question,
+      originalAnswer: input.answer?.trim() || input.choice,
       normalizedRule: `Regla propuesta a partir de la respuesta: "${input.answer?.trim() || question.question}".`,
-      source: 'HUMAN_ANSWER', status: 'ACTIVE', supersedesId: conflicting?.id ?? null, createdAt: nowIso(),
+      source: 'HUMAN_ANSWER',
+      status: 'ACTIVE',
+      supersedesId: conflicting?.id ?? null,
+      createdAt: nowIso(),
       // INTEROP-2.7: el escenario lo deriva Core de la pregunta; la Console no lo escribe.
-      scenarioKind: question.scenarioKind, scenarioKey: question.scenarioKey,
-      confirmedByUserId: MOCK_ACTOR_USER_ID, confirmedRole: project.role === 'ADMIN' ? 'ADMIN' : 'MAINTAINER',
-      originHeadSha: question.headSha, sourceRef: null,
+      scenarioKind: question.scenarioKind,
+      scenarioKey: question.scenarioKey,
+      confirmedByUserId: MOCK_ACTOR_USER_ID,
+      confirmedRole: project.role === 'ADMIN' ? 'ADMIN' : 'MAINTAINER',
+      originHeadSha: question.headSha,
+      sourceRef: null,
     })
   }
 
@@ -1732,25 +4361,46 @@ export async function mockSubmitFunctionalAnswer(analysisRunId: string, question
     if (run) {
       run.status = 'BEHAVIORAL_MISMATCH'
       run.functionalBehaviorValidated = true
-      run.resultSummary = 'La respuesta funcional estableció que "applyLateFee" no debe aplicarse a facturas con pago parcial previo, pero el comportamiento observado en Sandbox muestra que el recargo se aplica igual — contradice la regla recién fijada.'
+      run.resultSummary =
+        'La respuesta funcional estableció que "applyLateFee" no debe aplicarse a facturas con pago parcial previo, pero el comportamiento observado en Sandbox muestra que el recargo se aplica igual — contradice la regla recién fijada.'
       run.updatedAt = nowIso()
       run.completedAt = nowIso()
       testProposals.set(analysisRunId, [
-        { id: 'prop_pr24_1', relativePath: 'src/domain/InvoiceService.lateFee.spec.ts', target: { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'InvoiceService.applyLateFee', filePath: 'src/domain/InvoiceService.ts', changeKind: 'DIRECTLY_CHANGED' }, contentSha256: fakeSha256('prop_pr24_1'), status: 'HELD' },
+        {
+          id: 'prop_pr24_1',
+          relativePath: 'src/domain/InvoiceService.lateFee.spec.ts',
+          target: {
+            language: 'TYPESCRIPT',
+            kind: 'METHOD',
+            qualifiedName: 'InvoiceService.applyLateFee',
+            filePath: 'src/domain/InvoiceService.ts',
+            changeKind: 'DIRECTLY_CHANGED',
+          },
+          contentSha256: fakeSha256('prop_pr24_1'),
+          status: 'HELD',
+        },
       ])
     }
   }
 
-  return { status: 'PENDING', pollAfterMs: 300, analysisRunId, questionId, outcome: 'ANSWERED', continuationAttemptId: `attempt_demo_${sequence}`, knowledgeId }
+  return {
+    status: 'PENDING',
+    pollAfterMs: 300,
+    analysisRunId,
+    questionId,
+    outcome: 'ANSWERED',
+    continuationAttemptId: `attempt_demo_${sequence}`,
+    knowledgeId,
+  }
 }
 
 function requireProject(projectId: string): Project {
   const project = projects.get(projectId)
-  if (!project || !canSeeProject(project)) notFound(`No existe el proyecto demo "${projectId}".`, 'PROJECT_NOT_FOUND')
+  if (!project || !canSeeProject(project)) notFound(`No existe el Project demo "${projectId}".`, 'PROJECT_NOT_FOUND')
   return project
 }
 
-/** HU30: `GET /projects/{projectId}/integrations/github`. `null` cuando el proyecto nunca se vinculó (Core: 404 `REPOSITORY_BINDING_NOT_FOUND`); un binding desconectado se devuelve con status `DISABLED`. Un Project borrado responde 404 `PROJECT_NOT_FOUND` (vía `requireProject`). */
+/** HU30: `GET /projects/{projectId}/integrations/github`. `null` cuando el Project nunca se vinculó (Core: 404 `REPOSITORY_BINDING_NOT_FOUND`); un binding desconectado se devuelve con status `DISABLED`. Un Project borrado responde 404 `PROJECT_NOT_FOUND` (vía `requireProject`). */
 export async function mockGetRepositoryBinding(projectId: string): Promise<ProjectRepositoryBindingResponse | null> {
   await latency()
   requireProject(projectId)
@@ -1759,15 +4409,35 @@ export async function mockGetRepositoryBinding(projectId: string): Promise<Proje
 
 /** HU30 user-centric: ramas demo por repositorio (fixture, no derivadas de GitHub real). */
 const DEMO_BRANCHES_BY_REPOSITORY: Record<string, GitHubRepositoryBranchResponse[]> = {
-  repo_checkout: [{ name: 'main', protected: true }, { name: 'develop', protected: false }, { name: 'release/2.3', protected: true }],
-  repo_billing: [{ name: 'main', protected: true }, { name: 'develop', protected: false }],
-  repo_notifications: [{ name: 'main', protected: true }, { name: 'develop', protected: false }, { name: 'feature/webhooks-v2', protected: false }],
+  repo_checkout: [
+    { name: 'main', protected: true },
+    { name: 'develop', protected: false },
+    { name: 'release/2.3', protected: true },
+  ],
+  repo_billing: [
+    { name: 'main', protected: true },
+    { name: 'develop', protected: false },
+  ],
+  repo_notifications: [
+    { name: 'main', protected: true },
+    { name: 'develop', protected: false },
+    { name: 'feature/webhooks-v2', protected: false },
+  ],
   repo_playground: [{ name: 'main', protected: false }],
   repo_legacy_docs: [{ name: 'main', protected: true }],
   repo_external_tools: [{ name: 'main', protected: true }],
-  repo_rag_orders: [{ name: 'main', protected: true }, { name: 'develop', protected: false }],
-  repo_observability_metrics: [{ name: 'main', protected: true }, { name: 'release/1.4', protected: true }],
-  repo_team_sandbox: [{ name: 'main', protected: true }, { name: 'develop', protected: false }],
+  repo_rag_orders: [
+    { name: 'main', protected: true },
+    { name: 'develop', protected: false },
+  ],
+  repo_observability_metrics: [
+    { name: 'main', protected: true },
+    { name: 'release/1.4', protected: true },
+  ],
+  repo_team_sandbox: [
+    { name: 'main', protected: true },
+    { name: 'develop', protected: false },
+  ],
 }
 
 function isGitHubAppAuthorized(repositoryId: string): boolean {
@@ -1789,7 +4459,10 @@ function toGitHubAppAccessResponse(repo: GitHubUserRepositoryResponse): GitHubAp
     repositoryId: repo.repositoryId,
     repositoryName: repo.repositoryName,
     status: authorized ? 'AUTHORIZED' : 'NOT_AUTHORIZED',
-    app: { displayName: 'RAG Test Studio (demo)', configureUrl: `https://github.com/apps/rag-test-studio-demo/installations/select_target?repository=${encodeURIComponent(repo.repositoryName)}` },
+    app: {
+      displayName: 'RAG Test Studio (demo)',
+      configureUrl: `https://github.com/apps/rag-test-studio-demo/installations/select_target?repository=${encodeURIComponent(repo.repositoryName)}`,
+    },
   }
 }
 
@@ -1819,7 +4492,13 @@ export async function mockListGitHubRepositoryBranches(owner: string, repo: stri
   const repositoryName = `${owner}/${repo}`
   const found = DEMO_GITHUB_REPOSITORIES.find((item) => item.repositoryName === repositoryName)
   if (!found) notFound(`No existe el repositorio demo "${repositoryName}".`, 'GITHUB_REPOSITORY_NOT_FOUND')
-  if (!isGitHubAppAuthorized(found.repositoryId)) throw new ApiError(`La GitHub App no tiene acceso a "${repositoryName}" todavía.`, 403, 'demo-correlation-id', 'GITHUB_APP_ACCESS_REQUIRED')
+  if (!isGitHubAppAuthorized(found.repositoryId))
+    throw new ApiError(
+      `La GitHub App no tiene acceso a "${repositoryName}" todavía.`,
+      403,
+      'demo-correlation-id',
+      'GITHUB_APP_ACCESS_REQUIRED',
+    )
   return { items: clone(DEMO_BRANCHES_BY_REPOSITORY[found.repositoryId] ?? [{ name: found.defaultBranch, protected: true }]) }
 }
 
@@ -1829,20 +4508,48 @@ export async function mockListGitHubRepositoryBranches(owner: string, repo: stri
  * 400 `REPOSITORY_OUTSIDE_WORKSPACE`, 403 `REPOSITORY_PERMISSION_INSUFFICIENT` (solo pull), 409 repo ya vinculado a otro Project, 404 rama.
  * Los workspaces/roles también se verifican con fixtures locales, sin consultar GitHub.
  */
-export async function mockCreateRepositoryBinding(projectId: string, input: CreateRepositoryBindingRequest): Promise<ProjectRepositoryBindingResponse> {
+export async function mockCreateRepositoryBinding(
+  projectId: string,
+  input: CreateRepositoryBindingRequest,
+): Promise<ProjectRepositoryBindingResponse> {
   await latency()
   const project = requireProjectRole(projectId, 'WRITER')
-  if (repositoryBindings.get(projectId)) throw new ApiError('Este proyecto ya tiene un repositorio vinculado.', 409, 'demo-correlation-id', 'REPOSITORY_BINDING_ALREADY_EXISTS')
-  if (!isGitHubAppAuthorized(input.repositoryId)) throw new ApiError(`La GitHub App no tiene acceso a "${input.repositoryName}" todavía.`, 403, 'demo-correlation-id', 'GITHUB_APP_ACCESS_REQUIRED')
+  if (repositoryBindings.get(projectId))
+    throw new ApiError('Este Project ya tiene un repositorio vinculado.', 409, 'demo-correlation-id', 'REPOSITORY_BINDING_ALREADY_EXISTS')
+  if (!isGitHubAppAuthorized(input.repositoryId))
+    throw new ApiError(
+      `La GitHub App no tiene acceso a "${input.repositoryName}" todavía.`,
+      403,
+      'demo-correlation-id',
+      'GITHUB_APP_ACCESS_REQUIRED',
+    )
   // Un id falso, uno discordante con el nombre y un repositorio sin visibilidad responden lo mismo (un solo 404, sin distinguir motivos).
-  const repository = DEMO_GITHUB_REPOSITORIES.find((item) => item.repositoryId === input.repositoryId && item.repositoryName === input.repositoryName)
+  const repository = DEMO_GITHUB_REPOSITORIES.find(
+    (item) => item.repositoryId === input.repositoryId && item.repositoryName === input.repositoryName,
+  )
   if (!repository) notFound('No encontramos ese repositorio o no tienes permiso sobre él.', 'GITHUB_REPOSITORY_NOT_FOUND')
-  if (repository.owner.login !== project.workspace.login || DEMO_FOREIGN_OWNER_LOGINS.has(repository.owner.login)) throw new ApiError('El repositorio no pertenece al workspace de este Project.', 400, 'demo-correlation-id', 'REPOSITORY_OUTSIDE_WORKSPACE')
-  if (!canBindRepository(repository)) throw new ApiError('Necesitas permiso maintain, write o admin sobre el repositorio.', 403, 'demo-correlation-id', 'REPOSITORY_PERMISSION_INSUFFICIENT')
-  const boundElsewhere = Array.from(repositoryBindings.values()).some((other) => other && other.projectId !== projectId && other.repositoryId === input.repositoryId)
-  if (boundElsewhere) throw new ApiError('Este repositorio ya está vinculado a otro proyecto.', 409, 'demo-correlation-id', 'REPOSITORY_ALREADY_BOUND')
+  if (repository.owner.login !== project.workspace.login || DEMO_FOREIGN_OWNER_LOGINS.has(repository.owner.login))
+    throw new ApiError(
+      'El repositorio no pertenece al workspace de este Project.',
+      400,
+      'demo-correlation-id',
+      'REPOSITORY_OUTSIDE_WORKSPACE',
+    )
+  if (!canBindRepository(repository))
+    throw new ApiError(
+      'Necesitas permiso maintain, write o admin sobre el repositorio.',
+      403,
+      'demo-correlation-id',
+      'REPOSITORY_PERMISSION_INSUFFICIENT',
+    )
+  const boundElsewhere = Array.from(repositoryBindings.values()).some(
+    (other) => other && other.projectId !== projectId && other.repositoryId === input.repositoryId,
+  )
+  if (boundElsewhere)
+    throw new ApiError('Este repositorio ya está vinculado a otro Project.', 409, 'demo-correlation-id', 'REPOSITORY_ALREADY_BOUND')
   const branches = DEMO_BRANCHES_BY_REPOSITORY[input.repositoryId] ?? []
-  if (!branches.some((branch) => branch.name === input.integrationBranch)) notFound(`La rama "${input.integrationBranch}" no existe en "${input.repositoryName}".`, 'INTEGRATION_BRANCH_NOT_FOUND')
+  if (!branches.some((branch) => branch.name === input.integrationBranch))
+    notFound(`La rama "${input.integrationBranch}" no existe en "${input.repositoryName}".`, 'INTEGRATION_BRANCH_NOT_FOUND')
   const createdAt = nowIso()
   const binding: ProjectRepositoryBindingResponse = {
     projectId,
@@ -1863,7 +4570,7 @@ export async function mockDisconnectRepository(projectId: string): Promise<void>
   await latency()
   requireProjectRole(projectId, 'WRITER')
   const binding = repositoryBindings.get(projectId)
-  if (!binding) notFound(`El proyecto demo "${projectId}" no tiene un repositorio vinculado.`, 'REPOSITORY_BINDING_NOT_FOUND')
+  if (!binding) notFound(`El Project demo "${projectId}" no tiene un repositorio vinculado.`, 'REPOSITORY_BINDING_NOT_FOUND')
   if (binding.status === 'REVOKED') return
   repositoryBindings.set(projectId, { ...binding, status: 'DISABLED', updatedAt: nowIso() })
 }
@@ -1876,10 +4583,16 @@ export async function mockEnableRepository(projectId: string): Promise<ProjectRe
   await latency()
   const project = requireProjectRole(projectId, 'WRITER')
   const binding = repositoryBindings.get(projectId)
-  if (!binding) notFound(`El proyecto demo "${projectId}" no tiene un repositorio vinculado.`, 'REPOSITORY_BINDING_NOT_FOUND')
+  if (!binding) notFound(`El Project demo "${projectId}" no tiene un repositorio vinculado.`, 'REPOSITORY_BINDING_NOT_FOUND')
   if (binding.status === 'ENABLED') return clone(binding)
-  if (binding.status === 'REVOKED' && project.role !== 'ADMIN') notFound(`No existe el proyecto demo "${projectId}".`, 'PROJECT_NOT_FOUND')
-  if (!isGitHubAppAuthorized(binding.repositoryId)) throw new ApiError(`La GitHub App no tiene acceso a "${binding.repositoryName}" todavía.`, 403, 'demo-correlation-id', 'GITHUB_APP_ACCESS_REQUIRED')
+  if (binding.status === 'REVOKED' && project.role !== 'ADMIN') notFound(`No existe el Project demo "${projectId}".`, 'PROJECT_NOT_FOUND')
+  if (!isGitHubAppAuthorized(binding.repositoryId))
+    throw new ApiError(
+      `La GitHub App no tiene acceso a "${binding.repositoryName}" todavía.`,
+      403,
+      'demo-correlation-id',
+      'GITHUB_APP_ACCESS_REQUIRED',
+    )
   const enabled: ProjectRepositoryBindingResponse = { ...binding, status: 'ENABLED', updatedAt: nowIso() }
   repositoryBindings.set(projectId, enabled)
   return clone(enabled)
@@ -1916,7 +4629,10 @@ function toAnalysisRunSummary(run: AnalysisRunDetailResponse): AnalysisRunSummar
 }
 
 /** HU32: `GET /projects/{projectId}/analysis-runs?status&cursor&limit` (aquí `projectId` es opcional para ofrecer también un listado global). */
-export async function mockListAnalysisRuns(projectId: string | undefined, status: AnalysisRunStatus | undefined): Promise<AnalysisRunListPage> {
+export async function mockListAnalysisRuns(
+  projectId: string | undefined,
+  status: AnalysisRunStatus | undefined,
+): Promise<AnalysisRunListPage> {
   await latency()
   if (projectId) requireProjectRole(projectId, 'READER')
   const items = Array.from(analysisRuns.values())
@@ -1937,7 +4653,12 @@ function deriveRunHistory(run: AnalysisRunDetailResponse): AnalysisRunTransition
   if (run.status === 'QUEUED') return history
   history.push({ fromStatus: 'QUEUED', toStatus: 'PROCESSING', reason: 'SNAPSHOT_PROCESSING_STARTED', occurredAt: run.createdAt })
   if (run.status === 'ACTION_REQUIRED') {
-    history.push({ fromStatus: 'PROCESSING', toStatus: 'ACTION_REQUIRED', reason: 'FUNCTIONAL_CONTEXT_REQUIRED', occurredAt: run.updatedAt })
+    history.push({
+      fromStatus: 'PROCESSING',
+      toStatus: 'ACTION_REQUIRED',
+      reason: 'FUNCTIONAL_CONTEXT_REQUIRED',
+      occurredAt: run.updatedAt,
+    })
     return history
   }
   if (run.status === 'OBSOLETE') {
@@ -1945,12 +4666,27 @@ function deriveRunHistory(run: AnalysisRunDetailResponse): AnalysisRunTransition
     return history
   }
   if (run.attemptCount > 1) {
-    history.push({ fromStatus: 'PROCESSING', toStatus: 'ACTION_REQUIRED', reason: 'FUNCTIONAL_CONTEXT_REQUIRED', occurredAt: run.createdAt })
-    history.push({ fromStatus: 'ACTION_REQUIRED', toStatus: 'PROCESSING', reason: 'FUNCTIONAL_ANSWER_CONTINUATION', occurredAt: run.updatedAt })
+    history.push({
+      fromStatus: 'PROCESSING',
+      toStatus: 'ACTION_REQUIRED',
+      reason: 'FUNCTIONAL_CONTEXT_REQUIRED',
+      occurredAt: run.createdAt,
+    })
+    history.push({
+      fromStatus: 'ACTION_REQUIRED',
+      toStatus: 'PROCESSING',
+      reason: 'FUNCTIONAL_ANSWER_CONTINUATION',
+      occurredAt: run.updatedAt,
+    })
   }
   // WI-CONSOLE-030 (F1): un Run en proceso sigue en PROCESSING; no hay «Generación completada» hasta el estado final.
   if (run.status === 'PROCESSING') return history
-  history.push({ fromStatus: 'PROCESSING', toStatus: run.status, reason: 'GENERATION_COMPLETED', occurredAt: run.completedAt ?? run.updatedAt })
+  history.push({
+    fromStatus: 'PROCESSING',
+    toStatus: run.status,
+    reason: 'GENERATION_COMPLETED',
+    occurredAt: run.completedAt ?? run.updatedAt,
+  })
   return history
 }
 
@@ -1959,16 +4695,34 @@ export async function mockGetAnalysisRun(analysisRunId: string): Promise<Analysi
   await latency()
   // WI-CONSOLE-016 / WI-CONSOLE-030 (C2): los Runs QUEUED/PROCESSING se resuelven aquí como cualquier otro Run (aparecen también en listados y contadores).
   const run = findVisibleRun(analysisRunId)
-  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (!run) notFound(`No existe el AnalysisRun demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   return { ...clone(run), history: deriveRunHistory(run) }
 }
 
-// INTEROP-2.7 §6.16 — trace operativo demo. Los ids `ret_demo_*`, `ctx_demo_*` y `exec_demo_*` son simulados y se rotulan como tales.
+// INTEROP-2.7 §6.16 — traza operativa demo. Los ids `ret_demo_*`, `ctx_demo_*` y `exec_demo_*` son simulados y se rotulan como tales.
 // `fk_rounding_v2` y `fk_coupon_expiry` existen (ver seeds de functionalKnowledge); `fk_demo_regla_inexistente` no existe a propósito, para probar la degradación.
 const TRACE_EXECUTION_PROFILE = 'demo-sandbox-node'
-const TRACE_SYMBOL_CALCULATE_TOTAL: AnalysisSymbolResponse = { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' }
-const TRACE_SYMBOL_FORMAT_CURRENCY: AnalysisSymbolResponse = { language: 'TYPESCRIPT', kind: 'FUNCTION', qualifiedName: 'formatCurrency', filePath: 'src/shared/money.ts', changeKind: 'POTENTIALLY_IMPACTED' }
-const TRACE_SYMBOL_COUPON_APPLY: AnalysisSymbolResponse = { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'CouponPolicy.apply', filePath: 'src/domain/CouponPolicy.ts', changeKind: 'DIRECTLY_CHANGED' }
+const TRACE_SYMBOL_CALCULATE_TOTAL: AnalysisSymbolResponse = {
+  language: 'TYPESCRIPT',
+  kind: 'METHOD',
+  qualifiedName: 'OrderService.calculateTotal',
+  filePath: 'src/domain/OrderService.ts',
+  changeKind: 'DIRECTLY_CHANGED',
+}
+const TRACE_SYMBOL_FORMAT_CURRENCY: AnalysisSymbolResponse = {
+  language: 'TYPESCRIPT',
+  kind: 'FUNCTION',
+  qualifiedName: 'formatCurrency',
+  filePath: 'src/shared/money.ts',
+  changeKind: 'POTENTIALLY_IMPACTED',
+}
+const TRACE_SYMBOL_COUPON_APPLY: AnalysisSymbolResponse = {
+  language: 'TYPESCRIPT',
+  kind: 'METHOD',
+  qualifiedName: 'CouponPolicy.apply',
+  filePath: 'src/domain/CouponPolicy.ts',
+  changeKind: 'DIRECTLY_CHANGED',
+}
 
 function notApplicableTarget(symbol: AnalysisSymbolResponse): TraceTargetResponse {
   return {
@@ -1992,8 +4746,20 @@ const TRACE_TARGETS_BY_RUN: Record<string, () => TraceTargetResponse[]> = {
       executions: {
         status: 'PRESENT',
         items: [
-          { executionId: 'exec_demo_pr45_1', proposalId: 'prop_pr45_1', attempt: 1, executionProfile: TRACE_EXECUTION_PROFILE, outcome: 'SUCCESS' },
-          { executionId: 'exec_demo_pr45_2', proposalId: 'prop_pr45_2', attempt: 1, executionProfile: TRACE_EXECUTION_PROFILE, outcome: 'SUCCESS' },
+          {
+            executionId: 'exec_demo_pr45_1',
+            proposalId: 'prop_pr45_1',
+            attempt: 1,
+            executionProfile: TRACE_EXECUTION_PROFILE,
+            outcome: 'SUCCESS',
+          },
+          {
+            executionId: 'exec_demo_pr45_2',
+            proposalId: 'prop_pr45_2',
+            attempt: 1,
+            executionProfile: TRACE_EXECUTION_PROFILE,
+            outcome: 'SUCCESS',
+          },
         ],
       },
     },
@@ -2002,7 +4768,18 @@ const TRACE_TARGETS_BY_RUN: Record<string, () => TraceTargetResponse[]> = {
       retrieval: { status: 'PRESENT', retrievalId: 'ret_demo_pr45_money' },
       context: { status: 'PRESENT', contextId: 'ctx_demo_pr45_money', functionalRuleIds: ['fk_demo_regla_inexistente'] },
       generation: { status: 'PRESENT', proposalIds: ['prop_pr45_3'] },
-      executions: { status: 'PRESENT', items: [{ executionId: 'exec_demo_pr45_3', proposalId: 'prop_pr45_3', attempt: 2, executionProfile: TRACE_EXECUTION_PROFILE, outcome: 'SUCCESS' }] },
+      executions: {
+        status: 'PRESENT',
+        items: [
+          {
+            executionId: 'exec_demo_pr45_3',
+            proposalId: 'prop_pr45_3',
+            attempt: 2,
+            executionProfile: TRACE_EXECUTION_PROFILE,
+            outcome: 'SUCCESS',
+          },
+        ],
+      },
     },
   ],
   // BEHAVIORAL_MISMATCH: un target con la prueba generada contradiciendo el comportamiento observado.
@@ -2012,7 +4789,18 @@ const TRACE_TARGETS_BY_RUN: Record<string, () => TraceTargetResponse[]> = {
       retrieval: { status: 'PRESENT', retrievalId: 'ret_demo_pr46_coupon' },
       context: { status: 'PRESENT', contextId: 'ctx_demo_pr46_coupon', functionalRuleIds: ['fk_coupon_expiry'] },
       generation: { status: 'PRESENT', proposalIds: ['prop_pr46_1'] },
-      executions: { status: 'PRESENT', items: [{ executionId: 'exec_demo_pr46_1', proposalId: 'prop_pr46_1', attempt: 1, executionProfile: TRACE_EXECUTION_PROFILE, outcome: 'BEHAVIORAL_MISMATCH' }] },
+      executions: {
+        status: 'PRESENT',
+        items: [
+          {
+            executionId: 'exec_demo_pr46_1',
+            proposalId: 'prop_pr46_1',
+            attempt: 1,
+            executionProfile: TRACE_EXECUTION_PROFILE,
+            outcome: 'BEHAVIORAL_MISMATCH',
+          },
+        ],
+      },
     },
   ],
   // NO_ADDITIONAL_TESTS_REQUIRED: hubo retrieval y contexto, pero no hubo generación ni ejecuciones.
@@ -2058,7 +4846,14 @@ function traceFor(run: AnalysisRunDetailResponse): AnalysisRunTraceResponse {
       }
     : TRACE_CHECK_ONLY_RUN_IDS.has(run.id)
       ? { status: 'PRESENT', checkId: null, companionBranch: null, companionPullRequestUrl: null, sourceHeadSha: null, freshness: null }
-      : { status: 'NOT_APPLICABLE', checkId: null, companionBranch: null, companionPullRequestUrl: null, sourceHeadSha: null, freshness: null }
+      : {
+          status: 'NOT_APPLICABLE',
+          checkId: null,
+          companionBranch: null,
+          companionPullRequestUrl: null,
+          sourceHeadSha: null,
+          freshness: null,
+        }
   return {
     analysisRunId: run.id,
     repositoryName: run.pullRequest.repositoryName,
@@ -2070,14 +4865,18 @@ function traceFor(run: AnalysisRunDetailResponse): AnalysisRunTraceResponse {
   }
 }
 
-
 /** INTEROP-2.7 §6.16: `GET /analysis-runs/{analysisRunId}/trace` (Reader). 404 genérico si no es visible; 409 `EVIDENCE_NOT_FINISHED` mientras el Run está en `QUEUED`/`PROCESSING`. */
 export async function mockGetAnalysisRunTrace(analysisRunId: string): Promise<AnalysisRunTraceResponse> {
   await latency()
   const run = findVisibleRun(analysisRunId)
-  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (!run) notFound(`No existe el AnalysisRun demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   if (run.status === 'QUEUED' || run.status === 'PROCESSING') {
-    throw new ApiError('La evidencia de este Analysis Run todavía no está disponible: el Run sigue en proceso.', 409, 'demo-correlation-id', 'EVIDENCE_NOT_FINISHED')
+    throw new ApiError(
+      'La evidencia de este AnalysisRun todavía no está disponible: el Run sigue en proceso.',
+      409,
+      'demo-correlation-id',
+      'EVIDENCE_NOT_FINISHED',
+    )
   }
   return clone(traceFor(run))
 }
@@ -2119,7 +4918,11 @@ function evidenceAnalysisRun(run: AnalysisRunDetailResponse, generatedAt: string
  * Donde el dato existe se emite tal cual. Desviación deliberada del contrato de Core (que emite 1/true en filas previas) aprobada
  * en WI-CONSOLE-026; ver `harness/reports/wi-console-026-implementation.md`.
  */
-function evidenceExperimentRepetition(subjectId: string, configuration: ExperimentConfiguration | null, rep: RepetitionResult): {
+function evidenceExperimentRepetition(
+  subjectId: string,
+  configuration: ExperimentConfiguration | null,
+  rep: RepetitionResult,
+): {
   generation: EvidenceBundleResponse['generation'][number]
   sandbox: EvidenceBundleResponse['sandbox'][number] | null
   experimental: EvidenceBundleResponse['experimental'][number] | null
@@ -2143,28 +4946,38 @@ function evidenceExperimentRepetition(subjectId: string, configuration: Experime
       durationMs: rep.generationDurationMs,
       artifactHash: executed ? fakeSha256(`artifact:${subjectId}:${rep.strategy}:${rep.repetition}`) : null,
     },
-    sandbox: runAttempt === null || runEvaluable === null ? null : {
-      executionId,
-      strategy: rep.strategy,
-      repetition: rep.repetition,
-      executionProfile: configuration?.executionProfile ?? null,
-      runnerHint: configuration?.runnerHint ?? null,
-      attempt: runAttempt,
-      facts: { executionProfile: configuration?.executionProfile ?? null, failureCategory: rep.failureType === 'NONE' ? null : rep.failureType, failureMessage: rep.errorSummary },
-      durationMs: rep.executionDurationMs,
-      requestId: executionId,
-      correlationId: executed ? 'demo-correlation-id' : null,
-    },
-    experimental: runAttempt === null || runEvaluable === null ? null : {
-      experimentId: subjectId,
-      strategy: rep.strategy,
-      repetition: rep.repetition,
-      pairId: rep.pairId,
-      pairPosition: rep.pairPosition,
-      attempt: runAttempt,
-      randomizationSeed: configuration?.randomizationSeed ?? null,
-      technicallyEvaluable: runEvaluable,
-    },
+    sandbox:
+      runAttempt === null || runEvaluable === null
+        ? null
+        : {
+            executionId,
+            strategy: rep.strategy,
+            repetition: rep.repetition,
+            executionProfile: configuration?.executionProfile ?? null,
+            runnerHint: configuration?.runnerHint ?? null,
+            attempt: runAttempt,
+            facts: {
+              executionProfile: configuration?.executionProfile ?? null,
+              failureCategory: rep.failureType === 'NONE' ? null : rep.failureType,
+              failureMessage: rep.errorSummary,
+            },
+            durationMs: rep.executionDurationMs,
+            requestId: executionId,
+            correlationId: executed ? 'demo-correlation-id' : null,
+          },
+    experimental:
+      runAttempt === null || runEvaluable === null
+        ? null
+        : {
+            experimentId: subjectId,
+            strategy: rep.strategy,
+            repetition: rep.repetition,
+            pairId: rep.pairId,
+            pairPosition: rep.pairPosition,
+            attempt: runAttempt,
+            randomizationSeed: configuration?.randomizationSeed ?? null,
+            technicallyEvaluable: runEvaluable,
+          },
   }
 }
 
@@ -2173,15 +4986,17 @@ export async function mockGetEvidence(kind: EvidenceKind, subjectId: string): Pr
   const generatedAt = nowIso()
   if (kind === 'ANALYSIS_RUN') {
     const run = findVisibleRun(subjectId)
-    if (!run) notFound(`No existe el Analysis Run demo "${subjectId}".`, 'ANALYSIS_RUN_NOT_FOUND')
-    if (run.status === 'QUEUED' || run.status === 'PROCESSING') throw new ApiError(DEMO_EVIDENCE_NOT_FINISHED, 409, 'demo-correlation-id', 'EVIDENCE_NOT_FINISHED')
+    if (!run) notFound(`No existe el AnalysisRun demo "${subjectId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+    if (run.status === 'QUEUED' || run.status === 'PROCESSING')
+      throw new ApiError(DEMO_EVIDENCE_NOT_FINISHED, 409, 'demo-correlation-id', 'EVIDENCE_NOT_FINISHED')
     return clone(evidenceAnalysisRun(run, generatedAt))
   }
   if (kind === 'EXPERIMENT') {
     const state = experiments.get(subjectId)
     if (!state || isProjectDeleted(state.projectId)) notFound(`No existe el experimento demo "${subjectId}".`, 'INVALID_REQUEST')
     const { status, result, configuration } = state.operation
-    if (status === 'PENDING' || status === 'RUNNING') throw new ApiError(DEMO_EVIDENCE_NOT_FINISHED, 409, 'demo-correlation-id', 'EVIDENCE_NOT_FINISHED')
+    if (status === 'PENDING' || status === 'RUNNING')
+      throw new ApiError(DEMO_EVIDENCE_NOT_FINISHED, 409, 'demo-correlation-id', 'EVIDENCE_NOT_FINISHED')
     const rows = (result?.repetitions ?? []).map((rep) => evidenceExperimentRepetition(subjectId, configuration ?? null, rep))
     return clone({
       schemaVersion: '1',
@@ -2201,12 +5016,19 @@ export async function mockGetEvidence(kind: EvidenceKind, subjectId: string): Pr
   }
   const state = requireRetrievalComparison(subjectId)
   const status = state.operation.status
-  if (status === 'PENDING' || status === 'RUNNING') throw new ApiError(DEMO_EVIDENCE_NOT_FINISHED, 409, 'demo-correlation-id', 'EVIDENCE_NOT_FINISHED')
+  if (status === 'PENDING' || status === 'RUNNING')
+    throw new ApiError(DEMO_EVIDENCE_NOT_FINISHED, 409, 'demo-correlation-id', 'EVIDENCE_NOT_FINISHED')
   // §6.16: una comparación FAILED responde 200 con retrieval: [] (state.results es null).
   const retrieval: EvidenceBundleResponse['retrieval'] = (state.results?.modes ?? []).map((mode) => ({
     retrievalId: mode.retrievalId,
     mode: mode.mode,
-    config: { semanticTopK: mode.config.semanticTopK, finalTopK: mode.config.finalTopK, semanticWeight: mode.config.semanticWeight, structuralWeight: mode.config.structuralWeight, embeddingModel: mode.config.embeddingModel },
+    config: {
+      semanticTopK: mode.config.semanticTopK,
+      finalTopK: mode.config.finalTopK,
+      semanticWeight: mode.config.semanticWeight,
+      structuralWeight: mode.config.structuralWeight,
+      embeddingModel: mode.config.embeddingModel,
+    },
     candidates: mode.candidates.map((candidate) => ({ ...candidate })),
     metrics: mode.metrics,
   }))
@@ -2228,16 +5050,22 @@ export async function mockGetEvidence(kind: EvidenceKind, subjectId: string): Pr
 }
 
 /** Solo tests: fija la procedencia de escenario de una regla demo (p. ej. `scenarioKey: 'LEGACY'` o `scenarioKind: null`). */
-export function setMockFunctionalKnowledgeScenarioForTests(knowledgeId: string, patch: { scenarioKind?: FunctionalKnowledgeResponse['scenarioKind'] | null; scenarioKey?: string | null }): void {
+export function setMockFunctionalKnowledgeScenarioForTests(
+  knowledgeId: string,
+  patch: { scenarioKind?: FunctionalKnowledgeResponse['scenarioKind'] | null; scenarioKey?: string | null },
+): void {
   const item = functionalKnowledge.get(knowledgeId)
   if (!item) throw new Error(`No existe la regla demo "${knowledgeId}".`)
   functionalKnowledge.set(knowledgeId, { ...item, ...patch } as FunctionalKnowledgeResponse)
 }
 
 /** Solo para pruebas: cambia estado o HEAD de un Run sembrado para simular el paso de QUEUED/PROCESSING a terminal o un push nuevo. */
-export function setMockAnalysisRunForTests(analysisRunId: string, patch: { status?: AnalysisRunStatus; headSha?: string; resultSummary?: string | null }): void {
+export function setMockAnalysisRunForTests(
+  analysisRunId: string,
+  patch: { status?: AnalysisRunStatus; headSha?: string; resultSummary?: string | null },
+): void {
   const run = analysisRuns.get(analysisRunId)
-  if (!run) throw new Error(`No existe el Analysis Run demo "${analysisRunId}".`)
+  if (!run) throw new Error(`No existe el AnalysisRun demo "${analysisRunId}".`)
   if (patch.status) run.status = patch.status
   if (patch.resultSummary !== undefined) run.resultSummary = patch.resultSummary
   if (patch.headSha) run.pullRequest = { ...run.pullRequest, headSha: patch.headSha }
@@ -2246,7 +5074,7 @@ export function setMockAnalysisRunForTests(analysisRunId: string, patch: { statu
 const PRIOR_COVERAGE_FIXTURES: Record<string, PriorCoverageLevel> = {
   'CouponPolicy.apply': 'NONE',
   'OrderService.calculateTotal': 'PARTIAL',
-  'formatCurrency': 'SUFFICIENT',
+  formatCurrency: 'SUFFICIENT',
 }
 
 function fallbackPriorCoverage(qualifiedName: string): PriorCoverageLevel {
@@ -2260,9 +5088,10 @@ function fallbackPriorCoverage(qualifiedName: string): PriorCoverageLevel {
 export async function mockGetPriorCoverage(analysisRunId: string): Promise<Record<string, PriorCoverageLevel>> {
   await latency()
   const run = findVisibleRun(analysisRunId)
-  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (!run) notFound(`No existe el AnalysisRun demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   const result: Record<string, PriorCoverageLevel> = {}
-  for (const symbol of run.symbols) result[symbol.qualifiedName] = PRIOR_COVERAGE_FIXTURES[symbol.qualifiedName] ?? fallbackPriorCoverage(symbol.qualifiedName)
+  for (const symbol of run.symbols)
+    result[symbol.qualifiedName] = PRIOR_COVERAGE_FIXTURES[symbol.qualifiedName] ?? fallbackPriorCoverage(symbol.qualifiedName)
   return result
 }
 
@@ -2270,28 +5099,40 @@ export async function mockGetPriorCoverage(analysisRunId: string): Promise<Recor
 export async function mockListTestProposals(analysisRunId: string): Promise<GeneratedTestProposalSetResponse> {
   await latency()
   const run = findVisibleRun(analysisRunId)
-  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (!run) notFound(`No existe el AnalysisRun demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   const items = testProposals.get(analysisRunId) ?? []
   return clone({ analysisRunId, headSha: run.pullRequest.headSha, items })
 }
 
 /** HU40: `POST /analysis-runs/{analysisRunId}/test-publications`. Devuelve `202` con la publicación en `PENDING`; el progreso se observa por `mockGetTestPublication` (ver `advanceDemoPublication`). */
-export async function mockCreateTestPublication(analysisRunId: string, input: CreateTestPublicationRequest): Promise<TestPublicationAcceptedResponse> {
+export async function mockCreateTestPublication(
+  analysisRunId: string,
+  input: CreateTestPublicationRequest,
+): Promise<TestPublicationAcceptedResponse> {
   await latency()
   const run = findVisibleRun(analysisRunId)
-  if (!run) notFound(`No existe el Analysis Run demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
+  if (!run) notFound(`No existe el AnalysisRun demo "${analysisRunId}".`, 'ANALYSIS_RUN_NOT_FOUND')
   requireProjectRole(run.projectId, 'WRITER')
-  if (run.status !== 'SUCCESS') throw new ApiError('Solo un Run SUCCESS admite publicación.', 409, 'demo-correlation-id', 'TEST_PUBLICATION_INVALID_RUN_STATUS')
+  if (run.status !== 'SUCCESS')
+    throw new ApiError('Solo un Run SUCCESS admite publicación.', 409, 'demo-correlation-id', 'TEST_PUBLICATION_INVALID_RUN_STATUS')
   const proposals = testProposals.get(analysisRunId) ?? []
   const selected = proposals.filter((proposal) => input.proposalIds.includes(proposal.id))
   if (selected.length === 0 || selected.some((proposal) => proposal.status !== 'AVAILABLE')) {
-    throw new ApiError('Las propuestas seleccionadas ya no están disponibles para publicar.', 422, 'demo-correlation-id', 'TEST_PUBLICATION_PROPOSAL_NOT_AVAILABLE')
+    throw new ApiError(
+      'Las propuestas seleccionadas ya no están disponibles para publicar.',
+      422,
+      'demo-correlation-id',
+      'TEST_PUBLICATION_PROPOSAL_NOT_AVAILABLE',
+    )
   }
   sequence += 1
   const publicationId = `pub_demo_${sequence}`
   const createdAt = nowIso()
   // Las propuestas pasan a PUBLISHED solo en el terminal exitoso (ver advanceDemoPublication).
-  publicationJobs.set(publicationId, { proposalIds: selected.map((proposal) => proposal.id), outcome: DEMO_PUBLICATION_OUTCOME_BY_RUN[analysisRunId] ?? 'PUBLISHED' })
+  publicationJobs.set(publicationId, {
+    proposalIds: selected.map((proposal) => proposal.id),
+    outcome: DEMO_PUBLICATION_OUTCOME_BY_RUN[analysisRunId] ?? 'PUBLISHED',
+  })
   const publication: TestPublicationResponse = {
     id: publicationId,
     analysisRunId,
@@ -2340,13 +5181,17 @@ function advanceDemoPublication(publication: TestPublicationResponse): void {
     return
   }
   publication.status = job.outcome
-  publication.failureMessage = job.outcome === 'FAILED'
-    ? `${DEMO_PUBLICATION_LABEL}: el job de publicación falló al crear la rama de pruebas.`
-    : `${DEMO_PUBLICATION_LABEL}: el HEAD del PR cambió antes de publicar; la publicación quedó obsoleta.`
+  publication.failureMessage =
+    job.outcome === 'FAILED'
+      ? `${DEMO_PUBLICATION_LABEL}: el job de publicación falló al crear la rama de pruebas.`
+      : `${DEMO_PUBLICATION_LABEL}: el HEAD del PR cambió antes de publicar; la publicación quedó obsoleta.`
 }
 
 /** HU35/HU36: `GET /projects/{projectId}/functional-knowledge?status&cursor&limit`. */
-export async function mockListFunctionalKnowledge(projectId: string, status?: FunctionalKnowledgeStatus): Promise<FunctionalKnowledgeListPage> {
+export async function mockListFunctionalKnowledge(
+  projectId: string,
+  status?: FunctionalKnowledgeStatus,
+): Promise<FunctionalKnowledgeListPage> {
   await latency()
   requireProject(projectId)
   const items = Array.from(functionalKnowledge.values())

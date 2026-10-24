@@ -78,7 +78,15 @@ describe('RequireAuth', () => {
   })
 
   describe('HU62: sesión cerrada por Core', () => {
-    const seedSession = () => localStorage.setItem('rag-console.mock-session', JSON.stringify({ user: { id: 'user_demo_github', email: 'demo@rag-test-studio.local' }, accessToken: 'mock-github-session-token', githubProviderToken: null }))
+    const seedSession = () =>
+      localStorage.setItem(
+        'rag-console.mock-session',
+        JSON.stringify({
+          user: { id: 'user_demo_github', email: 'demo@rag-test-studio.local' },
+          accessToken: 'mock-github-session-token',
+          githubProviderToken: null,
+        }),
+      )
 
     it('401 GITHUB_IDENTITY_REQUIRED lleva a /login con un aviso error-state terminal, con foco, sin jerga y sin redirigir a GitHub; el CTA sigue activo', async () => {
       seedSession()

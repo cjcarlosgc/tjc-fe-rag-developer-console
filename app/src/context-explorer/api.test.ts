@@ -62,7 +62,9 @@ describe('context-explorer api (live)', () => {
 
   it('consulta las rutas publicadas por Core para trazas de un experimento', async () => {
     setDataSourceForTests('live')
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(JSON.stringify({ items: [], nextCursor: null }), { status: 200 }))
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(async () => new Response(JSON.stringify({ items: [], nextCursor: null }), { status: 200 }))
     await expect(listExperimentContextTraces('exp-1', { strategy: 'RAG', repetition: 2 })).resolves.toEqual({ items: [], nextCursor: null })
     await getContextTrace('trace-1')
     await listDiscoveredFiles('trace-1', 3)
@@ -72,7 +74,7 @@ describe('context-explorer api (live)', () => {
     expect(urls[2]).toContain('/context-traces/trace-1/discovered-files?step=3')
   })
 
-  it('el contexto de un Analysis Run sigue pendiente de contrato en Core', async () => {
+  it('el contexto de un AnalysisRun sigue pendiente de contrato en Core', async () => {
     setDataSourceForTests('live')
     await expect(getAnalysisRunContextTrace('arun-1')).rejects.toThrow(/RAG Core/)
   })

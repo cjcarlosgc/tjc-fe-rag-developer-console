@@ -168,7 +168,11 @@ describe('usePublication y refresco al terminal', () => {
     await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: controlPlaneKeys.proposals('arun_checkout_pr45') }))
     expect(invalidate).toHaveBeenCalledWith({ queryKey: controlPlaneKeys.run('arun_checkout_pr45') })
     // Re-renders y lecturas terminales adicionales no repiten la invalidación.
-    expect(invalidate.mock.calls.filter(([arg]) => JSON.stringify(arg) === JSON.stringify({ queryKey: controlPlaneKeys.proposals('arun_checkout_pr45') }))).toHaveLength(1)
+    expect(
+      invalidate.mock.calls.filter(
+        ([arg]) => JSON.stringify(arg) === JSON.stringify({ queryKey: controlPlaneKeys.proposals('arun_checkout_pr45') }),
+      ),
+    ).toHaveLength(1)
     client.clear()
   })
 
@@ -176,7 +180,14 @@ describe('usePublication y refresco al terminal', () => {
     const accepted = await createTestPublication('arun_checkout_pr45', { proposalIds: ['prop_pr45_1'] })
     const client = newClient()
     const invalidate = vi.spyOn(client, 'invalidateQueries')
-    renderHook(() => useRefreshOnPublicationTerminal('arun_checkout_pr45', { id: accepted.publicationId, status: 'PUBLISHING' } as TestPublicationResponse), { wrapper: wrapperFor(client) })
+    renderHook(
+      () =>
+        useRefreshOnPublicationTerminal('arun_checkout_pr45', {
+          id: accepted.publicationId,
+          status: 'PUBLISHING',
+        } as TestPublicationResponse),
+      { wrapper: wrapperFor(client) },
+    )
     expect(invalidate).not.toHaveBeenCalled()
     client.clear()
   })

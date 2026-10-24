@@ -7,3 +7,6 @@ coverage/
 !.env.test
 .DS_Store
 *.log
+
+# MCP local config (contiene tokens; usar .mcp.json.example como plantilla)
+.mcp.json

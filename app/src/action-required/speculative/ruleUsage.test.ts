@@ -9,7 +9,7 @@ beforeEach(() => {
 })
 
 describe('trazabilidad de uso (mock) — HU52, especulativo', () => {
-  it('lista los Analysis Runs cuyo símbolo coincide con el target de la regla, más recientes primero', async () => {
+  it('lista los AnalysisRuns cuyo símbolo coincide con el target de la regla, más recientes primero', async () => {
     const items = await getRuleUsage('fk_coupon_expiry')
     expect(items.map((run) => run.id)).toEqual(['arun_checkout_pr42', 'arun_checkout_pr46'])
   })

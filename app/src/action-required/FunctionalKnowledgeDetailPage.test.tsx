@@ -13,7 +13,10 @@ beforeEach(() => {
 })
 
 function renderDetail(projectId: string, knowledgeId: string) {
-  return renderApp(<FunctionalKnowledgeDetailPage />, { initialEntry: `/projects/${projectId}/functional-knowledge/${knowledgeId}`, routePath: '/projects/:projectId/functional-knowledge/:knowledgeId' })
+  return renderApp(<FunctionalKnowledgeDetailPage />, {
+    initialEntry: `/projects/${projectId}/functional-knowledge/${knowledgeId}`,
+    routePath: '/projects/:projectId/functional-knowledge/:knowledgeId',
+  })
 }
 
 function provenanceSection(): HTMLElement {
@@ -23,7 +26,11 @@ function provenanceSection(): HTMLElement {
 test('HU07/HU09: detalle ACTIVE muestra pregunta, respuesta y escenario', async () => {
   renderDetail('prj_checkout_demo', 'fk_coupon_expiry')
 
-  expect(await screen.findByRole('heading', { name: 'Un cupón vencido nunca debe aplicarse, incluso si el pedido ya está marcado como pagado.' })).toBeInTheDocument()
+  expect(
+    await screen.findByRole('heading', {
+      name: 'Un cupón vencido nunca debe aplicarse, incluso si el pedido ya está marcado como pagado.',
+    }),
+  ).toBeInTheDocument()
   expect(screen.getByText('¿"apply" debe rechazar un cupón vencido aunque el pedido ya esté marcado como pagado?')).toBeInTheDocument()
   expect(screen.getByText('Excepción')).toBeInTheDocument()
   expect(screen.getByText('coupon.apply.expired-paid-order')).toBeInTheDocument()
@@ -102,7 +109,7 @@ test('HU07: una regla sin reemplazos no muestra la sección de cadena', async ()
   expect(screen.queryByRole('list', { name: 'Cadena de reemplazo' })).not.toBeInTheDocument()
 })
 
-test('HU07: una regla inexistente en el proyecto muestra «Regla no encontrada»', async () => {
+test('HU07: una regla inexistente en el Project muestra «Regla no encontrada»', async () => {
   renderDetail('prj_checkout_demo', 'fk_no_existe')
 
   expect(await screen.findByText('Regla no encontrada')).toBeInTheDocument()
@@ -111,10 +118,10 @@ test('HU07: una regla inexistente en el proyecto muestra «Regla no encontrada»
 test('HU07: un proyecto inexistente muestra el error con role="alert"', async () => {
   renderDetail('prj_no_existe', 'fk_coupon_expiry')
 
-  expect(await screen.findByRole('alert')).toHaveTextContent('No existe el proyecto demo')
+  expect(await screen.findByRole('alert')).toHaveTextContent('No existe el Project demo')
 })
 
-test('HU52 (propuesta): lista los Analysis Runs cuyo símbolo coincide con el target de la regla', async () => {
+test('HU52 (propuesta): lista los AnalysisRuns cuyo símbolo coincide con el target de la regla', async () => {
   renderDetail('prj_checkout_demo', 'fk_coupon_expiry')
 
   expect(await screen.findByText('Runs que usaron esta regla')).toBeInTheDocument()
@@ -126,7 +133,7 @@ test('HU52 (propuesta): sin coincidencias muestra el estado vacío en vez de la 
   renderDetail('prj_billing_demo', 'fk_discount_engine')
 
   expect(await screen.findByText('Runs que usaron esta regla')).toBeInTheDocument()
-  expect(screen.getByText('Ningún Analysis Run demo tocó este símbolo todavía.')).toBeInTheDocument()
+  expect(screen.getByText('Ningún AnalysisRun demo tocó este símbolo todavía.')).toBeInTheDocument()
 })
 
 test('INTEROP-2.7 §6.11: escenario nulo o clave LEGACY muestran estado vacío, no la clave ni «Otros»', async () => {

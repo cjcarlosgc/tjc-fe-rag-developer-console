@@ -30,11 +30,7 @@ export function verifyGitHubAppAccess(
   })
 }
 
-export function listGitHubRepositoryBranches(
-  projectId: string,
-  owner: string,
-  repo: string,
-): Promise<GitHubRepositoryBranchesResponse> {
+export function listGitHubRepositoryBranches(projectId: string, owner: string, repo: string): Promise<GitHubRepositoryBranchesResponse> {
   const query = new URLSearchParams({ projectId })
   return request(`/v1/github/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches?${query.toString()}`)
 }
@@ -59,8 +55,7 @@ function validateBaseUrl(value: string): string {
     const url = new URL(value)
     const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
     const secureOrigin = url.protocol === 'https:' || (!import.meta.env.PROD && url.protocol === 'http:' && loopback)
-    if (!secureOrigin ||
-      url.username || url.password || url.pathname !== '/' || url.search || url.hash) throw new Error('invalid origin')
+    if (!secureOrigin || url.username || url.password || url.pathname !== '/' || url.search || url.hash) throw new Error('invalid origin')
     return url.origin
   } catch {
     throw new ApiError('La URL de GitHub Integration no está configurada correctamente.', 503, undefined, 'CORE_AUTHORIZATION_UNAVAILABLE')

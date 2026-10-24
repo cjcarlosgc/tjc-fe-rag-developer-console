@@ -1,5 +1,5 @@
 import { getDataSource, ProposedCapabilityError } from '../../api/dataSource'
-import { mockGetPriorCoverage } from '../../api/mockBackend'
+import { loadMockBackend } from '../../api/loadMockBackend'
 
 /**
  * PROPUESTA — HU50, sin forma de contrato aprobada en INTEROP. Ver
@@ -16,6 +16,6 @@ export const PRIOR_COVERAGE_LABELS: Record<PriorCoverageLevel, string> = {
 }
 
 export function getPriorCoverage(analysisRunId: string): Promise<Record<string, PriorCoverageLevel>> {
-  if (getDataSource() === 'mock') return mockGetPriorCoverage(analysisRunId)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockGetPriorCoverage(analysisRunId))
   return Promise.reject(new ProposedCapabilityError('Cobertura previa (HU50)'))
 }

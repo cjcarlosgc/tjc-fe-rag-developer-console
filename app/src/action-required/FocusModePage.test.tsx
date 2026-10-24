@@ -23,7 +23,9 @@ test('HU37: muestra la pregunta vigente con su visualAid y avanza a la siguiente
   const user = userEvent.setup()
   renderFocusMode('arun_checkout_pr42')
 
-  expect(await screen.findByText('¿"apply" debe rechazar un cupón vencido aunque el pedido ya esté marcado como pagado?')).toBeInTheDocument()
+  expect(
+    await screen.findByText('¿"apply" debe rechazar un cupón vencido aunque el pedido ya esté marcado como pagado?'),
+  ).toBeInTheDocument()
   expect(screen.getByText('CouponPolicy.ts — cambio en apply')).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'Sí' }))
@@ -38,8 +40,7 @@ test('HU37/INTEROP-2.7: "No lo sé" (UNKNOWN) es una abstención: la pregunta pe
   await screen.findByText('¿"apply" debe rechazar un cupón vencido aunque el pedido ya esté marcado como pagado?')
   await user.click(screen.getByRole('button', { name: 'No lo sé' }))
 
-  const status = await screen.findByRole('status')
-  expect(status).toHaveTextContent(/^Abstención registrada · ADMIN · .+ · 1 abstención\(es\)$/)
+  await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(/^Abstención registrada · ADMIN · .+ · 1 abstención\(es\)$/))
   expect(screen.getByText('¿"apply" debe rechazar un cupón vencido aunque el pedido ya esté marcado como pagado?')).toBeInTheDocument()
   expect(screen.queryByText('¿El redondeo de "calculateTotal" debe truncar o redondear al centavo más cercano?')).not.toBeInTheDocument()
   expect(screen.queryByText('Contexto funcional confirmado')).not.toBeInTheDocument()
@@ -53,14 +54,39 @@ test('live: UNKNOWN reutiliza la misma Idempotency-Key UUID al reintentar la mis
   const questionSet = {
     analysisRunId: 'arun-live',
     currentQuestion: {
-      id: 'fq-live', analysisRunId: 'arun-live', projectId: 'prj-live', repositoryName: 'acme/repo', pullRequestNumber: 12,
-      headSha: 'abc123', target: { language: 'TYPESCRIPT', kind: 'FUNCTION', qualifiedName: 'calculate', filePath: 'src/calculate.ts', changeKind: 'DIRECTLY_CHANGED' },
-      question: '¿Cuál es el comportamiento esperado?', rationale: 'Falta una regla funcional.', status: 'PENDING', visualAid: null,
-      scenarioKind: 'EXPECTED_RESULT', scenarioKey: 'calculate.result', abstention: null, createdAt: '2026-10-10T00:00:00.000Z',
+      id: 'fq-live',
+      analysisRunId: 'arun-live',
+      projectId: 'prj-live',
+      repositoryName: 'acme/repo',
+      pullRequestNumber: 12,
+      headSha: 'abc123',
+      target: {
+        language: 'TYPESCRIPT',
+        kind: 'FUNCTION',
+        qualifiedName: 'calculate',
+        filePath: 'src/calculate.ts',
+        changeKind: 'DIRECTLY_CHANGED',
+      },
+      question: '¿Cuál es el comportamiento esperado?',
+      rationale: 'Falta una regla funcional.',
+      status: 'PENDING',
+      visualAid: null,
+      scenarioKind: 'EXPECTED_RESULT',
+      scenarioKey: 'calculate.result',
+      abstention: null,
+      createdAt: '2026-10-10T00:00:00.000Z',
     },
     functionalBehaviorValidated: false,
   }
-  const project = { id: 'prj-live', name: 'Live', currentVersionId: null, workspace: { kind: 'PERSONAL', id: 'ws-live', login: 'person' }, role: 'ADMIN', createdAt: '2026-10-10T00:00:00.000Z', updatedAt: '2026-10-10T00:00:00.000Z' }
+  const project = {
+    id: 'prj-live',
+    name: 'Live',
+    currentVersionId: null,
+    workspace: { kind: 'PERSONAL', id: 'ws-live', login: 'person' },
+    role: 'ADMIN',
+    createdAt: '2026-10-10T00:00:00.000Z',
+    updatedAt: '2026-10-10T00:00:00.000Z',
+  }
   let posts = 0
   const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
     const url = String(input)
@@ -68,7 +94,18 @@ test('live: UNKNOWN reutiliza la misma Idempotency-Key UUID al reintentar la mis
       posts += 1
       return posts === 1
         ? new Response(JSON.stringify({ code: 'TEMPORARY_FAILURE', message: 'Reintenta.' }), { status: 500 })
-        : new Response(JSON.stringify({ status: 'PENDING', pollAfterMs: 500, analysisRunId: 'arun-live', questionId: 'fq-live', outcome: 'ABSTAINED', continuationAttemptId: null, knowledgeId: null }), { status: 202 })
+        : new Response(
+            JSON.stringify({
+              status: 'PENDING',
+              pollAfterMs: 500,
+              analysisRunId: 'arun-live',
+              questionId: 'fq-live',
+              outcome: 'ABSTAINED',
+              continuationAttemptId: null,
+              knowledgeId: null,
+            }),
+            { status: 202 },
+          )
     }
     return new Response(JSON.stringify(url.includes('context-questions') ? questionSet : project), { status: 200 })
   })
@@ -103,7 +140,9 @@ test('INTEROP-2.7: una segunda abstención incrementa el contador sin avanzar', 
 test('HU07/HU14: Writer no ve «No lo sé» ni respuestas y recibe la nota de Maintainer o Admin', async () => {
   renderFocusMode('arun_org_writer_pr21')
 
-  expect(await screen.findByText('¿El reintento de cobro debe respetar el límite diario aunque el cliente tenga un plan anual?')).toBeInTheDocument()
+  expect(
+    await screen.findByText('¿El reintento de cobro debe respetar el límite diario aunque el cliente tenga un plan anual?'),
+  ).toBeInTheDocument()
   expect(screen.getByText('Solo un Maintainer o Admin puede responder esta pregunta funcional')).toBeInTheDocument()
   for (const name of ['Sí', 'No', 'Depende', 'No lo sé', 'Responder solo con este texto']) {
     expect(screen.queryByRole('button', { name })).not.toBeInTheDocument()
@@ -157,7 +196,11 @@ test('HU51 (INTEROP-2.1 §6.11, definido/no implementado): responder muestra el 
   await user.click(screen.getByRole('button', { name: 'Sí' }))
 
   expect(await screen.findByText('Esta respuesta contradice una regla vigente')).toBeInTheDocument()
-  expect(screen.getByText('Ninguna dirección fuera de las zonas de envío habilitadas debe pasar "validate", sin excepciones por tipo de cliente.')).toBeInTheDocument()
+  expect(
+    screen.getByText(
+      'Ninguna dirección fuera de las zonas de envío habilitadas debe pasar "validate", sin excepciones por tipo de cliente.',
+    ),
+  ).toBeInTheDocument()
 })
 
 test('HU51: "Reemplazar regla vigente" (SUPERSEDE) persiste la respuesta y avanza el Run', async () => {
@@ -202,8 +245,7 @@ test('INTEROP-2.7 teclado: «No lo sé» se alcanza con Tab, se activa con Enter
 
   await user.keyboard('{Enter}')
 
-  const status = await screen.findByRole('status')
-  expect(status).toHaveTextContent(/^Abstención registrada · ADMIN · .+ · 1 abstención\(es\)$/)
+  await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(/^Abstención registrada · ADMIN · .+ · 1 abstención\(es\)$/))
   expect(screen.getByText(CHECKOUT_QUESTION).closest('.focus-mode-card')).toHaveFocus()
   expect(screen.queryByText('¿El redondeo de "calculateTotal" debe truncar o redondear al centavo más cercano?')).not.toBeInTheDocument()
 })
@@ -229,7 +271,9 @@ test('INTEROP-2.7 (comportamiento provisional del mock): «No lo sé» con HEAD 
 
   expect(await screen.findByText('Sin preguntas pendientes en este Run')).toBeInTheDocument()
   expect(screen.queryByText(/Abstención registrada/)).not.toBeInTheDocument()
-  expect(screen.queryByText('¿"DiscountEngine.applyDiscount" puede dejar el total en negativo si el cupón excede el subtotal?')).not.toBeInTheDocument()
+  expect(
+    screen.queryByText('¿"DiscountEngine.applyDiscount" puede dejar el total en negativo si el cupón excede el subtotal?'),
+  ).not.toBeInTheDocument()
 })
 
 const LIVE_QUESTION = '¿Cuál es el comportamiento esperado?'
@@ -238,14 +282,39 @@ function liveFetch(answerResponses: Array<() => Response>) {
   const questionSet = {
     analysisRunId: 'arun-live',
     currentQuestion: {
-      id: 'fq-live', analysisRunId: 'arun-live', projectId: 'prj-live', repositoryName: 'acme/repo', pullRequestNumber: 12,
-      headSha: 'abc123', target: { language: 'TYPESCRIPT', kind: 'FUNCTION', qualifiedName: 'calculate', filePath: 'src/calculate.ts', changeKind: 'DIRECTLY_CHANGED' },
-      question: LIVE_QUESTION, rationale: 'Falta una regla funcional.', status: 'PENDING', visualAid: null,
-      scenarioKind: 'EXPECTED_RESULT', scenarioKey: 'calculate.result', abstention: null, createdAt: '2026-10-10T00:00:00.000Z',
+      id: 'fq-live',
+      analysisRunId: 'arun-live',
+      projectId: 'prj-live',
+      repositoryName: 'acme/repo',
+      pullRequestNumber: 12,
+      headSha: 'abc123',
+      target: {
+        language: 'TYPESCRIPT',
+        kind: 'FUNCTION',
+        qualifiedName: 'calculate',
+        filePath: 'src/calculate.ts',
+        changeKind: 'DIRECTLY_CHANGED',
+      },
+      question: LIVE_QUESTION,
+      rationale: 'Falta una regla funcional.',
+      status: 'PENDING',
+      visualAid: null,
+      scenarioKind: 'EXPECTED_RESULT',
+      scenarioKey: 'calculate.result',
+      abstention: null,
+      createdAt: '2026-10-10T00:00:00.000Z',
     },
     functionalBehaviorValidated: false,
   }
-  const project = { id: 'prj-live', name: 'Live', currentVersionId: null, workspace: { kind: 'PERSONAL', id: 'ws-live', login: 'person' }, role: 'ADMIN', createdAt: '2026-10-10T00:00:00.000Z', updatedAt: '2026-10-10T00:00:00.000Z' }
+  const project = {
+    id: 'prj-live',
+    name: 'Live',
+    currentVersionId: null,
+    workspace: { kind: 'PERSONAL', id: 'ws-live', login: 'person' },
+    role: 'ADMIN',
+    createdAt: '2026-10-10T00:00:00.000Z',
+    updatedAt: '2026-10-10T00:00:00.000Z',
+  }
   let posts = 0
   return vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
     const url = String(input)
@@ -274,16 +343,31 @@ test('accesibilidad: si el conflicto se resuelve con ABSTAINED, el foco vuelve a
   setDataSourceForTests('live')
   const user = userEvent.setup()
   const conflictBody = {
-    code: 'FUNCTIONAL_KNOWLEDGE_CONFLICT', message: 'Conflicto.',
+    code: 'FUNCTIONAL_KNOWLEDGE_CONFLICT',
+    message: 'Conflicto.',
     details: {
-      conflictId: 'conflict-live', analysisRunId: 'arun-live', questionId: 'fq-live',
+      conflictId: 'conflict-live',
+      analysisRunId: 'arun-live',
+      questionId: 'fq-live',
       conflictingKnowledge: { id: 'fk-old', targetRef: 'calculate', normalizedRule: 'Regla vigente anterior.' },
       proposedNormalizedRule: 'Regla propuesta.',
     },
   }
   liveFetch([
     () => new Response(JSON.stringify(conflictBody), { status: 409 }),
-    () => new Response(JSON.stringify({ status: 'PENDING', pollAfterMs: 500, analysisRunId: 'arun-live', questionId: 'fq-live', outcome: 'ABSTAINED', continuationAttemptId: null, knowledgeId: null }), { status: 202 }),
+    () =>
+      new Response(
+        JSON.stringify({
+          status: 'PENDING',
+          pollAfterMs: 500,
+          analysisRunId: 'arun-live',
+          questionId: 'fq-live',
+          outcome: 'ABSTAINED',
+          continuationAttemptId: null,
+          knowledgeId: null,
+        }),
+        { status: 202 },
+      ),
   ])
 
   renderFocusMode('arun-live')
@@ -297,7 +381,9 @@ test('accesibilidad: si el conflicto se resuelve con ABSTAINED, el foco vuelve a
 test('INTEROP-2.9: 404 FUNCTIONAL_QUESTION_NOT_FOUND al responder muestra «Esta pregunta ya no aplica», refresca el Run y no ofrece reenviar la misma pregunta', async () => {
   setDataSourceForTests('live')
   const user = userEvent.setup()
-  const fetchMock = liveFetch([() => new Response(JSON.stringify({ code: 'FUNCTIONAL_QUESTION_NOT_FOUND', message: 'No aplica.' }), { status: 404 })])
+  const fetchMock = liveFetch([
+    () => new Response(JSON.stringify({ code: 'FUNCTIONAL_QUESTION_NOT_FOUND', message: 'No aplica.' }), { status: 404 }),
+  ])
 
   renderFocusMode('arun-live')
   await user.click(await screen.findByRole('button', { name: 'Sí' }))
@@ -308,7 +394,9 @@ test('INTEROP-2.9: 404 FUNCTIONAL_QUESTION_NOT_FOUND al responder muestra «Esta
   expect(screen.queryByText(/Correlation ID/)).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Sí' })).not.toBeInTheDocument()
   await waitFor(() => {
-    const questionSetGets = fetchMock.mock.calls.filter(([input, init]) => String(input).includes('context-questions') && init?.method !== 'POST')
+    const questionSetGets = fetchMock.mock.calls.filter(
+      ([input, init]) => String(input).includes('context-questions') && init?.method !== 'POST',
+    )
     expect(questionSetGets.length).toBeGreaterThanOrEqual(2)
   })
 })
@@ -327,7 +415,17 @@ test('INTEROP-2.9: 404 ANALYSIS_RUN_NOT_FOUND y 403 PROJECT_ROLE_INSUFFICIENT co
 test('INTEROP-2.9: un 403 de rol sigue mostrando el rol requerido y no el aviso de pregunta obsoleta', async () => {
   setDataSourceForTests('live')
   const user = userEvent.setup()
-  liveFetch([() => new Response(JSON.stringify({ code: 'PROJECT_ROLE_INSUFFICIENT', message: 'Rol.', details: { requiredRole: 'MAINTAINER', currentRole: 'WRITER' } }), { status: 403 })])
+  liveFetch([
+    () =>
+      new Response(
+        JSON.stringify({
+          code: 'PROJECT_ROLE_INSUFFICIENT',
+          message: 'Rol.',
+          details: { requiredRole: 'MAINTAINER', currentRole: 'WRITER' },
+        }),
+        { status: 403 },
+      ),
+  ])
 
   renderFocusMode('arun-live')
   await user.click(await screen.findByRole('button', { name: 'Sí' }))
@@ -338,11 +436,27 @@ test('INTEROP-2.9: un 403 de rol sigue mostrando el rol requerido y no el aviso 
 test('INTEROP-2.9: continuationAttemptId no nulo es opaco: no se muestra ni se consulta en ninguna petición', async () => {
   setDataSourceForTests('live')
   const user = userEvent.setup()
-  const fetchMock = liveFetch([() => new Response(JSON.stringify({ status: 'PENDING', pollAfterMs: 500, analysisRunId: 'arun-live', questionId: 'fq-live', outcome: 'ANSWERED', continuationAttemptId: 'cont-opaque-7f3a', knowledgeId: 'fk-7f3a' }), { status: 202 })])
+  const fetchMock = liveFetch([
+    () =>
+      new Response(
+        JSON.stringify({
+          status: 'PENDING',
+          pollAfterMs: 500,
+          analysisRunId: 'arun-live',
+          questionId: 'fq-live',
+          outcome: 'ANSWERED',
+          continuationAttemptId: 'cont-opaque-7f3a',
+          knowledgeId: 'fk-7f3a',
+        }),
+        { status: 202 },
+      ),
+  ])
 
   renderFocusMode('arun-live')
   await user.click(await screen.findByRole('button', { name: 'Sí' }))
-  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/answers'), expect.objectContaining({ method: 'POST' })))
+  await waitFor(() =>
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/answers'), expect.objectContaining({ method: 'POST' })),
+  )
   expect(screen.queryByText(/cont-opaque-7f3a/)).not.toBeInTheDocument()
   expect(fetchMock.mock.calls.some(([input]) => String(input).includes('cont-opaque-7f3a'))).toBe(false)
 })
@@ -385,14 +499,33 @@ test('WI-CONSOLE-035: un campo nulo del destino se muestra como «sin dato» sin
   const questionSet = {
     analysisRunId: 'arun-null',
     currentQuestion: {
-      id: 'fq-null', analysisRunId: 'arun-null', projectId: 'prj-live', repositoryName: 'acme/repo', pullRequestNumber: 12,
-      headSha: 'abc123', target: { language: 'TYPESCRIPT', kind: null, qualifiedName: 'calculate', filePath: null, changeKind: 'DIRECTLY_CHANGED' },
-      question: '¿Cuál es el comportamiento esperado?', rationale: 'Falta una regla funcional.', status: 'PENDING', visualAid: null,
-      scenarioKind: null, scenarioKey: 'calculate.result', abstention: null, createdAt: '2026-10-10T00:00:00.000Z',
+      id: 'fq-null',
+      analysisRunId: 'arun-null',
+      projectId: 'prj-live',
+      repositoryName: 'acme/repo',
+      pullRequestNumber: 12,
+      headSha: 'abc123',
+      target: { language: 'TYPESCRIPT', kind: null, qualifiedName: 'calculate', filePath: null, changeKind: 'DIRECTLY_CHANGED' },
+      question: '¿Cuál es el comportamiento esperado?',
+      rationale: 'Falta una regla funcional.',
+      status: 'PENDING',
+      visualAid: null,
+      scenarioKind: null,
+      scenarioKey: 'calculate.result',
+      abstention: null,
+      createdAt: '2026-10-10T00:00:00.000Z',
     },
     functionalBehaviorValidated: false,
   } as unknown as FunctionalQuestionSetResponse
-  const project = { id: 'prj-live', name: 'Live', currentVersionId: null, workspace: { kind: 'PERSONAL', id: 'ws-live', login: 'person' }, role: 'ADMIN', createdAt: '2026-10-10T00:00:00.000Z', updatedAt: '2026-10-10T00:00:00.000Z' }
+  const project = {
+    id: 'prj-live',
+    name: 'Live',
+    currentVersionId: null,
+    workspace: { kind: 'PERSONAL', id: 'ws-live', login: 'person' },
+    role: 'ADMIN',
+    createdAt: '2026-10-10T00:00:00.000Z',
+    updatedAt: '2026-10-10T00:00:00.000Z',
+  }
   const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
     const url = String(input)
     return new Response(JSON.stringify(url.includes('context-questions') ? questionSet : project), { status: 200 })

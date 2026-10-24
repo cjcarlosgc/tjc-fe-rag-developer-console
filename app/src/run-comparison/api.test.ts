@@ -4,8 +4,20 @@ import { setDataSourceForTests } from '../api/dataSource'
 import type { AnalysisSymbolResponse } from '../control-plane/types'
 import { getRunComparison, listRunComparisons, startRunComparison } from './api'
 
-const calculateTotal: AnalysisSymbolResponse = { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.calculateTotal', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' }
-const couponApply: AnalysisSymbolResponse = { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'CouponPolicy.apply', filePath: 'src/domain/CouponPolicy.ts', changeKind: 'DIRECTLY_CHANGED' }
+const calculateTotal: AnalysisSymbolResponse = {
+  language: 'TYPESCRIPT',
+  kind: 'METHOD',
+  qualifiedName: 'OrderService.calculateTotal',
+  filePath: 'src/domain/OrderService.ts',
+  changeKind: 'DIRECTLY_CHANGED',
+}
+const couponApply: AnalysisSymbolResponse = {
+  language: 'TYPESCRIPT',
+  kind: 'METHOD',
+  qualifiedName: 'CouponPolicy.apply',
+  filePath: 'src/domain/CouponPolicy.ts',
+  changeKind: 'DIRECTLY_CHANGED',
+}
 
 beforeEach(() => {
   setDataSourceForTests('mock')
@@ -34,12 +46,18 @@ describe('run-comparison api (mock) — HU48, INTEROP-2.1 §6.5 definido/no impl
   })
 
   it('rechaza un símbolo que no es METHOD/FUNCTION con cambio directo', async () => {
-    const notEligible: AnalysisSymbolResponse = { language: 'TYPESCRIPT', kind: 'CLASS', qualifiedName: 'CouponPolicy', filePath: 'src/domain/CouponPolicy.ts', changeKind: 'DIRECTLY_CHANGED' }
+    const notEligible: AnalysisSymbolResponse = {
+      language: 'TYPESCRIPT',
+      kind: 'CLASS',
+      qualifiedName: 'CouponPolicy',
+      filePath: 'src/domain/CouponPolicy.ts',
+      changeKind: 'DIRECTLY_CHANGED',
+    }
     await expect(startRunComparison('arun_checkout_pr45', notEligible)).rejects.toThrow(/no es un símbolo METHOD\/FUNCTION/)
   })
 
   it('rechaza con id de Run inexistente', async () => {
-    await expect(startRunComparison('arun_does_not_exist', calculateTotal)).rejects.toThrow(/No existe el Analysis Run/)
+    await expect(startRunComparison('arun_does_not_exist', calculateTotal)).rejects.toThrow(/No existe el AnalysisRun/)
   })
 
   it('rechaza con id de comparación inexistente', async () => {
@@ -48,7 +66,13 @@ describe('run-comparison api (mock) — HU48, INTEROP-2.1 §6.5 definido/no impl
 
   it('HU48 (Replay): lista todos los trials de un Run, cada uno con su propio símbolo, sin interferir con el polling individual', async () => {
     const first = await startRunComparison('arun_checkout_pr49', calculateTotal)
-    const second = await startRunComparison('arun_checkout_pr49', { language: 'TYPESCRIPT', kind: 'METHOD', qualifiedName: 'OrderService.createOrder', filePath: 'src/domain/OrderService.ts', changeKind: 'DIRECTLY_CHANGED' })
+    const second = await startRunComparison('arun_checkout_pr49', {
+      language: 'TYPESCRIPT',
+      kind: 'METHOD',
+      qualifiedName: 'OrderService.createOrder',
+      filePath: 'src/domain/OrderService.ts',
+      changeKind: 'DIRECTLY_CHANGED',
+    })
 
     const page = await listRunComparisons('arun_checkout_pr49')
     expect(page.items.map((item) => item.id).sort()).toEqual([first.comparisonId, second.comparisonId].sort())

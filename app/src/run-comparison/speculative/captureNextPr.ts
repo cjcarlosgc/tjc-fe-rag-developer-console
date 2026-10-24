@@ -1,5 +1,5 @@
 import { getDataSource, ProposedCapabilityError } from '../../api/dataSource'
-import { mockArmCaptureNextPr, mockDisarmCaptureNextPr, mockGetCaptureNextPrState, mockSimulateNextEligiblePullRequest } from '../../api/mockBackend'
+import { loadMockBackend } from '../../api/loadMockBackend'
 import type { AnalysisRunSummaryResponse } from '../../control-plane/types'
 
 /**
@@ -20,22 +20,22 @@ export interface CaptureNextPrState {
 }
 
 export function getCaptureNextPrState(projectId: string): Promise<CaptureNextPrState> {
-  if (getDataSource() === 'mock') return mockGetCaptureNextPrState(projectId)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockGetCaptureNextPrState(projectId))
   return Promise.reject(new ProposedCapabilityError('Capture next PR (HU49)'))
 }
 
 export function armCaptureNextPr(projectId: string): Promise<CaptureNextPrState> {
-  if (getDataSource() === 'mock') return mockArmCaptureNextPr(projectId)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockArmCaptureNextPr(projectId))
   return Promise.reject(new ProposedCapabilityError('Capture next PR (HU49)'))
 }
 
 export function disarmCaptureNextPr(projectId: string): Promise<CaptureNextPrState> {
-  if (getDataSource() === 'mock') return mockDisarmCaptureNextPr(projectId)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockDisarmCaptureNextPr(projectId))
   return Promise.reject(new ProposedCapabilityError('Capture next PR (HU49)'))
 }
 
 /** Demo-only: dispara la llegada fabricada del "próximo PR elegible" mientras está `ARMED`. */
 export function simulateNextEligiblePullRequest(projectId: string): Promise<AnalysisRunSummaryResponse> {
-  if (getDataSource() === 'mock') return mockSimulateNextEligiblePullRequest(projectId)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockSimulateNextEligiblePullRequest(projectId))
   return Promise.reject(new ProposedCapabilityError('Capture next PR (HU49)'))
 }

@@ -90,10 +90,16 @@ function LocationProbe() {
 
 it('WI-CONSOLE-037 F1: dos escrituras de URL en el mismo ciclo (nodo y vista) no se pisan', async () => {
   const accepted = await mockStartExperiment('prj_checkout_demo', 'ver_checkout_7-method-total')
-  renderApp(<><ContextExplorerPage /><LocationProbe /></>, {
-    initialEntry: `/projects/prj_checkout_demo/experimental/${accepted.experimentId}/context`,
-    routePath: EXPERIMENT_ROUTE,
-  })
+  renderApp(
+    <>
+      <ContextExplorerPage />
+      <LocationProbe />
+    </>,
+    {
+      initialEntry: `/projects/prj_checkout_demo/experimental/${accepted.experimentId}/context`,
+      routePath: EXPERIMENT_ROUTE,
+    },
+  )
   await screen.findByRole('button', { name: /calculateTotal/ })
   const readParams = () => new URLSearchParams(screen.getByTestId('location-search').textContent ?? '')
   // Precondición: el efecto de nodo por defecto ya escribió `node` en la URL (no basta con que el nodo aparezca pulsado).

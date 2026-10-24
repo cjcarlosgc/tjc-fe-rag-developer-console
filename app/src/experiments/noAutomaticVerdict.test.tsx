@@ -39,7 +39,11 @@ function renderBanner(ui: ReactElement) {
     <QueryClientProvider client={client}>
       <AuthProvider>
         <MemoryRouter initialEntries={['/']}>
-          <Routes><Route path="/" element={<AppShell />}><Route index element={ui} /></Route></Routes>
+          <Routes>
+            <Route path="/" element={<AppShell />}>
+              <Route index element={ui} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </AuthProvider>
     </QueryClientProvider>,
@@ -55,7 +59,11 @@ beforeEach(() => {
 function assertNoAutomaticVerdict(container: HTMLElement) {
   const text = container.textContent ?? ''
   expect(text).not.toMatch(FORBIDDEN)
-  expect(container.querySelector('[class*="winner"], [class*="ganador"], [class*="verdict"], [data-winner], [role="img"][aria-label*="ganador" i]')).toBeNull()
+  expect(
+    container.querySelector(
+      '[class*="winner"], [class*="ganador"], [class*="verdict"], [data-winner], [role="img"][aria-label*="ganador" i]',
+    ),
+  ).toBeNull()
   for (const node of Array.from(container.querySelectorAll('[class*="delta"]'))) expect(node.getAttribute('class')).toBe('rate-delta')
   expect(text).not.toMatch(/precision|recall/i)
 }
@@ -66,10 +74,13 @@ for (const invert of [false, true]) {
   test(`ExperimentPage con resultado completado, tasas ${label}: sin veredicto automático y con nota exacta`, async () => {
     harness.invert = invert
     const user = userEvent.setup()
-    const { container } = renderApp(<ExperimentPage />, { initialEntry: '/projects/prj_checkout_demo/experimental', routePath: '/projects/:projectId/experimental' })
+    const { container } = renderApp(<ExperimentPage />, {
+      initialEntry: '/projects/prj_checkout_demo/experimental',
+      routePath: '/projects/:projectId/experimental',
+    })
 
     await user.click(await screen.findByRole('button', { name: 'Ejecutar comparación' }))
-    expect(await screen.findByText('Huella de retrieval', {}, { timeout: 5000 })).toBeInTheDocument()
+    expect(await screen.findByText('Huella de recuperación', {}, { timeout: 5000 })).toBeInTheDocument()
 
     expect(screen.getByText(EXPERIMENT_CONDITIONS_NOTE)).toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Configuración' })).toBeInTheDocument()
@@ -81,9 +92,12 @@ for (const invert of [false, true]) {
 
   test(`RunComparisonPage con resultado completado, tasas ${label}: sin veredicto automático y con nota exacta`, async () => {
     harness.invert = invert
-    const { container } = renderApp(<RunComparisonPage />, { initialEntry: '/projects/prj_checkout_demo/runs/arun_checkout_pr45/comparison', routePath: '/projects/:projectId/runs/:analysisRunId/comparison' })
+    const { container } = renderApp(<RunComparisonPage />, {
+      initialEntry: '/projects/prj_checkout_demo/runs/arun_checkout_pr45/comparison',
+      routePath: '/projects/:projectId/runs/:analysisRunId/comparison',
+    })
 
-    expect(await screen.findByText('Huella de retrieval', {}, { timeout: 5000 })).toBeInTheDocument()
+    expect(await screen.findByText('Huella de recuperación', {}, { timeout: 5000 })).toBeInTheDocument()
 
     expect(screen.getByText(EXPERIMENT_CONDITIONS_NOTE)).toBeInTheDocument()
     assertNoAutomaticVerdict(container)
@@ -99,7 +113,10 @@ test('el banner DEMO · DATOS SIMULADOS sigue visible junto a las pantallas de c
 test('la comparación de tasas no expone una insignia de resultado automático', async () => {
   harness.invert = false
   const user = userEvent.setup()
-  renderApp(<ExperimentPage />, { initialEntry: '/projects/prj_checkout_demo/experimental', routePath: '/projects/:projectId/experimental' })
+  renderApp(<ExperimentPage />, {
+    initialEntry: '/projects/prj_checkout_demo/experimental',
+    routePath: '/projects/:projectId/experimental',
+  })
   await user.click(await screen.findByRole('button', { name: 'Ejecutar comparación' }))
   const table = await screen.findByRole('table', { name: 'Comparación de estrategias' })
   expect(within(table).queryByText(FORBIDDEN)).toBeNull()
@@ -108,11 +125,43 @@ test('la comparación de tasas no expone una insignia de resultado automático',
 test('sin datos evaluables (tasas y medias null, evaluableRepetitions 0): sin delta, sin 0 % y sin veredicto', () => {
   harness.invert = false
   const noData: ExperimentResultViewModel = {
-    baseline: { strategy: 'GENERALIST_AGENT', validRate: null, compilationRate: null, executionRate: null, passedRate: null, generationDurationMs: null, executionDurationMs: null, totalDurationMs: null, totalTokens: null, estimatedCost: null, failures: {}, evaluableRepetitions: 0, nonEvaluableRepetitions: 3 },
-    rag: { strategy: 'RAG', validRate: .5, compilationRate: .5, executionRate: .5, passedRate: .5, generationDurationMs: 100, executionDurationMs: null, totalDurationMs: 100, totalTokens: null, estimatedCost: null, failures: {}, evaluableRepetitions: 3, nonEvaluableRepetitions: 0 },
+    baseline: {
+      strategy: 'GENERALIST_AGENT',
+      validRate: null,
+      compilationRate: null,
+      executionRate: null,
+      passedRate: null,
+      generationDurationMs: null,
+      executionDurationMs: null,
+      totalDurationMs: null,
+      totalTokens: null,
+      estimatedCost: null,
+      failures: {},
+      evaluableRepetitions: 0,
+      nonEvaluableRepetitions: 3,
+    },
+    rag: {
+      strategy: 'RAG',
+      validRate: 0.5,
+      compilationRate: 0.5,
+      executionRate: 0.5,
+      passedRate: 0.5,
+      generationDurationMs: 100,
+      executionDurationMs: null,
+      totalDurationMs: 100,
+      totalTokens: null,
+      estimatedCost: null,
+      failures: {},
+      evaluableRepetitions: 3,
+      nonEvaluableRepetitions: 0,
+    },
     repetitions: [],
   }
-  const { container } = render(<MemoryRouter><ExperimentComparison result={noData} projectId="prj_checkout_demo" experimentId="exp_demo" /></MemoryRouter>)
+  const { container } = render(
+    <MemoryRouter>
+      <ExperimentComparison result={noData} projectId="prj_checkout_demo" experimentId="exp_demo" />
+    </MemoryRouter>,
+  )
   expect(screen.getByText('sin datos evaluables · 0 evaluables · 3 no evaluables')).toBeInTheDocument()
   expect(screen.getAllByText('sin datos').length).toBeGreaterThan(0)
   assertNoAutomaticVerdict(container)

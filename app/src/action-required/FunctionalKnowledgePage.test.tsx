@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
@@ -12,7 +12,10 @@ beforeEach(() => {
 })
 
 function renderPage(projectId: string) {
-  return renderApp(<FunctionalKnowledgePage />, { initialEntry: `/projects/${projectId}/functional-knowledge`, routePath: '/projects/:projectId/functional-knowledge' })
+  return renderApp(<FunctionalKnowledgePage />, {
+    initialEntry: `/projects/${projectId}/functional-knowledge`,
+    routePath: '/projects/:projectId/functional-knowledge',
+  })
 }
 
 function groupHeadings(): string[] {
@@ -50,11 +53,11 @@ test('HU35/HU36: el filtro Active recalcula los grupos y oculta las SUPERSEDED',
   renderPage('prj_checkout_demo')
 
   await screen.findByRole('heading', { name: 'Resultado esperado' })
-  await user.click(screen.getByRole('button', { name: 'Active' }))
+  await user.click(screen.getByRole('button', { name: 'Activas' }))
 
-  expect(screen.queryByText('SUPERSEDED')).not.toBeInTheDocument()
+  await waitFor(() => expect(screen.queryByText('SUPERSEDED')).not.toBeInTheDocument())
   expect(screen.getAllByText('ACTIVE')).toHaveLength(5)
-  expect(screen.getByRole('button', { name: 'Active' })).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.getByRole('button', { name: 'Activas' })).toHaveAttribute('aria-pressed', 'true')
   expect(groupHeadings()).toEqual(['Resultado esperado', 'Borde', 'Excepción', 'Precondición funcional'])
 })
 
@@ -63,9 +66,9 @@ test('HU35/HU36: el filtro Superseded deja solo la cadena reemplazada y el grupo
   renderPage('prj_checkout_demo')
 
   await screen.findByRole('heading', { name: 'Resultado esperado' })
-  await user.click(screen.getByRole('button', { name: 'Superseded' }))
+  await user.click(screen.getByRole('button', { name: 'Reemplazadas' }))
 
-  expect(screen.getAllByText('SUPERSEDED')).toHaveLength(2)
+  await waitFor(() => expect(screen.getAllByText('SUPERSEDED')).toHaveLength(2))
   expect(screen.queryByText('ACTIVE')).not.toBeInTheDocument()
   expect(groupHeadings()).toEqual(['Borde'])
 })
@@ -75,7 +78,7 @@ test('HU35/HU36: un filtro sin reglas muestra el estado vacío', async () => {
   renderPage('prj_org_orders_demo')
 
   await screen.findByRole('heading', { name: 'Resultado esperado' })
-  await user.click(screen.getByRole('button', { name: 'Superseded' }))
+  await user.click(screen.getByRole('button', { name: 'Reemplazadas' }))
 
   expect(await screen.findByText('Sin reglas')).toBeInTheDocument()
   expect(screen.getByRole('status')).toHaveTextContent('Sin reglas')
@@ -89,7 +92,7 @@ test('HU35/HU36: el vacío tras filtrar vive en una región role="status" que se
   await screen.findByRole('heading', { name: 'Resultado esperado' })
   const status = screen.getByRole('status')
   expect(status).toBeEmptyDOMElement()
-  await user.click(screen.getByRole('button', { name: 'Superseded' }))
+  await user.click(screen.getByRole('button', { name: 'Reemplazadas' }))
 
   expect(await screen.findByText('Sin reglas')).toBeInTheDocument()
   expect(screen.getByRole('status')).toBe(status)
@@ -132,7 +135,7 @@ test('error: un proyecto inexistente muestra el error con role="alert" y reinten
   renderPage('prj_no_existe')
 
   const alert = await screen.findByRole('alert')
-  expect(alert).toHaveTextContent('No existe el proyecto demo "prj_no_existe".')
+  expect(alert).toHaveTextContent('No existe el Project demo "prj_no_existe".')
   expect(within(alert).getByRole('button', { name: 'Reintentar' })).toBeInTheDocument()
 })
 
@@ -161,7 +164,7 @@ describe('HU07/HU09: la lectura no depende del rol y no ofrece acciones de edici
     renderPage(projectId)
 
     await screen.findAllByRole('heading', { level: 2 })
-    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual(['Todas', 'Active', 'Superseded'])
+    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual(['Todas', 'Activas', 'Reemplazadas'])
     expect(screen.getByText('DEMO · DATOS SIMULADOS')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /editar|eliminar|confirmar|guardar/i })).not.toBeInTheDocument()
   })

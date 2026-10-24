@@ -15,7 +15,9 @@ afterEach(() => {
 })
 
 async function flush() {
-  await act(async () => { await vi.advanceTimersByTimeAsync(0) })
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(0)
+  })
 }
 
 test('Copiar: no referencia la región status con aria-describedby', () => {
@@ -32,7 +34,9 @@ test('Copiar: la confirmación vuelve a idle tras el tiempo de reset y se reanun
   await flush()
   expect(status).toHaveTextContent('Copiado')
 
-  await act(async () => { await vi.advanceTimersByTimeAsync(COPY_STATUS_RESET_MS) })
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(COPY_STATUS_RESET_MS)
+  })
   expect(status).toHaveTextContent('')
 
   fireEvent.click(button)
@@ -46,10 +50,14 @@ test('Copiar: una segunda copia dentro de la ventana reinicia el temporizador', 
   const button = screen.getByRole('button', { name: 'Copiar retrieval_id ret_demo' })
   fireEvent.click(button)
   await flush()
-  await act(async () => { await vi.advanceTimersByTimeAsync(COPY_STATUS_RESET_MS - 500) })
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(COPY_STATUS_RESET_MS - 500)
+  })
   fireEvent.click(button)
   await flush()
-  await act(async () => { await vi.advanceTimersByTimeAsync(COPY_STATUS_RESET_MS - 500) })
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(COPY_STATUS_RESET_MS - 500)
+  })
   expect(screen.getByRole('status')).toHaveTextContent('Copiado')
 })
 

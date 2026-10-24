@@ -1,6 +1,6 @@
 import { apiRequest } from '../api/client'
 import { getDataSource } from '../api/dataSource'
-import { mockGetRetrievalComparison, mockGetRetrievalComparisonResults, mockListRetrievalComparisons, mockStartRetrievalComparison } from '../api/mockBackend'
+import { loadMockBackend } from '../api/loadMockBackend'
 import type { AnalysisSymbolResponse } from '../control-plane/types'
 import {
   MAX_GROUND_TRUTH_ITEMS,
@@ -18,7 +18,9 @@ import {
 /** Guarda local: rechaza antes de cualquier red si `groundTruth` supera el tope de §6.15. */
 export function assertGroundTruthWithinLimit(groundTruth: RetrievalGroundTruthItem[] | undefined): void {
   if (groundTruth && groundTruth.length > MAX_GROUND_TRUTH_ITEMS) {
-    throw new RangeError(`La verdad de terreno admite como máximo ${MAX_GROUND_TRUTH_ITEMS} elementos; recibió ${groundTruth.length}. No se envió la comparación.`)
+    throw new RangeError(
+      `La verdad de terreno admite como máximo ${MAX_GROUND_TRUTH_ITEMS} elementos; recibió ${groundTruth.length}. No se envió la comparación.`,
+    )
   }
 }
 
@@ -41,7 +43,8 @@ export function startRetrievalComparison(
   symbol: AnalysisSymbolResponse,
   idempotencyKey: string,
 ): Promise<RetrievalComparisonAcceptedResponse> {
-  if (getDataSource() === 'mock') return mockStartRetrievalComparison(analysisRunId, symbol, idempotencyKey)
+  if (getDataSource() === 'mock')
+    return loadMockBackend().then((mock) => mock.mockStartRetrievalComparison(analysisRunId, symbol, idempotencyKey))
   return apiRequest<RetrievalComparisonAcceptedResponse>('/retrieval-comparisons', {
     method: 'POST',
     headers: { 'Idempotency-Key': idempotencyKey },
@@ -51,21 +54,23 @@ export function startRetrievalComparison(
 
 /** `GET /retrieval-comparisons/{id}` → estado ligero. */
 export function getRetrievalComparison(retrievalComparisonId: string): Promise<RetrievalComparisonStatusResponse> {
-  if (getDataSource() === 'mock') return mockGetRetrievalComparison(retrievalComparisonId)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockGetRetrievalComparison(retrievalComparisonId))
   return apiRequest<RetrievalComparisonStatusResponse>(`/retrieval-comparisons/${encodeURIComponent(retrievalComparisonId)}`)
 }
 
 /** `GET /retrieval-comparisons/{id}/results` → 409 `RETRIEVAL_COMPARISON_NOT_FINISHED` en PENDING/RUNNING y 409 `RETRIEVAL_COMPARISON_FAILED` en FAILED. */
 export function getRetrievalComparisonResults(retrievalComparisonId: string): Promise<RetrievalComparisonResultsResponse> {
-  if (getDataSource() === 'mock') return mockGetRetrievalComparisonResults(retrievalComparisonId)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockGetRetrievalComparisonResults(retrievalComparisonId))
   return apiRequest<RetrievalComparisonResultsResponse>(`/retrieval-comparisons/${encodeURIComponent(retrievalComparisonId)}/results`)
 }
 
 /** `GET /analysis-runs/{analysisRunId}/retrieval-comparisons?cursor&limit` → previas del Run (solo estado). */
 export function listRetrievalComparisons(analysisRunId: string, cursor?: string | null): Promise<RetrievalComparisonListPage> {
-  if (getDataSource() === 'mock') return mockListRetrievalComparisons(analysisRunId, cursor ?? null)
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockListRetrievalComparisons(analysisRunId, cursor ?? null))
   const params = new URLSearchParams()
   if (cursor) params.set('cursor', cursor)
   const query = params.toString()
-  return apiRequest<RetrievalComparisonListPage>(`/analysis-runs/${encodeURIComponent(analysisRunId)}/retrieval-comparisons${query ? `?${query}` : ''}`)
+  return apiRequest<RetrievalComparisonListPage>(
+    `/analysis-runs/${encodeURIComponent(analysisRunId)}/retrieval-comparisons${query ? `?${query}` : ''}`,
+  )
 }

@@ -6,7 +6,15 @@ import { InventoryPage } from './InventoryPage'
 import type { TestInventoryResponse } from './types'
 
 test('carga el inventario de la ProjectVersion actual y mapea su contrato', async () => {
-  const project = { id: 'p-1', name: 'checkout', currentVersionId: 'v-1', workspace: { kind: 'PERSONAL', id: 'ws-1', login: 'demo-user' }, role: 'ADMIN', createdAt: '2026-08-31T10:00:00.000Z', updatedAt: '2026-08-31T10:01:00.000Z' }
+  const project = {
+    id: 'p-1',
+    name: 'checkout',
+    currentVersionId: 'v-1',
+    workspace: { kind: 'PERSONAL', id: 'ws-1', login: 'demo-user' },
+    role: 'ADMIN',
+    createdAt: '2026-08-31T10:00:00.000Z',
+    updatedAt: '2026-08-31T10:01:00.000Z',
+  }
   const inventory: TestInventoryResponse = {
     projectVersionId: 'v-1',
     language: 'TYPESCRIPT',
@@ -15,8 +23,24 @@ test('carga el inventario de la ProjectVersion actual y mapea su contrato', asyn
     targetsWithTest: 1,
     targetsMissingTest: 1,
     targets: [
-      { id: 't-1', filePath: 'src/cart.ts', symbolName: 'Cart', methodName: null, targetType: 'CLASS', hasTest: true, testFilePaths: ['src/cart.spec.ts'] },
-      { id: 't-2', filePath: 'src/cart.ts', symbolName: 'Cart', methodName: 'total', targetType: 'METHOD', hasTest: false, testFilePaths: [] },
+      {
+        id: 't-1',
+        filePath: 'src/cart.ts',
+        symbolName: 'Cart',
+        methodName: null,
+        targetType: 'CLASS',
+        hasTest: true,
+        testFilePaths: ['src/cart.spec.ts'],
+      },
+      {
+        id: 't-2',
+        filePath: 'src/cart.ts',
+        symbolName: 'Cart',
+        methodName: 'total',
+        targetType: 'METHOD',
+        hasTest: false,
+        testFilePaths: [],
+      },
     ],
   }
   const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
@@ -29,34 +53,58 @@ test('carga el inventario de la ProjectVersion actual y mapea su contrato', asyn
   expect(await screen.findByText('Resumen de cobertura')).toBeInTheDocument()
   expect(screen.getByText('VITEST')).toBeInTheDocument()
   expect(screen.getByText('total')).toBeInTheDocument()
-  expect(screen.getAllByText('Sin test').length).toBeGreaterThan(0)
+  expect(screen.getAllByText('Sin pruebas').length).toBeGreaterThan(0)
   expect(screen.queryByRole('button', { name: /Usar target|Generar/ })).not.toBeInTheDocument()
   expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/project-versions/v-1/test-inventory'), expect.any(Object))
 })
 
-test('no consulta inventario cuando el proyecto no tiene versión actual', async () => {
-  const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ id: 'p-1', name: 'empty', currentVersionId: null, workspace: { kind: 'PERSONAL', id: 'ws-1', login: 'demo-user' }, role: 'ADMIN', createdAt: '2026-08-31', updatedAt: '2026-08-31' }), { status: 200 }))
+test('no consulta inventario cuando el Project no tiene versión actual', async () => {
+  const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    new Response(
+      JSON.stringify({
+        id: 'p-1',
+        name: 'empty',
+        currentVersionId: null,
+        workspace: { kind: 'PERSONAL', id: 'ws-1', login: 'demo-user' },
+        role: 'ADMIN',
+        createdAt: '2026-08-31',
+        updatedAt: '2026-08-31',
+      }),
+      { status: 200 },
+    ),
+  )
 
   renderApp(<InventoryPage />, { initialEntry: '/projects/p-1/inventory', routePath: '/projects/:projectId/inventory' })
 
-  expect(await screen.findByText('Este proyecto todavía no tiene un snapshot disponible')).toBeInTheDocument()
+  expect(await screen.findByText('Este Project todavía no tiene una instantánea disponible')).toBeInTheDocument()
   expect(fetchMock).toHaveBeenCalledTimes(1)
 })
 
 test('abre el inventario de una versión histórica en modo lectura', async () => {
   setDataSourceForTests('mock')
   const fetchMock = vi.spyOn(globalThis, 'fetch')
-  renderApp(<InventoryPage />, { initialEntry: '/projects/prj_checkout_demo/versions/ver_checkout_5/inventory', routePath: '/projects/:projectId/versions/:projectVersionId/inventory' })
+  renderApp(<InventoryPage />, {
+    initialEntry: '/projects/prj_checkout_demo/versions/ver_checkout_5/inventory',
+    routePath: '/projects/:projectId/versions/:projectVersionId/inventory',
+  })
 
-  expect(await screen.findByText('SNAPSHOT HISTÓRICO')).toBeInTheDocument()
-  expect(screen.getByText('Inventario de sólo lectura')).toBeInTheDocument()
+  expect(await screen.findByText('INSTANTÁNEA HISTÓRICA')).toBeInTheDocument()
+  expect(screen.getByText('Inventario de solo lectura')).toBeInTheDocument()
   expect(screen.getByText('3', { selector: 'dd' })).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /Usar target/ })).not.toBeInTheDocument()
   expect(fetchMock).not.toHaveBeenCalled()
 })
 
 test('acepta PHP/PHPUNIT como detección de inventario sin presentar generación lista', async () => {
-  const project = { id: 'p-php', name: 'billing-php', currentVersionId: 'v-php', workspace: { kind: 'PERSONAL', id: 'ws-1', login: 'demo-user' }, role: 'ADMIN', createdAt: '2026-09-27', updatedAt: '2026-09-27' }
+  const project = {
+    id: 'p-php',
+    name: 'billing-php',
+    currentVersionId: 'v-php',
+    workspace: { kind: 'PERSONAL', id: 'ws-1', login: 'demo-user' },
+    role: 'ADMIN',
+    createdAt: '2026-09-27',
+    updatedAt: '2026-09-27',
+  }
   const inventory: TestInventoryResponse = {
     projectVersionId: 'v-php',
     language: 'PHP',
@@ -64,7 +112,17 @@ test('acepta PHP/PHPUNIT como detección de inventario sin presentar generación
     targetsTotal: 1,
     targetsWithTest: 1,
     targetsMissingTest: 0,
-    targets: [{ id: 't-php', filePath: 'src/InvoiceService.php', symbolName: 'InvoiceService', methodName: null, targetType: 'CLASS', hasTest: true, testFilePaths: ['tests/InvoiceServiceTest.php'] }],
+    targets: [
+      {
+        id: 't-php',
+        filePath: 'src/InvoiceService.php',
+        symbolName: 'InvoiceService',
+        methodName: null,
+        targetType: 'CLASS',
+        hasTest: true,
+        testFilePaths: ['tests/InvoiceServiceTest.php'],
+      },
+    ],
   }
   const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
     const url = String(input)

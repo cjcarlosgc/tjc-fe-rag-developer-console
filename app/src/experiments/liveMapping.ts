@@ -1,4 +1,11 @@
-import type { ExperimentConfiguration, ExperimentOperation, ExperimentResultViewModel, ExperimentStrategy, FailureType, StrategyMetrics } from './types'
+import type {
+  ExperimentConfiguration,
+  ExperimentOperation,
+  ExperimentResultViewModel,
+  ExperimentStrategy,
+  FailureType,
+  StrategyMetrics,
+} from './types'
 
 /**
  * `ExperimentResultsResponse` (INTEROP-1.5) trae `strategies: StrategyMetricsResponse[]` (RAG +
@@ -7,12 +14,15 @@ import type { ExperimentConfiguration, ExperimentOperation, ExperimentResultView
  * ya consume `ExperimentComparison`.
  */
 
+/**
+ * Forma real de `GET /experiments/{id}` y del evento `experiment:update` (INTEROP-2.18 §6.5 y §6.6): trae `targetId`.
+ * `analysisRunId` y `symbol` NO llegan: quedan pendientes de HU17 (§6.5, nota de INTEROP-2.18) y ningún consumidor depende de ellos.
+ */
 export interface ExperimentStatusResponse {
   id: string
-  analysisRunId: string
   projectId: string
   projectVersionId: string
-  symbol: import('../control-plane/types').AnalysisSymbolResponse
+  targetId: string
   status: 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED'
   completedRepetitions: number
   totalRepetitions: number
@@ -130,26 +140,34 @@ export function toExperimentConfiguration(status: ExperimentStatusResponse): Exp
   const { model, budget, executionProfile, runnerHint, randomizationSeed } = status
   if (![model, budget, executionProfile, runnerHint, randomizationSeed].some(isPresent)) return null
   return {
-    model: model ? {
-      provider: model.provider ?? null,
-      model: model.model ?? null,
-      modelVersion: model.modelVersion ?? null,
-      reasoningEffort: model.reasoningEffort ?? null,
-      temperature: model.temperature ?? null,
-      maxOutputTokens: model.maxOutputTokens ?? null,
-    } : null,
-    budget: budget ? {
-      toolCallCap: budget.toolCallCap ?? null,
-      contextTokenBudget: budget.contextTokenBudget ?? null,
-      maxDurationMs: budget.maxDurationMs ?? null,
-    } : null,
+    model: model
+      ? {
+          provider: model.provider ?? null,
+          model: model.model ?? null,
+          modelVersion: model.modelVersion ?? null,
+          reasoningEffort: model.reasoningEffort ?? null,
+          temperature: model.temperature ?? null,
+          maxOutputTokens: model.maxOutputTokens ?? null,
+        }
+      : null,
+    budget: budget
+      ? {
+          toolCallCap: budget.toolCallCap ?? null,
+          contextTokenBudget: budget.contextTokenBudget ?? null,
+          maxDurationMs: budget.maxDurationMs ?? null,
+        }
+      : null,
     executionProfile: executionProfile ?? null,
     runnerHint: runnerHint ?? null,
     randomizationSeed: randomizationSeed ?? null,
   }
 }
 
-export function toExperimentResultViewModel(results: ExperimentResultsResponse, targetLabel: string, configuration: ExperimentConfiguration | null = null): ExperimentResultViewModel {
+export function toExperimentResultViewModel(
+  results: ExperimentResultsResponse,
+  targetLabel: string,
+  configuration: ExperimentConfiguration | null = null,
+): ExperimentResultViewModel {
   const rag = results.strategies.find((item) => item.strategy === 'RAG')
   const agent = results.strategies.find((item) => item.strategy === 'GENERALIST_AGENT')
   if (!rag || !agent) throw new Error('El experimento no trae métricas para ambas estrategias.')
@@ -177,12 +195,16 @@ export function toExperimentResultViewModel(results: ExperimentResultsResponse, 
   }
 }
 
-export function toExperimentOperation(status: ExperimentStatusResponse, results: ExperimentResultsResponse | null, targetLabel: string): ExperimentOperation {
+export function toExperimentOperation(
+  status: ExperimentStatusResponse,
+  results: ExperimentResultsResponse | null,
+  targetLabel: string,
+): ExperimentOperation {
   const configuration = toExperimentConfiguration(status)
   return {
     id: status.id,
     status: status.status,
-    progress: status.totalRepetitions > 0 ? Math.round(status.completedRepetitions / status.totalRepetitions * 100) : 0,
+    progress: status.totalRepetitions > 0 ? Math.round((status.completedRepetitions / status.totalRepetitions) * 100) : 0,
     result: results ? toExperimentResultViewModel(results, targetLabel, configuration) : undefined,
     configuration,
     failureCode: status.failureCode ?? null,

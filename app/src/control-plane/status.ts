@@ -3,15 +3,15 @@ import type { AnalysisRunStatus, RepositoryBindingStatus } from './types'
 export const ANALYSIS_RUN_STATUS_LABELS: Record<AnalysisRunStatus, string> = {
   QUEUED: 'En cola',
   PROCESSING: 'Procesando',
-  ACTION_REQUIRED: 'Action required',
-  SUCCESS: 'Success',
-  BEHAVIORAL_MISMATCH: 'Behavioral mismatch',
-  TECHNICAL_GENERATION_FAILURE: 'Technical generation failure',
-  INFRASTRUCTURE_FAILURE: 'Infrastructure failure',
-  BASELINE_FAILED: 'Baseline failed',
-  NO_ADDITIONAL_TESTS_REQUIRED: 'Existing tests sufficient',
-  NO_TEST_RELEVANT_CHANGES: 'No relevant changes',
-  OBSOLETE: 'Obsolete (HEAD nuevo)',
+  ACTION_REQUIRED: 'Action Required',
+  SUCCESS: 'Exitoso',
+  BEHAVIORAL_MISMATCH: 'Discrepancia de comportamiento',
+  TECHNICAL_GENERATION_FAILURE: 'Falla técnica de generación',
+  INFRASTRUCTURE_FAILURE: 'Falla de infraestructura',
+  BASELINE_FAILED: 'Baseline fallido',
+  NO_ADDITIONAL_TESTS_REQUIRED: 'Tests existentes suficientes',
+  NO_TEST_RELEVANT_CHANGES: 'Sin cambios relevantes',
+  OBSOLETE: 'Obsoleto (HEAD nuevo)',
 }
 
 /** Semántica de color reforzada en sdd-1.16: `--success` = validado/completado, `--danger` = falla de plataforma, ámbar = necesita revisión humana (no es una falla). */

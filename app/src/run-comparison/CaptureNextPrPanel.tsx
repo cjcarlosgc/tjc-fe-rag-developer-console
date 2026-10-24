@@ -8,7 +8,7 @@ const CAPTURE_NEXT_PR_QUERY_KEY = (projectId: string) => ['run-comparison', 'spe
 /**
  * Propuesta de captura del siguiente PR elegible. Vive en ExperimentPage y
  * reutiliza el modelo de AnalysisRun de comparación, no el targetId del
- * inventario del proyecto. Al capturar, navega a RunComparisonPage.
+ * inventario del Project. Al capturar, navega a RunComparisonPage.
  */
 export function CaptureNextPrPanel({ projectId }: { projectId: string }) {
   const navigate = useNavigate()
@@ -37,22 +37,47 @@ export function CaptureNextPrPanel({ projectId }: { projectId: string }) {
   if (stateQuery.isPending || stateQuery.isError) return null
   const armed = stateQuery.data.status === 'ARMED'
 
-  return <div className="panel">
-    <div className="section-heading">
-      <div>
-        <h2>Capture next PR</h2>
-        <p>Arma la captura del próximo Analysis Run elegible que dispare un PR real, para demostrar en vivo que la comparación no está precalculada. No es un modo permanente: se apaga solo tras capturar uno.</p>
+  return (
+    <div className="panel">
+      <div className="section-heading">
+        <div>
+          <h2>Capturar el próximo PR</h2>
+          <p>
+            Arma la captura del próximo AnalysisRun elegible que dispare un PR real, para demostrar en vivo que la comparación no está
+            precalculada. No es un modo permanente: se apaga solo tras capturar uno.
+          </p>
+        </div>
+        <span className="proposal-stamp" title="HU49 — propuesta sin contrato aprobado, depende de HU48 (sin adapter live todavía)">
+          PROPUESTA
+        </span>
       </div>
-      <span className="proposal-stamp" title="HU49 — propuesta sin contrato aprobado, depende de HU48 (sin adapter live todavía)">PROPUESTA</span>
+      {!armed && (
+        <div className="run-actions">
+          <button type="button" className="button secondary" onClick={() => armMutation.mutate()} disabled={armMutation.isPending}>
+            {armMutation.isPending ? 'Armando…' : 'Armar captura'}
+          </button>
+        </div>
+      )}
+      {armed && (
+        <>
+          <p className="empty-inline-note">
+            <span className="live-indicator" /> Esperando el próximo PR elegible…
+          </p>
+          <div className="run-actions">
+            <button type="button" className="button secondary" onClick={() => disarmMutation.mutate()} disabled={disarmMutation.isPending}>
+              Cancelar
+            </button>
+            <button type="button" className="button primary" onClick={() => captureMutation.mutate()} disabled={captureMutation.isPending}>
+              {captureMutation.isPending ? 'Capturando…' : 'Simular llegada del PR (demo)'}
+            </button>
+          </div>
+        </>
+      )}
+      {captureError && (
+        <p className="inline-error" role="alert">
+          {captureError}
+        </p>
+      )}
     </div>
-    {!armed && <div className="run-actions"><button type="button" className="button secondary" onClick={() => armMutation.mutate()} disabled={armMutation.isPending}>{armMutation.isPending ? 'Armando…' : 'Armar captura'}</button></div>}
-    {armed && <>
-      <p className="empty-inline-note"><span className="live-indicator" /> Esperando el próximo PR elegible…</p>
-      <div className="run-actions">
-        <button type="button" className="button secondary" onClick={() => disarmMutation.mutate()} disabled={disarmMutation.isPending}>Cancelar</button>
-        <button type="button" className="button primary" onClick={() => captureMutation.mutate()} disabled={captureMutation.isPending}>{captureMutation.isPending ? 'Capturando…' : 'Simular llegada del PR (demo)'}</button>
-      </div>
-    </>}
-    {captureError && <p className="inline-error" role="alert">{captureError}</p>}
-  </div>
+  )
 }

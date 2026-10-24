@@ -4,9 +4,15 @@ import { expect, test } from 'vitest'
 import { Breadcrumbs } from './Breadcrumbs'
 
 test('HU26: enlaza cada nivel salvo el actual, que queda marcado como página', () => {
-  render(<MemoryRouter><Breadcrumbs items={[{ label: 'Proyectos', to: '/' }, { label: 'checkout-service', to: '/projects/p-1' }, { label: 'Historial de generaciones' }]} /></MemoryRouter>)
+  render(
+    <MemoryRouter>
+      <Breadcrumbs
+        items={[{ label: 'Projects', to: '/' }, { label: 'checkout-service', to: '/projects/p-1' }, { label: 'Historial de generaciones' }]}
+      />
+    </MemoryRouter>,
+  )
 
-  const proyectosLink = screen.getByRole('link', { name: 'Proyectos' })
+  const proyectosLink = screen.getByRole('link', { name: 'Projects' })
   expect(proyectosLink).toHaveAttribute('href', '/')
   const projectLink = screen.getByRole('link', { name: 'checkout-service' })
   expect(projectLink).toHaveAttribute('href', '/projects/p-1')
@@ -18,7 +24,11 @@ test('HU26: enlaza cada nivel salvo el actual, que queda marcado como página', 
 })
 
 test('un único nivel se muestra como página actual, sin separador', () => {
-  render(<MemoryRouter><Breadcrumbs items={[{ label: 'Proyectos' }]} /></MemoryRouter>)
-  expect(screen.getByText('Proyectos')).toHaveAttribute('aria-current', 'page')
+  render(
+    <MemoryRouter>
+      <Breadcrumbs items={[{ label: 'Projects' }]} />
+    </MemoryRouter>,
+  )
+  expect(screen.getByText('Projects')).toHaveAttribute('aria-current', 'page')
   expect(screen.queryByText('/')).not.toBeInTheDocument()
 })

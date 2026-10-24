@@ -15,8 +15,9 @@ test('HU38: lista los Runs con contexto funcional pendiente y enlaza a Focus Mod
 
   expect(await screen.findAllByText('checkout-service', { selector: '.repo-name' })).toHaveLength(2)
   expect(screen.getByText('PR #42', { selector: '.pr-ref' })).toBeInTheDocument()
-  expect(screen.getAllByText('billing-engine', { selector: '.repo-name' }).length).toBe(2)
-  expect(screen.getByText('PR #17', { selector: '.pr-ref' })).toBeInTheDocument()
+  // WI-CONSOLE-047 (obs. 4): PR #17 es un Run OBSOLETE (HEAD superado), no vigente, y sale de la bandeja.
+  expect(screen.getAllByText('billing-engine', { selector: '.repo-name' }).length).toBe(1)
+  expect(screen.queryByText('PR #17', { selector: '.pr-ref' })).not.toBeInTheDocument()
   expect(screen.getByText('PR #24', { selector: '.pr-ref' })).toBeInTheDocument()
   expect(screen.getByText('PR #52', { selector: '.pr-ref' })).toBeInTheDocument()
 
@@ -45,7 +46,9 @@ test('INTEROP-2.7: una abstención mantiene la pregunta en la bandeja, sin texto
 
   const line = await screen.findByText(/Abstención registrada · ADMIN · .+ · 2 abstención\(es\)/)
   expect(line).toHaveClass('abstention-note')
-  expect(line.closest('.action-required-item')).toHaveTextContent('¿"applyLateFee" debe aplicarse si la factura ya fue marcada como pagada parcialmente?')
+  expect(line.closest('.action-required-item')).toHaveTextContent(
+    '¿"applyLateFee" debe aplicarse si la factura ya fue marcada como pagada parcialmente?',
+  )
   expect(screen.queryByText(/usr_/)).not.toBeInTheDocument()
   expect(screen.queryByText(/resuelto|continuando|todas las preguntas respondidas/i)).not.toBeInTheDocument()
 })
@@ -72,4 +75,14 @@ test('WI-CONSOLE-035: cada tarjeta de Action Required muestra archivo, tipo y es
   expect(within(item).getByText('METHOD')).toBeInTheDocument()
   expect(within(item).getByText('EXCEPTION')).toBeInTheDocument()
   expect(item.querySelector('a')).toHaveAttribute('href', expect.stringContaining('/action-required/arun_checkout_pr42'))
+})
+
+test('WI-CONSOLE-047 (ciclo 2, H2): el ámbito del contador se ve en la página, sin filtro y con filtro de Workspace', async () => {
+  const { unmount } = renderApp(<ActionRequiredPage />, { initialEntry: '/action-required' })
+  expect(await screen.findByText('Pendientes en todos tus Workspaces.')).toBeInTheDocument()
+  unmount()
+
+  renderApp(<ActionRequiredPage />, { initialEntry: '/action-required?workspaceId=2000002' })
+  expect(await screen.findByText('Pendientes del Workspace seleccionado.')).toBeInTheDocument()
+  expect(screen.queryByText('Pendientes en todos tus Workspaces.')).not.toBeInTheDocument()
 })

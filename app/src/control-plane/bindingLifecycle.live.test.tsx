@@ -24,16 +24,51 @@ function authValue(githubProviderToken: string | null): AuthContextValue {
   }
 }
 
-const binding = { projectId: 'prj_real', installationId: 'inst_1', repositoryId: 'repo_1', repositoryName: 'acme/repo', integrationBranch: 'main', status: 'DISABLED', createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z' }
-const project = { id: 'prj_real', name: 'proyecto-real', currentVersionId: null, workspace: { kind: 'PERSONAL', id: 'ws-1', login: 'dev' }, role: 'ADMIN', createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z' }
-const appAccess = { repositoryId: 'repo_1', repositoryName: 'acme/repo', status: 'NOT_AUTHORIZED', app: { displayName: 'RAG', configureUrl: 'https://github.com/apps/rag/installations/select_target' } }
+const binding = {
+  projectId: 'prj_real',
+  installationId: 'inst_1',
+  repositoryId: 'repo_1',
+  repositoryName: 'acme/repo',
+  integrationBranch: 'main',
+  status: 'DISABLED',
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+}
+const project = {
+  id: 'prj_real',
+  name: 'proyecto-real',
+  currentVersionId: null,
+  workspace: { kind: 'PERSONAL', id: 'ws-1', login: 'dev' },
+  role: 'ADMIN',
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+}
+const appAccess = {
+  repositoryId: 'repo_1',
+  repositoryName: 'acme/repo',
+  status: 'NOT_AUTHORIZED',
+  app: { displayName: 'RAG', configureUrl: 'https://github.com/apps/rag/installations/select_target' },
+}
 
-const repository = { repositoryId: 'repo_1', name: 'repo', repositoryName: 'acme/repo', owner: { login: 'acme', type: 'Organization', avatarUrl: null }, private: false, defaultBranch: 'main', permissions: { admin: false, maintain: true, push: true, pull: true } }
+const repository = {
+  repositoryId: 'repo_1',
+  name: 'repo',
+  repositoryName: 'acme/repo',
+  owner: { login: 'acme', type: 'Organization', avatarUrl: null },
+  private: false,
+  defaultBranch: 'main',
+  permissions: { admin: false, maintain: true, push: true, pull: true },
+}
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status })
-const coreError = (code: string, status: number, correlationId = 'corr-core') => json({ code, message: 'mensaje crudo de Core', correlationId }, status)
+const coreError = (code: string, status: number, correlationId = 'corr-core') =>
+  json({ code, message: 'mensaje crudo de Core', correlationId }, status)
 
-interface Request { url: string; method: string; headers: HeadersInit | undefined }
+interface Request {
+  url: string
+  method: string
+  headers: HeadersInit | undefined
+}
 /** Estado de la "Core" simulada, mutable por test. */
 let requests: Request[] = []
 let coreBinding: () => Response
@@ -68,7 +103,8 @@ beforeEach(() => {
     if (pathname === '/v1/github/repositories/acme/repo/branches') return json({ items: [{ name: 'main', protected: true }] })
     if (url.endsWith('/projects/prj_real/integrations/github/enable')) return coreEnable()
     if (url.endsWith('/projects/prj_real/integrations/github/verified')) return coreCreateBinding()
-    if (url.endsWith('/projects/prj_real/integrations/github')) return method === 'DELETE' ? new Response(null, { status: 204 }) : coreBinding()
+    if (url.endsWith('/projects/prj_real/integrations/github'))
+      return method === 'DELETE' ? new Response(null, { status: 204 }) : coreBinding()
     if (url.endsWith('/projects/prj_real')) return method === 'DELETE' ? coreDelete() : coreProject()
     return coreError('NOT_FOUND', 404)
   })
@@ -103,7 +139,12 @@ function renderLive(path: string, element: React.ReactElement, routePath: string
 }
 
 const renderIntegrations = (githubProviderToken: string | null = null) =>
-  renderLive('/projects/prj_real/integrations/github', <IntegrationsPage />, '/projects/:projectId/integrations/github', githubProviderToken)
+  renderLive(
+    '/projects/prj_real/integrations/github',
+    <IntegrationsPage />,
+    '/projects/:projectId/integrations/github',
+    githubProviderToken,
+  )
 const renderDetail = () => renderLive('/projects/prj_real', <ProjectDetailPage />, '/projects/:projectId')
 
 const wasCalled = (method: string, suffix: string) => requests.some((request) => request.method === method && request.url.endsWith(suffix))
@@ -185,7 +226,9 @@ test('en live los fallos de verificación muestran un reintento accesible', asyn
   const retry = await screen.findByRole('button', { name: 'Reintentar consulta de acceso' })
   expect(screen.getByRole('alert')).toHaveTextContent('No pudimos confirmar el acceso actual de la GitHub App.')
   await user.click(retry)
-  await waitFor(() => expect(requests.filter((request) => request.url.endsWith('/v1/github/repositories/verify-access')).length).toBeGreaterThan(1))
+  await waitFor(() =>
+    expect(requests.filter((request) => request.url.endsWith('/v1/github/repositories/verify-access')).length).toBeGreaterThan(1),
+  )
 })
 
 test('en live Reactivar limpia el estado obsoleto de verificación tras un error previo', async () => {
@@ -206,7 +249,7 @@ test('en live Reactivar limpia el estado obsoleto de verificación tras un error
   expect(screen.queryByText('No pudimos confirmar el acceso actual de la GitHub App.')).not.toBeInTheDocument()
 })
 
-test('en live Reactivar con 404 PROJECT_NOT_FOUND (Project borrado) lleva a "El proyecto ya no existe"', async () => {
+test('en live Reactivar con 404 PROJECT_NOT_FOUND (Project borrado) lleva a "El Project ya no existe"', async () => {
   const user = userEvent.setup()
   coreEnable = () => {
     coreBinding = () => coreError('PROJECT_NOT_FOUND', 404)
@@ -216,21 +259,21 @@ test('en live Reactivar con 404 PROJECT_NOT_FOUND (Project borrado) lleva a "El 
 
   await user.click(await screen.findByRole('button', { name: 'Reactivar' }))
 
-  expect(await screen.findByText('El proyecto ya no existe')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Proyectos' })).toBeInTheDocument()
+  expect(await screen.findByText('El Project ya no existe')).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Volver a Projects' })).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Reintentar' })).not.toBeInTheDocument()
 })
 
-test('en live 404 REPOSITORY_BINDING_NOT_FOUND es solo "Project vivo sin binding" (flujo de vincular) y 404 PROJECT_NOT_FOUND es "el proyecto ya no existe"', async () => {
+test('en live 404 REPOSITORY_BINDING_NOT_FOUND es solo "Project vivo sin binding" (flujo de vincular) y 404 PROJECT_NOT_FOUND es "el Project ya no existe"', async () => {
   coreBinding = () => coreError('REPOSITORY_BINDING_NOT_FOUND', 404)
   const { unmount } = renderIntegrations()
   expect(await screen.findByText('Renueva tu acceso a GitHub')).toBeInTheDocument()
-  expect(screen.queryByText('El proyecto ya no existe')).not.toBeInTheDocument()
+  expect(screen.queryByText('El Project ya no existe')).not.toBeInTheDocument()
   unmount()
 
   coreBinding = () => coreError('PROJECT_NOT_FOUND', 404)
   renderIntegrations()
-  expect(await screen.findByText('El proyecto ya no existe')).toBeInTheDocument()
+  expect(await screen.findByText('El Project ya no existe')).toBeInTheDocument()
   expect(screen.queryByText('Renueva tu acceso a GitHub')).not.toBeInTheDocument()
 })
 
@@ -243,26 +286,28 @@ test('en live 404 GITHUB_REPOSITORY_NOT_FOUND al vincular muestra un único mens
   renderIntegrations('gho_token')
 
   await user.click(await screen.findByRole('button', { name: /repo/ }))
-  await user.selectOptions(await screen.findByLabelText('Integration branch'), 'main')
+  await user.selectOptions(await screen.findByLabelText('Rama de integración'), 'main')
   await user.click(screen.getByRole('button', { name: 'Vincular repositorio' }))
 
   const alert = await screen.findByRole('alert')
   expect(alert).toHaveTextContent('No encontramos ese repositorio o no tienes permiso sobre él. Vuelve a elegirlo de la lista.')
   expect(alert).toHaveTextContent('corr-gh')
-  expect(screen.getByLabelText('Integration branch')).toHaveValue('main')
+  expect(screen.getByLabelText('Rama de integración')).toHaveValue('main')
   expect(screen.getByText('Acceso autorizado a acme/repo')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Vincular repositorio' })).toBeEnabled()
   expect(wasCalled('POST', '/projects/prj_real/integrations/github/verified')).toBe(true)
-  const bindingPost = requests.find((request) => request.method === 'POST' && request.url.endsWith('/projects/prj_real/integrations/github/verified'))
+  const bindingPost = requests.find(
+    (request) => request.method === 'POST' && request.url.endsWith('/projects/prj_real/integrations/github/verified'),
+  )
   expect(JSON.stringify(bindingPost?.headers)).not.toContain('X-GitHub-Provider-Token')
   expect(JSON.stringify(bindingPost?.headers)).not.toContain('gho_token')
 })
 
-test('en live "Eliminar proyecto" está habilitado, pide confirmación, llama a DELETE /projects/{id} y navega a la lista con el aviso, sin sellos DEMO', async () => {
+test('en live "Eliminar Project" está habilitado, pide confirmación, llama a DELETE /projects/{id} y navega a la lista con el aviso, sin sellos DEMO', async () => {
   const user = userEvent.setup()
   renderDetail()
 
-  const button = await screen.findByRole('button', { name: 'Eliminar proyecto' })
+  const button = await screen.findByRole('button', { name: 'Eliminar Project' })
   expect(button).toBeEnabled()
   expect(button).not.toHaveAttribute('aria-disabled')
   expect(screen.queryByText(/pendiente de Core/)).not.toBeInTheDocument()
@@ -280,7 +325,7 @@ test('en live un reintento de eliminar que responde 404 PROJECT_NOT_FOUND se tra
   coreDelete = () => coreError('PROJECT_NOT_FOUND', 404)
   renderDetail()
 
-  await user.click(await screen.findByRole('button', { name: 'Eliminar proyecto' }))
+  await user.click(await screen.findByRole('button', { name: 'Eliminar Project' }))
   await user.click(screen.getByRole('button', { name: 'Eliminar proyecto-real' }))
 
   expect(await screen.findByText(/Lista de proyectos/)).toBeInTheDocument()
@@ -291,7 +336,7 @@ test('en live un 5xx al eliminar muestra un mensaje genérico con correlationId 
   coreDelete = () => coreError('INTERNAL_ERROR', 500, 'corr-del')
   renderDetail()
 
-  await user.click(await screen.findByRole('button', { name: 'Eliminar proyecto' }))
+  await user.click(await screen.findByRole('button', { name: 'Eliminar Project' }))
   await user.click(screen.getByRole('button', { name: 'Eliminar proyecto-real' }))
 
   const alert = await screen.findByRole('alert')
@@ -302,10 +347,10 @@ test('en live un 5xx al eliminar muestra un mensaje genérico con correlationId 
   await waitFor(() => expect(screen.getByRole('button', { name: 'Eliminar proyecto-real' })).toBeEnabled())
 })
 
-test('en live un 404 PROJECT_NOT_FOUND al abrir el proyecto muestra "El proyecto ya no existe" sin Reintentar, pero otros errores conservan Reintentar', async () => {
+test('en live un 404 PROJECT_NOT_FOUND al abrir el Project muestra "El Project ya no existe" sin Reintentar, pero otros errores conservan Reintentar', async () => {
   coreProject = () => coreError('PROJECT_NOT_FOUND', 404)
   const { unmount } = renderDetail()
-  expect(await screen.findByText('El proyecto ya no existe')).toBeInTheDocument()
+  expect(await screen.findByText('El Project ya no existe')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Reintentar' })).not.toBeInTheDocument()
   unmount()
 
@@ -320,25 +365,32 @@ async function reachBindStep(user: ReturnType<typeof userEvent.setup>) {
   coreVerifyAccess = () => json({ ...appAccess, status: 'AUTHORIZED', authorizationEvidence: 'signed-proof' })
   renderIntegrations('gho_token')
   await user.click(await screen.findByRole('button', { name: /repo/ }))
-  await user.selectOptions(await screen.findByLabelText('Integration branch'), 'main')
+  await user.selectOptions(await screen.findByLabelText('Rama de integración'), 'main')
 }
 
 test.each([
-  ['REPOSITORY_OUTSIDE_WORKSPACE', 400, 'Este repositorio no pertenece a tu cuenta; en un proyecto personal solo puedes vincular repositorios propios.'],
+  [
+    'REPOSITORY_OUTSIDE_WORKSPACE',
+    400,
+    'Este repositorio no pertenece a tu cuenta; en un Project personal solo puedes vincular repositorios propios.',
+  ],
   ['REPOSITORY_PERMISSION_INSUFFICIENT', 403, 'Necesitas permiso maintain, write o admin sobre este repositorio.'],
-])('HU64: en live %s al vincular muestra su mensaje claro con correlationId y sin el mensaje crudo de Core', async (code, status, message) => {
-  const user = userEvent.setup()
-  coreCreateBinding = () => coreError(code, status, 'corr-64')
-  await reachBindStep(user)
+])(
+  'HU64: en live %s al vincular muestra su mensaje claro con correlationId y sin el mensaje crudo de Core',
+  async (code, status, message) => {
+    const user = userEvent.setup()
+    coreCreateBinding = () => coreError(code, status, 'corr-64')
+    await reachBindStep(user)
 
-  await user.click(screen.getByRole('button', { name: 'Vincular repositorio' }))
+    await user.click(screen.getByRole('button', { name: 'Vincular repositorio' }))
 
-  const alert = await screen.findByRole('alert')
-  expect(alert).toHaveTextContent(message)
-  expect(alert).toHaveTextContent('corr-64')
-  expect(alert).not.toHaveTextContent('mensaje crudo de Core')
-  expect(screen.queryByRole('button', { name: 'Reintentar' })).not.toBeInTheDocument()
-})
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(message)
+    expect(alert).toHaveTextContent('corr-64')
+    expect(alert).not.toHaveTextContent('mensaje crudo de Core')
+    expect(screen.queryByRole('button', { name: 'Reintentar' })).not.toBeInTheDocument()
+  },
+)
 
 test('HU64: en live 503 GITHUB_VERIFICATION_UNAVAILABLE al vincular es reintentable, no afirma que no exista ni que falte permiso y «Reintentar» repite el POST', async () => {
   const user = userEvent.setup()
@@ -355,7 +407,9 @@ test('HU64: en live 503 GITHUB_VERIFICATION_UNAVAILABLE al vincular es reintenta
   coreCreateBinding = () => json({ ...binding, status: 'ENABLED' }, 201)
   await user.click(screen.getByRole('button', { name: 'Reintentar' }))
   expect(await screen.findByText('Activo')).toBeInTheDocument()
-  expect(requests.filter((request) => request.method === 'POST' && request.url.endsWith('/projects/prj_real/integrations/github/verified'))).toHaveLength(2)
+  expect(
+    requests.filter((request) => request.method === 'POST' && request.url.endsWith('/projects/prj_real/integrations/github/verified')),
+  ).toHaveLength(2)
 })
 
 test('HU64: en live 503 GITHUB_VERIFICATION_UNAVAILABLE en verify-app-access ofrece «Reintentar» sin decir que el repositorio no existe', async () => {
@@ -381,7 +435,8 @@ test('HU64: en live 503 al listar ramas ofrece «Reintentar»', async () => {
   let branchesOk = false
   const previous = vi.mocked(globalThis.fetch).getMockImplementation()!
   vi.mocked(globalThis.fetch).mockImplementation(async (input, init) => {
-    if (new URL(String(input), 'http://core.test').pathname === '/v1/github/repositories/acme/repo/branches' && !branchesOk) return coreError('GITHUB_VERIFICATION_UNAVAILABLE', 503)
+    if (new URL(String(input), 'http://core.test').pathname === '/v1/github/repositories/acme/repo/branches' && !branchesOk)
+      return coreError('GITHUB_VERIFICATION_UNAVAILABLE', 503)
     return previous(input, init)
   })
   renderIntegrations('gho_token')
@@ -390,18 +445,25 @@ test('HU64: en live 503 al listar ramas ofrece «Reintentar»', async () => {
   expect(await screen.findByRole('alert')).toHaveTextContent('No pudimos verificar el permiso en GitHub ahora; inténtalo de nuevo.')
   branchesOk = true
   await user.click(screen.getByRole('button', { name: 'Reintentar' }))
-  expect(await screen.findByLabelText('Integration branch')).toBeInTheDocument()
+  expect(await screen.findByLabelText('Rama de integración')).toBeInTheDocument()
 })
 
 test('HU64: en live la lista deshabilita los repos read/triage con texto explicativo; el rechazo autoritativo sigue siendo el POST', async () => {
   coreBinding = () => coreError('REPOSITORY_BINDING_NOT_FOUND', 404)
-  coreRepositories = () => json({
-    items: [
-      repository,
-      { ...repository, repositoryId: 'repo_ro', name: 'ro', repositoryName: 'acme/ro', permissions: { admin: false, maintain: false, push: false, pull: true } },
-    ],
-    nextCursor: null,
-  })
+  coreRepositories = () =>
+    json({
+      items: [
+        repository,
+        {
+          ...repository,
+          repositoryId: 'repo_ro',
+          name: 'ro',
+          repositoryName: 'acme/ro',
+          permissions: { admin: false, maintain: false, push: false, pull: true },
+        },
+      ],
+      nextCursor: null,
+    })
   renderIntegrations('gho_token')
 
   const readOnly = await screen.findByRole('button', { name: /acme\/ro/ })
@@ -431,7 +493,9 @@ test.each([
   await user.click(await screen.findByRole('button', { name: 'Reactivar' }))
 
   const alert = await screen.findByRole('alert')
-  expect(alert).toHaveTextContent('El repositorio ya no está disponible para este proyecto; si necesitas otro, elimina el proyecto y crea uno nuevo.')
+  expect(alert).toHaveTextContent(
+    'El repositorio ya no está disponible para este Project; si necesitas otro, elimina el Project y crea uno nuevo.',
+  )
   expect(alert).toHaveTextContent('corr-react')
   expect(alert).not.toHaveTextContent(/elegirlo|lista/)
 })
@@ -458,15 +522,18 @@ test('H4: el error de carga de repositorios pasa por el mapeo por código con co
   expect(alert).not.toHaveTextContent('mensaje crudo de Core')
 })
 
-test.each(['GITHUB_ACCOUNT_REQUIRED', 'GITHUB_USER_TOKEN_INVALID'])('M2: 401 %s en discovery no cierra la sesión y ofrece «Renovar acceso a GitHub» con mensaje claro', async (code) => {
-  const user = userEvent.setup()
-  coreBinding = () => coreError('REPOSITORY_BINDING_NOT_FOUND', 404)
-  coreRepositories = () => coreError(code, 401, 'corr-401')
-  renderIntegrations('gho_token')
+test.each(['GITHUB_ACCOUNT_REQUIRED', 'GITHUB_USER_TOKEN_INVALID'])(
+  'M2: 401 %s en discovery no cierra la sesión y ofrece «Renovar acceso a GitHub» con mensaje claro',
+  async (code) => {
+    const user = userEvent.setup()
+    coreBinding = () => coreError('REPOSITORY_BINDING_NOT_FOUND', 404)
+    coreRepositories = () => coreError(code, 401, 'corr-401')
+    renderIntegrations('gho_token')
 
-  expect(await screen.findByText(/Tu acceso a GitHub no está disponible o expiró/)).toBeInTheDocument()
-  expect(screen.queryByText(/Tu sesión expiró/)).not.toBeInTheDocument()
-  const renew = screen.getByRole('button', { name: 'Renovar acceso a GitHub' })
-  await user.click(renew)
-  expect(screen.getByRole('button', { name: 'Renovando…' })).toBeDisabled()
-})
+    expect(await screen.findByText(/Tu acceso a GitHub no está disponible o expiró/)).toBeInTheDocument()
+    expect(screen.queryByText(/Tu sesión expiró/)).not.toBeInTheDocument()
+    const renew = screen.getByRole('button', { name: 'Renovar acceso a GitHub' })
+    await user.click(renew)
+    expect(screen.getByRole('button', { name: 'Renovando…' })).toBeDisabled()
+  },
+)
