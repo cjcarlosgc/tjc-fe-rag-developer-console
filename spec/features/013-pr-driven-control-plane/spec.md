@@ -2,7 +2,7 @@
 
 **Estado:** aprobado como comportamiento objetivo; aceptación de cada HU requiere evidencia propia.
 **Historias:** HU01, HU02, HU07–HU09, HU12–HU16
-**Contrato operativo vigente:** SYSTEM-2.14 / INTEROP-2.19 / GH-INTEROP-1.8.
+**Contrato operativo vigente:** SYSTEM-2.16 / INTEROP-2.21 / GH-INTEROP-1.9.
 
 ## Objetivo
 
@@ -38,7 +38,7 @@ Contrato adoptado: SYSTEM-2.6 / INTEROP-2.7 (canónico en Core, `WI-CORE-017`). 
 
 Ver `spec/operational-cases.md`: OC01–OC15 están catalogados y formalizados como happy paths (P2), con el orden de prioridad y formalización descrito allí. Subcasos, aceptación y evidencia se enlazan por subtarea/WI; el catálogo no significa cobertura completa.
 
-Esta sección formaliza los happy paths (`WI-CONSOLE-004`, corte 4). Describe lo que establecen SYSTEM-2.14, INTEROP-2.19 y GH-INTEROP-1.8 y esta feature. Cuando una regla fue confirmada por el usuario en la reaprobación de `WI-CONSOLE-004` (2026-10-12) y el espejo no la cita, se marca «pendiente de cita contractual» e indica su origen. Ningún caso se declara implementado ni cubierto: la columna de estado sigue en `O-CATALOGUED` (no `O-READY` ni `O-COVERED`). Las «pruebas propuestas» son descripciones; los mocks rotulados `DEMO · DATOS SIMULADOS` solo verifican presentación y no prueban cobertura del backend. Ningún caso queda `DECISION_REQUIRED` en esta versión. Los subcasos `OCxx.a` no se añaden aquí.
+Esta sección formaliza los happy paths (`WI-CONSOLE-004`, corte 4). Describe lo que establecen SYSTEM-2.16, INTEROP-2.21 y GH-INTEROP-1.9 y esta feature. Cuando una regla fue confirmada por el usuario en la reaprobación de `WI-CONSOLE-004` (2026-10-12) y el espejo no la cita, se marca «pendiente de cita contractual» e indica su origen. Ningún caso se declara implementado ni cubierto: la columna de estado sigue en `O-CATALOGUED` (no `O-READY` ni `O-COVERED`). Las «pruebas propuestas» son descripciones; los mocks rotulados `DEMO · DATOS SIMULADOS` solo verifican presentación y no prueban cobertura del backend. Ningún caso queda `DECISION_REQUIRED` en esta versión. Los subcasos `OCxx.a` no se añaden aquí.
 
 Abreviaturas de fuente: **SYS** = `spec/contracts/system-contract.md`; **INT** = `spec/contracts/interoperability-contract.md`; **GH** = `spec/contracts/github-integration-contract.md`.
 

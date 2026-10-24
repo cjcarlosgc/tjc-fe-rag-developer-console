@@ -95,11 +95,17 @@ interface ExperimentRepetitionResponse {
   technicallyEvaluable?: boolean | null
 }
 
+/**
+ * Forma de `GET /experiments/{id}/results` según INTEROP-2.20 §6.5. Core emite `targetId` (requerido).
+ * `analysisRunId` y `symbol` (`AnalysisSymbolResponse`) son de HU17, pendientes de implementación y
+ * opcionales: ningún consumidor debe depender de ellos hasta que un WI los implemente.
+ */
 export interface ExperimentResultsResponse {
   experimentId: string
-  analysisRunId: string
   projectVersionId: string
-  symbol: import('../control-plane/types').AnalysisSymbolResponse
+  targetId: string
+  analysisRunId?: string
+  symbol?: import('../control-plane/types').AnalysisSymbolResponse
   repetitionsPerStrategy: 3
   strategies: StrategyMetricsResponse[]
   repetitions: ExperimentRepetitionResponse[]
