@@ -6,9 +6,9 @@ Orden de lectura: `contracts/system-contract.md` -> `contracts/interoperability-
 
 ## Contratos entre servicios
 
-- [`contracts/system-contract.md`](contracts/system-contract.md): copia espejo byte por byte `SYSTEM-2.14` del contrato canónico de RAG Core.
-- [`contracts/interoperability-contract.md`](contracts/interoperability-contract.md): copia espejo byte por byte `INTEROP-2.19` con rutas (más los esquemas JSON de `contracts/schemas/`), DTOs, estados, errores y transporte universales.
-- [`contracts/github-integration-contract.md`](contracts/github-integration-contract.md): copia espejo byte por byte `GH-INTEROP-1.8`; Console usa sus rutas de usuario para App info, discovery, verificación GitHub y ramas, y conserva Core para dominio/RAG.
+- [`contracts/system-contract.md`](contracts/system-contract.md): copia espejo byte por byte `SYSTEM-2.16` del contrato canónico de RAG Core.
+- [`contracts/interoperability-contract.md`](contracts/interoperability-contract.md): copia espejo byte por byte `INTEROP-2.21` con rutas (más los esquemas JSON de `contracts/schemas/`), DTOs, estados, errores y transporte universales.
+- [`contracts/github-integration-contract.md`](contracts/github-integration-contract.md): copia espejo byte por byte `GH-INTEROP-1.9`; Console usa sus rutas de usuario para App info, discovery, verificación GitHub y ramas, y conserva Core para dominio/RAG.
 
 La cardinalidad de binding continúa siendo un repositorio por Project. No se pregunta qué Project/aplicación elegir; un `projectRoot` devuelto por Core puede mostrarse solo como dato informativo. La copia Sandbox y su baseline SDD 2.1 evolucionan mediante el Contract Sync dirigido a ese componente.
 

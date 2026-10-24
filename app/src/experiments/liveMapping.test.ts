@@ -25,6 +25,7 @@ test('separa las métricas de RAG y GENERALIST_AGENT en baseline/rag', () => {
   const results: ExperimentResultsResponse = {
     experimentId: 'exp-1',
     projectVersionId: 'v-1',
+    targetId: 't-1',
     analysisRunId: 'arun-1',
     symbol: {
       language: 'TYPESCRIPT',
@@ -124,6 +125,7 @@ const configuredStatus: ExperimentStatusResponse = {
 const resultsWith27: ExperimentResultsResponse = {
   experimentId: 'exp-1',
   projectVersionId: 'v-1',
+  targetId: 't-1',
   analysisRunId: 'arun-1',
   symbol: {
     language: 'TYPESCRIPT',
@@ -394,4 +396,20 @@ test('tolera technicallyValidRate y assertionFailureCount presentes en la respue
   expect(operation.result?.rag).toMatchObject({ strategy: 'RAG', validRate: 1, passedRate: 1, evaluableRepetitions: 3 })
   expect(operation.result?.rag).not.toHaveProperty('technicallyValidRate')
   expect(operation.result?.rag).not.toHaveProperty('assertionFailureCount')
+})
+
+test('INTEROP-2.20: sin analysisRunId ni symbol y con targetId el mapeo produce las mismas métricas', () => {
+  const minimal: ExperimentResultsResponse = {
+    experimentId: resultsWith27.experimentId,
+    projectVersionId: resultsWith27.projectVersionId,
+    targetId: 't-1',
+    repetitionsPerStrategy: 3,
+    strategies: resultsWith27.strategies,
+    repetitions: resultsWith27.repetitions,
+    completedAt: resultsWith27.completedAt,
+  }
+  const withOptional = toExperimentOperation(configuredStatus, resultsWith27, 'calculateTotal')
+  const withoutOptional = toExperimentOperation(configuredStatus, minimal, 'calculateTotal')
+  expect(withoutOptional.result).toEqual(withOptional.result)
+  expect(withoutOptional.result?.rag).toMatchObject({ strategy: 'RAG', validRate: 1, passedRate: 1, evaluableRepetitions: 3 })
 })
