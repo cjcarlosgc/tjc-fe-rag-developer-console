@@ -1,6 +1,6 @@
 import { ExcerptView } from '../ExcerptView'
 import type { RagContextTraceDetail } from '../types'
-import { discardReasonLabel, ragSignalLabel } from './ragLabels'
+import { discardReasonName, ragLayerName, ragSignalLabel, ragStrategyName } from './ragLabels'
 
 interface Props {
   detail: RagContextTraceDetail
@@ -34,6 +34,12 @@ export function RagSidePanel({ detail, selectedId }: Props) {
             <dt>Chunks</dt>
             <dd>{target.chunkIds.length}</dd>
           </div>
+          {detail.configuration.strategy && (
+            <div>
+              <dt>Estrategia de contexto</dt>
+              <dd>{ragStrategyName(detail.configuration.strategy)}</dd>
+            </div>
+          )}
         </dl>
         <ExcerptView excerpt={target.excerpt} />
       </aside>
@@ -97,10 +103,16 @@ export function RagSidePanel({ detail, selectedId }: Props) {
             {candidate.decision === 'SELECTED' ? 'Retenido' : 'Descartado'}
           </dd>
         </div>
+        {candidate.layer && (
+          <div>
+            <dt>Capa</dt>
+            <dd>{ragLayerName(candidate.layer)}</dd>
+          </div>
+        )}
         {candidate.discardReason && (
           <div>
             <dt>Motivo de descarte</dt>
-            <dd>{discardReasonLabel[candidate.discardReason]}</dd>
+            <dd>{discardReasonName(candidate.discardReason)}</dd>
           </div>
         )}
       </dl>

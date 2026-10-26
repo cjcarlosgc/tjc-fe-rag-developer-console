@@ -79,3 +79,29 @@ describe('context-explorer api (live)', () => {
     await expect(getAnalysisRunContextTrace('arun-1')).rejects.toThrow(/RAG Core/)
   })
 })
+
+describe('context-explorer mock · capas y estrategia (WI-CONSOLE-052)', () => {
+  it('la traza RAG demo trae capas en SELECTED, estrategia LAYERED y un descarte BELOW_RELEVANCE_THRESHOLD', async () => {
+    setDataSourceForTests('mock')
+    resetMockBackend()
+    const trace = await getContextTrace('trace_rag_order_total')
+    if (trace.kind !== 'RAG') throw new Error('expected RAG')
+    const selected = trace.candidates.filter((candidate) => candidate.decision === 'SELECTED')
+    expect(selected.some((candidate) => candidate.layer === 'DECLARING_CLASS')).toBe(true)
+    expect(selected.some((candidate) => candidate.layer === 'TARGET_EVIDENCE' || candidate.layer === 'RELEVANT_SEMANTIC')).toBe(true)
+    expect(trace.candidates.some((candidate) => candidate.discardReason === 'BELOW_RELEVANCE_THRESHOLD')).toBe(true)
+    expect(trace.configuration.strategy).toBe('LAYERED')
+    expect(trace.selectedChunks).toBe(selected.length)
+    expect(trace.contextTokens).toBe(selected.reduce((total, candidate) => total + candidate.tokenCount, 0))
+  })
+
+  it('las trazas RAG del experimento demo no llevan capas ni estrategia (ausencia de campos opcionales)', async () => {
+    setDataSourceForTests('mock')
+    resetMockBackend()
+    const accepted = await mockStartExperiment('prj_checkout_demo', 'ver_checkout_7-method-total')
+    const trace = await getContextTrace(`${accepted.experimentId}-rag-r1`)
+    if (trace.kind !== 'RAG') throw new Error('expected RAG')
+    expect(trace.candidates.every((candidate) => candidate.layer === undefined)).toBe(true)
+    expect(trace.configuration.strategy).toBeUndefined()
+  })
+})

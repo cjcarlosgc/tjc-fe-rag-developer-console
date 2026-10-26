@@ -8,8 +8,41 @@ export function structuralRelationName(relation: RagStructuralMatch): string {
 
 export const discardReasonLabel: Record<string, string> = {
   BELOW_MINIMUM_SCORE: 'Descartado: por debajo del score mínimo',
+  BELOW_RELEVANCE_THRESHOLD: 'Descartado: por debajo del umbral de relevancia',
   TOP_K_LIMIT: 'Descartado: fuera del límite top-K',
   TOKEN_BUDGET: 'Descartado: excede el presupuesto de tokens',
+}
+
+export const ragLayerLabel: Record<string, string> = {
+  DECLARING_CLASS: 'Clase declarante',
+  TARGET_EVIDENCE: 'Evidencia del target',
+  RELEVANT_SEMANTIC: 'Semántico relevante',
+}
+
+export const ragStrategyLabel: Record<string, string> = {
+  LAYERED: 'Por capas',
+  RANKED: 'Por ranking',
+}
+
+const hasOwn = (map: Record<string, string>, value: string) => Object.prototype.hasOwnProperty.call(map, value)
+
+/** Valor crudo como fallback: un valor desconocido se muestra tal cual; nunca devuelve cadena vacía. */
+function nameOrRaw(map: Record<string, string>, value: string): string {
+  if (hasOwn(map, value)) return map[value]
+  return value.trim() ? value : 'No disponible'
+}
+
+export function ragLayerName(value: string): string {
+  return nameOrRaw(ragLayerLabel, value)
+}
+
+export function ragStrategyName(value: string): string {
+  return nameOrRaw(ragStrategyLabel, value)
+}
+
+/** Motivo de descarte con fallback genérico para motivos desconocidos (no renderiza vacío). */
+export function discardReasonName(reason: string): string {
+  return hasOwn(discardReasonLabel, reason) ? discardReasonLabel[reason] : 'Descartado'
 }
 
 export type RagSignalKind = 'SEMANTIC' | 'STRUCTURAL' | 'DUAL' | 'NONE'
