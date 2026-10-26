@@ -4850,6 +4850,107 @@
         "note": "Ninguna DEC con Blocks alcanza este WI (analisis del leader; la prosa de reasoning/modelo en INTEROP-2.21 es descriptiva y el 422 REASONING_EFFORT_UNSUPPORTED no cambia); el usuario aprobo el alcance en el chat ('si' a la propuesta literal de cross)."
       },
       "closedAt": "2026-10-24T18:30:00.000Z"
+    },
+    {
+      "id": "WI-CONSOLE-052",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "title": "Espejar INTEROP-2.23 desde Core 8c3eb0f en un paso, procesar CS-CORE-20261025-001/-002, etiquetar BELOW_RELEVANCE_THRESHOLD con fallback y mostrar layer y la estrategia en el panel RAG del Context Explorer (Piloto v2 OE5)",
+      "storyIds": [
+        "HU05",
+        "HU12",
+        "HU15",
+        "HU17"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-054"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": true,
+      "publishesContract": false,
+      "uiImpact": true,
+      "lane": "STANDARD",
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md",
+        "spec/contracts/system-contract.md"
+      ],
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "specPaths": [
+        "spec/features/011-context-explorer/tasks.md",
+        "spec/features/011-context-explorer/spec.md",
+        "spec/transversal/design-system/spec.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/README.md",
+        "spec/constitution/architecture.md",
+        "spec/features/013-pr-driven-control-plane/plan.md",
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/013-pr-driven-control-plane/tasks.md",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-052-scope-approval.md",
+        "harness/reports/wi-console-052-sdd-verification.md",
+        "harness/reports/wi-console-052-contract-sync-review.md",
+        "harness/reports/wi-console-052-implementation.md",
+        "harness/reports/wi-console-052-contract-review.md",
+        "harness/reports/wi-console-052-review.md",
+        "harness/reports/wi-console-052-ux-review.md",
+        "harness/reports/wi-console-052-closure.md"
+      ],
+      "acceptanceCriteria": [
+        "interoperability-contract.md coincide byte a byte con Core 8c3eb0f (git show; sha256 5de10cb7…) en un solo paso directo a INTEROP-2.23; SYSTEM-2.16 (d0a492b4…), GH-INTEROP-1.9 (dedf00fa…) y el arbol schemas (8079ab73…) quedan identicos en 8c3eb0f, e4d6dd8b y 2318b9df; INTEROP-2.22 (76f5e774…, e4d6dd8b) se cruza como intermedio; pnpm contracts:check limpio sin cambio de generated/. Referencias vigentes de version actualizadas (INTEROP-2.21->2.23) en spec/ sin tocar historia ni reportes.",
+        "CS-CORE-20261025-001 y -002 se acusan y resuelven solo con evidencia real; -002 subsume a -001 en INTEROP (documentado).",
+        "BELOW_RELEVANCE_THRESHOLD se agrega a RagDiscardReason con etiqueta en espanol coherente con el glosario y RagSidePanel muestra un fallback (nunca vacio) ante cualquier motivo desconocido.",
+        "Los tipos locales de la traza RAG incluyen los opcionales de INTEROP-2.22/2.23 (layer, configuration.strategy, relevanceThreshold, declaringClassMaxTokens, targetEvidenceMaxTokens); inclusionReason no existe en el contrato y no se inventa (se informa a cross); dependencyContext no se consume.",
+        "El panel RAG muestra la capa (layer) del candidato y la estrategia de la configuracion solo cuando existen, con rotulos en espanol y fallback al valor crudo para valores futuros; sin valores no se renderiza la fila (sin regresion en trazas antiguas); el mock ejerce layer y un descarte BELOW_RELEVANCE_THRESHOLD sin romper conteos ni rotulos DEMO; sin desborde a 375 y 1280 px; pruebas sin reloj real que fallan (ROJAS) al revertir la logica clave.",
+        "lint, tsc -b --noEmit, pruebas, build, format:check, contracts:check y validadores pasan; contract-reviewer, reviewer y ux-reviewer independientes aprueban en maximo 2 ciclos; el ux-reviewer mide por su cuenta."
+      ],
+      "approved": true,
+      "scopeApprovalReport": "harness/reports/wi-console-052-scope-approval.md",
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-052 solo toca contratos espejados, tipos y panel RAG de Context Explorer; no altera bindings, autorizacion, login, Projects ni visibilidad.",
+          "report": "harness/reports/wi-console-052-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-052 solo toca contratos espejados, tipos y panel RAG de Context Explorer; no altera bindings, autorizacion, login, Projects ni visibilidad.",
+          "report": "harness/reports/wi-console-052-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-052 solo toca contratos espejados, tipos y panel RAG de Context Explorer; no altera bindings, autorizacion, login, Projects ni visibilidad.",
+          "report": "harness/reports/wi-console-052-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-052 solo toca contratos espejados, tipos y panel RAG de Context Explorer; no altera bindings, autorizacion, login, Projects ni visibilidad.",
+          "report": "harness/reports/wi-console-052-contract-sync-review.md"
+        }
+      ],
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-10-25T23:00:00.000Z",
+        "note": "Ninguna DEC con Blocks alcanza este WI (DEC-RAG-001, R3 de Core, sigue pendiente y no se implementa en Console); el usuario aprobo el alcance en el chat, via cross, con el corte opcional."
+      },
+      "closedAt": "2026-10-26T05:30:00.000Z"
     }
   ]
 }

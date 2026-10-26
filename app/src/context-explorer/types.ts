@@ -38,7 +38,11 @@ export interface SourceExcerpt {
 export type RagStructuralMatch = 'IMPORTS' | 'IMPORTED_BY' | 'SAME_NAMESPACE' | 'FULLY_QUALIFIED_REFERENCE' | 'DECLARING_CLASS'
 export type RagMatchedVia = 'SEMANTIC' | RagStructuralMatch
 export type RagCandidateDecision = 'SELECTED' | 'DISCARDED'
-export type RagDiscardReason = 'BELOW_MINIMUM_SCORE' | 'TOP_K_LIMIT' | 'TOKEN_BUDGET'
+export type RagDiscardReason = 'BELOW_MINIMUM_SCORE' | 'BELOW_RELEVANCE_THRESHOLD' | 'TOP_K_LIMIT' | 'TOKEN_BUDGET'
+/** INTEROP-2.22/2.23 §6.7: estrategia de construcción del contexto (opcional en trazas antiguas). */
+export type RagContextStrategy = 'LAYERED' | 'RANKED'
+/** INTEROP-2.22/2.23 §6.7: capa que seleccionó un candidato (opcional; null en descartados). */
+export type RagContextLayer = 'DECLARING_CLASS' | 'TARGET_EVIDENCE' | 'RELEVANT_SEMANTIC'
 
 export interface RagTargetNode {
   chunkIds: string[]
@@ -57,6 +61,7 @@ export interface RagCandidateNode {
   matchedVia: RagMatchedVia[]
   decision: RagCandidateDecision
   discardReason: RagDiscardReason | null
+  layer?: RagContextLayer | null
 }
 
 export interface RagContextTraceDetail extends ContextTraceSummary {
@@ -66,7 +71,17 @@ export interface RagContextTraceDetail extends ContextTraceSummary {
   retrievedChunks: number
   selectedChunks: number
   contextTokens: number
-  configuration: { minimumScore: number; topK: number; maxContextTokens: number; semanticWeight: number; structuralWeight: number }
+  configuration: {
+    minimumScore: number
+    topK: number
+    maxContextTokens: number
+    semanticWeight: number
+    structuralWeight: number
+    strategy?: RagContextStrategy
+    relevanceThreshold?: number
+    declaringClassMaxTokens?: number
+    targetEvidenceMaxTokens?: number
+  }
 }
 
 export type AgentToolName = 'list_files' | 'search_text' | 'inspect_symbol' | 'read_file'

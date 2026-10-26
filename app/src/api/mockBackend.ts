@@ -17,6 +17,7 @@ import type {
   DiscoveredFilePage,
   ExperimentContextTraceFilters,
   RagCandidateNode,
+  RagContextLayer,
   RagContextTraceDetail,
   SourceExcerpt,
 } from '../context-explorer/types'
@@ -723,7 +724,7 @@ function buildOrderTotalCandidates(): RagCandidateNode[] {
       combinedScore: 0.41,
       matchedVia: ['SEMANTIC'],
       decision: 'DISCARDED',
-      discardReason: 'BELOW_MINIMUM_SCORE',
+      discardReason: 'BELOW_RELEVANCE_THRESHOLD',
       excerpt: buildExcerpt({
         filePath: 'src/domain/CurrencyConverter.ts',
         symbolName: 'convert',
@@ -733,6 +734,19 @@ function buildOrderTotalCandidates(): RagCandidateNode[] {
       }),
     },
   ]
+}
+
+/** WI-CONSOLE-052 (INTEROP-2.22/2.23 §6.7): solo la traza RAG demo `trace_rag_order_total` lleva capas y estrategia. */
+function withContextLayers(candidates: RagCandidateNode[]): RagCandidateNode[] {
+  const layers: Record<string, RagContextLayer> = {
+    'chunk-001': 'DECLARING_CLASS',
+    'chunk-002': 'RELEVANT_SEMANTIC',
+    'chunk-003': 'TARGET_EVIDENCE',
+  }
+  return candidates.map((candidate) => {
+    const layer = layers[candidate.chunkId]
+    return candidate.decision === 'SELECTED' && layer ? { ...candidate, layer } : candidate
+  })
 }
 
 function seedContextTraces(): void {
@@ -755,7 +769,7 @@ function seedContextTraces(): void {
       { lineNumber: 29, content: '    const total = this.calculateTotal(items)' },
     ],
   })
-  const orderTotalCandidates = buildOrderTotalCandidates()
+  const orderTotalCandidates = withContextLayers(buildOrderTotalCandidates())
   const selected = orderTotalCandidates.filter((candidate) => candidate.decision === 'SELECTED')
 
   const currentTrace: ContextTraceDetail = {
@@ -776,7 +790,17 @@ function seedContextTraces(): void {
     retrievedChunks: orderTotalCandidates.length,
     selectedChunks: selected.length,
     contextTokens: selected.reduce((total, candidate) => total + candidate.tokenCount, 0),
-    configuration: { minimumScore: 0.5, topK: 5, maxContextTokens: 4_000, semanticWeight: 0.7, structuralWeight: 0.3 },
+    configuration: {
+      minimumScore: 0.5,
+      topK: 5,
+      maxContextTokens: 4_000,
+      semanticWeight: 0.7,
+      structuralWeight: 0.3,
+      strategy: 'LAYERED',
+      relevanceThreshold: 0.6,
+      declaringClassMaxTokens: 600,
+      targetEvidenceMaxTokens: 1_200,
+    },
   }
   contextTraces.set(currentTrace.id, { detail: currentTrace, notFinishedUntilPolls: 0, polls: 0 })
 }
