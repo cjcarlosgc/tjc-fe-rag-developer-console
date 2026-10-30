@@ -45,6 +45,8 @@ import type { TestInventoryResponse } from '../inventory/types'
 import type {
   AnalysisHistoryItem,
   CreateProjectInput,
+  ExperimentCapturePage,
+  ExperimentCaptureResponse,
   Project,
   ProjectRole,
   UpdateProjectInput,
@@ -321,6 +323,8 @@ const functionalKnowledge = new Map<string, FunctionalKnowledgeResponse>()
 /** PROPUESTA — HU49, ver run-comparison/speculative/captureNextPr.ts. Estado por proyecto, no global: "el próximo PR elegible" se arma sobre el repositorio vinculado a un proyecto puntual. */
 const captureNextPrStates = new Map<string, CaptureNextPrState>()
 let captureNextPrSeq = 0
+/** INTEROP-2.25 (HU18): capturas armadas de experimentación por Project, la más reciente primero. Independiente de `captureNextPrStates` (HU49). */
+const experimentCaptures = new Map<string, ExperimentCaptureResponse[]>()
 let sequence = 2000
 
 const clone = <T>(value: T): T => structuredClone(value)
@@ -1560,6 +1564,8 @@ function seedControlPlane(): void {
       current: true,
       actionRequiredCount: 0,
       generatedTestsCount: 0,
+      // INTEROP-2.25 (HU18): Run reservado por la captura `cap_demo_checkout_2`, sin Check en el PR (demo DEMO · DATOS SIMULADOS).
+      experimentCapture: { captureId: 'cap_demo_checkout_2', reservedAt: '2026-09-10T11:00:00.000Z' },
       createdAt: '2026-09-10T11:00:00.000Z',
       updatedAt: '2026-09-10T11:05:00.000Z',
       completedAt: '2026-09-10T11:05:00.000Z',
@@ -2477,9 +2483,35 @@ function seedControlPlane(): void {
 
   deriveActionRequiredRunStatus(seeds)
   for (const { __proposals, ...run } of seeds) {
-    analysisRuns.set(run.id, run)
+    // INTEROP-2.25 (HU18): todo Run lleva `experimentCapture` (`null` si no fue reservado); el contrato lo emite siempre.
+    analysisRuns.set(run.id, { experimentCapture: null, ...run })
     if (__proposals) testProposals.set(run.id, __proposals)
   }
+  // INTEROP-2.25 (HU18, DEMO): una captura reservada (`arun_checkout_pr47`) y una anterior desarmada. Sin captura `ARMED` por defecto.
+  experimentCaptures.set('prj_checkout_demo', [
+    {
+      captureId: 'cap_demo_checkout_2',
+      projectId: 'prj_checkout_demo',
+      status: 'RESERVED',
+      armedBy: MOCK_MAINTAINER_USER_ID,
+      armedAt: '2026-09-10T10:40:00.000Z',
+      reservedAnalysisRunId: 'arun_checkout_pr47',
+      reservedAt: '2026-09-10T11:00:00.000Z',
+      disarmedBy: null,
+      disarmedAt: null,
+    },
+    {
+      captureId: 'cap_demo_checkout_1',
+      projectId: 'prj_checkout_demo',
+      status: 'DISARMED',
+      armedBy: MOCK_MAINTAINER_USER_ID,
+      armedAt: '2026-09-08T09:00:00.000Z',
+      reservedAnalysisRunId: null,
+      reservedAt: null,
+      disarmedBy: MOCK_MAINTAINER_USER_ID,
+      disarmedAt: '2026-09-08T09:30:00.000Z',
+    },
+  ])
 }
 
 /** Shas de demo de 40 caracteres hexadecimales (procedencia; el contrato exige el valor completo). */
@@ -2731,6 +2763,7 @@ export function resetMockBackend(): void {
   functionalKnowledge.clear()
   captureNextPrStates.clear()
   captureNextPrSeq = 0
+  experimentCaptures.clear()
   sequence = 2000
   seed()
 }
@@ -4647,9 +4680,75 @@ export async function mockDeleteProject(projectId: string): Promise<void> {
   repositoryBindings.delete(projectId)
 }
 
+/**
+ * INTEROP-2.25 (§6.17, HU18): `GET /projects/{projectId}/experiment-captures` (Reader), la más reciente primero.
+ * El demo no pagina: `nextCursor` siempre `null` y `limit` solo recorta.
+ */
+export async function mockListExperimentCaptures(projectId: string, limit?: number): Promise<ExperimentCapturePage> {
+  await latency()
+  requireProjectRole(projectId, 'READER')
+  const items = experimentCaptures.get(projectId) ?? []
+  return { items: clone(limit && limit > 0 ? items.slice(0, limit) : items), nextCursor: null }
+}
+
+/** INTEROP-2.25 (§6.17): `POST …/experiment-captures` (Maintainer). Sin cuerpo; un Project tiene como máximo una captura `ARMED`. */
+export async function mockArmExperimentCapture(projectId: string): Promise<ExperimentCaptureResponse> {
+  await latency()
+  requireProjectRole(projectId, 'MAINTAINER')
+  const captures = experimentCaptures.get(projectId) ?? []
+  if (captures.some((capture) => capture.status === 'ARMED'))
+    throw new ApiError(
+      'Ya hay una captura armada en este Project. Desármala antes de armar otra.',
+      409,
+      'demo-correlation-id',
+      'EXPERIMENT_CAPTURE_ALREADY_ARMED',
+    )
+  sequence += 1
+  const capture: ExperimentCaptureResponse = {
+    captureId: `cap_demo_${sequence}`,
+    projectId,
+    status: 'ARMED',
+    armedBy: MOCK_MAINTAINER_USER_ID,
+    armedAt: nowIso(),
+    reservedAnalysisRunId: null,
+    reservedAt: null,
+    disarmedBy: null,
+    disarmedAt: null,
+  }
+  experimentCaptures.set(projectId, [capture, ...captures])
+  return clone(capture)
+}
+
+/** INTEROP-2.25 (§6.17): `DELETE …/experiment-captures/current` (Maintainer). Sin captura `ARMED`: 404 `EXPERIMENT_CAPTURE_NOT_ARMED`. */
+export async function mockDisarmExperimentCapture(projectId: string): Promise<ExperimentCaptureResponse> {
+  await latency()
+  requireProjectRole(projectId, 'MAINTAINER')
+  const captures = experimentCaptures.get(projectId) ?? []
+  const armed = captures.find((capture) => capture.status === 'ARMED')
+  if (!armed) throw new ApiError('No hay una captura armada para desarmar.', 404, 'demo-correlation-id', 'EXPERIMENT_CAPTURE_NOT_ARMED')
+  const disarmed: ExperimentCaptureResponse = { ...armed, status: 'DISARMED', disarmedBy: MOCK_MAINTAINER_USER_ID, disarmedAt: nowIso() }
+  experimentCaptures.set(
+    projectId,
+    captures.map((capture) => (capture.captureId === armed.captureId ? disarmed : capture)),
+  )
+  return clone(disarmed)
+}
+
 function toAnalysisRunSummary(run: AnalysisRunDetailResponse): AnalysisRunSummaryResponse {
   const { id, projectId, pullRequest, status, current, actionRequiredCount, generatedTestsCount, createdAt, updatedAt, completedAt } = run
-  return { id, projectId, pullRequest, status, current, actionRequiredCount, generatedTestsCount, createdAt, updatedAt, completedAt }
+  return {
+    id,
+    projectId,
+    pullRequest,
+    status,
+    current,
+    actionRequiredCount,
+    generatedTestsCount,
+    createdAt,
+    updatedAt,
+    completedAt,
+    experimentCapture: run.experimentCapture ?? null,
+  }
 }
 
 /** HU32: `GET /projects/{projectId}/analysis-runs?status&cursor&limit` (aquí `projectId` es opcional para ofrecer también un listado global). */

@@ -1,7 +1,7 @@
 # 014 — Experimentos ligados a AnalysisRun
 
 **Historias:** HU17, HU18 (EP06).
-**Estado:** contrato de comparación HU17 definido en INTEROP-2.7 §6.5; adaptación live y aceptación pendientes. HU18 requiere contrato de captura antes de implementación productiva.
+**Estado:** contrato de comparación HU17 definido en INTEROP-2.7 §6.5; adaptación live y aceptación pendientes. HU18: contrato de captura definido en INTEROP-2.25 §6.17 e interfaz de armado/desarmado y badge del Run implementada en Console (`WI-CONSOLE-053`, contra mock; la prueba contra Core desplegado está pendiente).
 
 ## Objetivo
 
@@ -21,7 +21,8 @@ Comparar RAG y GENERALIST_AGENT sobre el mismo `AnalysisRun` real, snapshot, sí
 
 - El usuario arma una captura one-shot; el siguiente `AnalysisRun` elegible se reserva para experimento y la captura vuelve a OFF. No es un toggle permanente ni ejecuta el agente en todos los PR.
 - Los brazos experimentales no publican Checks separados ni generan un merge automático.
-- El contrato de armado, elegibilidad, concurrencia, expiración y cancelación aún no está definido. Un simulador local no satisface HU18 ni puede presentarse como integración live.
+- Contrato (INTEROP-2.25 §6.17, `WI-CORE-109`): `POST`/`GET`/`DELETE` de `/projects/{projectId}/experiment-captures`; Maintainer arma y desarma, Reader lista; `409 EXPERIMENT_CAPTURE_ALREADY_ARMED` y `404 EXPERIMENT_CAPTURE_NOT_ARMED`; el Run reservado trae `experimentCapture: { captureId, reservedAt }` (siempre presente, `null` si no fue reservado) y **no publica Check** en el PR. No hay expiración temporal ni más de una captura `ARMED` por Project. El panel especulativo HU49 (`run-comparison/speculative`) es un simulador local y no satisface HU18.
+- UI (`WI-CONSOLE-053`): la pantalla del Project tiene la sección «Captura de experimentación». Maintainer/Admin ven «Armar captura» y «Desarmar»; Reader y Writer ven solo el estado. Mientras haya una captura `ARMED` se muestra un aviso persistente: el siguiente PR elegible se reservará para experimentación y su Check no se publicará (una captura olvidada suprime el Check del siguiente PR elegible). La lista y el detalle del Run muestran el badge «Reservado para experimentación» cuando `experimentCapture` no es `null`; un Run sin el campo (trazas anteriores) se trata como no reservado. El modo demo lo rotula como datos simulados.
 
 ## Alineación SMART V3 (SDD 2026-10-08; implementación pendiente)
 

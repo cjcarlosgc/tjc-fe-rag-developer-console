@@ -1,6 +1,6 @@
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, expect, test } from 'vitest'
+import { beforeEach, expect, test, vi } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
 import { resetMockBackend, setMockAnalysisRunForTests } from '../api/mockBackend'
 import { clickGraphNode, renderApp } from '../test/render'
@@ -270,4 +270,69 @@ test('accesibilidad: «Símbolos cambiados» es h2 y ningún encabezado salta m�
   for (let index = 1; index < levels.length; index += 1) {
     expect(levels[index] - levels[index - 1]).toBeLessThanOrEqual(1)
   }
+})
+
+// INTEROP-2.25 (§6.17, HU18): un Run reservado por una captura armada se rotula y avisa de que no publica Check en el PR.
+test('HU18: un Run reservado muestra el badge y que no se publica Check en el PR', async () => {
+  renderDetail('arun_checkout_pr47', 'prj_checkout_demo')
+
+  expect(await screen.findByText('PR #47', { selector: '.pr-number' })).toBeInTheDocument()
+  expect(screen.getByText('Reservado para experimentación', { selector: '.status-badge' })).toBeInTheDocument()
+  expect(screen.getByText(/No se publica Check en el PR\./)).toBeInTheDocument()
+})
+
+test('HU18: un Run que no fue reservado no muestra el badge ni la nota de Check', async () => {
+  renderDetail('arun_checkout_pr45', 'prj_checkout_demo')
+
+  expect(await screen.findByText('PR #45', { selector: '.pr-number' })).toBeInTheDocument()
+  expect(screen.queryByText('Reservado para experimentación')).not.toBeInTheDocument()
+  expect(screen.queryByText(/No se publica Check/)).not.toBeInTheDocument()
+})
+
+test('HU18: un Run sin el campo experimentCapture (Core anterior a INTEROP-2.25) no muestra el badge', async () => {
+  setDataSourceForTests('live')
+  const run = {
+    id: 'arun_live_sin_campo',
+    projectId: 'prj_live',
+    pullRequest: {
+      repositoryId: 'repo_live',
+      repositoryName: 'acme/live',
+      number: 7,
+      title: 'Run sin el campo de captura',
+      baseRef: 'develop',
+      headRef: 'feature/x',
+      baseSha: 'a'.repeat(40),
+      headSha: 'b'.repeat(40),
+      draft: false,
+      state: 'OPEN',
+      actorLogin: null,
+    },
+    status: 'SUCCESS',
+    current: true,
+    actionRequiredCount: 0,
+    generatedTestsCount: 0,
+    createdAt: '2026-10-30T10:00:00.000Z',
+    updatedAt: '2026-10-30T10:01:00.000Z',
+    completedAt: '2026-10-30T10:01:00.000Z',
+    attemptCount: 1,
+    indexMode: 'INCREMENTAL',
+    changesetBaseSha: 'a'.repeat(40),
+    changesetHeadSha: 'b'.repeat(40),
+    indexDeltaBaseSha: null,
+    symbols: [],
+    functionalBehaviorValidated: false,
+    resultSummary: null,
+    detailsUrl: '/projects/prj_live/runs/arun_live_sin_campo',
+  }
+  vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+    const { pathname } = new URL(String(input))
+    if (pathname.endsWith('/analysis-runs/arun_live_sin_campo')) return new Response(JSON.stringify(run), { status: 200 })
+    return new Response(JSON.stringify({ code: 'NOT_FOUND', message: 'no stub' }), { status: 404 })
+  })
+
+  renderDetail('arun_live_sin_campo', 'prj_live')
+
+  expect(await screen.findByText('PR #7', { selector: '.pr-number' })).toBeInTheDocument()
+  expect(screen.queryByText('Reservado para experimentación')).not.toBeInTheDocument()
+  expect(screen.queryByText(/No se publica Check/)).not.toBeInTheDocument()
 })

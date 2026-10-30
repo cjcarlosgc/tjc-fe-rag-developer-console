@@ -4951,6 +4951,103 @@
         "note": "Ninguna DEC con Blocks alcanza este WI (DEC-RAG-001, R3 de Core, sigue pendiente y no se implementa en Console); el usuario aprobo el alcance en el chat, via cross, con el corte opcional."
       },
       "closedAt": "2026-10-26T05:30:00.000Z"
+    },
+    {
+      "id": "WI-CONSOLE-053",
+      "component": "CONSOLE",
+      "workItemType": "PRODUCT",
+      "status": "W-DONE",
+      "priority": "P1",
+      "sprint": "SMART V3",
+      "title": "Espejar INTEROP-2.25 desde Core 55bf424 en un paso, procesar CS-CORE-20261030-001 y -20261026-001, y habilitar la captura armada de experimentación (HU18): armar/desarmar en el Project y badge «Reservado para experimentación» en el Run",
+      "storyIds": [
+        "HU18"
+      ],
+      "taskIds": [
+        "ST-CONSOLE-055"
+      ],
+      "caseIds": [],
+      "dependsOn": [],
+      "contractImpact": true,
+      "publishesContract": false,
+      "uiImpact": true,
+      "lane": "STANDARD",
+      "syncScopePaths": [
+        "spec/contracts/interoperability-contract.md"
+      ],
+      "transversalPaths": [
+        "spec/backlog.md",
+        "spec/constitution/project-context.md",
+        "spec/constitution/delivery-workflow.md"
+      ],
+      "specPaths": [
+        "spec/features/014-analysisrun-experiments/tasks.md",
+        "spec/features/014-analysisrun-experiments/spec.md",
+        "spec/features/013-pr-driven-control-plane/spec.md",
+        "spec/features/013-pr-driven-control-plane/plan.md",
+        "spec/transversal/design-system/spec.md",
+        "spec/contracts/interoperability-contract.md",
+        "spec/README.md",
+        "spec/constitution/architecture.md",
+        "CHANGELOG.md",
+        "harness/reports/wi-console-053-scope-approval.md",
+        "harness/reports/wi-console-053-sdd-verification.md",
+        "harness/reports/wi-console-053-contract-sync-review.md",
+        "harness/reports/wi-console-053-implementation.md",
+        "harness/reports/wi-console-053-contract-review.md",
+        "harness/reports/wi-console-053-review.md",
+        "harness/reports/wi-console-053-ux-review.md",
+        "harness/reports/wi-console-053-closure.md"
+      ],
+      "acceptanceCriteria": [
+        "interoperability-contract.md coincide byte a byte con Core 55bf4241 (git show; sha256 b2f38452…, 161728 bytes) en un solo paso directo a INTEROP-2.25; SYSTEM-2.16 (d0a492b4…), GH-INTEROP-1.9 (dedf00fa…) y el arbol schemas (8079ab73…) identicos; pnpm contracts:check limpio sin cambio de generated/; referencias vigentes de version actualizadas (2.23->2.25) en spec/ sin tocar historia ni reportes.",
+        "CS-CORE-20261030-001 y CS-CORE-20261026-001 se acusan y resuelven solo con evidencia real; el del 30 subsume al del 26 (documentado) y lo pendiente del 26 (BELOW_RELEVANCE_THRESHOLD, dependencyContext hasta 500) se verifica cubierto por WI-CONSOLE-052.",
+        "Tipos ExperimentCaptureStatus, ExperimentCaptureResponse y experimentCapture en AnalysisRunSummaryResponse (tolera ausencia); funciones API armar/desarmar/listar conformes a 6.17 con EXPERIMENT_CAPTURE_ALREADY_ARMED (409) y EXPERIMENT_CAPTURE_NOT_ARMED (404) mapeados a mensajes en espanol; la lista se invalida tras armar/desarmar.",
+        "En el Project, Maintainer/Admin ven «Armar captura» y «Desarmar» (Reader solo ve el estado, Writer no arma); mientras haya una captura ARMED hay un aviso visible y persistente que explica que el siguiente PR elegible se reservara y su Check NO se publicara; estados cargando/error/vacio con primitives existentes; sin desborde a 375 y 1280 px; objetivos tactiles >= 40 px.",
+        "Badge «Reservado para experimentacion» en la lista de Runs y en el detalle del Run cuando experimentCapture != null; sin romper conteos ni rotulos DEMO; tolera ausencia del campo.",
+        "El mock soporta armar/desarmar/listar (409 al armar dos veces, 404 al desarmar sin captura) y al menos un Run con experimentCapture, rotulado DEMO.",
+        "Pruebas vitest sin reloj real que fallan (ROJAS) al revertir la logica clave; lint, tsc -b --noEmit, pruebas, build, format:check, contracts:check y validadores pasan; contract-reviewer, reviewer y ux-reviewer independientes aprueban en maximo 2 ciclos; capturas de pantalla en harness/reports/wi-console-053-captura-NN.png."
+      ],
+      "approved": true,
+      "scopeApprovalReport": "harness/reports/wi-console-053-scope-approval.md",
+      "contractSyncReview": [
+        {
+          "eventId": "CS-20260920-003",
+          "sha256": "1aa283af1a1ffa7afa5f77ca800e812792033f0b39c33d785940744969616f1f",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre lifecycle del binding y borrado logico; WI-CONSOLE-053 espeja un contrato y agrega la captura armada de experimentacion (Project y Run); no altera bindings, autorizacion, login ni visibilidad; la captura usa los roles ya vigentes del Project.",
+          "report": "harness/reports/wi-console-053-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-001",
+          "sha256": "f1477af3d23b21769fc81cda3207fabc7175dd308ad23a44d2f9171623423bbe",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre identidad, workspaces, roles y rutas de acceso; WI-CONSOLE-053 espeja un contrato y agrega la captura armada de experimentacion (Project y Run); no altera bindings, autorizacion, login ni visibilidad; la captura usa los roles ya vigentes del Project.",
+          "report": "harness/reports/wi-console-053-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-002",
+          "sha256": "182ad6d41f5dc6b2b5dbcafb1ee7fa66409924153d8f33545af3ea92b58c71e2",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre autenticacion y seguridad de binding; WI-CONSOLE-053 espeja un contrato y agrega la captura armada de experimentacion (Project y Run); no altera bindings, autorizacion, login ni visibilidad; la captura usa los roles ya vigentes del Project.",
+          "report": "harness/reports/wi-console-053-contract-sync-review.md"
+        },
+        {
+          "eventId": "CS-20260921-003",
+          "sha256": "387a743bd3a38a4e4310662594c19a2c235743648949061fcdcd961e36a82468",
+          "disposition": "NOT_RELEVANT",
+          "reason": "El evento cubre membresia y eventos organizacionales; WI-CONSOLE-053 espeja un contrato y agrega la captura armada de experimentacion (Project y Run); no altera bindings, autorizacion, login ni visibilidad; la captura usa los roles ya vigentes del Project.",
+          "report": "harness/reports/wi-console-053-contract-sync-review.md"
+        }
+      ],
+      "decisionGate": {
+        "checked": true,
+        "blockingDecisionIds": [],
+        "nonBlockingDecisionIds": [],
+        "checkedAt": "2026-10-30T22:00:00.000Z",
+        "note": "Ninguna DEC con Blocks alcanza este WI (DEC-RAG-001 no aplica); el usuario aprobo el alcance en el chat (Aprobar WI-053), via cross."
+      },
+      "closedAt": "2026-10-30T23:00:00.000Z"
     }
   ]
 }

@@ -342,6 +342,12 @@ export function AnalysisRunDetailPage() {
 
       <div className="panel analysis-run-summary">
         <StatusBadge statusClass={analysisRunStatusClass(run.status)}>{ANALYSIS_RUN_STATUS_LABELS[run.status]}</StatusBadge>
+        {/* INTEROP-2.25 (§6.17): un Run reservado no publica Check en el PR, en ningún estado. */}
+        {run.experimentCapture && (
+          <p className="field-hint">
+            <StatusBadge tone="warn">Reservado para experimentación</StatusBadge> No se publica Check en el PR.
+          </p>
+        )}
         <dl className="metadata">
           <div>
             <dt>HEAD</dt>
