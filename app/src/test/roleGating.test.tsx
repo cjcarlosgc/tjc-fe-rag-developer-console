@@ -1,10 +1,11 @@
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, test, vi } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
 import { resetMockBackend } from '../api/mockBackend'
 import { AnalysisRunDetailPage } from '../control-plane/AnalysisRunDetailPage'
 import { ExperimentPage } from '../experiments/ExperimentPage'
+import { ProjectDetailPage } from '../projects/ProjectDetailPage'
 import { RunComparisonPage } from '../run-comparison/RunComparisonPage'
 import type { ProjectRole } from '../projects/types'
 import { renderApp } from './render'
@@ -92,4 +93,29 @@ test('AnalysisRunDetail: Reader ve el mensaje de solo lectura y no puede publica
     await screen.findByText('Tu rol es de solo lectura. Un Writer, Maintainer o Admin puede publicar estas propuestas.'),
   ).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /Publicar/ })).not.toBeInTheDocument()
+})
+
+const PROJECT_ENTRY = { initialEntry: '/projects/prj_checkout_demo', routePath: '/projects/:projectId' }
+
+test('HU18: Maintainer y Admin ven y pueden usar «Armar captura» en el Project', async () => {
+  for (const role of ['MAINTAINER', 'ADMIN'] as const) {
+    roleState.role = role
+    const { unmount } = renderApp(<ProjectDetailPage />, PROJECT_ENTRY)
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Armar captura' })).toBeEnabled())
+    expect(screen.queryByText('Solo Maintainer o superior pueden armar o desarmar capturas.')).not.toBeInTheDocument()
+    unmount()
+  }
+})
+
+test('HU18: Reader y Writer ven solo el estado de la captura, sin botones de armar ni desarmar', async () => {
+  for (const role of ['READER', 'WRITER'] as const) {
+    roleState.role = role
+    const { unmount } = renderApp(<ProjectDetailPage />, PROJECT_ENTRY)
+
+    expect(await screen.findByText('Solo Maintainer o superior pueden armar o desarmar capturas.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Armar captura' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Desarmar' })).not.toBeInTheDocument()
+    unmount()
+  }
 })

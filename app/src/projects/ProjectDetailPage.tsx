@@ -11,6 +11,7 @@ import { ProjectTabs } from '../ui/ProjectTabs'
 import { RepoChip } from '../ui/RepoChip'
 import { useDeleteProject, useProject, usePurgeProjectQueries, useRenameProject } from './queries'
 import { StatusBadge } from '../ui/StatusBadge'
+import { ExperimentCapturePanel } from './ExperimentCapturePanel'
 
 export function ProjectDetailPage() {
   const { projectId = '' } = useParams()
@@ -193,6 +194,8 @@ export function ProjectDetailPage() {
           </div>
         )}
       </div>
+      {/* HU18: captura armada de experimentación (INTEROP-2.25, §6.17). Su consulta es propia y no bloquea el Project. */}
+      <ExperimentCapturePanel projectId={project.id} workspaceId={project.workspace.id} role={project.role} />
       {/* HU56: borrado lógico, `DELETE /projects/{id}` (INTEROP-2.3, implementado en Core — CS-20260920-003). */}
       {project.role === 'ADMIN' && (
         <div className="panel danger-zone">

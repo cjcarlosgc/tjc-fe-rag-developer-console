@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import { beforeEach, expect, test, vi } from 'vitest'
 import { setDataSourceForTests } from '../api/dataSource'
 import { resetMockBackend } from '../api/mockBackend'
@@ -115,4 +115,54 @@ test('un workspaceId no permite ver Runs de un Project perteneciente a otro work
   expect(await screen.findByText('Project fuera del workspace seleccionado')).toBeInTheDocument()
   expect(screen.queryByText('PR #15', { selector: '.pr-ref' })).not.toBeInTheDocument()
   expect(screen.queryByText('PR #42', { selector: '.pr-ref' })).not.toBeInTheDocument()
+})
+
+// INTEROP-2.25 (§6.17, HU18): un Run reservado por una captura armada se rotula en la lista; los demás no.
+test('HU18: el Run reservado lleva el badge «Reservado para experimentación» y los demás Runs no', async () => {
+  renderApp(<RunsPage />, { initialEntry: '/analysis-runs?projectId=prj_checkout_demo' })
+
+  const reserved = (await screen.findByText('PR #47', { selector: '.pr-ref' })).closest('li')
+  expect(reserved).not.toBeNull()
+  expect(within(reserved!).getByText('Reservado para experimentación')).toBeInTheDocument()
+  const other = screen.getByText('PR #45', { selector: '.pr-ref' }).closest('li')
+  expect(within(other!).queryByText('Reservado para experimentación')).not.toBeInTheDocument()
+  expect(screen.getAllByText('Reservado para experimentación')).toHaveLength(1)
+})
+
+test('HU18: un Run sin el campo experimentCapture (Core anterior a INTEROP-2.25) se lista sin badge', async () => {
+  setDataSourceForTests('live')
+  const run = {
+    id: 'arun_live_sin_campo',
+    projectId: 'prj_live',
+    pullRequest: {
+      repositoryId: 'repo_live',
+      repositoryName: 'acme/live',
+      number: 7,
+      title: 'Run sin el campo de captura',
+      baseRef: 'develop',
+      headRef: 'feature/x',
+      baseSha: 'a'.repeat(40),
+      headSha: 'b'.repeat(40),
+      draft: false,
+      state: 'OPEN',
+      actorLogin: null,
+    },
+    status: 'SUCCESS',
+    current: true,
+    actionRequiredCount: 0,
+    generatedTestsCount: 1,
+    createdAt: '2026-10-30T10:00:00.000Z',
+    updatedAt: '2026-10-30T10:01:00.000Z',
+    completedAt: '2026-10-30T10:01:00.000Z',
+  }
+  vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+    const { pathname } = new URL(String(input))
+    if (pathname.endsWith('/analysis-runs')) return new Response(JSON.stringify({ items: [run], nextCursor: null }), { status: 200 })
+    return new Response(JSON.stringify({ code: 'NOT_FOUND', message: 'sin stub' }), { status: 404 })
+  })
+
+  renderApp(<RunsPage />, { initialEntry: '/analysis-runs?projectId=prj_live' })
+
+  expect(await screen.findByText('PR #7', { selector: '.pr-ref' })).toBeInTheDocument()
+  expect(screen.queryByText('Reservado para experimentación')).not.toBeInTheDocument()
 })

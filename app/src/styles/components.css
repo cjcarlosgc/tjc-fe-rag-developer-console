@@ -1058,3 +1058,39 @@ code {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* INTEROP-2.25 / HU18: captura armada de experimentación (ExperimentCapturePanel). Aviso amarillo = advertencia, con texto además del color. */
+.experiment-capture-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+.experiment-capture-status p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.experiment-capture-warning {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  margin-top: 16px;
+  border: 1px solid var(--warning-border);
+  border-radius: 8px;
+  background: var(--warning-bg);
+  color: var(--warning-strong);
+  padding: 14px 16px;
+}
+.experiment-capture-warning p {
+  flex: 1 1 240px;
+  min-width: 0;
+  margin: 0;
+  color: inherit;
+  overflow-wrap: anywhere;
+}
+.experiment-capture-warning .button {
+  flex: 0 0 auto;
+  min-height: 42px;
+}

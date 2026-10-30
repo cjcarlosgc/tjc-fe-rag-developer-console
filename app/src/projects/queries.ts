@@ -1,8 +1,22 @@
 import { useCallback } from 'react'
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { actionRequiredKeys } from '../action-required/queries'
+import { ApiError } from '../api/client'
 import { controlPlaneKeys } from '../control-plane/queries'
-import { createProject, deleteProject, getProject, listAllProjects, listProjects, listWorkspaces, renameProject } from './api'
+import { isExperimentCaptureStale } from '../control-plane/errors'
+import {
+  armExperimentCapture,
+  createProject,
+  deleteProject,
+  disarmExperimentCapture,
+  getProject,
+  listAllProjects,
+  listExperimentCaptures,
+  listProjects,
+  listWorkspaces,
+  renameProject,
+} from './api'
+import type { ExperimentCapturePage, ExperimentCaptureResponse } from './types'
 
 export const projectKeys = {
   all: ['projects'] as const,
@@ -11,7 +25,12 @@ export const projectKeys = {
   listsAll: ['projects', 'list-all'] as const,
   listAll: (workspaceId: string | null) => ['projects', 'list-all', workspaceId] as const,
   detail: (id: string) => ['projects', id] as const,
+  /** INTEROP-2.25: dentro de `detail`, así `usePurgeProjectQueries` la limpia con el resto del Project. */
+  experimentCaptures: (id: string) => ['projects', id, 'experiment-captures'] as const,
 }
+
+/** Cuántas capturas recientes se piden: el estado sale de la primera; las demás solo sirven para mostrar la última reservada. */
+const EXPERIMENT_CAPTURE_PAGE_SIZE = 5
 
 export const workspaceKeys = { all: ['workspaces'] as const }
 
@@ -100,4 +119,58 @@ export function usePurgeProjectQueries() {
     },
     [queryClient],
   )
+}
+
+/**
+ * INTEROP-2.25 (§6.17, HU18): capturas del Project, más reciente primero. Un 4xx no se reintenta (p. ej. Core sin esta ruta: 404).
+ * Solo lectura; no entra en realtime ni en polling. Su fallo no bloquea el resto del Project.
+ */
+export function useExperimentCaptures(projectId: string) {
+  return useQuery({
+    queryKey: projectKeys.experimentCaptures(projectId),
+    queryFn: () => listExperimentCaptures(projectId, null, EXPERIMENT_CAPTURE_PAGE_SIZE),
+    enabled: Boolean(projectId),
+    retry: (failureCount, error) => !(error instanceof ApiError && error.status < 500) && failureCount < 1,
+  })
+}
+
+/** Pone `capture` al frente de la lista (o sustituye la que tenga su mismo id) sin esperar al refetch. */
+function upsertExperimentCapture(
+  page: ExperimentCapturePage | undefined,
+  capture: ExperimentCaptureResponse,
+): ExperimentCapturePage | undefined {
+  if (!page) return page
+  return { ...page, items: [capture, ...page.items.filter((item) => item.captureId !== capture.captureId)] }
+}
+
+/** INTEROP-2.25: armar. Tras éxito muestra la captura `ARMED`; tras 409 relee la lista para mostrar el estado real. */
+export function useArmExperimentCapture(projectId: string) {
+  const queryClient = useQueryClient()
+  const key = projectKeys.experimentCaptures(projectId)
+  return useMutation({
+    mutationFn: () => armExperimentCapture(projectId),
+    onSuccess: (capture) => {
+      queryClient.setQueryData<ExperimentCapturePage>(key, (page) => upsertExperimentCapture(page, capture))
+      void queryClient.invalidateQueries({ queryKey: key })
+    },
+    onError: (error) => {
+      if (isExperimentCaptureStale(error)) void queryClient.invalidateQueries({ queryKey: key })
+    },
+  })
+}
+
+/** INTEROP-2.25: desarmar. Tras éxito la captura pasa a `DISARMED`; tras 404 relee la lista para mostrar el estado real. */
+export function useDisarmExperimentCapture(projectId: string) {
+  const queryClient = useQueryClient()
+  const key = projectKeys.experimentCaptures(projectId)
+  return useMutation({
+    mutationFn: () => disarmExperimentCapture(projectId),
+    onSuccess: (capture) => {
+      queryClient.setQueryData<ExperimentCapturePage>(key, (page) => upsertExperimentCapture(page, capture))
+      void queryClient.invalidateQueries({ queryKey: key })
+    },
+    onError: (error) => {
+      if (isExperimentCaptureStale(error)) void queryClient.invalidateQueries({ queryKey: key })
+    },
+  })
 }

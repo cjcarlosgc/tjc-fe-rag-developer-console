@@ -1,9 +1,41 @@
 import { ApiError, apiRequest } from '../api/client'
 import { getDataSource } from '../api/dataSource'
 import { loadMockBackend } from '../api/loadMockBackend'
-import type { CreateProjectInput, Project, ProjectListPage, UpdateProjectInput, WorkspaceListResponse } from './types'
+import type {
+  CreateProjectInput,
+  ExperimentCapturePage,
+  ExperimentCaptureResponse,
+  Project,
+  ProjectListPage,
+  UpdateProjectInput,
+  WorkspaceListResponse,
+} from './types'
 
 const AGGREGATE_PAGE_SIZE = 100
+
+/** INTEROP-2.25 §6.17: `GET /projects/{projectId}/experiment-captures?cursor&limit` (Reader). Más reciente primero. */
+export function listExperimentCaptures(projectId: string, cursor?: string | null, limit?: number): Promise<ExperimentCapturePage> {
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockListExperimentCaptures(projectId, limit))
+  const params = new URLSearchParams()
+  if (cursor) params.set('cursor', cursor)
+  if (limit) params.set('limit', String(limit))
+  const query = params.toString()
+  return apiRequest<ExperimentCapturePage>(`/projects/${encodeURIComponent(projectId)}/experiment-captures${query ? `?${query}` : ''}`)
+}
+
+/** INTEROP-2.25 §6.17: `POST /projects/{projectId}/experiment-captures`, sin cuerpo y sin `Idempotency-Key` (Maintainer). */
+export function armExperimentCapture(projectId: string): Promise<ExperimentCaptureResponse> {
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockArmExperimentCapture(projectId))
+  return apiRequest<ExperimentCaptureResponse>(`/projects/${encodeURIComponent(projectId)}/experiment-captures`, { method: 'POST' })
+}
+
+/** INTEROP-2.25 §6.17: `DELETE /projects/{projectId}/experiment-captures/current` (Maintainer). Sin captura `ARMED`: `404 EXPERIMENT_CAPTURE_NOT_ARMED`. */
+export function disarmExperimentCapture(projectId: string): Promise<ExperimentCaptureResponse> {
+  if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockDisarmExperimentCapture(projectId))
+  return apiRequest<ExperimentCaptureResponse>(`/projects/${encodeURIComponent(projectId)}/experiment-captures/current`, {
+    method: 'DELETE',
+  })
+}
 
 export function listWorkspaces(): Promise<WorkspaceListResponse> {
   if (getDataSource() === 'mock') return loadMockBackend().then((mock) => mock.mockListWorkspaces())

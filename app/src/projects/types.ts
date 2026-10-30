@@ -85,6 +85,29 @@ export interface ProjectListPage {
   nextCursor: string | null
 }
 
+/** INTEROP-2.25 (§6.17, HU18): captura armada de experimentación de un Project. */
+export type ExperimentCaptureStatus = 'ARMED' | 'RESERVED' | 'DISARMED'
+
+export interface ExperimentCaptureResponse {
+  captureId: string
+  projectId: string
+  status: ExperimentCaptureStatus
+  armedBy: string
+  armedAt: string
+  /** Solo en `RESERVED`. */
+  reservedAnalysisRunId: string | null
+  reservedAt: string | null
+  /** Solo en `DISARMED`. */
+  disarmedBy: string | null
+  disarmedAt: string | null
+}
+
+/** `GET /projects/{projectId}/experiment-captures?cursor&limit` -> `Page<ExperimentCaptureResponse>`, la más reciente primero. */
+export interface ExperimentCapturePage {
+  items: ExperimentCaptureResponse[]
+  nextCursor: string | null
+}
+
 export interface AnalysisHistoryItem {
   id: string
   projectId: string

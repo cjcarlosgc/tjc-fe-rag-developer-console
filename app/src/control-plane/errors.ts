@@ -22,6 +22,9 @@ const codeMessages: Record<string, string> = {
   CORE_AUTHORIZATION_UNAVAILABLE: 'No pudimos autorizar esta operación de GitHub ahora; inténtalo de nuevo en unos minutos.',
   GITHUB_APP_ACCESS_REQUIRED: 'La GitHub App no tiene acceso al repositorio. Configura el acceso en GitHub y vuelve a intentarlo.',
   PROJECT_NOT_FOUND: 'El Project ya no existe.',
+  // INTEROP-2.25 (§6.17, HU18): captura armada de experimentación. Ambos errores dejan la captura como estaba.
+  EXPERIMENT_CAPTURE_ALREADY_ARMED: 'Ya hay una captura armada en este Project. Desármala antes de armar otra.',
+  EXPERIMENT_CAPTURE_NOT_ARMED: 'No hay una captura armada para desarmar.',
   WORKSPACE_NOT_FOUND: 'Ese workspace ya no está disponible. Actualiza la lista de workspaces y vuelve a elegirlo.',
   WORKSPACE_ADMIN_REQUIRED: 'Solo un propietario activo de la organización puede crear Projects en ese workspace.',
   // WI-CONSOLE-014 (INTEROP-2.7 §6.15, OE2 SE vs SEM): mensajes propios, sin semántica de ganador ni de OE5.
@@ -123,3 +126,23 @@ export const FUNCTIONAL_QUESTION_OBSOLETE_MESSAGE =
 export function isProjectNotFound(error: unknown): boolean {
   return error instanceof ApiError && error.status === 404 && error.code === 'PROJECT_NOT_FOUND'
 }
+
+/** INTEROP-2.25 (§6.17): texto de armar/desarmar. Un 403 de rol tiene mensaje propio para la captura (no el detalle genérico de rol). */
+export function experimentCaptureErrorMessage(error: unknown): string {
+  if (error instanceof ApiError && error.status === 403) return 'No tienes permiso para armar o desarmar capturas en este Project.'
+  return bindingErrorMessage(error)
+}
+
+/** INTEROP-2.25: `GET …/experiment-captures` con 404 que no es `PROJECT_NOT_FOUND` = Core sin esta versión. El resto del Project no depende de ello. */
+export function isExperimentCaptureUnsupported(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 404 && error.code !== 'PROJECT_NOT_FOUND'
+}
+
+/** INTEROP-2.25: 409 o 404 al armar o desarmar = el estado mostrado no coincide con Core; conviene releer la lista. */
+export function isExperimentCaptureStale(error: unknown): boolean {
+  return error instanceof ApiError && (error.code === 'EXPERIMENT_CAPTURE_ALREADY_ARMED' || error.code === 'EXPERIMENT_CAPTURE_NOT_ARMED')
+}
+
+/** Copy del aviso persistente mientras una captura está `ARMED` (spec 014, HU18). */
+export const EXPERIMENT_CAPTURE_WARNING =
+  'Captura armada: el siguiente PR elegible se reservará para experimentación y su Check no se publicará en GitHub. Desarma la captura si no quieres que ocurra.'

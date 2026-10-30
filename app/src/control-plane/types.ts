@@ -109,6 +109,11 @@ export interface AnalysisRunSummaryResponse {
   createdAt: string
   updatedAt: string
   completedAt: string | null
+  /**
+   * INTEROP-2.25 (§6.17, HU18): el contrato lo emite siempre (`null` si el Run no fue reservado por una captura armada).
+   * Opcional en el tipo para tolerar mocks y trazas anteriores a INTEROP-2.25; los consumidores tratan `undefined` como `null`.
+   */
+  experimentCapture?: { captureId: string; reservedAt: string } | null
 }
 
 export type SymbolChangeKind = 'DIRECTLY_CHANGED' | 'POTENTIALLY_IMPACTED'

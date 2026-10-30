@@ -85,6 +85,7 @@ export function RunsPage() {
                     <RepoChip repositoryName={run.pullRequest.repositoryName} />
                     <span className="pr-ref">PR #{run.pullRequest.number}</span>
                     <StatusBadge statusClass={analysisRunStatusClass(run.status)}>{ANALYSIS_RUN_STATUS_LABELS[run.status]}</StatusBadge>
+                    {run.experimentCapture && <StatusBadge tone="warn">Reservado para experimentación</StatusBadge>}
                     {!run.current && <StatusBadge tone="muted">NO VIGENTE</StatusBadge>}
                   </div>
                   <p>{run.pullRequest.title}</p>
