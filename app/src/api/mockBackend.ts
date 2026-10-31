@@ -39,7 +39,6 @@ import type {
   RetrievalMetricsResponse,
   RetrievalModeResultResponse,
 } from '../retrieval-comparison/types'
-import type { CaptureNextPrState } from '../run-comparison/speculative/captureNextPr'
 import type { PriorCoverageLevel } from '../control-plane/speculative/priorCoverage'
 import type { TestInventoryResponse } from '../inventory/types'
 import type {
@@ -320,10 +319,7 @@ const DEMO_PUBLICATION_OUTCOME_BY_RUN: Partial<Record<string, DemoPublicationOut
 }
 const DEMO_PUBLICATION_LABEL = 'DEMO · DATOS SIMULADOS'
 const functionalKnowledge = new Map<string, FunctionalKnowledgeResponse>()
-/** PROPUESTA — HU49, ver run-comparison/speculative/captureNextPr.ts. Estado por proyecto, no global: "el próximo PR elegible" se arma sobre el repositorio vinculado a un proyecto puntual. */
-const captureNextPrStates = new Map<string, CaptureNextPrState>()
-let captureNextPrSeq = 0
-/** INTEROP-2.25 (HU18): capturas armadas de experimentación por Project, la más reciente primero. Independiente de `captureNextPrStates` (HU49). */
+/** INTEROP-2.25 (HU18): capturas armadas de experimentación por Project, la más reciente primero. */
 const experimentCaptures = new Map<string, ExperimentCaptureResponse[]>()
 let sequence = 2000
 
@@ -2761,8 +2757,6 @@ export function resetMockBackend(): void {
   testPublications.clear()
   publicationJobs.clear()
   functionalKnowledge.clear()
-  captureNextPrStates.clear()
-  captureNextPrSeq = 0
   experimentCaptures.clear()
   sequence = 2000
   seed()
@@ -4069,111 +4063,6 @@ function seedRetrievalComparisons(): void {
     failureCode: 'RETRIEVAL_COMPARISON_FAILED',
     failureMessage: 'DEMO · el índice de embeddings no respondió; la comparación no produjo resultados.',
   })
-}
-
-function defaultCaptureNextPrState(projectId: string): CaptureNextPrState {
-  return { projectId, status: 'OFF', armedAt: null }
-}
-
-/** PROPUESTA — HU49, ver run-comparison/speculative/captureNextPr.ts. */
-export async function mockGetCaptureNextPrState(projectId: string): Promise<CaptureNextPrState> {
-  await latency()
-  requireProject(projectId)
-  return clone(captureNextPrStates.get(projectId) ?? defaultCaptureNextPrState(projectId))
-}
-
-export async function mockArmCaptureNextPr(projectId: string): Promise<CaptureNextPrState> {
-  await latency()
-  requireProject(projectId)
-  const state: CaptureNextPrState = { projectId, status: 'ARMED', armedAt: new Date().toISOString() }
-  captureNextPrStates.set(projectId, state)
-  return clone(state)
-}
-
-export async function mockDisarmCaptureNextPr(projectId: string): Promise<CaptureNextPrState> {
-  await latency()
-  requireProject(projectId)
-  const state = defaultCaptureNextPrState(projectId)
-  captureNextPrStates.set(projectId, state)
-  return clone(state)
-}
-
-/**
- * Demo-only, sin equivalente en el handoff: no hay un webhook real que
- * dispare "el próximo PR elegible", así que el mock expone un disparador
- * explícito para poder demostrar la captura en vivo en vez de esperar
- * pasivamente. Reusa `AnalysisRunDetailResponse` con un símbolo `METHOD`
- * `DIRECTLY_CHANGED` fabricado por proyecto — el mismo modelo de HU48, no un
- * motor experimental paralelo.
- */
-const CAPTURE_SYMBOL_BY_PROJECT: Record<string, AnalysisSymbolResponse> = {
-  prj_checkout_demo: {
-    language: 'TYPESCRIPT',
-    kind: 'METHOD',
-    qualifiedName: 'OrderService.calculateTotal',
-    filePath: 'src/domain/OrderService.ts',
-    changeKind: 'DIRECTLY_CHANGED',
-  },
-  prj_billing_demo: {
-    language: 'TYPESCRIPT',
-    kind: 'METHOD',
-    qualifiedName: 'InvoiceService.applyLateFee',
-    filePath: 'src/domain/InvoiceService.ts',
-    changeKind: 'DIRECTLY_CHANGED',
-  },
-}
-
-export async function mockSimulateNextEligiblePullRequest(projectId: string): Promise<AnalysisRunSummaryResponse> {
-  await latency()
-  requireProject(projectId)
-  const state = captureNextPrStates.get(projectId)
-  if (!state || state.status !== 'ARMED')
-    throw new ApiError('"Capturar el próximo PR" no está armado para este Project.', 409, 'demo-correlation-id', 'CAPTURE_NOT_ARMED')
-  const binding = repositoryBindings.get(projectId)
-  if (!binding) notFound(`El Project demo "${projectId}" no tiene un repositorio vinculado.`, 'REPOSITORY_BINDING_NOT_FOUND')
-  const symbol = CAPTURE_SYMBOL_BY_PROJECT[projectId]
-  if (!symbol) notFound(`No hay un símbolo demo configurado para capturar en el Project "${projectId}".`, 'CAPTURE_NOT_CONFIGURED')
-  captureNextPrSeq += 1
-  const number = 900 + captureNextPrSeq
-  const sha = `cap${captureNextPrSeq}`.padEnd(7, '0')
-  const runId = `arun_captured_${captureNextPrSeq}`
-  const now = new Date().toISOString()
-  const run: AnalysisRunDetailResponse = {
-    id: runId,
-    projectId,
-    pullRequest: {
-      repositoryId: binding.repositoryId,
-      repositoryName: binding.repositoryName,
-      number,
-      title: 'Capturado en vivo por "Capturar el próximo PR"',
-      baseRef: binding.integrationBranch,
-      headRef: `capture/pr-${number}`,
-      baseSha: 'c1c1c1c',
-      headSha: sha,
-      draft: false,
-      state: 'OPEN',
-      actorLogin: 'demo-presenter',
-    },
-    status: 'SUCCESS',
-    current: true,
-    actionRequiredCount: 0,
-    generatedTestsCount: 1,
-    createdAt: now,
-    updatedAt: now,
-    completedAt: now,
-    attemptCount: 1,
-    indexMode: 'INCREMENTAL',
-    changesetBaseSha: 'c1c1c1c',
-    changesetHeadSha: sha,
-    indexDeltaBaseSha: 'c1c1c1c',
-    symbols: [symbol],
-    functionalBehaviorValidated: true,
-    resultSummary: 'Run capturado en vivo para demostrar HU49 — generó 1 prueba nueva sobre el símbolo elegible.',
-    detailsUrl: `/projects/${projectId}/runs/${runId}`,
-  }
-  analysisRuns.set(runId, run)
-  captureNextPrStates.set(projectId, defaultCaptureNextPrState(projectId))
-  return clone(toAnalysisRunSummary(run))
 }
 
 export async function mockListExperimentContextTraces(
