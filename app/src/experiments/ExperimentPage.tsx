@@ -15,7 +15,6 @@ import { ErrorState, LoadingState } from '../ui/Feedback'
 import { buildCreateExperimentInput, getExperiment, startExperiment, type CreateExperimentInput } from './api'
 import { ExperimentComparison } from './ExperimentComparison'
 import { ExperimentConditionsNote } from './ExperimentConditionsNote'
-import { CaptureNextPrPanel } from '../run-comparison/CaptureNextPrPanel'
 import { bindingErrorMessage, errorCorrelationId, isLlmProviderUnavailable } from '../control-plane/errors'
 import { experimentFailureMessage, experimentFailureTitle } from './failureMessages'
 import { EvidenceDownload } from '../evidence/EvidenceDownload'
@@ -162,7 +161,6 @@ export function ExperimentPage() {
         </div>
       </div>
       <ExperimentConditionsNote />
-      {canCreateExperiment && <CaptureNextPrPanel projectId={projectId} />}
       <div className="lab-boundary">
         <div>
           <p className="eyebrow">Única capacidad V1</p>
